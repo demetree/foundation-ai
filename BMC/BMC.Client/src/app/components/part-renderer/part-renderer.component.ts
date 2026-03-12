@@ -122,7 +122,7 @@ export class PartRendererComponent implements OnInit, OnDestroy {
     uploadedFile: File | null = null;
     uploadedFileName = '';
     isDragOver = false;
-    readonly acceptedExtensions = ['.dat', '.ldr', '.mpd'];
+    readonly acceptedExtensions = ['.dat', '.ldr', '.mpd', '.lxf'];
 
     // Size presets — categorised
     sizeCategory: 'standard' | 'desktop' | 'mobile' = 'standard';

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenIddict.Validation.AspNetCore;
@@ -115,6 +116,19 @@ namespace Foundation
                            .UseDbContext<SecurityContext>();
 
                     options.UseQuartz();
+
+
+                    // Replace the default (scoped) application store with our caching version.
+                    // The default store creates a fresh instance per request, so FindByClientIdAsync
+                    // always hits the database.  CachingOpenIddictApplicationStore uses the process-global
+                    // MemoryCacheManager to cache client lookups for 30 minutes, eliminating the DB
+                    // round-trip that was timing out under heavy SQL Server load.
+                    options.Services.Replace(
+                        ServiceDescriptor.Scoped<
+                            OpenIddict.Abstractions.IOpenIddictApplicationStore<
+                                OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication>,
+                            CachingOpenIddictApplicationStore>());
+
                 })
                 .AddServer(options =>
                 {

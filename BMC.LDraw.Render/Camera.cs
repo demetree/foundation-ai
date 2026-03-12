@@ -151,17 +151,16 @@ namespace BMC.LDraw.Render
         /// <summary>
         /// Automatically position the camera to frame a mesh's bounding box
         /// using the specified elevation and azimuth angles.
+        /// Backward-compatible overload — assumes square aspect ratio and zoom 1.0.
         /// </summary>
-        /// <param name="mesh">The mesh to frame.</param>
-        /// <param name="elevationDeg">Camera elevation angle in degrees (0 = eye level, 90 = top-down).</param>
-        /// <param name="azimuthDeg">Camera azimuth angle in degrees (0 = front, -90 = right side).</param>
         public void AutoFrame(Models.LDrawMesh mesh, float elevationDeg, float azimuthDeg)
         {
-            AutoFrame(mesh, elevationDeg, azimuthDeg, 1.8f);
+            AutoFrame(mesh, elevationDeg, azimuthDeg, aspectRatio: 1f, zoom: 1f);
         }
 
         /// <summary>
         /// Automatically position the camera with a custom distance multiplier.
+        /// Legacy overload — kept for backward compatibility.
         /// </summary>
         public void AutoFrame(Models.LDrawMesh mesh, float elevationDeg, float azimuthDeg, float distanceMultiplier)
         {
@@ -184,6 +183,77 @@ namespace BMC.LDraw.Render
             NearPlane = distance * 0.01f;
             FarPlane = distance * 10f;
             OrthoHeight = extent * 1.5f;
+        }
+
+        /// <summary>
+        /// Automatically position the camera to frame a mesh using FOV and aspect-ratio-aware
+        /// geometry.  Computes the minimum distance so the model fills the frame on whichever
+        /// axis is tighter, with a configurable padding factor and zoom.
+        /// </summary>
+        /// <param name="mesh">The mesh to frame.</param>
+        /// <param name="elevationDeg">Camera elevation angle in degrees.</param>
+        /// <param name="azimuthDeg">Camera azimuth angle in degrees.</param>
+        /// <param name="aspectRatio">Image width / height (e.g. 1.0 for square, 1.78 for 16:9).</param>
+        /// <param name="zoom">Zoom multiplier.  1.0 = model fills ~85% of frame.
+        /// Values > 1 crop tighter (closer), values &lt; 1 pull back (further).</param>
+        public void AutoFrame(Models.LDrawMesh mesh, float elevationDeg, float azimuthDeg,
+                              float aspectRatio, float zoom)
+        {
+            mesh.GetCenter(out float cx, out float cy, out float cz);
+
+            //
+            // Get the bounding box dimensions
+            //
+            float extentX = mesh.MaxX - mesh.MinX;
+            float extentY = mesh.MaxY - mesh.MinY;
+            float extentZ = mesh.MaxZ - mesh.MinZ;
+            float maxExtent = mesh.GetMaxExtent();
+            if (maxExtent < 1f) maxExtent = 100f;
+
+            TargetX = cx;
+            TargetY = cy;
+            TargetZ = cz;
+
+            //
+            // Use the projected bounding box width (max of X and Z extents) as the
+            // horizontal extent, and Y as the vertical extent.  This is a conservative
+            // approximation that handles most viewing angles well.
+            //
+            float halfWidth = Math.Max(extentX, extentZ) * 0.5f;
+            float halfHeight = extentY * 0.5f;
+            if (halfWidth < 0.5f) halfWidth = maxExtent * 0.5f;
+            if (halfHeight < 0.5f) halfHeight = maxExtent * 0.5f;
+
+            //
+            // Compute the camera distance needed to fit the model on each axis.
+            // The vertical FOV is the camera's FieldOfView; the horizontal FOV
+            // is derived from vertical FOV and aspect ratio.
+            //
+            float fovV = FieldOfView * (float)Math.PI / 180f;
+            float fovH = 2f * (float)Math.Atan((float)Math.Tan(fovV * 0.5f) * aspectRatio);
+
+            float distanceV = halfHeight / (float)Math.Tan(fovV * 0.5f);
+            float distanceH = halfWidth / (float)Math.Tan(fovH * 0.5f);
+
+            //
+            // Use the larger distance (the tighter axis) so the model doesn't clip.
+            // Apply a 1.15× padding factor for edge-line and shadow breathing room,
+            // then divide by zoom (>1 = closer, <1 = further).
+            //
+            const float PADDING = 1.15f;
+            float effectiveZoom = Math.Max(zoom, 0.1f);
+            float distance = Math.Max(distanceV, distanceH) * PADDING / effectiveZoom;
+
+            float elevAngle = elevationDeg * (float)Math.PI / 180f;
+            float azimAngle = azimuthDeg * (float)Math.PI / 180f;
+
+            EyeX = cx + distance * (float)Math.Cos(elevAngle) * (float)Math.Sin(azimAngle);
+            EyeY = cy - distance * (float)Math.Sin(elevAngle);
+            EyeZ = cz + distance * (float)Math.Cos(elevAngle) * (float)Math.Cos(azimAngle);
+
+            NearPlane = distance * 0.01f;
+            FarPlane = distance * 10f;
+            OrthoHeight = maxExtent * 1.5f;
         }
 
         /// <summary>

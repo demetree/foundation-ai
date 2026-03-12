@@ -221,8 +221,8 @@ export class ManualGeneratorComponent implements OnInit, OnDestroy {
     //
     private selectFile(file: File): void {
         const ext = file.name.toLowerCase().split('.').pop();
-        if (ext !== 'mpd' && ext !== 'ldr' && ext !== 'dat') {
-            this.uploadError = 'Unsupported file type. Please upload .mpd, .ldr, or .dat files.';
+        if (ext !== 'mpd' && ext !== 'ldr' && ext !== 'dat' && ext !== 'lxf') {
+            this.uploadError = 'Unsupported file type. Please upload .mpd, .ldr, .dat, or .lxf files.';
             return;
         }
 

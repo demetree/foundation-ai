@@ -122,6 +122,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     // Grid and shadow plane references
     private gridHelper: THREE.GridHelper | null = null;
     private shadowPlane: THREE.Mesh | null = null;
+    private partModel: THREE.Object3D | null = null;
 
     //
     // When an initialColourId is provided, we defer showing the 3D model
@@ -138,6 +139,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     // ────────────────────────────────────────────────────────────────
 
     activeViewerTab: '3d' | 'render' = '3d';
+    autoRotate = true;
     poseMode = false;
 
     // Render config
@@ -162,6 +164,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     enablePbr = true;
     exposure = 1.0;
     aperture = 0;
+    renderZoom = 1.0;
 
     // Render output state
     rendering = false;
@@ -283,6 +286,15 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
     goBack(): void {
         this.location.back();
+    }
+
+
+    toggleAutoRotate(): void {
+        this.autoRotate = !this.autoRotate;
+
+        if (this.controls) {
+            this.controls.autoRotate = this.autoRotate;
+        }
     }
 
 
@@ -1023,7 +1035,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         this.controls.enablePan = true;
         this.controls.minDistance = 20;
         this.controls.maxDistance = 500;
-        this.controls.autoRotate = false;
+        this.controls.autoRotate = this.autoRotate;
         this.controls.autoRotateSpeed = 1.2;
 
         // Lighting
@@ -1229,6 +1241,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
                         });
 
                         this.scene.add(group);
+                        this.partModel = group;
                         this.centreAndFrameModel(group);
 
                         //
@@ -1300,6 +1313,7 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
         mesh.add(wireframe);
         this.scene.add(mesh);
+        this.partModel = mesh;
 
         this.centreAndFrameModel(mesh);
     }
@@ -1609,12 +1623,18 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
 
 
     //
-    // Pose Part Mode — extract camera angles from OrbitControls
+    // Pose Part Mode — stops rotation and shows camera angle HUD so the
+    // user can frame the part, then send that view to Server Render.
     //
     togglePoseMode(): void {
         this.poseMode = !this.poseMode;
+
         if (this.controls) {
-            this.controls.autoRotate = !this.poseMode;
+            //
+            // When entering pose mode, always stop rotation.
+            // When leaving pose mode, restore the user's autoRotate preference.
+            //
+            this.controls.autoRotate = this.poseMode ? false : this.autoRotate;
         }
     }
 
@@ -1664,6 +1684,48 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         const angles = this.getCameraAngles();
         this.renderElevation = angles.elevation;
         this.renderAzimuth = angles.azimuth;
+
+        //
+        // Capture zoom from camera distance.
+        // Zoom = baseline / current distance — closer = higher zoom.
+        //
+        if (this.camera && this.controls && this.partModel) {
+            const pos = this.camera.position;
+            const tgt = this.controls.target;
+            const currentDist = Math.sqrt(
+                (pos.x - tgt.x) ** 2 +
+                (pos.y - tgt.y) ** 2 +
+                (pos.z - tgt.z) ** 2
+            );
+
+            //
+            // Compute the server's auto-frame baseline distance using the same
+            // FOV-aware geometry as Camera.AutoFrame on the server side.
+            // Use partModel (not scene) to exclude grid/shadow/lights from the bbox.
+            //
+            const box = new THREE.Box3().setFromObject(this.partModel);
+            const size = box.getSize(new THREE.Vector3());
+
+            const halfWidth = Math.max(size.x, size.z) * 0.5;
+            const halfHeight = size.y * 0.5;
+
+            // Server uses a fixed 45° vertical FOV; horizontal FOV depends on
+            // the render image aspect ratio (renderWidth / renderHeight).
+            const fovV = 45 * (Math.PI / 180);
+            const renderAspect = this.renderWidth / Math.max(this.renderHeight, 1);
+            const fovH = 2 * Math.atan(Math.tan(fovV / 2) * renderAspect);
+
+            const distV = halfHeight / Math.tan(fovV / 2);
+            const distH = halfWidth / Math.tan(fovH / 2);
+            const baselineDist = Math.max(distV, distH) * 1.15;  // 1.15 = server PADDING
+
+            if (currentDist > 0 && baselineDist > 0) {
+                this.renderZoom = Math.max(0.5, Math.min(3.0,
+                    parseFloat((baselineDist / currentDist).toFixed(2))
+                ));
+            }
+        }
+
         this.activeViewerTab = 'render';
 
         //
@@ -1702,12 +1764,12 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
         let url: string;
 
         if (this.explodedView) {
-            url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&renderer=${this.rendererType}`;
+            url = `/api/part-renderer/exploded?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&explosionFactor=${this.explosionFactor}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&renderer=${this.rendererType}&zoom=${this.renderZoom}`;
             if (this.rendererType === 'raytrace') {
                 url += `&enablePbr=${this.enablePbr}&exposure=${this.exposure}&aperture=${this.aperture}`;
             }
         } else {
-            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}`;
+            url = `/api/part-renderer/render?partNumber=${encodeURIComponent(partNumber)}&colourCode=${colourCode}&width=${this.renderWidth}&height=${this.renderHeight}&elevation=${this.renderElevation}&azimuth=${effectiveAzimuth}&renderEdges=${this.renderEdges}&smoothShading=${this.smoothShading}&antiAlias=${this.effectiveAntiAlias}&format=${this.outputFormat}&quality=${this.webpQuality}&renderer=${this.rendererType}&zoom=${this.renderZoom}`;
 
             if (this.rendererType === 'raytrace') {
                 url += `&enablePbr=${this.enablePbr}&exposure=${this.exposure}&aperture=${this.aperture}`;

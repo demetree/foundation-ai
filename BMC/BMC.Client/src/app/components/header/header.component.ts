@@ -47,10 +47,10 @@ export class HeaderComponent {
         {
             label: 'CREATE & BUILD',
             items: [
-                { icon: 'fas fa-camera', label: 'Part Renderer', route: '/part-renderer' },
-                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
-                { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
-                { icon: 'fas fa-puzzle-piece', label: 'My Projects', route: '/my-projects' }
+                { icon: 'fas fa-puzzle-piece', label: 'My Projects', route: '/my-projects' },
+                { icon: 'fas fa-camera', label: 'Renderer', route: '/part-renderer' },
+                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' }
+                //, { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
             ]
         },
         {

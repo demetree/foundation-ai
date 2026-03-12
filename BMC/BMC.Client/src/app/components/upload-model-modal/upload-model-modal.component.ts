@@ -25,7 +25,7 @@ export class UploadModelModalComponent {
 
     // Validation
     readonly maxFileSize = 50 * 1024 * 1024; // 50MB
-    readonly acceptedExtensions = ['.ldr', '.mpd', '.io'];
+    readonly acceptedExtensions = ['.ldr', '.mpd', '.io', '.lxf'];
 
     constructor(
         public activeModal: NgbActiveModal,
@@ -150,6 +150,7 @@ export class UploadModelModalComponent {
             case '.ldr': return 'LDraw Model';
             case '.mpd': return 'LDraw Multi-Part Document';
             case '.io': return 'BrickLink Studio';
+            case '.lxf': return 'LEGO Digital Designer';
             default: return 'Unknown';
         }
     }

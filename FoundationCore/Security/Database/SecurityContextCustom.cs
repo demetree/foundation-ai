@@ -30,7 +30,7 @@ namespace Foundation.Security.Database
             }
         }
 
-        int commandTimeoutSeconds = 30;
+        int commandTimeoutSeconds = 60;         // purposely eleveted to 60 seconds for some more breathing room under load
 
         public SecurityContext()
         {

@@ -489,6 +489,7 @@ import { TeamDetailPanelComponent } from './components/tenant-custom/team-detail
 import { OrganizationAddEditComponent } from './components/tenant-custom/organization-add-edit/organization-add-edit.component';
 import { DepartmentAddEditComponent } from './components/tenant-custom/department-add-edit/department-add-edit.component';
 import { TeamAddEditComponent } from './components/tenant-custom/team-add-edit/team-add-edit.component';
+import { TenantAddEditComponent } from './components/tenant-custom/tenant-add-edit/tenant-add-edit.component';
 import { UserCustomAddEditComponent } from './components/user-custom/user-custom-add-edit/user-custom-add-edit.component';
 import { IntelligenceService } from './services/intelligence.service';
 import { IntelligenceModalComponent } from './components/shared/intelligence-modal/intelligence-modal.component';
@@ -845,6 +846,7 @@ TelemetrySnapshotTableComponent,
     OrganizationAddEditComponent,
     DepartmentAddEditComponent,
     TeamAddEditComponent,
+    TenantAddEditComponent,
     UserCustomAddEditComponent,
     IntelligenceModalComponent,
     SystemSettingCustomListingComponent,

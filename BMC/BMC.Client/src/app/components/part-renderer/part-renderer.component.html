@@ -6,7 +6,7 @@
     <!-- Header -->
     <div class="renderer-header">
         <div class="header-title">
-            <h1><i class="fas fa-camera"></i> Part Renderer</h1>
+            <h1><i class="fas fa-camera"></i> Renderer</h1>
             <p class="header-subtitle">
                 Search for a part, choose a colour, and render in PNG, WebP, SVG, or animated GIF
             </p>
@@ -158,14 +158,14 @@
                     <div class="upload-drop-zone" [class.drag-over]="isDragOver" [class.has-file]="uploadedFile"
                         (drop)="onFileDrop($event)" (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)"
                         (click)="fileInput.click()">
-                        <input #fileInput type="file" accept=".dat,.ldr,.mpd" hidden
+                        <input #fileInput type="file" accept=".dat,.ldr,.mpd,.lxf" hidden
                             (change)="onFileSelected($event)" />
 
                         <ng-container *ngIf="!uploadedFile">
                             <i class="fas fa-cloud-upload-alt upload-icon"></i>
                             <div class="upload-text">
-                                Drop a <strong>.dat</strong>, <strong>.ldr</strong>, or
-                                <strong>.mpd</strong> file here
+                                Drop a <strong>.dat</strong>, <strong>.ldr</strong>,
+                                <strong>.mpd</strong>, or <strong>.lxf</strong> file here
                             </div>
                             <div class="upload-hint">or click to browse · max 5 MB</div>
                         </ng-container>

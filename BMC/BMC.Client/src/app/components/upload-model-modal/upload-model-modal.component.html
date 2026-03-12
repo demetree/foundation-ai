@@ -23,7 +23,7 @@
                 (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
                 (click)="fileInput.click()" id="drop-zone">
 
-                <input type="file" #fileInput hidden accept=".ldr,.mpd,.io" (change)="onFileSelected($event)" />
+                <input type="file" #fileInput hidden accept=".ldr,.mpd,.io,.lxf" (change)="onFileSelected($event)" />
 
                 <div class="drop-content" *ngIf="!selectedFile">
                     <div class="drop-icon">
@@ -54,6 +54,7 @@
                 <span class="format-tag"><i class="fas fa-file-code"></i> .ldr</span>
                 <span class="format-tag"><i class="fas fa-layer-group"></i> .mpd</span>
                 <span class="format-tag"><i class="fas fa-cube"></i> .io</span>
+                <span class="format-tag"><i class="fas fa-drafting-compass"></i> .lxf</span>
                 <span class="format-limit">Max 50 MB</span>
             </div>
         </ng-container>

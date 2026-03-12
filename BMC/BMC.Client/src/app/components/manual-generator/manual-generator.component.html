@@ -8,7 +8,7 @@
     <header class="hero">
         <div class="hero-text">
             <h1>Manual Generator</h1>
-            <p>Upload an LDraw model (.mpd / .ldr) to generate a printable build manual with step highlighting.</p>
+            <p>Upload an LDraw model (.mpd / .ldr / .lxf) to generate a printable build manual with step highlighting.</p>
         </div>
     </header>
 
@@ -18,7 +18,7 @@
         <div class="upload-dropzone" [class.drag-over]="isDragOver" (dragover)="onDragOver($event)"
             (dragleave)="onDragLeave($event)" (drop)="onDrop($event)" (click)="fileInput.click()">
 
-            <input #fileInput type="file" accept=".mpd,.ldr,.dat" (change)="onFileSelected($event)" hidden />
+            <input #fileInput type="file" accept=".mpd,.ldr,.dat,.lxf" (change)="onFileSelected($event)" hidden />
 
             <div class="dropzone-content">
                 <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

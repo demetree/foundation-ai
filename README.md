@@ -977,6 +977,444 @@ When contributing to this codebase, AI agents must follow these guidelines:
 
 # Development Workflow
 
+# Performance & Reliability Coding Rules
+
+## Purpose
+
+Performance is a **core system property**, not an optional improvement.  Performance must be designed into the system rather than added later through optimization.
+
+The system processes operational and analytical data where delays, incorrect results, or silent failures may negatively affect decision making and system stability.
+
+These rules define **mandatory coding practices** for both human developers and AI code generation systems.
+
+Violations of these rules are treated as **bugs**, not style issues.
+
+These guidelines enforce four core system guarantees.
+
+| Category | Goal |
+|---|---|
+| Concurrency efficiency | Prevent unnecessary latency |
+| Database efficiency | Minimize database load |
+| Traffic protection | Prevent request storms |
+| Failure visibility | Ensure errors are observable |
+
+---
+
+## Rule P-1: Run independent async operations concurrently
+
+Don't `await` two independent calls back-to-back — start both as tasks and use `Task.WhenAll` so they run at the same time.
+
+### ❌ Anti-pattern
+
+```csharp
+var resultA = await serviceA.GetDataAsync(ct);
+var resultB = await serviceB.GetDataAsync(ct);
+```
+
+Execution timeline:
+
+```
+serviceA ──────── finished
+                 serviceB ──────── finished
+
+Total runtime = A + B
+```
+
+### ✅ Correct pattern
+
+```csharp
+Task<DataA> taskA = serviceA.GetDataAsync(ct);
+Task<DataB> taskB = serviceB.GetDataAsync(ct);
+
+await Task.WhenAll(taskA, taskB);
+
+DataA resultA = await taskA;
+DataB resultB = await taskB;
+```
+
+Execution timeline:
+
+```
+serviceA ──────── finished
+serviceB ──────── finished
+
+Total runtime = max(A, B)
+```
+
+### When sequential execution is correct
+
+Sequential awaits are appropriate when:
+
+- the second operation depends on the result of the first
+- operations must run in strict order
+- concurrency could introduce race conditions
+
+Concurrency must never break logical correctness.
+
+---
+
+## Rule P-2: Avoid multiple database queries when one will do
+
+Never fire a `CountAsync` just to log a number and then immediately retrieve the record — that is two round-trips to the database where one is enough.
+
+### ❌ Anti-pattern
+
+```csharp
+int count = await query.CountAsync(ct);
+
+var item = await query
+    .OrderByDescending(x => x.CreatedAt)
+    .FirstOrDefaultAsync(ct);
+```
+
+Database round trips:
+- Query 1 → `COUNT(*)`
+- Query 2 → `SELECT TOP 1`
+
+### ✅ Correct pattern
+
+```csharp
+var item = await query
+    .OrderByDescending(x => x.CreatedAt)
+    .FirstOrDefaultAsync(ct);
+
+bool exists = item != null;
+```
+
+One query returns both the record and the existence check.
+
+### When CountAsync is appropriate
+
+Use `CountAsync` only when the actual count value is required, such as pagination metadata, analytics, or reporting queries.
+
+---
+
+## Rule P-3: Heavy endpoints must be rate-limited
+
+Any endpoint that does real work needs a `[RateLimit]` attribute — if it queries the database or crunches data, it is heavy.
+
+An endpoint is heavy if it performs multiple database queries, aggregates large datasets, or triggers computational work beyond simple lookups.
+
+Rate limiting protects the system from accidental traffic spikes, automated request loops, denial-of-service amplification, and misconfigured integrations.
+
+```csharp
+[RateLimit(RateLimitOption.TenPerMinute, Scope = RateLimitScope.PerUser)]
+```
+
+### Suggested limits
+
+| Endpoint type | Suggested limit |
+|---|---|
+| Lightweight lookup | `ThirtyPerMinute` |
+| Medium computation | `ThirtyPerMinute` |
+| Heavy computation | `TenPerMinute` |
+
+When the expected cost is unknown, prefer the more conservative limit.
+
+### When rate limiting may not be required
+
+Rate limiting may be unnecessary when the endpoint is internal service-to-service, upstream infrastructure already enforces throttling, or the operation is extremely lightweight.
+
+---
+
+## Rule P-4: Avoid unnecessary collection re-enumeration
+
+Don't `ToList()` from EF and then `Select()` in memory — push the projection into the query so the database does it once.
+
+### ❌ Anti-pattern
+
+```csharp
+List<Entity> entities = await db.Entities
+    .Where(...)
+    .ToListAsync(ct);
+
+List<ViewModel> result = entities
+    .Select(x => new ViewModel
+    {
+        Id    = x.Id,
+        Value = x.Value
+    })
+    .ToList();
+```
+
+Problems: unnecessary memory allocation, extra iteration, inefficient data flow.
+
+### ✅ Correct pattern
+
+```csharp
+List<ViewModel> result = await db.Entities
+    .Where(...)
+    .Select(x => new ViewModel
+    {
+        Id    = x.Id,
+        Value = x.Value
+    })
+    .ToListAsync(ct);
+```
+
+Projection occurs directly in the query and the collection is materialized once.
+
+### When in-memory projection is acceptable
+
+Projection after materialization is acceptable when the transformation cannot be translated to SQL, complex business logic is required, or external services are involved.
+
+---
+
+## Rule P-5: Do not hide failures
+
+Do not swallow exceptions by returning empty or default objects as successful results.
+
+Failures must either propagate to the caller, be logged and rethrown with context, or return a clearly marked partial result.
+
+### ❌ Anti-pattern
+
+```csharp
+private async Task<ResultModel> CalculateAsync(...)
+{
+    try
+    {
+        return await calculator.ComputeAsync(...);
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex);
+        return new ResultModel();
+    }
+}
+```
+
+The caller receives incorrect data while the operation actually failed.
+
+### ✅ Correct pattern
+
+Allow exceptions to propagate.
+
+```csharp
+private async Task<ResultModel> CalculateAsync(...)
+{
+    return await calculator.ComputeAsync(...);
+}
+```
+
+### Acceptable exception handling
+
+Exceptions may be caught when additional diagnostic context is added before rethrowing, the exception is translated into a domain-specific error, or partial results are intentionally returned and clearly documented.
+
+Silent failure is not acceptable.
+
+---
+
+## Rule P-6: Query data only where it is required
+
+Don't query data before you know you need it — move database calls inside the block where they are actually used.
+
+### ❌ Anti-pattern
+
+```csharp
+var parent = await db.Parents
+    .FirstOrDefaultAsync(x => x.Id == id, ct);
+
+var latest = await db.Children
+    .Where(x => x.ParentId == id)
+    .MaxAsync(x => x.CreatedAt, ct);
+
+var snapshot = await db.Snapshots
+    .FirstOrDefaultAsync(..., ct);
+
+if (snapshot != null && snapshot.Timestamp >= latest)
+{
+    return snapshot;
+}
+```
+
+Several queries execute even when unnecessary.
+
+### ✅ Correct pattern
+
+```csharp
+var snapshot = await db.Snapshots
+    .FirstOrDefaultAsync(..., ct);
+
+if (snapshot != null)
+{
+    var latest = await db.Children
+        .Where(x => x.ParentId == id)
+        .MaxAsync(x => x.CreatedAt, ct);
+
+    if (snapshot.Timestamp >= latest)
+    {
+        return snapshot;
+    }
+}
+```
+
+Queries execute only when required.
+
+---
+
+## Rule P-7: Cache results of expensive DB operations and guard against concurrent duplicate execution
+
+Endpoints that perform any meaningful database work should cache their results in a RAM cache with an application-appropriate expiration to eliminate redundant work on repeated calls.
+
+For concurrent-safe caching, use a `SemaphoreSlim` keyed on the cache key.  Upon attaining the semaphore, **check the cache again** before executing the query — this double-check eliminates duplicate DB calls from multiple requests that arrived simultaneously before the cache was populated.
+
+### ❌ Anti-pattern
+
+```csharp
+// No cache — every request hits the database
+public async Task<SummaryData> GetSummaryAsync(Guid projectGuid, CancellationToken ct)
+{
+    return await db.ProjectMetricSnapshots
+        .Where(s => s.projectGuid == projectGuid)
+        .FirstOrDefaultAsync(ct);
+}
+```
+
+### ✅ Correct pattern
+
+```csharp
+//
+// Semaphore keyed per project to prevent concurrent duplicate queries
+//
+private static readonly ConcurrentDictionary<Guid, SemaphoreSlim> _summaryLockMap = new();
+
+public async Task<SummaryData> GetSummaryAsync(Guid projectGuid, CancellationToken ct)
+{
+    string cacheKey = $"summary:{projectGuid}";
+
+    //
+    // Fast path — return from cache if available
+    //
+    if (_summaryCache.TryGetValue(cacheKey, out SummaryData cached) == true)
+    {
+        return cached;
+    }
+
+    //
+    // Obtain a per-project semaphore to serialize concurrent callers for the same key
+    //
+    SemaphoreSlim semaphore = _summaryLockMap.GetOrAdd(projectGuid, _ => new SemaphoreSlim(1, 1));
+
+    await semaphore.WaitAsync(ct);
+
+    try
+    {
+        //
+        // Double-check: another caller may have populated the cache while we were waiting
+        //
+        if (_summaryCache.TryGetValue(cacheKey, out cached) == true)
+        {
+            return cached;
+        }
+
+        //
+        // Cache was empty — execute the query and store the result
+        //
+        SummaryData result = await db.ProjectMetricSnapshots
+            .Where(s => s.projectGuid == projectGuid)
+            .FirstOrDefaultAsync(ct);
+
+        _summaryCache.Add(cacheKey, result, expiry: TimeSpan.FromMinutes(5));
+
+        return result;
+    }
+    finally
+    {
+        semaphore.Release();
+    }
+}
+```
+
+### Cache expiration guidance
+
+Choose an expiry that reflects how stale the data can be for the use case:
+
+| Data type | Suggested expiry |
+|---|---|
+| Snapshot / aggregated metrics | 1–5 minutes |
+| Project configuration / settings | 5–15 minutes |
+| Reference data (rarely changes) | 30–60 minutes |
+| Real-time sensor data | No cache or ≤ 30 seconds |
+
+Use `ExpiringCache` from the Compactica base library where available — it wraps this pattern consistently.
+
+---
+
+## Common Performance Anti-Patterns
+
+Avoid the following patterns unless there is a clear architectural reason.
+
+| Pattern | Avoid |
+|---|---|
+| Sequential async calls | `await A(); await B();` |
+| Double enumeration | `ToList() → Select() → ToList()` |
+| Redundant database queries | `CountAsync() + FirstOrDefaultAsync()` |
+| Hidden failures | `catch → return default` |
+| Preloading unused data | Query data before the condition that determines if it is needed |
+| No caching on repeated queries | Re-querying the DB on every request for data that doesn't change frequently |
+
+---
+
+## AI Code Generation Checklist
+
+Every AI-generated change must be reviewed against this checklist.
+
+**Concurrency**
+- [ ] Are independent async calls executed concurrently?
+- [ ] Are unnecessary sequential awaits avoided?
+
+**Database efficiency**
+- [ ] Are unnecessary database round trips avoided?
+- [ ] Is projection performed inside the query when possible?
+- [ ] Is data fetched only when required?
+- [ ] Does the query avoid loading unnecessary columns or entities?
+- [ ] Is the result cached with an appropriate expiry to avoid repeated identical queries?
+- [ ] Is a semaphore double-check used where concurrent callers could trigger duplicate DB calls?
+
+**Traffic protection**
+- [ ] Does any heavy endpoint include rate limiting?
+- [ ] Could the endpoint accidentally trigger excessive load?
+
+**Failure visibility**
+- [ ] Are exceptions allowed to propagate?
+- [ ] Are silent default returns avoided?
+
+**Memory & iteration**
+- [ ] Are collections enumerated only once when possible?
+- [ ] Are unnecessary `.ToList()` calls avoided?
+
+---
+
+## Design Principles
+
+When generating or reviewing code, prefer designs that are:
+
+| Property | Meaning |
+|---|---|
+| Observable | Failures are visible |
+| Predictable | Performance remains stable under load |
+| Efficient | Database and CPU work are minimized |
+| Safe | Traffic spikes cannot overload the system |
+
+---
+
+## AI Code Generation Rule
+
+When generating code, prefer solutions that:
+
+- minimize database round trips
+- execute independent work concurrently
+- avoid unnecessary memory allocations
+- surface failures rather than hiding them
+
+If multiple implementations are possible, prefer the one that:
+
+1. performs fewer database queries
+2. performs fewer iterations
+3. reduces blocking or sequential async execution
+
+---
+
 ## Git Long File Name Handling - DO THIS FIRST
 
 To handle long file names in Git on Windows, ensure that Git is configured to support long paths. You can enable this by running the following command in your Git Bash or command prompt:

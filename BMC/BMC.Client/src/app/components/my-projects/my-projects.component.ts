@@ -297,6 +297,7 @@ export class MyProjectsComponent implements OnInit, OnDestroy {
         if (lower.endsWith('.io')) return 'fas fa-cube';
         if (lower.endsWith('.mpd')) return 'fas fa-layer-group';
         if (lower.endsWith('.ldr')) return 'fas fa-file-code';
+        if (lower.endsWith('.lxf')) return 'fas fa-drafting-compass';
         return 'fas fa-file';
     }
 }

@@ -83,6 +83,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             bool enablePbr = true,
             float exposure = 1.0f,
             float aperture = 0f,
+            float zoom = 1.0f,
             CancellationToken cancellationToken = default)
         {
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
@@ -117,7 +118,8 @@ namespace Foundation.BMC.Controllers.WebAPI
             RendererType rendererType = ParseRendererType(renderer);
             exposure = Math.Clamp(exposure, 0.1f, 10f);
             aperture = Math.Clamp(aperture, 0f, 10f);
-            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}:{renderer}:{enablePbr}:{exposure}:{aperture}";
+            zoom = Math.Clamp(zoom, 0.5f, 3.0f);
+            string cacheKey = $"part-render:{partNumber}:{colourCode}:{width}x{height}:{elevation}:{azimuth}:{renderEdges}:{smoothShading}:{antiAlias}:{format}:{quality}:{backgroundHex}:{gradientTopHex}:{gradientBottomHex}:{renderer}:{enablePbr}:{exposure}:{aperture}:{zoom}";
             if (_cache.TryGetValue(cacheKey, out byte[] cachedBytes))
             {
                 string cachedType = format == "webp" ? "image/webp" : format == "svg" ? "image/svg+xml" : "image/png";
@@ -158,7 +160,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToWebP(datPath, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, quality,
-                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture, zoom: zoom);
                     }, renderToken);
                     contentType = "image/webp";
                 }
@@ -171,7 +173,7 @@ namespace Foundation.BMC.Controllers.WebAPI
                         EnsureRenderService(dataPath);
                         return _renderService.RenderToPng(datPath, width, height, colourCode, elevation, azimuth,
                             renderEdges, smoothShading, aaMode, backgroundHex, gradientTopHex, gradientBottomHex, rendererType: rendererType,
-                            enablePbr: enablePbr, exposure: exposure, aperture: aperture);
+                            enablePbr: enablePbr, exposure: exposure, aperture: aperture, zoom: zoom);
                     }, renderToken);
                     contentType = "image/png";
                 }
@@ -528,7 +530,8 @@ namespace Foundation.BMC.Controllers.WebAPI
                             EnsureRenderService(dataPath);
                             return _renderService.RenderToPng(datPath, w, h, request.ColourCode,
                                 request.Elevation, request.Azimuth, request.RenderEdges, request.SmoothShading,
-                                sizeAA, request.BackgroundHex, request.GradientTopHex, request.GradientBottomHex);
+                                sizeAA, request.BackgroundHex, request.GradientTopHex, request.GradientBottomHex,
+                                zoom: Math.Clamp(request.Zoom, 0.5f, 3.0f));
                         }, renderCts.Token);
 
                         string entryName = $"{request.PartNumber}_{w}x{h}.png";
@@ -1271,6 +1274,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         public string GradientTopHex { get; set; } = "";
         public string GradientBottomHex { get; set; } = "";
         public string Renderer { get; set; } = "rasterizer";
+        public float Zoom { get; set; } = 1.0f;
         public List<BatchRenderSize> Sizes { get; set; }
     }
 

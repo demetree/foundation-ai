@@ -18,6 +18,13 @@
                 </div>
             </div>
             <div class="header-right">
+                <!-- Add Tenant Button -->
+                <button class="btn btn-sm btn-glass add-button" (click)="addTenant()"
+                    *ngIf="userIsTenantWriter()" ngbTooltip="Add New Tenant">
+                    <i class="fa-solid fa-plus me-1"></i>
+                    <span class="d-none d-md-inline">Add Tenant</span>
+                </button>
+
                 <!-- Tenant Count Badge -->
                 <div class="count-badge" *ngIf="!loadingTotalCount">
                     <span class="count-number">{{ filteredTenantCount$ | async }}</span>
@@ -46,6 +53,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Tenant Add/Edit Modal Component -->
+    <app-tenant-add-edit #tenantAddEdit (saved)="onTenantSaved($event)"></app-tenant-add-edit>
 
     <!-- Tenant Table -->
     <div class="table-section">

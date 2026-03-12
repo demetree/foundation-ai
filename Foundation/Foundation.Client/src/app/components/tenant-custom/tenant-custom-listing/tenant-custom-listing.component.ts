@@ -1,18 +1,23 @@
 //
 // Tenant Custom Listing Component
 //
-// Premium listing view for managing Security Tenants with search and count badge.
-// Modeled after module-custom-listing pattern.
+// Premium listing view for managing Security Tenants with search, count badge,
+// and add-tenant modal integration.
+// Modeled after user-custom-listing and module-custom-listing patterns.
+//
+// AI-Developed: Added tenant add-edit modal integration with permission gating.
 //
 
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subject, BehaviorSubject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../services/auth.service';
-import { SecurityTenantService, SecurityTenantQueryParameters } from '../../../security-data-services/security-tenant.service';
+import { SecurityTenantService, SecurityTenantQueryParameters, SecurityTenantData } from '../../../security-data-services/security-tenant.service';
+import { TenantAddEditComponent } from '../tenant-add-edit/tenant-add-edit.component';
+import { TenantCustomTableComponent } from '../tenant-custom-table/tenant-custom-table.component';
 
 @Component({
     selector: 'app-tenant-custom-listing',
@@ -45,6 +50,12 @@ export class TenantCustomListingComponent implements OnInit, OnDestroy {
     //
     public isSmallScreen: boolean = false;
     private readonly SMALL_SCREEN_BREAKPOINT = 768;
+
+    //
+    // Child component references
+    //
+    @ViewChild('tenantAddEdit') tenantAddEdit!: TenantAddEditComponent;
+    @ViewChild(TenantCustomTableComponent) tenantTable!: TenantCustomTableComponent;
 
 
     constructor(
@@ -165,11 +176,6 @@ export class TenantCustomListingComponent implements OnInit, OnDestroy {
     // Navigation
     //
 
-    navigateToAddTenant(): void {
-        this.router.navigate(['/tenant/add']);
-    }
-
-
     goBack(): void {
         this.location.back();
     }
@@ -177,5 +183,53 @@ export class TenantCustomListingComponent implements OnInit, OnDestroy {
 
     canGoBack(): boolean {
         return window.history.length > 1;
+    }
+
+
+    //
+    // Add Tenant — opens the add-edit modal for creating a new tenant
+    //
+
+    addTenant(): void {
+        if (this.tenantAddEdit) {
+            this.tenantAddEdit.openForCreate();
+        }
+    }
+
+
+    //
+    // Called when a tenant is saved (created or updated) from the add-edit modal.
+    // Refreshes the count and table data.
+    //
+
+    onTenantSaved(savedTenant: SecurityTenantData): void {
+
+        //
+        // Refresh the total count
+        //
+        this.loadTotalCount();
+
+        //
+        // Refresh the filtered count if a filter is active
+        //
+        if (this.filterText) {
+            this.filterTextSubject.next(this.filterText);
+        }
+
+        //
+        // Refresh the table to show the new/updated tenant
+        //
+        if (this.tenantTable) {
+            this.tenantTable.loadTenants();
+        }
+    }
+
+
+    //
+    // Permissions
+    //
+
+    userIsTenantWriter(): boolean {
+        return this.securityTenantService.userIsSecuritySecurityTenantWriter();
     }
 }

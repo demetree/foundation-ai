@@ -58,7 +58,8 @@ namespace BMC.LDraw.Render
                                  AntiAliasMode antiAliasMode = AntiAliasMode.None,
                                  string backgroundHex = null,
                                  string gradientTopHex = null,
-                                 string gradientBottomHex = null)
+                                 string gradientBottomHex = null,
+                                 float zoom = 1.0f)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -71,7 +72,8 @@ namespace BMC.LDraw.Render
                                            antiAliasMode: antiAliasMode,
                                            backgroundHex: backgroundHex,
                                            gradientTopHex: gradientTopHex,
-                                           gradientBottomHex: gradientBottomHex);
+                                           gradientBottomHex: gradientBottomHex,
+                                           zoom: zoom);
 
             ImageExporter.SaveToPng(pixels, width, height, outputPath);
         }
@@ -95,7 +97,8 @@ namespace BMC.LDraw.Render
                                   RendererType rendererType = RendererType.Rasterizer,
                                   bool enablePbr = true,
                                   float exposure = 1.0f,
-                                  float aperture = 0f)
+                                  float aperture = 0f,
+                                  float zoom = 1.0f)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -112,7 +115,8 @@ namespace BMC.LDraw.Render
                                            rendererType: rendererType,
                                            enablePbr: enablePbr,
                                            exposure: exposure,
-                                           aperture: aperture);
+                                           aperture: aperture,
+                                           zoom: zoom);
 
             return ImageExporter.ToPngBytes(pixels, width, height);
         }
@@ -137,7 +141,8 @@ namespace BMC.LDraw.Render
                                    int quality = 90,
                                    bool enablePbr = true,
                                    float exposure = 1.0f,
-                                   float aperture = 0f)
+                                   float aperture = 0f,
+                                   float zoom = 1.0f)
         {
             byte[] pixels = RenderToPixels(inputPath: inputPath,
                                            width: width,
@@ -153,7 +158,8 @@ namespace BMC.LDraw.Render
                                            gradientBottomHex: gradientBottomHex,
                                            enablePbr: enablePbr,
                                            exposure: exposure,
-                                           aperture: aperture);
+                                           aperture: aperture,
+                                           zoom: zoom);
 
             return ImageExporter.ToWebPBytes(pixels, width, height, quality);
         }
@@ -177,7 +183,8 @@ namespace BMC.LDraw.Render
                                      RendererType rendererType = RendererType.Rasterizer,
                                      bool enablePbr = true,
                                      float exposure = 1.0f,
-                                     float aperture = 0f)
+                                     float aperture = 0f,
+                                     float zoom = 1.0f)
         {
             EnsureColours();
 
@@ -209,10 +216,11 @@ namespace BMC.LDraw.Render
             }
 
             //
-            // Set up camera with user-specified viewing angle
+            // Set up camera with FOV/aspect-aware framing
             //
             Camera camera = new Camera();
-            camera.AutoFrame(mesh, elevation, azimuth);
+            float aspect = (float)width / Math.Max(height, 1);
+            camera.AutoFrame(mesh, elevation, azimuth, aspect, zoom);
 
             //
             // Determine render resolution (SSAA renders at a higher internal resolution)
@@ -346,7 +354,8 @@ namespace BMC.LDraw.Render
             }
 
             Camera camera = new Camera();
-            camera.AutoFrame(mesh, elevation, azimuth);
+            float aspect = (float)width / Math.Max(height, 1);
+            camera.AutoFrame(mesh, elevation, azimuth, aspect, 1f);
 
             return SvgExporter.RenderToSvg(mesh, camera, width, height, renderEdges);
         }
@@ -692,7 +701,8 @@ namespace BMC.LDraw.Render
                                      RendererType rendererType = RendererType.Rasterizer,
                                      bool enablePbr = true,
                                      float exposure = 1.0f,
-                                     float aperture = 0f)
+                                     float aperture = 0f,
+                                     float zoom = 1.0f)
         {
             EnsureColours();
 
@@ -712,7 +722,8 @@ namespace BMC.LDraw.Render
             }
 
             Camera camera = new Camera();
-            camera.AutoFrame(mesh, elevation, azimuth);
+            float aspect = (float)width / Math.Max(height, 1);
+            camera.AutoFrame(mesh, elevation, azimuth, aspect, zoom);
 
             int ssaaFactor = 1;
             if (antiAliasMode == AntiAliasMode.SSAA2x) ssaaFactor = 2;
@@ -782,7 +793,8 @@ namespace BMC.LDraw.Render
                                   RendererType rendererType = RendererType.Rasterizer,
                                   bool enablePbr = true,
                                   float exposure = 1.0f,
-                                  float aperture = 0f)
+                                  float aperture = 0f,
+                                  float zoom = 1.0f)
         {
             byte[] pixels = RenderToPixels(lines: lines,
                                            fileName: fileName,
@@ -800,7 +812,8 @@ namespace BMC.LDraw.Render
                                            rendererType: rendererType,
                                            enablePbr: enablePbr,
                                            exposure: exposure,
-                                           aperture: aperture);
+                                           aperture: aperture,
+                                           zoom: zoom);
 
             return ImageExporter.ToPngBytes(pixels, width, height);
         }
