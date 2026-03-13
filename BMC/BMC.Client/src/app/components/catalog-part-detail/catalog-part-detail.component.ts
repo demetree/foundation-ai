@@ -139,9 +139,10 @@ export class CatalogPartDetailComponent implements OnInit, OnDestroy, AfterViewI
     // ────────────────────────────────────────────────────────────────
 
     activeViewerTab: '3d' | 'render' = '3d';
-    autoRotate = true;  // when false, user is in "pose mode"
+    autoRotate = false;  // start in position mode for one-click picture flow
 
     // Render config
+    renderMode: 'simple' | 'advanced' = 'simple';
     renderWidth = 512;
     renderHeight = 512;
     renderElevation = 30;

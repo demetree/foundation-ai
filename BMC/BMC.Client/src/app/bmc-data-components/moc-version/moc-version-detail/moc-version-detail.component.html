@@ -1,0 +1,130 @@
+<div class="container-fluid p-1 m-0 moc-version-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="moc-version-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Moc Version</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Moc Version' : 'Add Moc Version'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCMocVersionReader()">
+                <div class="col m-2 moc-version-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="mocVersionForm" (ngSubmit)="submitForm()" class="moc-version-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                                <label for="MocVersion-publishedMocId" id="label-MocVersion-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                                <select id="MocVersion-publishedMocId" formControlName="publishedMocId" class="form-select moc-version-select" [disabled]="!userIsBMCMocVersionWriter()">
+                                    <option [ngValue]="null">Select Published Moc</option>
+                                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                                </select>
+                                <div *ngIf="mocVersionForm.get('publishedMocId')?.invalid && mocVersionForm.get('publishedMocId')?.touched" class="text-danger">
+                                    Published Moc is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="MocVersion-versionNumber" id="label-MocVersion-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="MocVersion-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control moc-version-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('commitMessage')">
+                                <label for="MocVersion-commitMessage" id="label-MocVersion-commitMessage"><span class="text-danger">*</span>Commit Message</label>
+                                <textarea id="MocVersion-commitMessage" formControlName="commitMessage" placeholder="Enter Commit Message" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()"></textarea>
+                                <div *ngIf="mocVersionForm.get('commitMessage')?.invalid && mocVersionForm.get('commitMessage')?.touched" class="text-danger">
+                                    Commit Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('mpdSnapshot')">
+                                <label for="MocVersion-mpdSnapshot" id="label-MocVersion-mpdSnapshot"><span class="text-danger">*</span>Mpd Snapshot</label>
+                                <textarea id="MocVersion-mpdSnapshot" formControlName="mpdSnapshot" placeholder="Enter Mpd Snapshot" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()"></textarea>
+                                <div *ngIf="mocVersionForm.get('mpdSnapshot')?.invalid && mocVersionForm.get('mpdSnapshot')?.touched" class="text-danger">
+                                    Mpd Snapshot is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('partCount')">
+                                <label for="MocVersion-partCount" id="label-MocVersion-partCount">Part Count</label>
+                                <input type="number" id="MocVersion-partCount" formControlName="partCount" placeholder="Enter Part Count" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()" aria-labelledby="label-partCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('addedPartCount')">
+                                <label for="MocVersion-addedPartCount" id="label-MocVersion-addedPartCount">Added Part Count</label>
+                                <input type="number" id="MocVersion-addedPartCount" formControlName="addedPartCount" placeholder="Enter Added Part Count" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()" aria-labelledby="label-addedPartCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('removedPartCount')">
+                                <label for="MocVersion-removedPartCount" id="label-MocVersion-removedPartCount">Removed Part Count</label>
+                                <input type="number" id="MocVersion-removedPartCount" formControlName="removedPartCount" placeholder="Enter Removed Part Count" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()" aria-labelledby="label-removedPartCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('modifiedPartCount')">
+                                <label for="MocVersion-modifiedPartCount" id="label-MocVersion-modifiedPartCount">Modified Part Count</label>
+                                <input type="number" id="MocVersion-modifiedPartCount" formControlName="modifiedPartCount" placeholder="Enter Modified Part Count" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()" aria-labelledby="label-modifiedPartCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('snapshotDate')">
+                                <label for="MocVersion-snapshotDate" id="label-MocVersion-snapshotDate"><span class="text-danger">*</span>Snapshot Date</label>
+                                <input type="datetime-local" id="MocVersion-snapshotDate" formControlName="snapshotDate" placeholder="Enter Snapshot Date" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()" aria-labelledby="label-snapshotDate" />
+                                <div *ngIf="mocVersionForm.get('snapshotDate')?.invalid && mocVersionForm.get('snapshotDate')?.touched" class="text-danger">
+                                    Snapshot Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('authorTenantGuid')">
+                                <label for="MocVersion-authorTenantGuid" id="label-MocVersion-authorTenantGuid"><span class="text-danger">*</span>Author Tenant Guid</label>
+                                <input type="text" id="MocVersion-authorTenantGuid" formControlName="authorTenantGuid" placeholder="Enter Author Tenant Guid" class="form-control moc-version-input" [disabled]="!userIsBMCMocVersionWriter()" aria-labelledby="label-authorTenantGuid" />
+                                <div *ngIf="mocVersionForm.get('authorTenantGuid')?.invalid && mocVersionForm.get('authorTenantGuid')?.touched" class="text-danger">
+                                    Author Tenant Guid is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MocVersion-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocVersionWriter()" />
+                                <label for="MocVersion-active" class="form-check-label" id="label-MocVersion-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MocVersion-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCMocVersionWriter()" />
+                                <label for="MocVersion-deleted" class="form-check-label" id="label-MocVersion-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="moc-version-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="mocVersionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Moc Version">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocVersionForm.valid || !mocVersionForm.dirty || mocVersionForm.pristine  || userIsBMCMocVersionWriter() == false " ngbTooltip="Save the Moc Version changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Moc Version' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCMocVersionReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 moc-version-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="mocForkService.userIsBMCMocForkReader()">
+                            <button ngbNavLink>Moc Forks
+                                <span class="badge bg-primary ms-2">
+                                    {{ (mocVersionData?.MocForksCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-moc-fork-table [queryParams]="{ mocVersionId: mocVersionData?.id }" [showAddButton]="true" [preSeededData]="{ mocVersionId: mocVersionData?.id }" [hiddenFields]="['mocVersionId']"></app-moc-fork-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

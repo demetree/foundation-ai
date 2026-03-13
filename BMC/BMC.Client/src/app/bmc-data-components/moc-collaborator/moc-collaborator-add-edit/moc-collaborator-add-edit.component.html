@@ -1,0 +1,85 @@
+<div class="add-moc-collaborator" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-moc-collaborator me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Moc Collaborator" 
+        *ngIf="userIsBMCMocCollaboratorWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #mocCollaboratorModal let-modal>
+   <div class="modal-header moc-collaborator-modal-header">
+      <h5 class="modal-title mb-0" id="mocCollaboratorModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Moc Collaborator' : 'Add Moc Collaborator' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body moc-collaborator-modal-body">
+      <form [formGroup]="mocCollaboratorForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('publishedMocId')">
+                <label for="MocCollaborator-publishedMocId" id="label-MocCollaborator-publishedMocId"><span class="text-danger">*</span>Published Moc</label>
+                <select id="MocCollaborator-publishedMocId" formControlName="publishedMocId" class="form-select moc-collaborator-select" [disabled]="!userIsBMCMocCollaboratorWriter()">
+                    <option [ngValue]="null">Select Published Moc</option>
+                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                </select>
+                <div *ngIf="mocCollaboratorForm.get('publishedMocId')?.invalid && mocCollaboratorForm.get('publishedMocId')?.touched" class="text-danger">
+                    Published Moc is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('collaboratorTenantGuid')">
+                <label for="MocCollaborator-collaboratorTenantGuid" id="label-MocCollaborator-collaboratorTenantGuid"><span class="text-danger">*</span>Collaborator Tenant Guid</label>
+                <input type="text" id="MocCollaborator-collaboratorTenantGuid" formControlName="collaboratorTenantGuid" placeholder="Enter Collaborator Tenant Guid" class="form-control moc-collaborator-input" [disabled]="!userIsBMCMocCollaboratorWriter()" aria-labelledby="label-collaboratorTenantGuid" />
+                <div *ngIf="mocCollaboratorForm.get('collaboratorTenantGuid')?.invalid && mocCollaboratorForm.get('collaboratorTenantGuid')?.touched" class="text-danger">
+                    Collaborator Tenant Guid is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('accessLevel')">
+                <label for="MocCollaborator-accessLevel" id="label-MocCollaborator-accessLevel"><span class="text-danger">*</span>Access Level</label>
+                <input type="text" id="MocCollaborator-accessLevel" formControlName="accessLevel" placeholder="Enter Access Level" class="form-control moc-collaborator-input" [disabled]="!userIsBMCMocCollaboratorWriter()" aria-labelledby="label-accessLevel" />
+                <div *ngIf="mocCollaboratorForm.get('accessLevel')?.invalid && mocCollaboratorForm.get('accessLevel')?.touched" class="text-danger">
+                    Access Level is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('invitedDate')">
+                <label for="MocCollaborator-invitedDate" id="label-MocCollaborator-invitedDate"><span class="text-danger">*</span>Invited Date</label>
+                <input type="datetime-local" id="MocCollaborator-invitedDate" formControlName="invitedDate" placeholder="Enter Invited Date" class="form-control moc-collaborator-input" [disabled]="!userIsBMCMocCollaboratorWriter()" aria-labelledby="label-invitedDate" />
+                <div *ngIf="mocCollaboratorForm.get('invitedDate')?.invalid && mocCollaboratorForm.get('invitedDate')?.touched" class="text-danger">
+                    Invited Date is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('acceptedDate')">
+                <label for="MocCollaborator-acceptedDate" id="label-MocCollaborator-acceptedDate">Accepted Date</label>
+                <input type="datetime-local" id="MocCollaborator-acceptedDate" formControlName="acceptedDate" placeholder="Enter Accepted Date" class="form-control moc-collaborator-input" [disabled]="!userIsBMCMocCollaboratorWriter()" aria-labelledby="label-acceptedDate" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isAccepted')">
+                <input type="checkbox" id="MocCollaborator-isAccepted" formControlName="isAccepted" class="form-check-input" [disabled]="!userIsBMCMocCollaboratorWriter()" />
+                <label for="MocCollaborator-isAccepted" class="form-check-label" id="label-MocCollaborator-isAccepted"><span class="text-danger">*</span>Is Accepted</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MocCollaborator-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocCollaboratorWriter()" />
+                <label for="MocCollaborator-active" class="form-check-label" id="label-MocCollaborator-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MocCollaborator-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCMocCollaboratorWriter()" />
+                <label for="MocCollaborator-deleted" class="form-check-label" id="label-MocCollaborator-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer moc-collaborator-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Moc Collaborator changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocCollaboratorForm.valid || mocCollaboratorForm.pristine  || userIsBMCMocCollaboratorWriter() == false " ngbTooltip="Save the Moc Collaborator changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Moc Collaborator' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

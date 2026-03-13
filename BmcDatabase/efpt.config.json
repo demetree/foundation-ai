@@ -204,6 +204,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[MocCollaborator]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[MocComment]",
          "ObjectType": 0
       },
@@ -212,7 +216,15 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[MocFork]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[MocLike]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[MocVersion]",
          "ObjectType": 0
       },
       {

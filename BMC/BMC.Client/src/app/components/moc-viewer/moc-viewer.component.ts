@@ -95,6 +95,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     // ────────────────────────────────────────────────────────────────
     //  Server Render Tab — State
     // ────────────────────────────────────────────────────────────────
+    renderMode: 'simple' | 'advanced' = 'simple';
     renderWidth = 512;
     renderHeight = 512;
     renderElevation = 30;

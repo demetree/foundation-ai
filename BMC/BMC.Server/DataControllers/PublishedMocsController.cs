@@ -80,6 +80,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? favouriteCount = null,
 			int? partCount = null,
 			bool? allowForking = null,
+			string visibility = null,
+			int? forkCount = null,
+			int? forkedFromMocId = null,
+			string licenseName = null,
+			string readmeMarkdown = null,
+			string slug = null,
+			string defaultBranchName = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -198,6 +205,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pm => pm.allowForking == allowForking.Value);
 			}
+			if (string.IsNullOrEmpty(visibility) == false)
+			{
+				query = query.Where(pm => pm.visibility == visibility);
+			}
+			if (forkCount.HasValue == true)
+			{
+				query = query.Where(pm => pm.forkCount == forkCount.Value);
+			}
+			if (forkedFromMocId.HasValue == true)
+			{
+				query = query.Where(pm => pm.forkedFromMocId == forkedFromMocId.Value);
+			}
+			if (string.IsNullOrEmpty(licenseName) == false)
+			{
+				query = query.Where(pm => pm.licenseName == licenseName);
+			}
+			if (string.IsNullOrEmpty(readmeMarkdown) == false)
+			{
+				query = query.Where(pm => pm.readmeMarkdown == readmeMarkdown);
+			}
+			if (string.IsNullOrEmpty(slug) == false)
+			{
+				query = query.Where(pm => pm.slug == slug);
+			}
+			if (string.IsNullOrEmpty(defaultBranchName) == false)
+			{
+				query = query.Where(pm => pm.defaultBranchName == defaultBranchName);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(pm => pm.versionNumber == versionNumber.Value);
@@ -231,7 +266,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(pm => pm.deleted == false);
 			}
 
-			query = query.OrderBy(pm => pm.name).ThenBy(pm => pm.thumbnailImagePath);
+			query = query.OrderBy(pm => pm.name).ThenBy(pm => pm.thumbnailImagePath).ThenBy(pm => pm.visibility);
 
 
 			//
@@ -246,6 +281,20 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.thumbnailImagePath.Contains(anyStringContains)
 			       || x.tags.Contains(anyStringContains)
+			       || x.visibility.Contains(anyStringContains)
+			       || x.licenseName.Contains(anyStringContains)
+			       || x.readmeMarkdown.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.defaultBranchName.Contains(anyStringContains)
+			       || (includeRelations == true && x.forkedFromMoc.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.thumbnailImagePath.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.tags.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.visibility.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.licenseName.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.readmeMarkdown.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.slug.Contains(anyStringContains))
+			       || (includeRelations == true && x.forkedFromMoc.defaultBranchName.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.project.notes.Contains(anyStringContains))
@@ -255,6 +304,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.MocForkforkedMoc);
+				query = query.Include(x => x.forkedFromMoc);
 				query = query.Include(x => x.project);
 				query = query.AsSplitQuery();
 			}
@@ -318,6 +369,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? favouriteCount = null,
 			int? partCount = null,
 			bool? allowForking = null,
+			string visibility = null,
+			int? forkCount = null,
+			int? forkedFromMocId = null,
+			string licenseName = null,
+			string readmeMarkdown = null,
+			string slug = null,
+			string defaultBranchName = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -416,6 +474,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pm => pm.allowForking == allowForking.Value);
 			}
+			if (visibility != null)
+			{
+				query = query.Where(pm => pm.visibility == visibility);
+			}
+			if (forkCount.HasValue == true)
+			{
+				query = query.Where(pm => pm.forkCount == forkCount.Value);
+			}
+			if (forkedFromMocId.HasValue == true)
+			{
+				query = query.Where(pm => pm.forkedFromMocId == forkedFromMocId.Value);
+			}
+			if (licenseName != null)
+			{
+				query = query.Where(pm => pm.licenseName == licenseName);
+			}
+			if (readmeMarkdown != null)
+			{
+				query = query.Where(pm => pm.readmeMarkdown == readmeMarkdown);
+			}
+			if (slug != null)
+			{
+				query = query.Where(pm => pm.slug == slug);
+			}
+			if (defaultBranchName != null)
+			{
+				query = query.Where(pm => pm.defaultBranchName == defaultBranchName);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(pm => pm.versionNumber == versionNumber.Value);
@@ -461,6 +547,20 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.thumbnailImagePath.Contains(anyStringContains)
 			       || x.tags.Contains(anyStringContains)
+			       || x.visibility.Contains(anyStringContains)
+			       || x.licenseName.Contains(anyStringContains)
+			       || x.readmeMarkdown.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.defaultBranchName.Contains(anyStringContains)
+			       || x.forkedFromMoc.name.Contains(anyStringContains)
+			       || x.forkedFromMoc.description.Contains(anyStringContains)
+			       || x.forkedFromMoc.thumbnailImagePath.Contains(anyStringContains)
+			       || x.forkedFromMoc.tags.Contains(anyStringContains)
+			       || x.forkedFromMoc.visibility.Contains(anyStringContains)
+			       || x.forkedFromMoc.licenseName.Contains(anyStringContains)
+			       || x.forkedFromMoc.readmeMarkdown.Contains(anyStringContains)
+			       || x.forkedFromMoc.slug.Contains(anyStringContains)
+			       || x.forkedFromMoc.defaultBranchName.Contains(anyStringContains)
 			       || x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)
@@ -528,6 +628,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.MocForkforkedMoc);
+					query = query.Include(x => x.forkedFromMoc);
 					query = query.Include(x => x.project);
 					query = query.AsSplitQuery();
 				}
@@ -715,6 +817,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 					publishedMoc.publishedDate = publishedMoc.publishedDate.Value.ToUniversalTime();
 				}
 
+				if (publishedMoc.visibility != null && publishedMoc.visibility.Length > 50)
+				{
+					publishedMoc.visibility = publishedMoc.visibility.Substring(0, 50);
+				}
+
+				if (publishedMoc.licenseName != null && publishedMoc.licenseName.Length > 100)
+				{
+					publishedMoc.licenseName = publishedMoc.licenseName.Substring(0, 100);
+				}
+
+				if (publishedMoc.slug != null && publishedMoc.slug.Length > 100)
+				{
+					publishedMoc.slug = publishedMoc.slug.Substring(0, 100);
+				}
+
+				if (publishedMoc.defaultBranchName != null && publishedMoc.defaultBranchName.Length > 100)
+				{
+					publishedMoc.defaultBranchName = publishedMoc.defaultBranchName.Substring(0, 100);
+				}
+
 				try
 				{
 				    EntityEntry<Database.PublishedMoc> attached = _context.Entry(existing);
@@ -838,6 +960,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 					publishedMoc.publishedDate = publishedMoc.publishedDate.Value.ToUniversalTime();
 				}
 
+				if (publishedMoc.visibility != null && publishedMoc.visibility.Length > 50)
+				{
+					publishedMoc.visibility = publishedMoc.visibility.Substring(0, 50);
+				}
+
+				if (publishedMoc.licenseName != null && publishedMoc.licenseName.Length > 100)
+				{
+					publishedMoc.licenseName = publishedMoc.licenseName.Substring(0, 100);
+				}
+
+				if (publishedMoc.slug != null && publishedMoc.slug.Length > 100)
+				{
+					publishedMoc.slug = publishedMoc.slug.Substring(0, 100);
+				}
+
+				if (publishedMoc.defaultBranchName != null && publishedMoc.defaultBranchName.Length > 100)
+				{
+					publishedMoc.defaultBranchName = publishedMoc.defaultBranchName.Substring(0, 100);
+				}
+
 				publishedMoc.objectGuid = Guid.NewGuid();
 				publishedMoc.versionNumber = 1;
 
@@ -860,12 +1002,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					publishedMoc.BuildChallengeEntries = null;
+					publishedMoc.InverseforkedFromMoc = null;
+					publishedMoc.MocCollaborators = null;
 					publishedMoc.MocComments = null;
 					publishedMoc.MocFavourites = null;
+					publishedMoc.MocForkforkedMoc = null;
+					publishedMoc.MocForksourceMocs = null;
 					publishedMoc.MocLikes = null;
+					publishedMoc.MocVersions = null;
 					publishedMoc.PublishedMocChangeHistories = null;
 					publishedMoc.PublishedMocImages = null;
 					publishedMoc.SharedInstructions = null;
+					publishedMoc.forkedFromMoc = null;
 					publishedMoc.project = null;
 
 
@@ -982,12 +1130,18 @@ namespace Foundation.BMC.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.BuildChallengeEntries = null;
+				cloneOfExisting.InverseforkedFromMoc = null;
+				cloneOfExisting.MocCollaborators = null;
 				cloneOfExisting.MocComments = null;
 				cloneOfExisting.MocFavourites = null;
+				cloneOfExisting.MocForkforkedMoc = null;
+				cloneOfExisting.MocForksourceMocs = null;
 				cloneOfExisting.MocLikes = null;
+				cloneOfExisting.MocVersions = null;
 				cloneOfExisting.PublishedMocChangeHistories = null;
 				cloneOfExisting.PublishedMocImages = null;
 				cloneOfExisting.SharedInstructions = null;
+				cloneOfExisting.forkedFromMoc = null;
 				cloneOfExisting.project = null;
 
 				if (versionNumber >= publishedMoc.versionNumber)
@@ -1031,6 +1185,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    publishedMoc.favouriteCount = oldPublishedMoc.favouriteCount;
 				    publishedMoc.partCount = oldPublishedMoc.partCount;
 				    publishedMoc.allowForking = oldPublishedMoc.allowForking;
+				    publishedMoc.visibility = oldPublishedMoc.visibility;
+				    publishedMoc.forkCount = oldPublishedMoc.forkCount;
+				    publishedMoc.forkedFromMocId = oldPublishedMoc.forkedFromMocId;
+				    publishedMoc.licenseName = oldPublishedMoc.licenseName;
+				    publishedMoc.readmeMarkdown = oldPublishedMoc.readmeMarkdown;
+				    publishedMoc.slug = oldPublishedMoc.slug;
+				    publishedMoc.defaultBranchName = oldPublishedMoc.defaultBranchName;
 				    publishedMoc.objectGuid = oldPublishedMoc.objectGuid;
 				    publishedMoc.active = oldPublishedMoc.active;
 				    publishedMoc.deleted = oldPublishedMoc.deleted;
@@ -1487,6 +1648,13 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? favouriteCount = null,
 			int? partCount = null,
 			bool? allowForking = null,
+			string visibility = null,
+			int? forkCount = null,
+			int? forkedFromMocId = null,
+			string licenseName = null,
+			string readmeMarkdown = null,
+			string slug = null,
+			string defaultBranchName = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1604,6 +1772,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(pm => pm.allowForking == allowForking.Value);
 			}
+			if (string.IsNullOrEmpty(visibility) == false)
+			{
+				query = query.Where(pm => pm.visibility == visibility);
+			}
+			if (forkCount.HasValue == true)
+			{
+				query = query.Where(pm => pm.forkCount == forkCount.Value);
+			}
+			if (forkedFromMocId.HasValue == true)
+			{
+				query = query.Where(pm => pm.forkedFromMocId == forkedFromMocId.Value);
+			}
+			if (string.IsNullOrEmpty(licenseName) == false)
+			{
+				query = query.Where(pm => pm.licenseName == licenseName);
+			}
+			if (string.IsNullOrEmpty(readmeMarkdown) == false)
+			{
+				query = query.Where(pm => pm.readmeMarkdown == readmeMarkdown);
+			}
+			if (string.IsNullOrEmpty(slug) == false)
+			{
+				query = query.Where(pm => pm.slug == slug);
+			}
+			if (string.IsNullOrEmpty(defaultBranchName) == false)
+			{
+				query = query.Where(pm => pm.defaultBranchName == defaultBranchName);
+			}
 			if (versionNumber.HasValue == true)
 			{
 				query = query.Where(pm => pm.versionNumber == versionNumber.Value);
@@ -1650,6 +1846,20 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.description.Contains(anyStringContains)
 			       || x.thumbnailImagePath.Contains(anyStringContains)
 			       || x.tags.Contains(anyStringContains)
+			       || x.visibility.Contains(anyStringContains)
+			       || x.licenseName.Contains(anyStringContains)
+			       || x.readmeMarkdown.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.defaultBranchName.Contains(anyStringContains)
+			       || x.forkedFromMoc.name.Contains(anyStringContains)
+			       || x.forkedFromMoc.description.Contains(anyStringContains)
+			       || x.forkedFromMoc.thumbnailImagePath.Contains(anyStringContains)
+			       || x.forkedFromMoc.tags.Contains(anyStringContains)
+			       || x.forkedFromMoc.visibility.Contains(anyStringContains)
+			       || x.forkedFromMoc.licenseName.Contains(anyStringContains)
+			       || x.forkedFromMoc.readmeMarkdown.Contains(anyStringContains)
+			       || x.forkedFromMoc.slug.Contains(anyStringContains)
+			       || x.forkedFromMoc.defaultBranchName.Contains(anyStringContains)
 			       || x.project.name.Contains(anyStringContains)
 			       || x.project.description.Contains(anyStringContains)
 			       || x.project.notes.Contains(anyStringContains)
@@ -1661,7 +1871,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.name).ThenBy(x => x.thumbnailImagePath);
+			query = query.OrderBy(x => x.name).ThenBy(x => x.thumbnailImagePath).ThenBy(x => x.visibility);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

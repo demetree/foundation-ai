@@ -25,7 +25,10 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { PublishedMocService, PublishedMocData, PublishedMocSubmitData } from '../../../bmc-data-services/published-moc.service';
 import { ProjectService } from '../../../bmc-data-services/project.service';
 import { PublishedMocChangeHistoryService } from '../../../bmc-data-services/published-moc-change-history.service';
+import { MocVersionService } from '../../../bmc-data-services/moc-version.service';
 import { PublishedMocImageService } from '../../../bmc-data-services/published-moc-image.service';
+import { MocForkService } from '../../../bmc-data-services/moc-fork.service';
+import { MocCollaboratorService } from '../../../bmc-data-services/moc-collaborator.service';
 import { MocLikeService } from '../../../bmc-data-services/moc-like.service';
 import { MocCommentService } from '../../../bmc-data-services/moc-comment.service';
 import { MocFavouriteService } from '../../../bmc-data-services/moc-favourite.service';
@@ -56,6 +59,13 @@ interface PublishedMocFormValues {
   favouriteCount: string,     // Stored as string for form input, converted to number on submit.
   partCount: string | null,     // Stored as string for form input, converted to number on submit.
   allowForking: boolean,
+  visibility: string,
+  forkCount: string,     // Stored as string for form input, converted to number on submit.
+  forkedFromMocId: number | bigint | null,       // For FK link number
+  licenseName: string | null,
+  readmeMarkdown: string | null,
+  slug: string | null,
+  defaultBranchName: string | null,
   versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
@@ -100,6 +110,13 @@ export class PublishedMocDetailComponent implements OnInit, CanComponentDeactiva
         favouriteCount: ['', Validators.required],
         partCount: [''],
         allowForking: [false],
+        visibility: ['', Validators.required],
+        forkCount: ['', Validators.required],
+        forkedFromMocId: [null],
+        licenseName: [''],
+        readmeMarkdown: [''],
+        slug: [''],
+        defaultBranchName: [''],
         versionNumber: [''],
         active: [true],
         deleted: [false],
@@ -119,7 +136,10 @@ export class PublishedMocDetailComponent implements OnInit, CanComponentDeactiva
   publishedMocs$ = this.publishedMocService.GetPublishedMocList();
   public projects$ = this.projectService.GetProjectList();
   public publishedMocChangeHistories$ = this.publishedMocChangeHistoryService.GetPublishedMocChangeHistoryList();
+  public mocVersions$ = this.mocVersionService.GetMocVersionList();
   public publishedMocImages$ = this.publishedMocImageService.GetPublishedMocImageList();
+  public mocForks$ = this.mocForkService.GetMocForkList();
+  public mocCollaborators$ = this.mocCollaboratorService.GetMocCollaboratorList();
   public mocLikes$ = this.mocLikeService.GetMocLikeList();
   public mocComments$ = this.mocCommentService.GetMocCommentList();
   public mocFavourites$ = this.mocFavouriteService.GetMocFavouriteList();
@@ -132,7 +152,10 @@ export class PublishedMocDetailComponent implements OnInit, CanComponentDeactiva
     public publishedMocService: PublishedMocService,
     public projectService: ProjectService,
     public publishedMocChangeHistoryService: PublishedMocChangeHistoryService,
+    public mocVersionService: MocVersionService,
     public publishedMocImageService: PublishedMocImageService,
+    public mocForkService: MocForkService,
+    public mocCollaboratorService: MocCollaboratorService,
     public mocLikeService: MocLikeService,
     public mocCommentService: MocCommentService,
     public mocFavouriteService: MocFavouriteService,
@@ -433,6 +456,13 @@ export class PublishedMocDetailComponent implements OnInit, CanComponentDeactiva
         favouriteCount: '',
         partCount: '',
         allowForking: false,
+        visibility: '',
+        forkCount: '',
+        forkedFromMocId: null,
+        licenseName: '',
+        readmeMarkdown: '',
+        slug: '',
+        defaultBranchName: '',
         versionNumber: '',
         active: true,
         deleted: false,
@@ -459,6 +489,13 @@ export class PublishedMocDetailComponent implements OnInit, CanComponentDeactiva
         favouriteCount: publishedMocData.favouriteCount?.toString() ?? '',
         partCount: publishedMocData.partCount?.toString() ?? '',
         allowForking: publishedMocData.allowForking ?? false,
+        visibility: publishedMocData.visibility ?? '',
+        forkCount: publishedMocData.forkCount?.toString() ?? '',
+        forkedFromMocId: publishedMocData.forkedFromMocId,
+        licenseName: publishedMocData.licenseName ?? '',
+        readmeMarkdown: publishedMocData.readmeMarkdown ?? '',
+        slug: publishedMocData.slug ?? '',
+        defaultBranchName: publishedMocData.defaultBranchName ?? '',
         versionNumber: publishedMocData.versionNumber?.toString() ?? '',
         active: publishedMocData.active ?? true,
         deleted: publishedMocData.deleted ?? false,
@@ -535,6 +572,13 @@ export class PublishedMocDetailComponent implements OnInit, CanComponentDeactiva
         favouriteCount: Number(formValue.favouriteCount),
         partCount: formValue.partCount ? Number(formValue.partCount) : null,
         allowForking: !!formValue.allowForking,
+        visibility: formValue.visibility!.trim(),
+        forkCount: Number(formValue.forkCount),
+        forkedFromMocId: formValue.forkedFromMocId ? Number(formValue.forkedFromMocId) : null,
+        licenseName: formValue.licenseName?.trim() || null,
+        readmeMarkdown: formValue.readmeMarkdown?.trim() || null,
+        slug: formValue.slug?.trim() || null,
+        defaultBranchName: formValue.defaultBranchName?.trim() || null,
         versionNumber: this.publishedMocData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,

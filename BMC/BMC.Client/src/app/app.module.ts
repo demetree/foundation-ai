@@ -103,9 +103,12 @@ import { LegoSetPartService } from './bmc-data-services/lego-set-part.service';
 import { LegoSetSubsetService } from './bmc-data-services/lego-set-subset.service';
 import { LegoThemeService } from './bmc-data-services/lego-theme.service';
 import { MarketDataCacheService } from './bmc-data-services/market-data-cache.service';
+import { MocCollaboratorService } from './bmc-data-services/moc-collaborator.service';
 import { MocCommentService } from './bmc-data-services/moc-comment.service';
 import { MocFavouriteService } from './bmc-data-services/moc-favourite.service';
+import { MocForkService } from './bmc-data-services/moc-fork.service';
 import { MocLikeService } from './bmc-data-services/moc-like.service';
+import { MocVersionService } from './bmc-data-services/moc-version.service';
 import { ModelBuildStepService } from './bmc-data-services/model-build-step.service';
 import { ModelDocumentService } from './bmc-data-services/model-document.service';
 import { ModelDocumentChangeHistoryService } from './bmc-data-services/model-document-change-history.service';
@@ -357,6 +360,10 @@ import { MarketDataCacheListingComponent } from './bmc-data-components/market-da
 import { MarketDataCacheAddEditComponent } from './bmc-data-components/market-data-cache/market-data-cache-add-edit/market-data-cache-add-edit.component';
 import { MarketDataCacheDetailComponent } from './bmc-data-components/market-data-cache/market-data-cache-detail/market-data-cache-detail.component';
 import { MarketDataCacheTableComponent } from './bmc-data-components/market-data-cache/market-data-cache-table/market-data-cache-table.component';
+import { MocCollaboratorListingComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-listing/moc-collaborator-listing.component';
+import { MocCollaboratorAddEditComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-add-edit/moc-collaborator-add-edit.component';
+import { MocCollaboratorDetailComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-detail/moc-collaborator-detail.component';
+import { MocCollaboratorTableComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-table/moc-collaborator-table.component';
 import { MocCommentListingComponent } from './bmc-data-components/moc-comment/moc-comment-listing/moc-comment-listing.component';
 import { MocCommentAddEditComponent } from './bmc-data-components/moc-comment/moc-comment-add-edit/moc-comment-add-edit.component';
 import { MocCommentDetailComponent } from './bmc-data-components/moc-comment/moc-comment-detail/moc-comment-detail.component';
@@ -365,10 +372,18 @@ import { MocFavouriteListingComponent } from './bmc-data-components/moc-favourit
 import { MocFavouriteAddEditComponent } from './bmc-data-components/moc-favourite/moc-favourite-add-edit/moc-favourite-add-edit.component';
 import { MocFavouriteDetailComponent } from './bmc-data-components/moc-favourite/moc-favourite-detail/moc-favourite-detail.component';
 import { MocFavouriteTableComponent } from './bmc-data-components/moc-favourite/moc-favourite-table/moc-favourite-table.component';
+import { MocForkListingComponent } from './bmc-data-components/moc-fork/moc-fork-listing/moc-fork-listing.component';
+import { MocForkAddEditComponent } from './bmc-data-components/moc-fork/moc-fork-add-edit/moc-fork-add-edit.component';
+import { MocForkDetailComponent } from './bmc-data-components/moc-fork/moc-fork-detail/moc-fork-detail.component';
+import { MocForkTableComponent } from './bmc-data-components/moc-fork/moc-fork-table/moc-fork-table.component';
 import { MocLikeListingComponent } from './bmc-data-components/moc-like/moc-like-listing/moc-like-listing.component';
 import { MocLikeAddEditComponent } from './bmc-data-components/moc-like/moc-like-add-edit/moc-like-add-edit.component';
 import { MocLikeDetailComponent } from './bmc-data-components/moc-like/moc-like-detail/moc-like-detail.component';
 import { MocLikeTableComponent } from './bmc-data-components/moc-like/moc-like-table/moc-like-table.component';
+import { MocVersionListingComponent } from './bmc-data-components/moc-version/moc-version-listing/moc-version-listing.component';
+import { MocVersionAddEditComponent } from './bmc-data-components/moc-version/moc-version-add-edit/moc-version-add-edit.component';
+import { MocVersionDetailComponent } from './bmc-data-components/moc-version/moc-version-detail/moc-version-detail.component';
+import { MocVersionTableComponent } from './bmc-data-components/moc-version/moc-version-table/moc-version-table.component';
 import { ModelBuildStepListingComponent } from './bmc-data-components/model-build-step/model-build-step-listing/model-build-step-listing.component';
 import { ModelBuildStepAddEditComponent } from './bmc-data-components/model-build-step/model-build-step-add-edit/model-build-step-add-edit.component';
 import { ModelBuildStepDetailComponent } from './bmc-data-components/model-build-step/model-build-step-detail/model-build-step-detail.component';
@@ -885,6 +900,10 @@ MarketDataCacheListingComponent,
 MarketDataCacheAddEditComponent,
 MarketDataCacheDetailComponent,
 MarketDataCacheTableComponent,
+MocCollaboratorListingComponent,
+MocCollaboratorAddEditComponent,
+MocCollaboratorDetailComponent,
+MocCollaboratorTableComponent,
 MocCommentListingComponent,
 MocCommentAddEditComponent,
 MocCommentDetailComponent,
@@ -893,10 +912,18 @@ MocFavouriteListingComponent,
 MocFavouriteAddEditComponent,
 MocFavouriteDetailComponent,
 MocFavouriteTableComponent,
+MocForkListingComponent,
+MocForkAddEditComponent,
+MocForkDetailComponent,
+MocForkTableComponent,
 MocLikeListingComponent,
 MocLikeAddEditComponent,
 MocLikeDetailComponent,
 MocLikeTableComponent,
+MocVersionListingComponent,
+MocVersionAddEditComponent,
+MocVersionDetailComponent,
+MocVersionTableComponent,
 ModelBuildStepListingComponent,
 ModelBuildStepAddEditComponent,
 ModelBuildStepDetailComponent,
@@ -1208,9 +1235,12 @@ LegoSetPartService,
 LegoSetSubsetService,
 LegoThemeService,
 MarketDataCacheService,
+MocCollaboratorService,
 MocCommentService,
 MocFavouriteService,
+MocForkService,
 MocLikeService,
+MocVersionService,
 ModelBuildStepService,
 ModelDocumentService,
 ModelDocumentChangeHistoryService,

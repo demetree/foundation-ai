@@ -189,6 +189,13 @@ export class PublishedMocTableComponent implements OnInit, OnChanges, AfterViewI
     { key: 'favouriteCount', label: 'Favourite Count', width: undefined },
     { key: 'partCount', label: 'Part Count', width: undefined },
     { key: 'allowForking', label: 'Allow Forking', width: '120px', template: 'boolean' },
+    { key: 'visibility', label: 'Visibility', width: undefined },
+    { key: 'forkCount', label: 'Fork Count', width: undefined },
+    { key: 'forkedFromMoc.name', label: 'Published Moc', width: undefined, template: 'link', linkPath: ['/publishedmoc', 'forkedFromMocId'] },
+    { key: 'licenseName', label: 'License Name', width: undefined },
+    { key: 'readmeMarkdown', label: 'Readme Markdown', width: undefined },
+    { key: 'slug', label: 'Slug', width: undefined },
+    { key: 'defaultBranchName', label: 'Default Branch Name', width: undefined },
 
     ];
 
@@ -350,6 +357,13 @@ export class PublishedMocTableComponent implements OnInit, OnChanges, AfterViewI
                       'favouriteCount',
                       'partCount',
                       'allowForking',
+                      'visibility',
+                      'forkCount',
+                      'forkedFromMoc.name',
+                      'licenseName',
+                      'readmeMarkdown',
+                      'slug',
+                      'defaultBranchName',
         ];
 
         result = result.filter((publishedMoc) =>

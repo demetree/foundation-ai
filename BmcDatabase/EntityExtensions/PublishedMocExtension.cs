@@ -304,6 +304,15 @@ namespace Foundation.BMC.Database
 			public Int32? partCount { get; set; }
 			[Required]
 			public Boolean allowForking { get; set; }
+			[Required]
+			public String visibility { get; set; }
+			[Required]
+			public Int32 forkCount { get; set; }
+			public Int32? forkedFromMocId { get; set; }
+			public String licenseName { get; set; }
+			public String readmeMarkdown { get; set; }
+			public String slug { get; set; }
+			public String defaultBranchName { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -319,6 +328,8 @@ namespace Foundation.BMC.Database
 		/// </summary>
 		public class PublishedMocOutputDTO : PublishedMocDTO
 		{
+			public MocFork.MocForkDTO MocForkforkedMoc { get; set; }
+			public PublishedMoc.PublishedMocDTO forkedFromMoc { get; set; }
 			public Project.ProjectDTO project { get; set; }
 		}
 
@@ -349,6 +360,13 @@ namespace Foundation.BMC.Database
 				favouriteCount = this.favouriteCount,
 				partCount = this.partCount,
 				allowForking = this.allowForking,
+				visibility = this.visibility,
+				forkCount = this.forkCount,
+				forkedFromMocId = this.forkedFromMocId,
+				licenseName = this.licenseName,
+				readmeMarkdown = this.readmeMarkdown,
+				slug = this.slug,
+				defaultBranchName = this.defaultBranchName,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -406,10 +424,19 @@ namespace Foundation.BMC.Database
 				favouriteCount = this.favouriteCount,
 				partCount = this.partCount,
 				allowForking = this.allowForking,
+				visibility = this.visibility,
+				forkCount = this.forkCount,
+				forkedFromMocId = this.forkedFromMocId,
+				licenseName = this.licenseName,
+				readmeMarkdown = this.readmeMarkdown,
+				slug = this.slug,
+				defaultBranchName = this.defaultBranchName,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
+				MocForkforkedMoc = this.MocForkforkedMoc?.ToDTO(),
+				forkedFromMoc = this.forkedFromMoc?.ToDTO(),
 				project = this.project?.ToDTO()
 			};
 		}
@@ -464,6 +491,13 @@ namespace Foundation.BMC.Database
 				favouriteCount = dto.favouriteCount,
 				partCount = dto.partCount,
 				allowForking = dto.allowForking,
+				visibility = dto.visibility,
+				forkCount = dto.forkCount,
+				forkedFromMocId = dto.forkedFromMocId,
+				licenseName = dto.licenseName,
+				readmeMarkdown = dto.readmeMarkdown,
+				slug = dto.slug,
+				defaultBranchName = dto.defaultBranchName,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -498,6 +532,13 @@ namespace Foundation.BMC.Database
 			this.favouriteCount = dto.favouriteCount;
 			this.partCount = dto.partCount;
 			this.allowForking = dto.allowForking;
+			this.visibility = dto.visibility;
+			this.forkCount = dto.forkCount;
+			this.forkedFromMocId = dto.forkedFromMocId;
+			this.licenseName = dto.licenseName;
+			this.readmeMarkdown = dto.readmeMarkdown;
+			this.slug = dto.slug;
+			this.defaultBranchName = dto.defaultBranchName;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -538,6 +579,13 @@ namespace Foundation.BMC.Database
 				favouriteCount = this.favouriteCount,
 				partCount = this.partCount,
 				allowForking = this.allowForking,
+				visibility = this.visibility,
+				forkCount = this.forkCount,
+				forkedFromMocId = this.forkedFromMocId,
+				licenseName = this.licenseName,
+				readmeMarkdown = this.readmeMarkdown,
+				slug = this.slug,
+				defaultBranchName = this.defaultBranchName,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -609,6 +657,13 @@ namespace Foundation.BMC.Database
 				favouriteCount = publishedMoc.favouriteCount,
 				partCount = publishedMoc.partCount,
 				allowForking = publishedMoc.allowForking,
+				visibility = publishedMoc.visibility,
+				forkCount = publishedMoc.forkCount,
+				forkedFromMocId = publishedMoc.forkedFromMocId,
+				licenseName = publishedMoc.licenseName,
+				readmeMarkdown = publishedMoc.readmeMarkdown,
+				slug = publishedMoc.slug,
+				defaultBranchName = publishedMoc.defaultBranchName,
 				versionNumber = publishedMoc.versionNumber,
 				objectGuid = publishedMoc.objectGuid,
 				active = publishedMoc.active,
@@ -647,10 +702,19 @@ namespace Foundation.BMC.Database
 				favouriteCount = publishedMoc.favouriteCount,
 				partCount = publishedMoc.partCount,
 				allowForking = publishedMoc.allowForking,
+				visibility = publishedMoc.visibility,
+				forkCount = publishedMoc.forkCount,
+				forkedFromMocId = publishedMoc.forkedFromMocId,
+				licenseName = publishedMoc.licenseName,
+				readmeMarkdown = publishedMoc.readmeMarkdown,
+				slug = publishedMoc.slug,
+				defaultBranchName = publishedMoc.defaultBranchName,
 				versionNumber = publishedMoc.versionNumber,
 				objectGuid = publishedMoc.objectGuid,
 				active = publishedMoc.active,
 				deleted = publishedMoc.deleted,
+				MocForkforkedMoc = MocFork.CreateMinimalAnonymous(publishedMoc.MocForkforkedMoc),
+				forkedFromMoc = PublishedMoc.CreateMinimalAnonymous(publishedMoc.forkedFromMoc),
 				project = Project.CreateMinimalAnonymous(publishedMoc.project)
 			 };
 		}

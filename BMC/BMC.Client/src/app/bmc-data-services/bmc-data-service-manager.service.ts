@@ -56,9 +56,12 @@ import {LegoSetPartService} from  './lego-set-part.service';
 import {LegoSetSubsetService} from  './lego-set-subset.service';
 import {LegoThemeService} from  './lego-theme.service';
 import {MarketDataCacheService} from  './market-data-cache.service';
+import {MocCollaboratorService} from  './moc-collaborator.service';
 import {MocCommentService} from  './moc-comment.service';
 import {MocFavouriteService} from  './moc-favourite.service';
+import {MocForkService} from  './moc-fork.service';
 import {MocLikeService} from  './moc-like.service';
+import {MocVersionService} from  './moc-version.service';
 import {ModelBuildStepService} from  './model-build-step.service';
 import {ModelDocumentService} from  './model-document.service';
 import {ModelDocumentChangeHistoryService} from  './model-document-change-history.service';
@@ -169,9 +172,12 @@ export class BMCDataServiceManagerService  {
               , public legoSetSubsetService: LegoSetSubsetService
               , public legoThemeService: LegoThemeService
               , public marketDataCacheService: MarketDataCacheService
+              , public mocCollaboratorService: MocCollaboratorService
               , public mocCommentService: MocCommentService
               , public mocFavouriteService: MocFavouriteService
+              , public mocForkService: MocForkService
               , public mocLikeService: MocLikeService
+              , public mocVersionService: MocVersionService
               , public modelBuildStepService: ModelBuildStepService
               , public modelDocumentService: ModelDocumentService
               , public modelDocumentChangeHistoryService: ModelDocumentChangeHistoryService
@@ -280,9 +286,12 @@ export class BMCDataServiceManagerService  {
         this.legoSetSubsetService.ClearAllCaches();
         this.legoThemeService.ClearAllCaches();
         this.marketDataCacheService.ClearAllCaches();
+        this.mocCollaboratorService.ClearAllCaches();
         this.mocCommentService.ClearAllCaches();
         this.mocFavouriteService.ClearAllCaches();
+        this.mocForkService.ClearAllCaches();
         this.mocLikeService.ClearAllCaches();
+        this.mocVersionService.ClearAllCaches();
         this.modelBuildStepService.ClearAllCaches();
         this.modelDocumentService.ClearAllCaches();
         this.modelDocumentChangeHistoryService.ClearAllCaches();

@@ -1669,6 +1669,11 @@ All operational tables include multi-tenant support, versioning where appropriat
             activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "CollectionMilestone" }, { "description", "User reached a collection milestone" }, { "iconCssClass", "fas fa-gem" }, { "sequence", "6" }, { "objectGuid", "ae100001-0001-4000-8000-000000000006" } });
             activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "FollowedUser" }, { "description", "User followed another builder" }, { "iconCssClass", "fas fa-user-plus" }, { "sequence", "7" }, { "objectGuid", "ae100001-0001-4000-8000-000000000007" } });
 
+            // MOCHub activity event types
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "CommittedVersion" }, { "description", "User committed a new version of a MOC" }, { "iconCssClass", "fas fa-code-commit" }, { "sequence", "8" }, { "objectGuid", "ae100001-0001-4000-8000-000000000008" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "ForkedMoc" }, { "description", "User forked another builder's MOC" }, { "iconCssClass", "fas fa-code-branch" }, { "sequence", "9" }, { "objectGuid", "ae100001-0001-4000-8000-000000000009" } });
+            activityEventTypeTable.AddData(new Dictionary<string, string> { { "name", "AddedCollaborator" }, { "description", "User invited a collaborator to a MOC" }, { "iconCssClass", "fas fa-user-friends" }, { "sequence", "10" }, { "objectGuid", "ae100001-0001-4000-8000-000000000010" } });
+
 
             // -------------------------------------------------
             // ActivityEvent — Activity feed events
@@ -1693,13 +1698,14 @@ All operational tables include multi-tenant support, versioning where appropriat
             #endregion
 
 
-            #region Content Sharing and Gallery
+            #region Content Sharing and Gallery (MOCHub)
+
 
             // -------------------------------------------------
             // PublishedMoc — A MOC published to the community gallery
             // -------------------------------------------------
             Database.Table publishedMocTable = database.AddTable("PublishedMoc");
-            publishedMocTable.comment = "A MOC (My Own Creation) published to the community gallery. Links to the underlying project for parts list and 3D model data.";
+            publishedMocTable.comment = "A MOC (My Own Creation) published to the community gallery / MOCHub. Links to the underlying project for parts list and 3D model data. Supports GitHub-style version control, forking, and collaboration.";
             publishedMocTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
             publishedMocTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
             publishedMocTable.AddIdField();
@@ -1720,8 +1726,48 @@ All operational tables include multi-tenant support, versioning where appropriat
             publishedMocTable.AddIntField("partCount", true).AddScriptComments("Cached total part count from the underlying project");
             publishedMocTable.AddBoolField("allowForking", false, true).AddScriptComments("Whether other users can fork (copy) this MOC as a starting point");
 
+            // MOCHub — Version control, forking, and visibility fields
+            publishedMocTable.AddString50Field("visibility", false, "Public").AddScriptComments("MOCHub visibility level: Public, Private, Unlisted. Public = visible to everyone; Private = only owner and collaborators; Unlisted = accessible via direct link only");
+            publishedMocTable.AddIntField("forkCount", false, 0).AddScriptComments("Cached count of forks created from this MOC");
+            publishedMocTable.AddForeignKeyField("forkedFromMocId", publishedMocTable, true).AddScriptComments("If this MOC is a fork, the source MOC it was forked from (null = original work)");
+            publishedMocTable.AddString100Field("licenseName").AddScriptComments("Licence type for the MOC: CC-BY, CC-BY-SA, CC-BY-NC, CC-BY-NC-SA, CC0, AllRightsReserved (null = All Rights Reserved)");
+            publishedMocTable.AddTextField("readmeMarkdown").AddScriptComments("GitHub-style README displayed on the MOC repository page (supports Markdown formatting)");
+            publishedMocTable.AddString100Field("slug").AddScriptComments("URL-friendly slug for the MOC (e.g. 'technic-mobile-crane'). Unique per tenant.");
+            publishedMocTable.AddString100Field("defaultBranchName", true).AddScriptComments("Reserved for future branching support (default: 'main')");
+
             publishedMocTable.AddVersionControl();
             publishedMocTable.AddControlFields();
+
+            publishedMocTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "slug" }, true);
+
+
+
+
+            // -------------------------------------------------
+            // MocVersion — Version snapshots (commits) for MOCHub
+            // -------------------------------------------------
+            Database.Table mocVersionTable = database.AddTable("MocVersion");
+            mocVersionTable.comment = "Version snapshots (commits) for a published MOC. Each row stores a complete MPD text snapshot of the model at a point in time, enabling GitHub-style version history and diffing. MPD files are typically 50-200KB, so full snapshots are practical and simple.";
+            mocVersionTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            mocVersionTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            mocVersionTable.AddIdField();
+            mocVersionTable.AddMultiTenantSupport();
+
+            mocVersionTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The MOC this version belongs to");
+            mocVersionTable.AddIntField("versionNumber", false).AddScriptComments("Sequential version number within the MOC (1, 2, 3...)");
+            mocVersionTable.AddString500Field("commitMessage", false).AddScriptComments("User-provided description of what changed in this version");
+            mocVersionTable.AddTextField("mpdSnapshot", false).AddScriptComments("Full MPD (Multi-Part Document) text content at this version — the complete model definition");
+            mocVersionTable.AddIntField("partCount", true).AddScriptComments("Total part count at this version");
+            mocVersionTable.AddIntField("addedPartCount", true).AddScriptComments("Number of parts added since the previous version (null for first version)");
+            mocVersionTable.AddIntField("removedPartCount", true).AddScriptComments("Number of parts removed since the previous version (null for first version)");
+            mocVersionTable.AddIntField("modifiedPartCount", true).AddScriptComments("Number of parts moved or recoloured since the previous version (null for first version)");
+            mocVersionTable.AddDateTimeField("snapshotDate", false).AddScriptComments("Date/time this version was committed");
+            mocVersionTable.AddGuidField("authorTenantGuid", false).AddScriptComments("Tenant GUID of the user who committed this version (may differ from MOC owner for collaborators)");
+
+            mocVersionTable.AddControlFields();
+
+            mocVersionTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "publishedMocId", "versionNumber" }, false);
+
 
 
             // -------------------------------------------------
@@ -1740,6 +1786,50 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             publishedMocImageTable.AddSequenceField();
             publishedMocImageTable.AddControlFields();
+
+
+
+
+            // -------------------------------------------------
+            // MocFork — Fork lineage tracking for MOCHub
+            // -------------------------------------------------
+            Database.Table mocForkTable = database.AddTable("MocFork");
+            mocForkTable.comment = "Tracks the fork graph: which MOC was forked from which, and at what version. Enables GitHub-style 'forked from user/moc' headers and network graph visualisation.";
+            mocForkTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            mocForkTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            mocForkTable.AddIdField();
+
+            mocForkTable.AddForeignKeyField("forkedMocId", publishedMocTable, false).AddScriptComments("The fork (child MOC) that was created");
+            mocForkTable.AddForeignKeyField("sourceMocId", publishedMocTable, false).AddScriptComments("The original (parent MOC) that was forked from");
+            mocForkTable.AddForeignKeyField(mocVersionTable, true).AddScriptComments("The specific version the fork was created from (null if unknown or forked from latest)");
+            mocForkTable.AddGuidField("forkerTenantGuid", false).AddScriptComments("Tenant GUID of the user who created the fork");
+            mocForkTable.AddDateTimeField("forkedDate", false).AddScriptComments("Date/time the fork was created");
+
+            mocForkTable.AddControlFields();
+
+            mocForkTable.AddUniqueConstraint(new List<string>() { "forkedMocId" }, false);
+
+
+            // -------------------------------------------------
+            // MocCollaborator — Shared access to MOCs for collaboration
+            // -------------------------------------------------
+            Database.Table mocCollaboratorTable = database.AddTable("MocCollaborator");
+            mocCollaboratorTable.comment = "Allows MOC owners to grant other users read/write access to their MOCs, enabling collaborative building. Similar to GitHub repository collaborators.";
+            mocCollaboratorTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_COMMUNITY_WRITER_PERMISSION_LEVEL);
+            mocCollaboratorTable.customWriteAccessRole = BMC_COMMUNITY_WRITER_CUSTOM_ROLE_NAME;
+            mocCollaboratorTable.AddIdField();
+            mocCollaboratorTable.AddMultiTenantSupport();
+
+            mocCollaboratorTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The MOC being shared");
+            mocCollaboratorTable.AddGuidField("collaboratorTenantGuid", false).AddScriptComments("Tenant GUID of the collaborator being granted access");
+            mocCollaboratorTable.AddString50Field("accessLevel", false).AddScriptComments("Access level granted: Read, Write, Admin");
+            mocCollaboratorTable.AddDateTimeField("invitedDate", false).AddScriptComments("Date/time the collaborator was invited");
+            mocCollaboratorTable.AddDateTimeField("acceptedDate", true).AddScriptComments("Date/time the invitation was accepted (null = pending)");
+            mocCollaboratorTable.AddBoolField("isAccepted", false, false).AddScriptComments("Whether the collaborator has accepted the invitation");
+
+            mocCollaboratorTable.AddControlFields();
+
+            mocCollaboratorTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "publishedMocId", "collaboratorTenantGuid" }, false);
 
 
             // -------------------------------------------------

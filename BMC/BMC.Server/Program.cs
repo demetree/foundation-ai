@@ -399,9 +399,12 @@ namespace Foundation.BMC
                 controllers.Add(typeof(LegoSetSubsetsController));
                 controllers.Add(typeof(LegoThemesController));
                 controllers.Add(typeof(MarketDataCachesController));
+                controllers.Add(typeof(MocCollaboratorsController));
                 controllers.Add(typeof(MocCommentsController));
                 controllers.Add(typeof(MocFavouritesController));
+                controllers.Add(typeof(MocForksController));
                 controllers.Add(typeof(MocLikesController));
+                controllers.Add(typeof(MocVersionsController));
                 controllers.Add(typeof(ModelBuildStepsController));
                 controllers.Add(typeof(ModelDocumentsController));
                 controllers.Add(typeof(ModelDocumentChangeHistoriesController));

@@ -21,10 +21,10 @@
         <!-- Tab Bar -->
         <div class="header-tabs">
             <button class="tab-btn" [class.active]="activeViewerTab === '3d'" (click)="activeViewerTab = '3d'" id="tab-3d-btn">
-                <i class="fas fa-cube"></i> 3D Viewer
+                <i class="fas fa-cube"></i> Viewer
             </button>
             <button class="tab-btn" [class.active]="activeViewerTab === 'render'" (click)="switchToRenderTab()" id="tab-render-btn">
-                <i class="fas fa-camera"></i> Picture
+                <i class="fas fa-camera"></i> Photo Booth
             </button>
             <button class="tab-btn" [class.active]="activeViewerTab === 'manual'" (click)="activeViewerTab = 'manual'; initManualTab()" id="tab-manual-btn">
                 <i class="fas fa-book"></i> Manual
@@ -33,7 +33,7 @@
 
         <div class="header-actions">
             <button class="btn-icon" *ngIf="activeViewerTab === '3d'" (click)="toggleAutoRotate()"
-                [title]="autoRotate ? 'Stop rotation to pose & render' : 'Resume auto-rotation'"
+                [title]="autoRotate ? 'Stop spinning to position your model' : 'Start spinning again'"
                 [class.toggle-active]="!autoRotate">
                 <i class="fas" [ngClass]="autoRotate ? 'fa-sync-alt fa-spin' : 'fa-crosshairs'"></i>
             </button>
@@ -323,106 +323,163 @@
             <!-- ═══ Render Tab Sidebar ═══ -->
             <ng-container *ngIf="activeViewerTab === 'render'">
 
-                <!-- Size -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-expand-arrows-alt"></i> Size</h3>
-                    <div class="size-categories">
-                        <button *ngFor="let cat of sizeCategories" class="size-cat-btn"
-                                [class.active]="sizeCategory === cat.key"
-                                (click)="sizeCategory = cat.key">
-                            {{ cat.label }}
+                <!-- Simple / Advanced toggle -->
+                <div class="sidebar-section render-mode-toggle-section">
+                    <div class="render-mode-toggle">
+                        <button class="mode-btn" [class.active]="renderMode === 'simple'" (click)="renderMode = 'simple'">
+                            🎨 Simple
+                        </button>
+                        <button class="mode-btn" [class.active]="renderMode === 'advanced'" (click)="renderMode = 'advanced'">
+                            ⚙️ Advanced
                         </button>
                     </div>
-                    <div class="preset-grid">
-                        <button *ngFor="let p of activeSizePresets" class="preset-btn"
-                                [class.active]="isSelectedSize(p)"
-                                (click)="selectRenderSize(p)">
-                            {{ p.label }}
-                        </button>
-                    </div>
-                    <div class="size-display">{{ sizeDisplayLabel }}</div>
                 </div>
 
-                <!-- Angle -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-compass"></i> Camera Angle</h3>
-                    <div class="preset-grid">
-                        <button *ngFor="let p of anglePresets" class="preset-btn"
-                                [class.active]="isSelectedAngle(p)"
-                                (click)="selectRenderAngle(p)">
-                            {{ p.label }}
-                        </button>
-                    </div>
-                    <div class="angle-inputs">
-                        <label>Elevation <input type="number" [(ngModel)]="renderElevation" min="-90" max="90"></label>
-                        <label>Azimuth <input type="number" [(ngModel)]="renderAzimuth" min="-360" max="360"></label>
-                    </div>
-                    <label class="checkbox-label">
-                        <input type="checkbox" [(ngModel)]="flipView"> Flip view
-                    </label>
-                    <div class="option-row">
-                        <label><i class="fas fa-search-plus"></i> Zoom</label>
-                        <div class="zoom-slider-row">
-                            <input type="range" min="0.5" max="3.0" step="0.1" [(ngModel)]="renderZoom">
-                            <span class="zoom-value">{{ renderZoom.toFixed(1) }}×</span>
+
+                <!-- ═══ SIMPLE MODE ═══ -->
+                <ng-container *ngIf="renderMode === 'simple'">
+
+                    <!-- Background (the fun part!) -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-palette"></i> Background</h3>
+                        <div class="bg-presets">
+                            <button *ngFor="let p of bgPresets" class="bg-preset-btn"
+                                    [class.active]="isActiveBgPreset(p)"
+                                    (click)="applyBgPreset(p)"
+                                    [title]="p.label"
+                                    [style.background]="p.top ? 'linear-gradient(' + p.top + ',' + p.bottom + ')' : 'repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 16px 16px'">
+                            </button>
                         </div>
                     </div>
-                </div>
 
-                <!-- Background -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-palette"></i> Background</h3>
-                    <div class="bg-presets">
-                        <button *ngFor="let p of bgPresets" class="bg-preset-btn"
-                                [class.active]="isActiveBgPreset(p)"
-                                (click)="applyBgPreset(p)"
-                                [title]="p.label"
-                                [style.background]="p.top ? 'linear-gradient(' + p.top + ',' + p.bottom + ')' : 'repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 16px 16px'">
-                        </button>
+                    <!-- Size — friendly names only -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-expand-arrows-alt"></i> Picture Size</h3>
+                        <div class="preset-grid">
+                            <button class="preset-btn" [class.active]="renderWidth === 256" (click)="renderWidth = 256; renderHeight = 256" title="256 × 256">
+                                Small
+                            </button>
+                            <button class="preset-btn" [class.active]="renderWidth === 512" (click)="renderWidth = 512; renderHeight = 512" title="512 × 512">
+                                Medium
+                            </button>
+                            <button class="preset-btn" [class.active]="renderWidth === 1024" (click)="renderWidth = 1024; renderHeight = 1024" title="1024 × 1024">
+                                Large
+                            </button>
+                            <button class="preset-btn" [class.active]="renderWidth === 2048" (click)="renderWidth = 2048; renderHeight = 2048" title="2048 × 2048">
+                                Huge
+                            </button>
+                        </div>
+                        <div class="size-display">{{ renderWidth }} × {{ renderHeight }}</div>
                     </div>
-                </div>
 
-                <!-- Format & Options -->
-                <div class="sidebar-section">
-                    <h3><i class="fas fa-cog"></i> Options</h3>
-                    <div class="option-row">
-                        <label>Format</label>
-                        <select [(ngModel)]="outputFormat" id="render-format-select">
-                            <option value="png">PNG</option>
-                            <option value="webp">WebP</option>
-                            <option value="svg">SVG</option>
-                            <option value="gif">Turntable GIF</option>
-                        </select>
+                </ng-container>
+
+
+                <!-- ═══ ADVANCED MODE ═══ -->
+                <ng-container *ngIf="renderMode === 'advanced'">
+
+                    <!-- Size -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-expand-arrows-alt"></i> Size</h3>
+                        <div class="size-categories">
+                            <button *ngFor="let cat of sizeCategories" class="size-cat-btn"
+                                    [class.active]="sizeCategory === cat.key"
+                                    (click)="sizeCategory = cat.key">
+                                {{ cat.label }}
+                            </button>
+                        </div>
+                        <div class="preset-grid">
+                            <button *ngFor="let p of activeSizePresets" class="preset-btn"
+                                    [class.active]="isSelectedSize(p)"
+                                    (click)="selectRenderSize(p)">
+                                {{ p.label }}
+                            </button>
+                        </div>
+                        <div class="size-display">{{ sizeDisplayLabel }}</div>
                     </div>
-                    <div class="option-row" *ngIf="outputFormat !== 'svg'">
-                        <label>Anti-Alias</label>
-                        <select [(ngModel)]="antiAliasMode">
-                            <option value="none">None</option>
-                            <option value="2x">2× SSAA</option>
-                            <option value="4x">4× SSAA</option>
-                        </select>
+
+                    <!-- Angle -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-compass"></i> Camera Angle</h3>
+                        <div class="preset-grid">
+                            <button *ngFor="let p of anglePresets" class="preset-btn"
+                                    [class.active]="isSelectedAngle(p)"
+                                    (click)="selectRenderAngle(p)">
+                                {{ p.label }}
+                            </button>
+                        </div>
+                        <div class="angle-inputs">
+                            <label>Elevation <input type="number" [(ngModel)]="renderElevation" min="-90" max="90"></label>
+                            <label>Azimuth <input type="number" [(ngModel)]="renderAzimuth" min="-360" max="360"></label>
+                        </div>
+                        <label class="checkbox-label" title="Look at it from the other side (flip 180°)">
+                            <input type="checkbox" [(ngModel)]="flipView"> 🔄 Other Side
+                        </label>
+                        <div class="option-row">
+                            <label><i class="fas fa-search-plus"></i> Zoom</label>
+                            <div class="zoom-slider-row">
+                                <input type="range" min="0.5" max="3.0" step="0.1" [(ngModel)]="renderZoom">
+                                <span class="zoom-value">{{ renderZoom.toFixed(1) }}×</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="option-row" *ngIf="outputFormat !== 'svg' && outputFormat !== 'gif'">
-                        <label>Renderer</label>
-                        <select [(ngModel)]="rendererType">
-                            <option value="rasterizer">Rasterizer</option>
-                            <option value="raytrace">Ray Tracer</option>
-                        </select>
+
+                    <!-- Background -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-palette"></i> Background</h3>
+                        <div class="bg-presets">
+                            <button *ngFor="let p of bgPresets" class="bg-preset-btn"
+                                    [class.active]="isActiveBgPreset(p)"
+                                    (click)="applyBgPreset(p)"
+                                    [title]="p.label"
+                                    [style.background]="p.top ? 'linear-gradient(' + p.top + ',' + p.bottom + ')' : 'repeating-conic-gradient(#ccc 0% 25%, transparent 0% 50%) 50% / 16px 16px'">
+                            </button>
+                        </div>
                     </div>
-                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="renderEdges"> Edge lines</label>
-                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="smoothShading"> Smooth shading</label>
-                    <div *ngIf="rendererType === 'raytrace'" class="pbr-options">
-                        <label class="checkbox-label"><input type="checkbox" [(ngModel)]="enablePbr"> PBR</label>
-                        <label>Exposure <input type="range" min="0.1" max="5" step="0.1" [(ngModel)]="exposure"></label>
-                        <label>Aperture <input type="range" min="0" max="5" step="0.1" [(ngModel)]="aperture"></label>
+
+                    <!-- Format & Options -->
+                    <div class="sidebar-section">
+                        <h3><i class="fas fa-cog"></i> Options</h3>
+                        <div class="option-row">
+                            <label>Format</label>
+                            <select [(ngModel)]="outputFormat" id="render-format-select">
+                                <option value="png">🖼️ Picture (PNG)</option>
+                                <option value="webp">📦 Small File (WebP)</option>
+                                <option value="svg">✏️ Drawing (SVG)</option>
+                                <option value="gif">🎡 Spinning! (GIF)</option>
+                            </select>
+                        </div>
+                        <div class="option-row" *ngIf="outputFormat !== 'svg'">
+                            <label title="Anti-aliasing — removes jagged edges">Smoothness</label>
+                            <select [(ngModel)]="antiAliasMode">
+                                <option value="none">Off</option>
+                                <option value="2x">Good</option>
+                                <option value="4x">Best</option>
+                            </select>
+                        </div>
+                        <div class="option-row" *ngIf="outputFormat !== 'svg' && outputFormat !== 'gif'">
+                            <label>Picture Style</label>
+                            <select [(ngModel)]="rendererType">
+                                <option value="rasterizer">⚡ Fast</option>
+                                <option value="raytrace">✨ Realistic</option>
+                            </select>
+                        </div>
+                        <label class="checkbox-label" title="Draw dark lines around each brick edge — like a comic book"><input type="checkbox" [(ngModel)]="renderEdges"> ✏️ Show Outlines</label>
+                        <label class="checkbox-label" title="Makes round parts look smooth instead of bumpy"><input type="checkbox" [(ngModel)]="smoothShading"> Smooth Surfaces</label>
+                        <div *ngIf="rendererType === 'raytrace'" class="pbr-options">
+                            <label class="checkbox-label" title="PBR Shading — makes bricks look like real plastic"><input type="checkbox" [(ngModel)]="enablePbr"> Shiny Materials</label>
+                            <label title="Exposure">☀️ Brightness <input type="range" min="0.1" max="5" step="0.1" [(ngModel)]="exposure"></label>
+                            <label title="Aperture / Depth of Field">🔍 Background Blur <input type="range" min="0" max="5" step="0.1" [(ngModel)]="aperture"></label>
+                        </div>
                     </div>
-                </div>
+
+                </ng-container>
 
                 <!-- Render Button -->
                 <div class="sidebar-section">
                     <button class="btn-render-main" [disabled]="rendering" (click)="renderModel()" id="render-model-btn">
                         <i class="fas" [ngClass]="rendering ? 'fa-circle-notch fa-spin' : 'fa-camera'"></i>
-                        {{ rendering ? 'Rendering…' : 'Render Model' }}
+                        {{ rendering ? 'Creating…' : 'Take a Picture!' }}
                     </button>
                 </div>
             </ng-container>

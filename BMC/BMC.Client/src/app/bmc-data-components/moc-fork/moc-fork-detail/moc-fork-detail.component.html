@@ -1,0 +1,89 @@
+<div class="container-fluid p-1 m-0 moc-fork-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="moc-fork-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Moc Fork</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Moc Fork' : 'Add Moc Fork'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCMocForkReader()">
+                <div class="col m-2 moc-fork-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="mocForkForm" (ngSubmit)="submitForm()" class="moc-fork-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('forkedMocId')">
+                                <label for="MocFork-forkedMocId" id="label-MocFork-forkedMocId"><span class="text-danger">*</span>Forked Moc</label>
+                                <select id="MocFork-forkedMocId" formControlName="forkedMocId" class="form-select moc-fork-select" [disabled]="!userIsBMCMocForkWriter()">
+                                    <option [ngValue]="null">Select Published Moc</option>
+                                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                                </select>
+                                <div *ngIf="mocForkForm.get('forkedMocId')?.invalid && mocForkForm.get('forkedMocId')?.touched" class="text-danger">
+                                    Forked Moc is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceMocId')">
+                                <label for="MocFork-sourceMocId" id="label-MocFork-sourceMocId"><span class="text-danger">*</span>Source Moc</label>
+                                <select id="MocFork-sourceMocId" formControlName="sourceMocId" class="form-select moc-fork-select" [disabled]="!userIsBMCMocForkWriter()">
+                                    <option [ngValue]="null">Select Published Moc</option>
+                                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                                </select>
+                                <div *ngIf="mocForkForm.get('sourceMocId')?.invalid && mocForkForm.get('sourceMocId')?.touched" class="text-danger">
+                                    Source Moc is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('mocVersionId')">
+                                <label for="MocFork-mocVersionId" id="label-MocFork-mocVersionId">Moc Version</label>
+                                <select id="MocFork-mocVersionId" formControlName="mocVersionId" class="form-select moc-fork-select" [disabled]="!userIsBMCMocForkWriter()">
+                                    <option [ngValue]="null">Select Moc Version</option>
+                                    <option *ngFor="let mocVersion of mocVersions$ | async" [ngValue]="mocVersion.id">{{mocVersion.commitMessage}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('forkerTenantGuid')">
+                                <label for="MocFork-forkerTenantGuid" id="label-MocFork-forkerTenantGuid"><span class="text-danger">*</span>Forker Tenant Guid</label>
+                                <input type="text" id="MocFork-forkerTenantGuid" formControlName="forkerTenantGuid" placeholder="Enter Forker Tenant Guid" class="form-control moc-fork-input" [disabled]="!userIsBMCMocForkWriter()" aria-labelledby="label-forkerTenantGuid" />
+                                <div *ngIf="mocForkForm.get('forkerTenantGuid')?.invalid && mocForkForm.get('forkerTenantGuid')?.touched" class="text-danger">
+                                    Forker Tenant Guid is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('forkedDate')">
+                                <label for="MocFork-forkedDate" id="label-MocFork-forkedDate"><span class="text-danger">*</span>Forked Date</label>
+                                <input type="datetime-local" id="MocFork-forkedDate" formControlName="forkedDate" placeholder="Enter Forked Date" class="form-control moc-fork-input" [disabled]="!userIsBMCMocForkWriter()" aria-labelledby="label-forkedDate" />
+                                <div *ngIf="mocForkForm.get('forkedDate')?.invalid && mocForkForm.get('forkedDate')?.touched" class="text-danger">
+                                    Forked Date is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MocFork-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocForkWriter()" />
+                                <label for="MocFork-active" class="form-check-label" id="label-MocFork-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MocFork-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCMocForkWriter()" />
+                                <label for="MocFork-deleted" class="form-check-label" id="label-MocFork-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="moc-fork-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="mocForkForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Moc Fork">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocForkForm.valid || !mocForkForm.dirty || mocForkForm.pristine  || userIsBMCMocForkWriter() == false " ngbTooltip="Save the Moc Fork changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Moc Fork' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

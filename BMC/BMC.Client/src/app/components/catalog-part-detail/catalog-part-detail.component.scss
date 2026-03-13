@@ -1105,6 +1105,13 @@
     gap: 6px;
 }
 
+.viewer-header-end {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+}
+
 .pose-btn {
     display: flex;
     align-items: center;
@@ -1221,6 +1228,43 @@
     &::-webkit-scrollbar-thumb {
         background: var(--bmc-border);
         border-radius: 2px;
+    }
+}
+
+.render-mode-toggle {
+    display: flex;
+    margin: 10px 16px 0;
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bmc-bg-elevated);
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 6px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--bmc-text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+
+    &:hover {
+        color: var(--bmc-text-primary);
+        background: var(--bmc-surface-hover);
+    }
+
+    &.active {
+        color: white;
+        background: var(--bmc-primary);
+        font-weight: 600;
+    }
+
+    &:not(:last-child) {
+        border-right: 1px solid var(--bmc-border);
     }
 }
 

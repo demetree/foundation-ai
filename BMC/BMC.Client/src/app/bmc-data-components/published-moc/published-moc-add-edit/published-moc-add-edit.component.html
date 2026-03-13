@@ -97,6 +97,43 @@
                 <input type="checkbox" id="PublishedMoc-allowForking" formControlName="allowForking" class="form-check-input" [disabled]="!userIsBMCPublishedMocWriter()" />
                 <label for="PublishedMoc-allowForking" class="form-check-label" id="label-PublishedMoc-allowForking"><span class="text-danger">*</span>Allow Forking</label>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('visibility')">
+                <label for="PublishedMoc-visibility" id="label-PublishedMoc-visibility"><span class="text-danger">*</span>Visibility</label>
+                <input type="text" id="PublishedMoc-visibility" formControlName="visibility" placeholder="Enter Visibility" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-visibility" />
+                <div *ngIf="publishedMocForm.get('visibility')?.invalid && publishedMocForm.get('visibility')?.touched" class="text-danger">
+                    Visibility is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('forkCount')">
+                <label for="PublishedMoc-forkCount" id="label-PublishedMoc-forkCount"><span class="text-danger">*</span>Fork Count</label>
+                <input type="number" id="PublishedMoc-forkCount" formControlName="forkCount" placeholder="Enter Fork Count" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-forkCount" />
+                <div *ngIf="publishedMocForm.get('forkCount')?.invalid && publishedMocForm.get('forkCount')?.touched" class="text-danger">
+                    Fork Count is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('forkedFromMocId')">
+                <label for="PublishedMoc-forkedFromMocId" id="label-PublishedMoc-forkedFromMocId">Forked From Moc</label>
+                <select id="PublishedMoc-forkedFromMocId" formControlName="forkedFromMocId" class="form-select published-moc-select" [disabled]="!userIsBMCPublishedMocWriter()">
+                    <option [ngValue]="null">Select Published Moc</option>
+                    <option *ngFor="let publishedMoc of publishedMocs$ | async" [ngValue]="publishedMoc.id">{{publishedMoc.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('licenseName')">
+                <label for="PublishedMoc-licenseName" id="label-PublishedMoc-licenseName">License Name</label>
+                <input type="text" id="PublishedMoc-licenseName" formControlName="licenseName" placeholder="Enter License Name" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-licenseName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('readmeMarkdown')">
+                <label for="PublishedMoc-readmeMarkdown" id="label-PublishedMoc-readmeMarkdown">Readme Markdown</label>
+                <textarea id="PublishedMoc-readmeMarkdown" formControlName="readmeMarkdown" placeholder="Enter Readme Markdown" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('slug')">
+                <label for="PublishedMoc-slug" id="label-PublishedMoc-slug">Slug</label>
+                <input type="text" id="PublishedMoc-slug" formControlName="slug" placeholder="Enter Slug" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-slug" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultBranchName')">
+                <label for="PublishedMoc-defaultBranchName" id="label-PublishedMoc-defaultBranchName">Default Branch Name</label>
+                <input type="text" id="PublishedMoc-defaultBranchName" formControlName="defaultBranchName" placeholder="Enter Default Branch Name" class="form-control published-moc-input" [disabled]="!userIsBMCPublishedMocWriter()" aria-labelledby="label-defaultBranchName" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="PublishedMoc-versionNumber" id="label-PublishedMoc-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="PublishedMoc-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control published-moc-input" />

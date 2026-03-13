@@ -181,6 +181,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || (includeRelations == true && x.publishedMoc.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.publishedMoc.thumbnailImagePath.Contains(anyStringContains))
 			       || (includeRelations == true && x.publishedMoc.tags.Contains(anyStringContains))
+			       || (includeRelations == true && x.publishedMoc.visibility.Contains(anyStringContains))
+			       || (includeRelations == true && x.publishedMoc.licenseName.Contains(anyStringContains))
+			       || (includeRelations == true && x.publishedMoc.readmeMarkdown.Contains(anyStringContains))
+			       || (includeRelations == true && x.publishedMoc.slug.Contains(anyStringContains))
+			       || (includeRelations == true && x.publishedMoc.defaultBranchName.Contains(anyStringContains))
 			   );
 			}
 
@@ -331,6 +336,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.publishedMoc.description.Contains(anyStringContains)
 			       || x.publishedMoc.thumbnailImagePath.Contains(anyStringContains)
 			       || x.publishedMoc.tags.Contains(anyStringContains)
+			       || x.publishedMoc.visibility.Contains(anyStringContains)
+			       || x.publishedMoc.licenseName.Contains(anyStringContains)
+			       || x.publishedMoc.readmeMarkdown.Contains(anyStringContains)
+			       || x.publishedMoc.slug.Contains(anyStringContains)
+			       || x.publishedMoc.defaultBranchName.Contains(anyStringContains)
 			   );
 			}
 
@@ -902,6 +912,11 @@ namespace Foundation.BMC.Controllers.WebAPI
 			       || x.publishedMoc.description.Contains(anyStringContains)
 			       || x.publishedMoc.thumbnailImagePath.Contains(anyStringContains)
 			       || x.publishedMoc.tags.Contains(anyStringContains)
+			       || x.publishedMoc.visibility.Contains(anyStringContains)
+			       || x.publishedMoc.licenseName.Contains(anyStringContains)
+			       || x.publishedMoc.readmeMarkdown.Contains(anyStringContains)
+			       || x.publishedMoc.slug.Contains(anyStringContains)
+			       || x.publishedMoc.defaultBranchName.Contains(anyStringContains)
 			   );
 			}
 

@@ -39,6 +39,20 @@ public partial class PublishedMoc
 
     public bool allowForking { get; set; }
 
+    public string visibility { get; set; }
+
+    public int forkCount { get; set; }
+
+    public int? forkedFromMocId { get; set; }
+
+    public string licenseName { get; set; }
+
+    public string readmeMarkdown { get; set; }
+
+    public string slug { get; set; }
+
+    public string defaultBranchName { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }
@@ -49,17 +63,29 @@ public partial class PublishedMoc
 
     public virtual ICollection<BuildChallengeEntry> BuildChallengeEntries { get; set; } = new List<BuildChallengeEntry>();
 
+    public virtual ICollection<PublishedMoc> InverseforkedFromMoc { get; set; } = new List<PublishedMoc>();
+
+    public virtual ICollection<MocCollaborator> MocCollaborators { get; set; } = new List<MocCollaborator>();
+
     public virtual ICollection<MocComment> MocComments { get; set; } = new List<MocComment>();
 
     public virtual ICollection<MocFavourite> MocFavourites { get; set; } = new List<MocFavourite>();
 
+    public virtual MocFork MocForkforkedMoc { get; set; }
+
+    public virtual ICollection<MocFork> MocForksourceMocs { get; set; } = new List<MocFork>();
+
     public virtual ICollection<MocLike> MocLikes { get; set; } = new List<MocLike>();
+
+    public virtual ICollection<MocVersion> MocVersions { get; set; } = new List<MocVersion>();
 
     public virtual ICollection<PublishedMocChangeHistory> PublishedMocChangeHistories { get; set; } = new List<PublishedMocChangeHistory>();
 
     public virtual ICollection<PublishedMocImage> PublishedMocImages { get; set; } = new List<PublishedMocImage>();
 
     public virtual ICollection<SharedInstruction> SharedInstructions { get; set; } = new List<SharedInstruction>();
+
+    public virtual PublishedMoc forkedFromMoc { get; set; }
 
     public virtual Project project { get; set; }
 }

@@ -1077,8 +1077,6 @@
     object-fit: contain;
     border-radius: var(--radius-sm);
     image-rendering: auto;
-    background: repeating-conic-gradient(var(--bmc-bg-elevated) 0% 25%,
-            var(--bmc-bg-card) 0% 50%) 50% / 20px 20px;
 }
 
 .preview-toolbar {

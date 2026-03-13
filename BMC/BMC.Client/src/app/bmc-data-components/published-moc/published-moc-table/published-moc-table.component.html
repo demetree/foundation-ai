@@ -83,6 +83,34 @@
                 Allow  Forking
                 <span *ngIf="sortColumn === 'allowForking'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('visibility')">
+                Visibility
+                <span *ngIf="sortColumn === 'visibility'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('forkCount')">
+                Fork  Count
+                <span *ngIf="sortColumn === 'forkCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('forkedFromMoc.name')">
+                Forked  From  Moc
+                <span *ngIf="sortColumn === 'forkedFromMoc.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('licenseName')">
+                License  Name
+                <span *ngIf="sortColumn === 'licenseName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('readmeMarkdown')">
+                Readme  Markdown
+                <span *ngIf="sortColumn === 'readmeMarkdown'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('slug')">
+                Slug
+                <span *ngIf="sortColumn === 'slug'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('defaultBranchName')">
+                Default  Branch  Name
+                <span *ngIf="sortColumn === 'defaultBranchName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -182,6 +210,13 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{publishedMoc.favouriteCount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{publishedMoc.partCount | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate"><boolean-icon [value]="publishedMoc.allowForking"/></td>
+            <td class="text-truncate">{{publishedMoc.visibility}}</td>
+            <td class="text-truncate">{{publishedMoc.forkCount | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate"><a [routerLink]="['/publishedmoc', publishedMoc.forkedFromMocId]" class="btn btn-link text-left" ngbTooltip="Open Published Moc details">{{publishedMoc.forkedFromMoc?.name}}</a></td>
+            <td class="text-truncate">{{publishedMoc.licenseName}}</td>
+            <td class="text-truncate">{{publishedMoc.readmeMarkdown}}</td>
+            <td class="text-truncate">{{publishedMoc.slug}}</td>
+            <td class="text-truncate">{{publishedMoc.defaultBranchName}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -384,6 +419,34 @@ End of commented block for alternate definition option -->
             <p class="published-moc-info" *ngIf="publishedMoc.allowForking != null">
               <strong>Allow Forking: </strong>
               <boolean-icon [value]="publishedMoc.allowForking"/>
+            </p>
+            <p class="published-moc-info" *ngIf="publishedMoc.visibility != null">
+              <strong>Visibility: </strong>
+              {{publishedMoc.visibility}}
+            </p>
+            <p class="published-moc-info" *ngIf="publishedMoc.forkCount != null">
+              <strong>Fork Count: </strong>
+              {{publishedMoc.forkCount | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="published-moc-info" *ngIf="publishedMoc.forkedFromMocId != null">
+              <strong>Forked From Moc: </strong>
+              <a [routerLink]="['/publishedmoc', publishedMoc.forkedFromMocId]" class="text-left p-0 m-0" ngbTooltip="Open Published Moc details">{{publishedMoc.forkedFromMoc?.name}}</a>
+            </p>
+            <p class="published-moc-info" *ngIf="publishedMoc.licenseName != null">
+              <strong>License Name: </strong>
+              {{publishedMoc.licenseName}}
+            </p>
+            <p class="published-moc-info" *ngIf="publishedMoc.readmeMarkdown != null">
+              <strong>Readme Markdown: </strong>
+              {{publishedMoc.readmeMarkdown}}
+            </p>
+            <p class="published-moc-info" *ngIf="publishedMoc.slug != null">
+              <strong>Slug: </strong>
+              {{publishedMoc.slug}}
+            </p>
+            <p class="published-moc-info" *ngIf="publishedMoc.defaultBranchName != null">
+              <strong>Default Branch Name: </strong>
+              {{publishedMoc.defaultBranchName}}
             </p>
             </div>
          </div>

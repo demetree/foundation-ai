@@ -18,7 +18,10 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { ProjectData } from './project.service';
 import { PublishedMocChangeHistoryService, PublishedMocChangeHistoryData } from './published-moc-change-history.service';
+import { MocVersionService, MocVersionData } from './moc-version.service';
 import { PublishedMocImageService, PublishedMocImageData } from './published-moc-image.service';
+import { MocForkService, MocForkData } from './moc-fork.service';
+import { MocCollaboratorService, MocCollaboratorData } from './moc-collaborator.service';
 import { MocLikeService, MocLikeData } from './moc-like.service';
 import { MocCommentService, MocCommentData } from './moc-comment.service';
 import { MocFavouriteService, MocFavouriteData } from './moc-favourite.service';
@@ -49,6 +52,13 @@ export class PublishedMocQueryParameters {
     favouriteCount: bigint | number | null | undefined = null;
     partCount: bigint | number | null | undefined = null;
     allowForking: boolean | null | undefined = null;
+    visibility: string | null | undefined = null;
+    forkCount: bigint | number | null | undefined = null;
+    forkedFromMocId: bigint | number | null | undefined = null;
+    licenseName: string | null | undefined = null;
+    readmeMarkdown: string | null | undefined = null;
+    slug: string | null | undefined = null;
+    defaultBranchName: string | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -79,6 +89,13 @@ export class PublishedMocSubmitData {
     favouriteCount!: bigint | number;
     partCount: bigint | number | null = null;
     allowForking!: boolean;
+    visibility!: string;
+    forkCount!: bigint | number;
+    forkedFromMocId: bigint | number | null = null;
+    licenseName: string | null = null;
+    readmeMarkdown: string | null = null;
+    slug: string | null = null;
+    defaultBranchName: string | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -163,11 +180,19 @@ export class PublishedMocData {
     favouriteCount!: bigint | number;
     partCount!: bigint | number;
     allowForking!: boolean;
+    visibility!: string;
+    forkCount!: bigint | number;
+    forkedFromMocId!: bigint | number;
+    licenseName!: string | null;
+    readmeMarkdown!: string | null;
+    slug!: string | null;
+    defaultBranchName!: string | null;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
     project: ProjectData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    forkedFromMoc: PublishedMocData | null | undefined = null;            // Self referencing navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -177,9 +202,27 @@ export class PublishedMocData {
     private _publishedMocChangeHistoriesSubject = new BehaviorSubject<PublishedMocChangeHistoryData[] | null>(null);
 
                 
+    private _mocVersions: MocVersionData[] | null = null;
+    private _mocVersionsPromise: Promise<MocVersionData[]> | null  = null;
+    private _mocVersionsSubject = new BehaviorSubject<MocVersionData[] | null>(null);
+
+                
     private _publishedMocImages: PublishedMocImageData[] | null = null;
     private _publishedMocImagesPromise: Promise<PublishedMocImageData[]> | null  = null;
     private _publishedMocImagesSubject = new BehaviorSubject<PublishedMocImageData[] | null>(null);
+
+                
+    private _mocForkForkedMocs: MocForkData[] | null = null;
+    private _mocForkForkedMocsPromise: Promise<MocForkData[]> | null  = null;
+    private _mocForkForkedMocsSubject = new BehaviorSubject<MocForkData[] | null>(null);
+                    
+    private _mocForkSourceMocs: MocForkData[] | null = null;
+    private _mocForkSourceMocsPromise: Promise<MocForkData[]> | null  = null;
+    private _mocForkSourceMocsSubject = new BehaviorSubject<MocForkData[] | null>(null);
+                    
+    private _mocCollaborators: MocCollaboratorData[] | null = null;
+    private _mocCollaboratorsPromise: Promise<MocCollaboratorData[]> | null  = null;
+    private _mocCollaboratorsSubject = new BehaviorSubject<MocCollaboratorData[] | null>(null);
 
                 
     private _mocLikes: MocLikeData[] | null = null;
@@ -248,6 +291,31 @@ export class PublishedMocData {
 
 
 
+    public MocVersions$ = this._mocVersionsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._mocVersions === null && this._mocVersionsPromise === null) {
+            this.loadMocVersions(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _mocVersionsCount$: Observable<bigint | number> | null = null;
+    public get MocVersionsCount$(): Observable<bigint | number> {
+        if (this._mocVersionsCount$ === null) {
+            this._mocVersionsCount$ = MocVersionService.Instance.GetMocVersionsRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocVersionsCount$;
+    }
+
+
+
     public PublishedMocImages$ = this._publishedMocImagesSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -269,6 +337,79 @@ export class PublishedMocData {
             });
         }
         return this._publishedMocImagesCount$;
+    }
+
+
+
+    public MocForkForkedMocs$ = this._mocForkForkedMocsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._mocForkForkedMocs === null && this._mocForkForkedMocsPromise === null) {
+            this.loadMocForkForkedMocs(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _mocForkForkedMocsCount$: Observable<bigint | number> | null = null;
+    public get MocForkForkedMocsCount$(): Observable<bigint | number> {
+        if (this._mocForkForkedMocsCount$ === null) {
+            this._mocForkForkedMocsCount$ = MocForkService.Instance.GetMocForksRowCount({forkedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocForkForkedMocsCount$;
+    }
+
+
+    public MocForkSourceMocs$ = this._mocForkSourceMocsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._mocForkSourceMocs === null && this._mocForkSourceMocsPromise === null) {
+            this.loadMocForkSourceMocs(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _mocForkSourceMocsCount$: Observable<bigint | number> | null = null;
+    public get MocForkSourceMocsCount$(): Observable<bigint | number> {
+        if (this._mocForkSourceMocsCount$ === null) {
+            this._mocForkSourceMocsCount$ = MocForkService.Instance.GetMocForksRowCount({sourceMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocForkSourceMocsCount$;
+    }
+
+
+    public MocCollaborators$ = this._mocCollaboratorsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._mocCollaborators === null && this._mocCollaboratorsPromise === null) {
+            this.loadMocCollaborators(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _mocCollaboratorsCount$: Observable<bigint | number> | null = null;
+    public get MocCollaboratorsCount$(): Observable<bigint | number> {
+        if (this._mocCollaboratorsCount$ === null) {
+            this._mocCollaboratorsCount$ = MocCollaboratorService.Instance.GetMocCollaboratorsRowCount({publishedMocId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocCollaboratorsCount$;
     }
 
 
@@ -441,10 +582,30 @@ export class PublishedMocData {
      this._publishedMocChangeHistoriesSubject.next(null);
      this._publishedMocChangeHistoriesCount$ = null;
 
+     this._mocVersions = null;
+     this._mocVersionsPromise = null;
+     this._mocVersionsSubject.next(null);
+     this._mocVersionsCount$ = null;
+
      this._publishedMocImages = null;
      this._publishedMocImagesPromise = null;
      this._publishedMocImagesSubject.next(null);
      this._publishedMocImagesCount$ = null;
+
+     this._mocForkForkedMocs = null;
+     this._mocForkForkedMocsPromise = null;
+     this._mocForkForkedMocsSubject.next(null);
+     this._mocForkForkedMocsCount$ = null;
+
+     this._mocForkSourceMocs = null;
+     this._mocForkSourceMocsPromise = null;
+     this._mocForkSourceMocsSubject.next(null);
+     this._mocForkSourceMocsCount$ = null;
+
+     this._mocCollaborators = null;
+     this._mocCollaboratorsPromise = null;
+     this._mocCollaboratorsSubject.next(null);
+     this._mocCollaboratorsCount$ = null;
 
      this._mocLikes = null;
      this._mocLikesPromise = null;
@@ -547,6 +708,71 @@ export class PublishedMocData {
 
     /**
      *
+     * Gets the MocVersions for this PublishedMoc.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.publishedMoc.MocVersions.then(publishedMocs => { ... })
+     *   or
+     *   await this.publishedMoc.publishedMocs
+     *
+    */
+    public get MocVersions(): Promise<MocVersionData[]> {
+        if (this._mocVersions !== null) {
+            return Promise.resolve(this._mocVersions);
+        }
+
+        if (this._mocVersionsPromise !== null) {
+            return this._mocVersionsPromise;
+        }
+
+        // Start the load
+        this.loadMocVersions();
+
+        return this._mocVersionsPromise!;
+    }
+
+
+
+    private loadMocVersions(): void {
+
+        this._mocVersionsPromise = lastValueFrom(
+            PublishedMocService.Instance.GetMocVersionsForPublishedMoc(this.id)
+        )
+        .then(MocVersions => {
+            this._mocVersions = MocVersions ?? [];
+            this._mocVersionsSubject.next(this._mocVersions);
+            return this._mocVersions;
+         })
+        .catch(err => {
+            this._mocVersions = [];
+            this._mocVersionsSubject.next(this._mocVersions);
+            throw err;
+        })
+        .finally(() => {
+            this._mocVersionsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached MocVersion. Call after mutations to force refresh.
+     */
+    public ClearMocVersionsCache(): void {
+        this._mocVersions = null;
+        this._mocVersionsPromise = null;
+        this._mocVersionsSubject.next(this._mocVersions);      // Emit to observable
+    }
+
+    public get HasMocVersions(): Promise<boolean> {
+        return this.MocVersions.then(mocVersions => mocVersions.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the PublishedMocImages for this PublishedMoc.
      *
      * If already loaded, returns cached array.
@@ -607,6 +833,201 @@ export class PublishedMocData {
 
     public get HasPublishedMocImages(): Promise<boolean> {
         return this.PublishedMocImages.then(publishedMocImages => publishedMocImages.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the MocForkForkedMocs for this PublishedMoc.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.publishedMoc.MocForkForkedMocs.then(forkedMocs => { ... })
+     *   or
+     *   await this.publishedMoc.forkedMocs
+     *
+    */
+    public get MocForkForkedMocs(): Promise<MocForkData[]> {
+        if (this._mocForkForkedMocs !== null) {
+            return Promise.resolve(this._mocForkForkedMocs);
+        }
+
+        if (this._mocForkForkedMocsPromise !== null) {
+            return this._mocForkForkedMocsPromise;
+        }
+
+        // Start the load
+        this.loadMocForkForkedMocs();
+
+        return this._mocForkForkedMocsPromise!;
+    }
+
+
+
+    private loadMocForkForkedMocs(): void {
+
+        this._mocForkForkedMocsPromise = lastValueFrom(
+            PublishedMocService.Instance.GetMocForkForkedMocsForPublishedMoc(this.id)
+        )
+        .then(MocForkForkedMocs => {
+            this._mocForkForkedMocs = MocForkForkedMocs ?? [];
+            this._mocForkForkedMocsSubject.next(this._mocForkForkedMocs);
+            return this._mocForkForkedMocs;
+         })
+        .catch(err => {
+            this._mocForkForkedMocs = [];
+            this._mocForkForkedMocsSubject.next(this._mocForkForkedMocs);
+            throw err;
+        })
+        .finally(() => {
+            this._mocForkForkedMocsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached MocForkForkedMoc. Call after mutations to force refresh.
+     */
+    public ClearMocForkForkedMocsCache(): void {
+        this._mocForkForkedMocs = null;
+        this._mocForkForkedMocsPromise = null;
+        this._mocForkForkedMocsSubject.next(this._mocForkForkedMocs);      // Emit to observable
+    }
+
+    public get HasMocForkForkedMocs(): Promise<boolean> {
+        return this.MocForkForkedMocs.then(mocForkForkedMocs => mocForkForkedMocs.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the MocForkSourceMocs for this PublishedMoc.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.publishedMoc.MocForkSourceMocs.then(sourceMocs => { ... })
+     *   or
+     *   await this.publishedMoc.sourceMocs
+     *
+    */
+    public get MocForkSourceMocs(): Promise<MocForkData[]> {
+        if (this._mocForkSourceMocs !== null) {
+            return Promise.resolve(this._mocForkSourceMocs);
+        }
+
+        if (this._mocForkSourceMocsPromise !== null) {
+            return this._mocForkSourceMocsPromise;
+        }
+
+        // Start the load
+        this.loadMocForkSourceMocs();
+
+        return this._mocForkSourceMocsPromise!;
+    }
+
+
+
+    private loadMocForkSourceMocs(): void {
+
+        this._mocForkSourceMocsPromise = lastValueFrom(
+            PublishedMocService.Instance.GetMocForkSourceMocsForPublishedMoc(this.id)
+        )
+        .then(MocForkSourceMocs => {
+            this._mocForkSourceMocs = MocForkSourceMocs ?? [];
+            this._mocForkSourceMocsSubject.next(this._mocForkSourceMocs);
+            return this._mocForkSourceMocs;
+         })
+        .catch(err => {
+            this._mocForkSourceMocs = [];
+            this._mocForkSourceMocsSubject.next(this._mocForkSourceMocs);
+            throw err;
+        })
+        .finally(() => {
+            this._mocForkSourceMocsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached MocForkSourceMoc. Call after mutations to force refresh.
+     */
+    public ClearMocForkSourceMocsCache(): void {
+        this._mocForkSourceMocs = null;
+        this._mocForkSourceMocsPromise = null;
+        this._mocForkSourceMocsSubject.next(this._mocForkSourceMocs);      // Emit to observable
+    }
+
+    public get HasMocForkSourceMocs(): Promise<boolean> {
+        return this.MocForkSourceMocs.then(mocForkSourceMocs => mocForkSourceMocs.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the MocCollaborators for this PublishedMoc.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.publishedMoc.MocCollaborators.then(publishedMocs => { ... })
+     *   or
+     *   await this.publishedMoc.publishedMocs
+     *
+    */
+    public get MocCollaborators(): Promise<MocCollaboratorData[]> {
+        if (this._mocCollaborators !== null) {
+            return Promise.resolve(this._mocCollaborators);
+        }
+
+        if (this._mocCollaboratorsPromise !== null) {
+            return this._mocCollaboratorsPromise;
+        }
+
+        // Start the load
+        this.loadMocCollaborators();
+
+        return this._mocCollaboratorsPromise!;
+    }
+
+
+
+    private loadMocCollaborators(): void {
+
+        this._mocCollaboratorsPromise = lastValueFrom(
+            PublishedMocService.Instance.GetMocCollaboratorsForPublishedMoc(this.id)
+        )
+        .then(MocCollaborators => {
+            this._mocCollaborators = MocCollaborators ?? [];
+            this._mocCollaboratorsSubject.next(this._mocCollaborators);
+            return this._mocCollaborators;
+         })
+        .catch(err => {
+            this._mocCollaborators = [];
+            this._mocCollaboratorsSubject.next(this._mocCollaborators);
+            throw err;
+        })
+        .finally(() => {
+            this._mocCollaboratorsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached MocCollaborator. Call after mutations to force refresh.
+     */
+    public ClearMocCollaboratorsCache(): void {
+        this._mocCollaborators = null;
+        this._mocCollaboratorsPromise = null;
+        this._mocCollaboratorsSubject.next(this._mocCollaborators);      // Emit to observable
+    }
+
+    public get HasMocCollaborators(): Promise<boolean> {
+        return this.MocCollaborators.then(mocCollaborators => mocCollaborators.length > 0);
     }
 
 
@@ -1014,7 +1435,10 @@ export class PublishedMocService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private publishedMocChangeHistoryService: PublishedMocChangeHistoryService,
+        private mocVersionService: MocVersionService,
         private publishedMocImageService: PublishedMocImageService,
+        private mocForkService: MocForkService,
+        private mocCollaboratorService: MocCollaboratorService,
         private mocLikeService: MocLikeService,
         private mocCommentService: MocCommentService,
         private mocFavouriteService: MocFavouriteService,
@@ -1091,6 +1515,13 @@ export class PublishedMocService extends SecureEndpointBase {
         output.favouriteCount = data.favouriteCount;
         output.partCount = data.partCount;
         output.allowForking = data.allowForking;
+        output.visibility = data.visibility;
+        output.forkCount = data.forkCount;
+        output.forkedFromMocId = data.forkedFromMocId;
+        output.licenseName = data.licenseName;
+        output.readmeMarkdown = data.readmeMarkdown;
+        output.slug = data.slug;
+        output.defaultBranchName = data.defaultBranchName;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
@@ -1502,8 +1933,48 @@ export class PublishedMocService extends SecureEndpointBase {
     }
 
 
+    public GetMocVersionsForPublishedMoc(publishedMocId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MocVersionData[]> {
+        return this.mocVersionService.GetMocVersionList({
+            publishedMocId: publishedMocId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetPublishedMocImagesForPublishedMoc(publishedMocId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PublishedMocImageData[]> {
         return this.publishedMocImageService.GetPublishedMocImageList({
+            publishedMocId: publishedMocId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetMocForkForkedMocsForPublishedMoc(publishedMocId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MocForkData[]> {
+        return this.mocForkService.GetMocForkList({
+            forkedMocId: publishedMocId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetMocForkSourceMocsForPublishedMoc(publishedMocId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MocForkData[]> {
+        return this.mocForkService.GetMocForkList({
+            sourceMocId: publishedMocId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetMocCollaboratorsForPublishedMoc(publishedMocId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MocCollaboratorData[]> {
+        return this.mocCollaboratorService.GetMocCollaboratorList({
             publishedMocId: publishedMocId,
             active: active,
             deleted: deleted,
@@ -1601,9 +2072,25 @@ export class PublishedMocService extends SecureEndpointBase {
     (revived as any)._publishedMocChangeHistoriesPromise = null;
     (revived as any)._publishedMocChangeHistoriesSubject = new BehaviorSubject<PublishedMocChangeHistoryData[] | null>(null);
 
+    (revived as any)._mocVersions = null;
+    (revived as any)._mocVersionsPromise = null;
+    (revived as any)._mocVersionsSubject = new BehaviorSubject<MocVersionData[] | null>(null);
+
     (revived as any)._publishedMocImages = null;
     (revived as any)._publishedMocImagesPromise = null;
     (revived as any)._publishedMocImagesSubject = new BehaviorSubject<PublishedMocImageData[] | null>(null);
+
+    (revived as any)._mocForkForkedMocs = null;
+    (revived as any)._mocForkForkedMocsPromise = null;
+    (revived as any)._mocForkForkedMocsSubject = new BehaviorSubject<MocForkData[] | null>(null);
+
+    (revived as any)._mocForkSourceMocs = null;
+    (revived as any)._mocForkSourceMocsPromise = null;
+    (revived as any)._mocForkSourceMocsSubject = new BehaviorSubject<MocForkData[] | null>(null);
+
+    (revived as any)._mocCollaborators = null;
+    (revived as any)._mocCollaboratorsPromise = null;
+    (revived as any)._mocCollaboratorsSubject = new BehaviorSubject<MocCollaboratorData[] | null>(null);
 
     (revived as any)._mocLikes = null;
     (revived as any)._mocLikesPromise = null;
@@ -1649,6 +2136,18 @@ export class PublishedMocService extends SecureEndpointBase {
     (revived as any)._publishedMocChangeHistoriesCount$ = null;
 
 
+    (revived as any).MocVersions$ = (revived as any)._mocVersionsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._mocVersions === null && (revived as any)._mocVersionsPromise === null) {
+                (revived as any).loadMocVersions();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._mocVersionsCount$ = null;
+
+
     (revived as any).PublishedMocImages$ = (revived as any)._publishedMocImagesSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._publishedMocImages === null && (revived as any)._publishedMocImagesPromise === null) {
@@ -1659,6 +2158,42 @@ export class PublishedMocService extends SecureEndpointBase {
       );
 
     (revived as any)._publishedMocImagesCount$ = null;
+
+
+    (revived as any).MocForkForkedMocs$ = (revived as any)._mocForkForkedMocsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._mocForkForkedMocs === null && (revived as any)._mocForkForkedMocsPromise === null) {
+                (revived as any).loadMocForkForkedMocs();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._mocForkForkedMocsCount$ = null;
+
+
+    (revived as any).MocForkSourceMocs$ = (revived as any)._mocForkSourceMocsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._mocForkSourceMocs === null && (revived as any)._mocForkSourceMocsPromise === null) {
+                (revived as any).loadMocForkSourceMocs();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._mocForkSourceMocsCount$ = null;
+
+
+    (revived as any).MocCollaborators$ = (revived as any)._mocCollaboratorsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._mocCollaborators === null && (revived as any)._mocCollaboratorsPromise === null) {
+                (revived as any).loadMocCollaborators();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._mocCollaboratorsCount$ = null;
 
 
     (revived as any).MocLikes$ = (revived as any)._mocLikesSubject.asObservable().pipe(
