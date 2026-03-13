@@ -105,7 +105,9 @@
     font-size: 12px;
     color: var(--bmc-text-muted);
 
-    &.public { border-color: var(--bmc-primary); color: var(--bmc-primary); }
+    &.public { border-color: #10b981; color: #059669; }
+    &.unlisted { border-color: #f59e0b; color: #d97706; }
+    &.private { border-color: #ef4444; color: #dc2626; }
 }
 
 

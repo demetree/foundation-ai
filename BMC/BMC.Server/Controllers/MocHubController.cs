@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+
+using BMC.LDraw.Render;
 
 using Foundation.Auditor;
 using Foundation.BMC.Database;
@@ -48,21 +51,29 @@ namespace Foundation.BMC.Controllers.WebAPI
         private readonly BMCContext _context;
         private readonly MocVersioningService _versioningService;
         private readonly IMemoryCache _cache;
+        private readonly IConfiguration _configuration;
         private readonly ILogger<MocHubController> _logger;
 
         private static readonly TimeSpan ShortCache = TimeSpan.FromMinutes(2);
+
+        /// <summary>
+        /// Lazy-initialised RenderService for GLB compilation.
+        /// </summary>
+        private RenderService _renderService;
 
 
         public MocHubController(
             BMCContext context,
             MocVersioningService versioningService,
             IMemoryCache cache,
+            IConfiguration configuration,
             ILogger<MocHubController> logger)
             : base("BMC", "MocHub")
         {
             _context = context;
             _versioningService = versioningService;
             _cache = cache;
+            _configuration = configuration;
             _logger = logger;
 
             _context.Database.SetCommandTimeout(30);
@@ -254,6 +265,61 @@ namespace Foundation.BMC.Controllers.WebAPI
                 pageSize,
                 query = q
             });
+        }
+
+
+        /// <summary>
+        ///
+        /// GET /api/mochub/my-mocs
+        ///
+        /// Returns all MOCs published by the current user, regardless of visibility.
+        /// Authenticated — allows users to discover their own Unlisted and Private MOCs.
+        ///
+        /// </summary>
+        [HttpGet("my-mocs")]
+        [RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.Global)]
+        public async Task<IActionResult> GetMyMocs(CancellationToken cancellationToken = default)
+        {
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var mocs = await _context.PublishedMocs
+                .Where(pm => pm.tenantGuid == userTenantGuid
+                          && pm.isPublished == true
+                          && pm.active == true
+                          && pm.deleted == false)
+                .OrderByDescending(pm => pm.publishedDate)
+                .Select(pm => new
+                {
+                    pm.id,
+                    pm.name,
+                    pm.slug,
+                    pm.description,
+                    pm.thumbnailImagePath,
+                    pm.tags,
+                    pm.visibility,
+                    pm.partCount,
+                    pm.likeCount,
+                    pm.commentCount,
+                    pm.forkCount,
+                    pm.viewCount,
+                    pm.publishedDate,
+                    pm.versionNumber,
+                    pm.tenantGuid
+                })
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            return Ok(mocs);
         }
 
 
@@ -533,6 +599,92 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return NotFound(ex.Message);
             }
         }
+
+
+        /// <summary>
+        ///
+        /// GET /api/mochub/moc/{id}/versions/{versionNum}/viewer-glb
+        ///
+        /// Returns a compiled GLB (binary glTF) for a specific version's MPD snapshot.
+        /// This replaces the client-side LDrawLoader approach (which 404s on part files)
+        /// with server-side compilation via RenderService.ExportToGlb().
+        ///
+        /// </summary>
+        [HttpGet("moc/{id}/versions/{versionNum}/viewer-glb")]
+        [AllowAnonymous]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.Global)]
+        public async Task<IActionResult> GetVersionViewerGlb(
+            int id,
+            int versionNum,
+            CancellationToken cancellationToken = default)
+        {
+            //
+            // Verify the MOC is publicly accessible
+            //
+            bool isPublic = await _context.PublishedMocs
+                .AnyAsync(pm => pm.id == id
+                             && pm.visibility != "Private"
+                             && pm.active == true
+                             && pm.deleted == false,
+                    cancellationToken);
+
+            if (isPublic == false)
+            {
+                return NotFound("MOC not found.");
+            }
+
+            string mpdSnapshot = await _versioningService.GetVersionMpdAsync(id, versionNum, cancellationToken);
+
+            if (string.IsNullOrEmpty(mpdSnapshot))
+            {
+                return NotFound("Version not found.");
+            }
+
+            try
+            {
+                //
+                // Compile the MPD snapshot text to GLB using the same pipeline
+                // as GlbCacheService.BuildGlbAsync — server-side geometry resolution.
+                //
+                string[] mpdLines = mpdSnapshot.Split('\n');
+
+                using var glbCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                glbCts.CancelAfter(TimeSpan.FromSeconds(120));
+
+                byte[] glbData = await Task.Run(() =>
+                {
+                    string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                    if (_renderService == null)
+                    {
+                        _renderService = new RenderService(dataPath);
+                    }
+                    return _renderService.ExportToGlb(mpdLines, "version.mpd", colourCode: -1, includeEdgeLines: true);
+                }, glbCts.Token);
+
+                if (glbData == null || glbData.Length == 0)
+                {
+                    return NotFound("Version geometry could not be compiled.");
+                }
+
+                _logger.LogInformation(
+                    "Version GLB compiled — MOC {Id}, version {V}, size={Size} bytes",
+                    id, versionNum, glbData.Length);
+
+                Response.Headers["Cache-Control"] = "public, max-age=86400";
+
+                return File(glbData, "model/gltf-binary", "version.glb");
+            }
+            catch (OperationCanceledException)
+            {
+                return StatusCode(499, "GLB compilation timed out.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to compile GLB for MOC {Id} version {V}", id, versionNum);
+                return Problem("An error occurred while compiling the 3D model.");
+            }
+        }
+
 
         /// <summary>
         ///
@@ -1040,6 +1192,421 @@ namespace Foundation.BMC.Controllers.WebAPI
             public string LicenseName { get; set; }
             public string ReadmeMarkdown { get; set; }
             public bool? AllowForking { get; set; }
+        }
+
+
+        // ────────────────────────────────────────────────────────────────
+        //  Admin — Seed MOC from Steps (testing tool)
+        // ────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        ///
+        /// Admin-only testing endpoint: take an existing project's building steps
+        /// and publish them as sequential MOCHub versions.
+        ///
+        /// Each build step becomes a separate version where the MPD is the cumulative
+        /// set of all parts from step 1 through step N.  This creates realistic
+        /// version diffs for testing the version/diff viewer, 3D preview, etc.
+        ///
+        /// The resulting MOC is tagged [TEST] with Unlisted visibility.
+        ///
+        /// </summary>
+        [HttpPost("admin/seed-from-steps")]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.Global)]
+        public async Task<IActionResult> SeedMocFromSteps(
+            [FromBody] SeedFromStepsRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            //
+            // Admin only
+            //
+            if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            //
+            // Load the project
+            //
+            Project project = await _context.Projects
+                .Where(p => p.id == request.ProjectId
+                         && p.tenantGuid == userTenantGuid
+                         && p.active == true
+                         && p.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (project == null)
+            {
+                return NotFound("Project not found.");
+            }
+
+            //
+            // Load the model document for this project
+            //
+            ModelDocument modelDoc = await _context.ModelDocuments
+                .Where(md => md.projectId == project.id
+                          && md.tenantGuid == userTenantGuid
+                          && md.active == true
+                          && md.deleted == false)
+                .OrderByDescending(md => md.id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (modelDoc == null)
+            {
+                return NotFound("No model document found for this project.");
+            }
+
+            //
+            // Load all sub-files, prioritising the main model
+            //
+            List<ModelSubFile> subFiles = await _context.ModelSubFiles
+                .Where(sf => sf.modelDocumentId == modelDoc.id
+                          && sf.tenantGuid == userTenantGuid
+                          && sf.active == true
+                          && sf.deleted == false)
+                .OrderByDescending(sf => sf.isMainModel)
+                .ThenBy(sf => sf.sequence)
+                .ToListAsync(cancellationToken);
+
+            if (subFiles.Count == 0)
+            {
+                return NotFound("No sub-files found for this project.");
+            }
+
+            //
+            // Load all build steps with their parts, ordered by sub-file → step → sequence
+            //
+            List<int> subFileIds = subFiles.Select(sf => sf.id).ToList();
+
+            var allStepParts = await _context.ModelStepParts
+                .Where(msp => subFileIds.Contains(msp.modelBuildStep.modelSubFileId)
+                           && msp.tenantGuid == userTenantGuid
+                           && msp.active == true
+                           && msp.deleted == false
+                           && msp.modelBuildStep.active == true
+                           && msp.modelBuildStep.deleted == false)
+                .Select(msp => new
+                {
+                    msp.modelBuildStep.modelSubFileId,
+                    SubFileName = msp.modelBuildStep.modelSubFile.fileName,
+                    IsMainModel = msp.modelBuildStep.modelSubFile.isMainModel,
+                    StepNumber = msp.modelBuildStep.stepNumber,
+                    msp.partFileName,
+                    msp.colorCode,
+                    msp.positionX,
+                    msp.positionY,
+                    msp.positionZ,
+                    msp.transformMatrix,
+                    msp.sequence
+                })
+                .OrderByDescending(x => x.IsMainModel)
+                .ThenBy(x => x.modelSubFileId)
+                .ThenBy(x => x.StepNumber)
+                .ThenBy(x => x.sequence)
+                .ToListAsync(cancellationToken);
+
+            if (allStepParts.Count == 0)
+            {
+                return NotFound("No build step parts found for this project.");
+            }
+
+            //
+            // Build a lookup of submodel names (non-main sub-files)
+            //
+            HashSet<string> submodelNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var sf in subFiles)
+            {
+                if (sf.isMainModel == false && sf.fileName != null)
+                {
+                    submodelNames.Add(sf.fileName);
+                }
+            }
+
+            //
+            // Determine the total number of steps across ALL sub-files.
+            // Complex MPDs (like LEGO sets) have the main model referencing submodels,
+            // with the actual building steps inside the submodel files.
+            // We create a global step sequence by walking sub-files in order,
+            // then steps within each sub-file.
+            //
+            var mainSubFile = subFiles.FirstOrDefault(sf => sf.isMainModel == true);
+
+            if (mainSubFile == null)
+            {
+                return NotFound("No main model sub-file found.");
+            }
+            var globalSteps = allStepParts
+                .Select(p => new { p.modelSubFileId, p.StepNumber, p.IsMainModel })
+                .Distinct()
+                .OrderByDescending(x => x.IsMainModel)  // main model first
+                .ThenBy(x => x.modelSubFileId)
+                .ThenBy(x => x.StepNumber)
+                .ToList();
+
+            if (globalSteps.Count == 0)
+            {
+                return NotFound("No steps found in the project.");
+            }
+
+            //
+            // Create the PublishedMoc — tagged [TEST], Public
+            //
+            string mocName = $"[TEST] {project.name}";
+            string slug = MocVersioningService.GenerateSlug(mocName);
+            string baseSlug = slug;
+            int slugSuffix = 1;
+
+            while (await _context.PublishedMocs.AnyAsync(
+                pm => pm.tenantGuid == userTenantGuid && pm.slug == slug && pm.active == true,
+                cancellationToken))
+            {
+                slug = $"{baseSlug}-{slugSuffix}";
+                slugSuffix++;
+            }
+
+            PublishedMoc moc = new PublishedMoc
+            {
+                projectId = project.id,
+                tenantGuid = userTenantGuid,
+                name = mocName,
+                description = $"Test MOC seeded from project '{project.name}' building steps.",
+                tags = "test,seeded",
+                visibility = "Public",
+                licenseName = "AllRightsReserved",
+                slug = slug,
+                allowForking = false,
+                isPublished = true,
+                publishedDate = DateTime.UtcNow,
+                partCount = project.partCount,
+                thumbnailImagePath = project.thumbnailImagePath,
+                objectGuid = Guid.NewGuid(),
+                active = true,
+                deleted = false
+            };
+
+            _context.PublishedMocs.Add(moc);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            //
+            // For each global step, generate a cumulative MPD and create a MocVersion.
+            // The cumulative set grows as we walk through the global step list —
+            // each version includes all parts from steps up to and including the current one.
+            //
+            int previousPartCount = 0;
+            var cumulativeStepSet = new HashSet<(int subFileId, int stepNumber)>();
+
+            for (int stepIdx = 0; stepIdx < globalSteps.Count; stepIdx++)
+            {
+                var currentGlobalStep = globalSteps[stepIdx];
+                cumulativeStepSet.Add((currentGlobalStep.modelSubFileId, currentGlobalStep.StepNumber));
+
+                int versionNumber = stepIdx + 1;
+
+                //
+                // Gather ALL parts from all sub-files that are in the cumulative step set
+                //
+                var cumulativeParts = allStepParts
+                    .Where(p => cumulativeStepSet.Contains((p.modelSubFileId, p.StepNumber)))
+                    .OrderByDescending(p => p.IsMainModel)
+                    .ThenBy(p => p.modelSubFileId)
+                    .ThenBy(p => p.StepNumber)
+                    .ThenBy(p => p.sequence)
+                    .ToList();
+
+                //
+                // Build the MPD for this version — main model section only includes
+                // main-model parts (submodel references + direct parts).
+                // Submodel FILE blocks are appended as-is since they're fully resolved.
+                //
+                var mainParts = cumulativeParts
+                    .Where(p => p.modelSubFileId == mainSubFile.id)
+                    .ToList();
+
+                var mpd = new System.Text.StringBuilder();
+
+                bool hasSubmodels = subFiles.Count > 1;
+                string mainFileName = mainSubFile.fileName ?? $"{project.name}.ldr";
+
+                if (hasSubmodels)
+                {
+                    mpd.AppendLine($"0 FILE {mainFileName}");
+                }
+
+                mpd.AppendLine($"0 {project.name}");
+                mpd.AppendLine($"0 Name: {mainFileName}");
+                mpd.AppendLine("0 Author: BMC Seed Tool");
+                mpd.AppendLine("0 !LDRAW_ORG Unofficial Model");
+
+                int lastStep = -1;
+
+                foreach (var part in mainParts)
+                {
+                    if (part.StepNumber != lastStep && lastStep >= 0)
+                    {
+                        mpd.AppendLine("0 STEP");
+                    }
+                    lastStep = part.StepNumber;
+
+                    AppendPartLine(mpd, part.colorCode, part.positionX, part.positionY, part.positionZ, part.transformMatrix, part.partFileName);
+                }
+
+                mpd.AppendLine("0 STEP");
+
+                if (hasSubmodels)
+                {
+                    mpd.AppendLine("0 NOFILE");
+
+                    //
+                    // Build cumulative submodel FILE blocks — only include parts
+                    // from steps that are in the cumulativeStepSet so far.
+                    //
+                    foreach (var sf in subFiles.Where(s => s.isMainModel == false))
+                    {
+                        var sfCumulativeParts = cumulativeParts
+                            .Where(p => p.modelSubFileId == sf.id)
+                            .OrderBy(p => p.StepNumber)
+                            .ThenBy(p => p.sequence)
+                            .ToList();
+
+                        if (sfCumulativeParts.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        mpd.AppendLine($"0 FILE {sf.fileName}");
+                        mpd.AppendLine($"0 {sf.fileName}");
+                        mpd.AppendLine($"0 Name: {sf.fileName}");
+                        mpd.AppendLine("0 Author: BMC Seed Tool");
+
+                        int sfLastStep = -1;
+
+                        foreach (var part in sfCumulativeParts)
+                        {
+                            if (part.StepNumber != sfLastStep && sfLastStep >= 0)
+                            {
+                                mpd.AppendLine("0 STEP");
+                            }
+                            sfLastStep = part.StepNumber;
+
+                            AppendPartLine(mpd, part.colorCode, part.positionX, part.positionY, part.positionZ, part.transformMatrix, part.partFileName);
+                        }
+
+                        mpd.AppendLine("0 STEP");
+                        mpd.AppendLine("0 NOFILE");
+                    }
+                }
+
+                string mpdText = mpd.ToString();
+
+                //
+                // Count parts in this version
+                //
+                int totalPartCount = cumulativeParts.Count;
+                int partsAddedThisStep = totalPartCount - previousPartCount;
+
+                string subFileName = currentGlobalStep.IsMainModel
+                    ? mainSubFile.fileName
+                    : subFiles.FirstOrDefault(sf => sf.id == currentGlobalStep.modelSubFileId)?.fileName ?? "unknown";
+
+                //
+                // Create the MocVersion
+                //
+                MocVersion version = new MocVersion
+                {
+                    tenantGuid = userTenantGuid,
+                    publishedMocId = moc.id,
+                    versionNumber = versionNumber,
+                    commitMessage = $"Step {versionNumber}: {partsAddedThisStep} part(s) added in {subFileName} (cumulative: {totalPartCount})",
+                    mpdSnapshot = mpdText,
+                    partCount = totalPartCount,
+                    addedPartCount = partsAddedThisStep,
+                    removedPartCount = 0,
+                    modifiedPartCount = 0,
+                    snapshotDate = DateTime.UtcNow,
+                    authorTenantGuid = userTenantGuid,
+                    objectGuid = Guid.NewGuid(),
+                    active = true,
+                    deleted = false
+                };
+
+                _context.MocVersions.Add(version);
+
+                previousPartCount = totalPartCount;
+            }
+
+            //
+            // Update the MOC's version number to the final step
+            //
+            moc.versionNumber = globalSteps.Count;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            await CreateAuditEventAsync(
+                AuditEngine.AuditType.CreateEntity,
+                $"MOCHub Admin: Seeded MOC '{moc.name}' (id={moc.id}) with {globalSteps.Count} versions from project '{project.name}' (id={project.id})",
+                moc.id.ToString());
+
+            _logger.LogInformation(
+                "MOCHub Admin: Seeded MOC {MocId} with {VersionCount} versions from project {ProjectId}",
+                moc.id, globalSteps.Count, project.id);
+
+            return Ok(new
+            {
+                publishedMocId = moc.id,
+                slug,
+                versionCount = globalSteps.Count,
+                totalParts = previousPartCount
+            });
+        }
+
+
+        /// <summary>
+        /// Append a single LDraw Type 1 line to a StringBuilder.
+        /// Format: 1 colour x y z a b c d e f g h i partFileName
+        /// </summary>
+        private static void AppendPartLine(
+            System.Text.StringBuilder sb,
+            int colourCode,
+            float? posX, float? posY, float? posZ,
+            string transformMatrix,
+            string partFileName)
+        {
+            string x = (posX ?? 0f).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+            string y = (posY ?? 0f).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+            string z = (posZ ?? 0f).ToString("G", System.Globalization.CultureInfo.InvariantCulture);
+
+            //
+            // transformMatrix stores the 3x3 rotation as 9 space-separated values
+            // Default to identity matrix if missing
+            //
+            string matrixPart = string.IsNullOrWhiteSpace(transformMatrix)
+                ? "1 0 0 0 1 0 0 0 1"
+                : transformMatrix;
+
+            sb.AppendLine($"1 {colourCode} {x} {y} {z} {matrixPart} {partFileName}");
+        }
+
+
+        /// <summary>
+        /// DTO for the seed-from-steps request.
+        /// </summary>
+        public class SeedFromStepsRequest
+        {
+            public int ProjectId { get; set; }
         }
 
 

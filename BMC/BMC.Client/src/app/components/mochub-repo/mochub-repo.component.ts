@@ -4,14 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
-import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { marked } from 'marked';
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { LDrawLoader } from 'three/examples/jsm/loaders/LDrawLoader.js';
-import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDrawConditionalLineMaterial.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 
 /**
@@ -97,7 +95,6 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
         private router: Router,
         private http: HttpClient,
         private authService: AuthService,
-        private fileCacheService: LDrawFileCacheService,
         private sanitizer: DomSanitizer
     ) { }
 
@@ -349,67 +346,32 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
             return;
         }
 
-        //
-        // Initialise the LDraw file cache
-        //
-        await this.fileCacheService.initialise();
-
         this.initDiffScene();
 
         //
-        // Fetch the diff MPD from the server
+        // Fetch the compiled GLB from the server
         //
         const versionNum = this.selectedVersion.versionNumber;
-        const url = `/api/mochub/moc/${this.mocId}/versions/${versionNum}/diff-mpd`;
+        const url = `/api/mochub/moc/${this.mocId}/versions/${versionNum}/viewer-glb`;
 
         try {
-            const mpdText = await this.http.get(url, { responseType: 'text' }).toPromise();
+            const glbBuffer = await this.http.get(url, { responseType: 'arraybuffer' }).toPromise();
 
-            if (!mpdText || !this.diffScene) {
+            if (!glbBuffer || !this.diffScene) {
                 this.diff3dLoading = false;
                 return;
             }
 
             //
-            // Load the MPD using LDrawLoader
+            // Load the GLB using GLTFLoader.parse()
             //
-            const loader = new LDrawLoader();
-            loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
+            const loader = new GLTFLoader();
 
-            const fileEndpoint = '/api/ldraw/file/';
-            loader.setPartsLibraryPath(fileEndpoint);
-
-            //
-            // Graceful missing file handling
-            //
-            const partsGeometryCache = (loader as any).partsCache;
-            if (partsGeometryCache?.parseCache) {
-                const parseCache = partsGeometryCache.parseCache;
-                const originalFetchData = parseCache.fetchData.bind(parseCache);
-                parseCache.fetchData = async (fileName: string) => {
-                    try { return await originalFetchData(fileName); }
-                    catch { return `0 // Not found: ${fileName}\n`; }
-                };
-            }
-
-            //
-            // Preload LDraw colour config
-            //
-            try {
-                await (loader as any).preloadMaterials(fileEndpoint + 'LDConfig.ldr');
-            } catch { }
-
-            //
-            // Parse the MPD text directly using LDrawLoader.parse()
-            //
-            const group = await new Promise<THREE.Group>((resolve, reject) => {
-                (loader as any).parse(mpdText, '', (result: THREE.Group) => resolve(result), reject);
+            const gltf = await new Promise<any>((resolve, reject) => {
+                loader.parse(glbBuffer, '', (result: any) => resolve(result), reject);
             });
 
-            //
-            // LDraw coordinate system — Y-axis flip
-            //
-            group.rotation.x = Math.PI;
+            const group = gltf.scene;
 
             this.diffModelGroup = group;
             this.diffScene!.add(group);
@@ -418,7 +380,7 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
             this.diff3dLoading = false;
 
         } catch (err) {
-            console.error('[DiffViewer] Failed to load diff MPD:', err);
+            console.error('[DiffViewer] Failed to load version GLB:', err);
             this.diff3dLoading = false;
         }
     }
@@ -502,21 +464,53 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
 
     private centreAndFrameDiffModel(group: THREE.Group): void {
         const box = new THREE.Box3().setFromObject(group);
-        const center = box.getCenter(new THREE.Vector3());
+        const centre = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
-        const maxDim = Math.max(size.x, size.y, size.z);
-        const distance = maxDim * 1.5;
 
-        group.position.sub(center);
+        //
+        // Centre the model at the world origin
+        //
+        group.position.sub(centre);
 
-        if (this.diffCamera) {
-            this.diffCamera.position.set(distance * 0.7, distance * 0.5, distance * 0.9);
-            this.diffCamera.lookAt(0, 0, 0);
+        if (!this.diffCamera || !this.diffControls) {
+            return;
         }
 
-        if (this.diffControls) {
-            this.diffControls.target.set(0, 0, 0);
-            this.diffControls.update();
+        //
+        // Calculate the ideal camera distance so the model fills the viewport.
+        // Use the tighter of horizontal/vertical FOV so it doesn't clip on
+        // narrow or short viewports.
+        //
+        const fovV = this.diffCamera.fov * (Math.PI / 180);
+        const fovH = 2 * Math.atan(Math.tan(fovV / 2) * this.diffCamera.aspect);
+
+        const distanceV = (size.y / 2) / Math.tan(fovV / 2);
+        const distanceH = (Math.max(size.x, size.z) / 2) / Math.tan(fovH / 2);
+        const fitDistance = Math.max(distanceV, distanceH);
+
+        //
+        // 1.2× padding factor — enough margin without wasting space
+        //
+        const PADDING = 1.2;
+        const distance = fitDistance * PADDING;
+
+        this.diffCamera.position.set(distance * 0.7, distance * 0.5, distance * 0.7);
+        this.diffCamera.lookAt(0, 0, 0);
+        this.diffCamera.near = Math.max(0.1, distance * 0.01);
+        this.diffCamera.far = distance * 10;
+        this.diffCamera.updateProjectionMatrix();
+
+        this.diffControls.target.set(0, 0, 0);
+        this.diffControls.minDistance = distance * 0.1;
+        this.diffControls.update();
+
+        //
+        // Position the grid at the bottom of the model so it acts as a floor
+        //
+        const floorY = -size.y / 2;
+        const grid = this.diffScene?.children.find(c => c instanceof THREE.GridHelper);
+        if (grid) {
+            grid.position.y = floorY;
         }
     }
 

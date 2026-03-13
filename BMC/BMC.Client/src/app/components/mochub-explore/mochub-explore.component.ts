@@ -40,6 +40,10 @@ export class MochubExploreComponent implements OnInit, OnDestroy {
     publishModalOpen = false;
     thumbnailLoaded = new Set<number>();
 
+    // My MOCs
+    myMocs: any[] = [];
+    myMocsLoading = false;
+
     sortOptions = [
         { value: 'trending', label: 'Trending', icon: 'fas fa-fire' },
         { value: 'recent', label: 'Recently Published', icon: 'fas fa-clock' },
@@ -67,6 +71,10 @@ export class MochubExploreComponent implements OnInit, OnDestroy {
         });
 
         this.loadMocs();
+
+        if (this.authService.isLoggedIn) {
+            this.loadMyMocs();
+        }
     }
 
 
@@ -104,6 +112,26 @@ export class MochubExploreComponent implements OnInit, OnDestroy {
                 this.mocs = [];
                 this.loading = false;
                 this.errorMessage = 'Failed to load MOCs. Please try again.';
+            }
+        });
+    }
+
+
+    loadMyMocs(): void {
+        this.myMocsLoading = true;
+
+        this.http.get<any[]>('/api/mochub/my-mocs', {
+            headers: this.authService.GetAuthenticationHeaders()
+        }).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (mocs) => {
+                this.myMocs = mocs || [];
+                this.myMocsLoading = false;
+            },
+            error: () => {
+                this.myMocs = [];
+                this.myMocsLoading = false;
             }
         });
     }
@@ -153,6 +181,80 @@ export class MochubExploreComponent implements OnInit, OnDestroy {
     onMocPublished(): void {
         this.publishModalOpen = false;
         this.loadMocs();
+    }
+
+
+    //
+    // Admin — Seed MOC from Steps
+    //
+
+    showSeedForm = false;
+    seedProjectId: number | null = null;
+    seeding = false;
+    seedResult: any = null;
+    seedError = '';
+    seedProjects: any[] = [];
+    seedProjectsLoading = false;
+
+    get isAdmin(): boolean {
+        return this.authService?.isBMCAdministrator === true;
+    }
+
+    toggleSeedForm(): void {
+        this.showSeedForm = !this.showSeedForm;
+        this.seedResult = null;
+        this.seedError = '';
+
+        if (this.showSeedForm && this.seedProjects.length === 0) {
+            this.loadSeedProjects();
+        }
+    }
+
+    loadSeedProjects(): void {
+        this.seedProjectsLoading = true;
+
+        this.http.get<any[]>('/api/projects', {
+            headers: this.authService.GetAuthenticationHeaders()
+        }).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (projects) => {
+                this.seedProjects = (projects || []).sort((a, b) =>
+                    (a.name || a.projectName || '').localeCompare(b.name || b.projectName || '')
+                );
+                this.seedProjectsLoading = false;
+            },
+            error: () => {
+                this.seedProjects = [];
+                this.seedProjectsLoading = false;
+                this.seedError = 'Failed to load projects.';
+            }
+        });
+    }
+
+    seedMocFromSteps(): void {
+        if (!this.seedProjectId || this.seeding) return;
+
+        this.seeding = true;
+        this.seedResult = null;
+        this.seedError = '';
+
+        this.http.post<any>('/api/mochub/admin/seed-from-steps', {
+            projectId: this.seedProjectId
+        }, {
+            headers: this.authService.GetAuthenticationHeaders()
+        }).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (result) => {
+                this.seedResult = result;
+                this.seeding = false;
+            },
+            error: (err) => {
+                this.seedError = err.error?.detail || err.error || 'Seed failed. Check the project.';
+                this.seeding = false;
+            }
+        });
     }
 
 

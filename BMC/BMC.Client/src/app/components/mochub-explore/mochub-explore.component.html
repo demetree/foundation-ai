@@ -31,8 +31,107 @@
                 (click)="openPublishModal()">
                 <i class="fas fa-upload"></i> Publish a MOC
             </button>
+
+            <!-- Admin: Seed MOC from Steps -->
+            <div class="seed-admin" *ngIf="isAdmin">
+                <button class="seed-toggle-btn" (click)="toggleSeedForm()">
+                    <i class="fas fa-flask"></i> {{ showSeedForm ? 'Hide Seed Tool' : 'Seed MOC from Steps' }}
+                </button>
+
+                <div class="seed-form" *ngIf="showSeedForm">
+                    <label class="seed-label">Select Project</label>
+                    <div class="seed-input-row">
+                        <select
+                            class="seed-select"
+                            [(ngModel)]="seedProjectId"
+                            [disabled]="seeding || seedProjectsLoading">
+                            <option [ngValue]="null" disabled>
+                                {{ seedProjectsLoading ? '⏳ Loading projects...' : '— Choose a project —' }}
+                            </option>
+                            <option *ngFor="let p of seedProjects" [ngValue]="p.id || p.projectId">
+                                {{ p.name || p.projectName }} ({{ p.partCount || 0 }} parts)
+                            </option>
+                        </select>
+                        <button
+                            class="seed-btn"
+                            [disabled]="!seedProjectId || seeding"
+                            (click)="seedMocFromSteps()">
+                            <i class="fas" [ngClass]="seeding ? 'fa-spinner fa-spin' : 'fa-seedling'"></i>
+                            {{ seeding ? 'Seeding...' : 'Seed' }}
+                        </button>
+                    </div>
+
+                    <div class="seed-result" *ngIf="seedResult">
+                        <i class="fas fa-check-circle"></i>
+                        Seeded <strong>{{ seedResult.versionCount }}</strong> versions
+                        ({{ seedResult.totalParts }} parts)
+                        — <a [routerLink]="['/mochub/moc', seedResult.publishedMocId]">View MOC</a>
+                    </div>
+
+                    <div class="seed-error" *ngIf="seedError">
+                        <i class="fas fa-exclamation-circle"></i> {{ seedError }}
+                    </div>
+                </div>
+            </div>
+
         </div>
     </header>
+
+
+    <!-- Your MOCs (logged-in users only) -->
+    <section class="my-mocs-section" *ngIf="authService.isLoggedIn && (myMocs.length > 0 || myMocsLoading)">
+        <div class="my-mocs-header">
+            <h2><i class="fas fa-user-circle"></i> Your MOCs</h2>
+            <span class="my-mocs-count">{{ myMocs.length }}</span>
+        </div>
+
+        <!-- Loading shimmer -->
+        <div class="my-mocs-row" *ngIf="myMocsLoading">
+            <div class="my-moc-card skeleton" *ngFor="let i of [1,2,3]">
+                <div class="skeleton-thumb"></div>
+                <div class="skeleton-text short"></div>
+            </div>
+        </div>
+
+        <!-- MOC cards -->
+        <div class="my-mocs-row" *ngIf="!myMocsLoading">
+            <div
+                class="my-moc-card"
+                *ngFor="let moc of myMocs"
+                (click)="navigateToMoc(moc)">
+
+                <!-- Thumbnail -->
+                <div class="my-moc-thumb">
+                    <img
+                        [src]="'/api/mochub/moc/' + moc.id + '/thumbnail'"
+                        [alt]="moc.name"
+                        loading="lazy"
+                        (error)="$event.target.style.display='none'">
+                    <div class="no-thumb-mini">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                </div>
+
+                <!-- Info -->
+                <div class="my-moc-info">
+                    <span class="my-moc-name">{{ moc.name }}</span>
+                    <div class="my-moc-meta">
+                        <span class="visibility-pill"
+                            [class.vis-public]="moc.visibility === 'Public'"
+                            [class.vis-unlisted]="moc.visibility === 'Unlisted'"
+                            [class.vis-private]="moc.visibility === 'Private'">
+                            <i [class]="moc.visibility === 'Public' ? 'fas fa-globe-americas' :
+                                        moc.visibility === 'Unlisted' ? 'fas fa-eye-slash' : 'fas fa-lock'"></i>
+                            {{ moc.visibility || 'Public' }}
+                        </span>
+                        <span class="my-moc-parts">
+                            <i class="fas fa-cubes"></i> {{ formatNumber(moc.partCount) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
 
     <!-- Sort Bar -->

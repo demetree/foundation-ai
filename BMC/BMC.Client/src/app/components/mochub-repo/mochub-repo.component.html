@@ -28,9 +28,12 @@
                 <div class="repo-name-group">
                     <i class="fas fa-cube repo-icon"></i>
                     <h1 class="repo-name">{{ moc.name }}</h1>
-                    <span class="visibility-badge" [class.public]="moc.visibility === 'Public'"
-                        [class.private]="moc.visibility !== 'Public'">
-                        <i [class]="moc.visibility === 'Public' ? 'fas fa-globe-americas' : 'fas fa-lock'"></i>
+                    <span class="visibility-badge"
+                        [class.public]="moc.visibility === 'Public'"
+                        [class.unlisted]="moc.visibility === 'Unlisted'"
+                        [class.private]="moc.visibility === 'Private' || (moc.visibility !== 'Public' && moc.visibility !== 'Unlisted')">
+                        <i [class]="moc.visibility === 'Public' ? 'fas fa-globe-americas' :
+                                    moc.visibility === 'Unlisted' ? 'fas fa-eye-slash' : 'fas fa-lock'"></i>
                         {{ moc.visibility || 'Public' }}
                     </span>
                 </div>
