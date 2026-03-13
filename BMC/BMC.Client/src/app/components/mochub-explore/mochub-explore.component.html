@@ -1,0 +1,163 @@
+<!-- MOCHub Explore — GitHub-style MOC discovery page -->
+
+<div class="mochub-explore">
+
+    <!-- Hero Header -->
+    <header class="mochub-hero">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <i class="fas fa-code-branch"></i>
+            </div>
+            <h1>MOCHub</h1>
+            <p class="hero-subtitle">Discover, share, and fork community MOC creations</p>
+
+            <!-- Search Bar -->
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input
+                    id="mochub-search"
+                    type="text"
+                    class="search-input"
+                    placeholder="Search MOCs by name, description, or tags..."
+                    [value]="searchTerm"
+                    (input)="onSearch($event)"
+                    autocomplete="off">
+            </div>
+
+            <!-- Publish button (logged-in users only) -->
+            <button
+                class="publish-btn"
+                *ngIf="authService.currentUser"
+                (click)="openPublishModal()">
+                <i class="fas fa-upload"></i> Publish a MOC
+            </button>
+        </div>
+    </header>
+
+
+    <!-- Sort Bar -->
+    <div class="sort-bar">
+        <div class="sort-tabs">
+            <button
+                *ngFor="let opt of sortOptions"
+                class="sort-tab"
+                [class.active]="sortBy === opt.value"
+                (click)="setSort(opt.value)">
+                <i [class]="opt.icon"></i>
+                <span>{{ opt.label }}</span>
+            </button>
+        </div>
+
+        <div class="result-count">
+            <span class="count-badge">{{ totalCount }}</span> MOCs found
+        </div>
+    </div>
+
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+        <div class="skeleton-grid">
+            <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8]">
+                <div class="skeleton-thumb"></div>
+                <div class="skeleton-text short"></div>
+                <div class="skeleton-text long"></div>
+                <div class="skeleton-text medium"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MOC Grid -->
+    <div class="moc-grid" *ngIf="!loading">
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="mocs.length === 0">
+            <i class="fas fa-box-open"></i>
+            <h3>No MOCs found</h3>
+            <p>Try adjusting your search or browse all MOCs</p>
+        </div>
+
+        <!-- MOC Cards -->
+        <div
+            class="moc-card"
+            *ngFor="let moc of mocs"
+            (click)="navigateToMoc(moc)">
+
+            <!-- Thumbnail -->
+            <div class="card-thumbnail">
+                <img
+                    [src]="'/api/mochub/moc/' + moc.id + '/thumbnail'"
+                    [alt]="moc.name"
+                    loading="lazy"
+                    (load)="thumbnailLoaded.add(moc.id)"
+                    (error)="$event.target.style.display='none'">
+                <div class="no-thumb" *ngIf="!thumbnailLoaded.has(moc.id)">
+                    <i class="fas fa-cubes"></i>
+                </div>
+
+                <!-- Featured Badge -->
+                <span class="featured-badge" *ngIf="moc.isFeatured">
+                    <i class="fas fa-star"></i> Featured
+                </span>
+
+                <!-- Fork Badge -->
+                <span class="fork-badge" *ngIf="moc.forkedFromMocName">
+                    <i class="fas fa-code-branch"></i> Fork
+                </span>
+            </div>
+
+            <!-- Card Body -->
+            <div class="card-body">
+                <h3 class="card-title">{{ moc.name }}</h3>
+                <p class="card-description">{{ moc.description }}</p>
+
+                <!-- Tags -->
+                <div class="card-tags" *ngIf="moc.tags">
+                    <span class="tag" *ngFor="let tag of (moc.tags || '').split(',').slice(0, 3)">
+                        {{ tag.trim() }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer">
+                <div class="card-stats">
+                    <span class="stat" title="Likes">
+                        <i class="fas fa-star"></i> {{ formatNumber(moc.likeCount) }}
+                    </span>
+                    <span class="stat" title="Forks">
+                        <i class="fas fa-code-branch"></i> {{ formatNumber(moc.forkCount) }}
+                    </span>
+                    <span class="stat" title="Parts">
+                        <i class="fas fa-cubes"></i> {{ formatNumber(moc.partCount) }}
+                    </span>
+                </div>
+                <span class="card-date">{{ formatDate(moc.publishedDate) }}</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+        <button class="page-btn" [disabled]="pageNumber <= 1" (click)="prevPage()">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+
+        <span class="page-info">
+            Page {{ pageNumber }} of {{ totalPages }}
+        </span>
+
+        <button class="page-btn" [disabled]="pageNumber >= totalPages" (click)="nextPage()">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+</div>
+
+<!-- Publish Modal -->
+<app-mochub-publish-modal
+    *ngIf="publishModalOpen"
+    (closed)="onPublishModalClosed()"
+    (published)="onMocPublished()">
+</app-mochub-publish-modal>

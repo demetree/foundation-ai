@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = projectChangeHistory.timeStamp,
 				userId = projectChangeHistory.userId,
 				data = projectChangeHistory.data,
-				project = Project.CreateMinimalAnonymous(projectChangeHistory.project),
+				project = Project.CreateMinimalAnonymous(projectChangeHistory.project)
 			 };
 		}
 

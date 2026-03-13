@@ -443,7 +443,7 @@ namespace Foundation.BMC.Services
             //
             // Increment the source MOC's fork count
             //
-            sourceMoc.forkCount = (sourceMoc.forkCount ?? 0) + 1;
+            sourceMoc.forkCount = sourceMoc.forkCount + 1;
 
             await _context.SaveChangesAsync(cancellationToken);
 

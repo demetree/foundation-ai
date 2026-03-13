@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { PublishedMocData } from './published-moc.service';
+import { MocCollaboratorChangeHistoryService, MocCollaboratorChangeHistoryData } from './moc-collaborator-change-history.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -34,6 +35,7 @@ export class MocCollaboratorQueryParameters {
     invitedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     acceptedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     isAccepted: boolean | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -55,10 +57,31 @@ export class MocCollaboratorSubmitData {
     invitedDate!: string;      // ISO 8601 (full datetime)
     acceptedDate: string | null = null;     // ISO 8601 (full datetime)
     isAccepted!: boolean;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class MocCollaboratorBasicListData {
   id!: bigint | number;
@@ -110,6 +133,7 @@ export class MocCollaboratorData {
     invitedDate!: string;      // ISO 8601 (full datetime)
     acceptedDate!: string | null;   // ISO 8601 (full datetime)
     isAccepted!: boolean;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -118,6 +142,20 @@ export class MocCollaboratorData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _mocCollaboratorChangeHistories: MocCollaboratorChangeHistoryData[] | null = null;
+    private _mocCollaboratorChangeHistoriesPromise: Promise<MocCollaboratorChangeHistoryData[]> | null  = null;
+    private _mocCollaboratorChangeHistoriesSubject = new BehaviorSubject<MocCollaboratorChangeHistoryData[] | null>(null);
+
+                
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<MocCollaboratorData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<MocCollaboratorData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<MocCollaboratorData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -125,6 +163,31 @@ export class MocCollaboratorData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public MocCollaboratorChangeHistories$ = this._mocCollaboratorChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._mocCollaboratorChangeHistories === null && this._mocCollaboratorChangeHistoriesPromise === null) {
+            this.loadMocCollaboratorChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _mocCollaboratorChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get MocCollaboratorChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._mocCollaboratorChangeHistoriesCount$ === null) {
+            this._mocCollaboratorChangeHistoriesCount$ = MocCollaboratorChangeHistoryService.Instance.GetMocCollaboratorChangeHistoriesRowCount({mocCollaboratorId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocCollaboratorChangeHistoriesCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -163,12 +226,128 @@ export class MocCollaboratorData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._mocCollaboratorChangeHistories = null;
+     this._mocCollaboratorChangeHistoriesPromise = null;
+     this._mocCollaboratorChangeHistoriesSubject.next(null);
+     this._mocCollaboratorChangeHistoriesCount$ = null;
+
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the MocCollaboratorChangeHistories for this MocCollaborator.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.mocCollaborator.MocCollaboratorChangeHistories.then(mocCollaborators => { ... })
+     *   or
+     *   await this.mocCollaborator.mocCollaborators
+     *
+    */
+    public get MocCollaboratorChangeHistories(): Promise<MocCollaboratorChangeHistoryData[]> {
+        if (this._mocCollaboratorChangeHistories !== null) {
+            return Promise.resolve(this._mocCollaboratorChangeHistories);
+        }
+
+        if (this._mocCollaboratorChangeHistoriesPromise !== null) {
+            return this._mocCollaboratorChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadMocCollaboratorChangeHistories();
+
+        return this._mocCollaboratorChangeHistoriesPromise!;
+    }
+
+
+
+    private loadMocCollaboratorChangeHistories(): void {
+
+        this._mocCollaboratorChangeHistoriesPromise = lastValueFrom(
+            MocCollaboratorService.Instance.GetMocCollaboratorChangeHistoriesForMocCollaborator(this.id)
+        )
+        .then(MocCollaboratorChangeHistories => {
+            this._mocCollaboratorChangeHistories = MocCollaboratorChangeHistories ?? [];
+            this._mocCollaboratorChangeHistoriesSubject.next(this._mocCollaboratorChangeHistories);
+            return this._mocCollaboratorChangeHistories;
+         })
+        .catch(err => {
+            this._mocCollaboratorChangeHistories = [];
+            this._mocCollaboratorChangeHistoriesSubject.next(this._mocCollaboratorChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._mocCollaboratorChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached MocCollaboratorChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearMocCollaboratorChangeHistoriesCache(): void {
+        this._mocCollaboratorChangeHistories = null;
+        this._mocCollaboratorChangeHistoriesPromise = null;
+        this._mocCollaboratorChangeHistoriesSubject.next(this._mocCollaboratorChangeHistories);      // Emit to observable
+    }
+
+    public get HasMocCollaboratorChangeHistories(): Promise<boolean> {
+        return this.MocCollaboratorChangeHistories.then(mocCollaboratorChangeHistories => mocCollaboratorChangeHistories.length > 0);
+    }
+
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (mocCollaborator.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await mocCollaborator.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<MocCollaboratorData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<MocCollaboratorData>> {
+        const info = await lastValueFrom(
+            MocCollaboratorService.Instance.GetMocCollaboratorChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
 
 
     /**
@@ -204,6 +383,7 @@ export class MocCollaboratorService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private mocCollaboratorChangeHistoryService: MocCollaboratorChangeHistoryService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -267,6 +447,7 @@ export class MocCollaboratorService extends SecureEndpointBase {
         output.invitedDate = data.invitedDate;
         output.acceptedDate = data.acceptedDate;
         output.isAccepted = data.isAccepted;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -494,6 +675,108 @@ export class MocCollaboratorService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackMocCollaborator(id: bigint | number, versionNumber: bigint | number) : Observable<MocCollaboratorData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<MocCollaboratorData>(this.baseUrl + 'api/MocCollaborator/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveMocCollaborator(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackMocCollaborator(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a MocCollaborator.
+     */
+    public GetMocCollaboratorChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<MocCollaboratorData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<MocCollaboratorData>>(this.baseUrl + 'api/MocCollaborator/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetMocCollaboratorChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a MocCollaborator.
+     */
+    public GetMocCollaboratorAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<MocCollaboratorData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<MocCollaboratorData>[]>(this.baseUrl + 'api/MocCollaborator/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetMocCollaboratorAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a MocCollaborator.
+     */
+    public GetMocCollaboratorVersion(id: bigint | number, version: number): Observable<MocCollaboratorData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<MocCollaboratorData>(this.baseUrl + 'api/MocCollaborator/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveMocCollaborator(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetMocCollaboratorVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a MocCollaborator at a specific point in time.
+     */
+    public GetMocCollaboratorStateAtTime(id: bigint | number, time: string): Observable<MocCollaboratorData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<MocCollaboratorData>(this.baseUrl + 'api/MocCollaborator/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveMocCollaborator(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetMocCollaboratorStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: MocCollaboratorQueryParameters | any): string {
 
@@ -565,6 +848,16 @@ export class MocCollaboratorService extends SecureEndpointBase {
         return userIsBMCMocCollaboratorWriter;
     }
 
+    public GetMocCollaboratorChangeHistoriesForMocCollaborator(mocCollaboratorId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MocCollaboratorChangeHistoryData[]> {
+        return this.mocCollaboratorChangeHistoryService.GetMocCollaboratorChangeHistoryList({
+            mocCollaboratorId: mocCollaboratorId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full MocCollaboratorData instance.
@@ -600,6 +893,10 @@ export class MocCollaboratorService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._mocCollaboratorChangeHistories = null;
+    (revived as any)._mocCollaboratorChangeHistoriesPromise = null;
+    (revived as any)._mocCollaboratorChangeHistoriesSubject = new BehaviorSubject<MocCollaboratorChangeHistoryData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -612,6 +909,35 @@ export class MocCollaboratorService extends SecureEndpointBase {
     // 2. But private methods (loadMocCollaboratorXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).MocCollaboratorChangeHistories$ = (revived as any)._mocCollaboratorChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._mocCollaboratorChangeHistories === null && (revived as any)._mocCollaboratorChangeHistoriesPromise === null) {
+                (revived as any).loadMocCollaboratorChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._mocCollaboratorChangeHistoriesCount$ = null;
+
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<MocCollaboratorData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
 
     return revived;
   }

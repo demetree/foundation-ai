@@ -67,7 +67,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/MocVersions")]
 		public async Task<IActionResult> GetMocVersions(
 			int? publishedMocId = null,
-			int? versionNumber = null,
 			string commitMessage = null,
 			string mpdSnapshot = null,
 			int? partCount = null,
@@ -76,6 +75,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? modifiedPartCount = null,
 			DateTime? snapshotDate = null,
 			Guid? authorTenantGuid = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -141,10 +141,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(mv => mv.publishedMocId == publishedMocId.Value);
 			}
-			if (versionNumber.HasValue == true)
-			{
-				query = query.Where(mv => mv.versionNumber == versionNumber.Value);
-			}
 			if (string.IsNullOrEmpty(commitMessage) == false)
 			{
 				query = query.Where(mv => mv.commitMessage == commitMessage);
@@ -176,6 +172,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (authorTenantGuid.HasValue == true)
 			{
 				query = query.Where(mv => mv.authorTenantGuid == authorTenantGuid);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(mv => mv.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -283,7 +283,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[Route("api/MocVersions/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? publishedMocId = null,
-			int? versionNumber = null,
 			string commitMessage = null,
 			string mpdSnapshot = null,
 			int? partCount = null,
@@ -292,6 +291,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? modifiedPartCount = null,
 			DateTime? snapshotDate = null,
 			Guid? authorTenantGuid = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -337,10 +337,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(mv => mv.publishedMocId == publishedMocId.Value);
 			}
-			if (versionNumber.HasValue == true)
-			{
-				query = query.Where(mv => mv.versionNumber == versionNumber.Value);
-			}
 			if (commitMessage != null)
 			{
 				query = query.Where(mv => mv.commitMessage == commitMessage);
@@ -372,6 +368,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (authorTenantGuid.HasValue == true)
 			{
 				query = query.Where(mv => mv.authorTenantGuid == authorTenantGuid);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(mv => mv.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -806,6 +806,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					mocVersion.MocForks = null;
+					mocVersion.MocVersionChangeHistories = null;
 					mocVersion.publishedMoc = null;
 
 
@@ -922,6 +923,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.MocForks = null;
+				cloneOfExisting.MocVersionChangeHistories = null;
 				cloneOfExisting.publishedMoc = null;
 
 				if (versionNumber >= mocVersion.versionNumber)
@@ -1403,7 +1405,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			int? publishedMocId = null,
-			int? versionNumber = null,
 			string commitMessage = null,
 			string mpdSnapshot = null,
 			int? partCount = null,
@@ -1412,6 +1413,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? modifiedPartCount = null,
 			DateTime? snapshotDate = null,
 			Guid? authorTenantGuid = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -1476,10 +1478,6 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(mv => mv.publishedMocId == publishedMocId.Value);
 			}
-			if (versionNumber.HasValue == true)
-			{
-				query = query.Where(mv => mv.versionNumber == versionNumber.Value);
-			}
 			if (string.IsNullOrEmpty(commitMessage) == false)
 			{
 				query = query.Where(mv => mv.commitMessage == commitMessage);
@@ -1511,6 +1509,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (authorTenantGuid.HasValue == true)
 			{
 				query = query.Where(mv => mv.authorTenantGuid == authorTenantGuid);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(mv => mv.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{

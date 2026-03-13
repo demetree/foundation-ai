@@ -56,6 +56,10 @@
                                 <input type="checkbox" id="MocCollaborator-isAccepted" formControlName="isAccepted" class="form-check-input" [disabled]="!userIsBMCMocCollaboratorWriter()" />
                                 <label for="MocCollaborator-isAccepted" class="form-check-label" id="label-MocCollaborator-isAccepted"><span class="text-danger">*</span>Is Accepted</label>
                             </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="MocCollaborator-versionNumber" id="label-MocCollaborator-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="MocCollaborator-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control moc-collaborator-input" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="MocCollaborator-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocCollaboratorWriter()" />
                                 <label for="MocCollaborator-active" class="form-check-label" id="label-MocCollaborator-active"><span class="text-danger">*</span>Active</label>
@@ -79,6 +83,30 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCMocCollaboratorReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 moc-collaborator-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="mocCollaboratorChangeHistoryService.userIsBMCMocCollaboratorChangeHistoryReader()">
+                            <button ngbNavLink>Moc Collaborator Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (mocCollaboratorData?.MocCollaboratorChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-moc-collaborator-change-history-table [queryParams]="{ mocCollaboratorId: mocCollaboratorData?.id }" [showAddButton]="true" [preSeededData]="{ mocCollaboratorId: mocCollaboratorData?.id }" [hiddenFields]="['mocCollaboratorId']"></app-moc-collaborator-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
                 </div>
             </div>
         </div>

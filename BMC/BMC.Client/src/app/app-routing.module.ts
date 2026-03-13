@@ -131,6 +131,8 @@ import { MarketDataCacheListingComponent } from './bmc-data-components/market-da
 import { MarketDataCacheDetailComponent } from './bmc-data-components/market-data-cache/market-data-cache-detail/market-data-cache-detail.component';
 import { MocCollaboratorListingComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-listing/moc-collaborator-listing.component';
 import { MocCollaboratorDetailComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-detail/moc-collaborator-detail.component';
+import { MocCollaboratorChangeHistoryListingComponent } from './bmc-data-components/moc-collaborator-change-history/moc-collaborator-change-history-listing/moc-collaborator-change-history-listing.component';
+import { MocCollaboratorChangeHistoryDetailComponent } from './bmc-data-components/moc-collaborator-change-history/moc-collaborator-change-history-detail/moc-collaborator-change-history-detail.component';
 import { MocCommentListingComponent } from './bmc-data-components/moc-comment/moc-comment-listing/moc-comment-listing.component';
 import { MocCommentDetailComponent } from './bmc-data-components/moc-comment/moc-comment-detail/moc-comment-detail.component';
 import { MocFavouriteListingComponent } from './bmc-data-components/moc-favourite/moc-favourite-listing/moc-favourite-listing.component';
@@ -141,6 +143,8 @@ import { MocLikeListingComponent } from './bmc-data-components/moc-like/moc-like
 import { MocLikeDetailComponent } from './bmc-data-components/moc-like/moc-like-detail/moc-like-detail.component';
 import { MocVersionListingComponent } from './bmc-data-components/moc-version/moc-version-listing/moc-version-listing.component';
 import { MocVersionDetailComponent } from './bmc-data-components/moc-version/moc-version-detail/moc-version-detail.component';
+import { MocVersionChangeHistoryListingComponent } from './bmc-data-components/moc-version-change-history/moc-version-change-history-listing/moc-version-change-history-listing.component';
+import { MocVersionChangeHistoryDetailComponent } from './bmc-data-components/moc-version-change-history/moc-version-change-history-detail/moc-version-change-history-detail.component';
 import { ModelBuildStepListingComponent } from './bmc-data-components/model-build-step/model-build-step-listing/model-build-step-listing.component';
 import { ModelBuildStepDetailComponent } from './bmc-data-components/model-build-step/model-build-step-detail/model-build-step-detail.component';
 import { ModelDocumentListingComponent } from './bmc-data-components/model-document/model-document-listing/model-document-listing.component';
@@ -267,6 +271,8 @@ import { ProfileSettingsComponent } from './components/profile-settings/profile-
 import { PublicProfileComponent } from './components/public-profile/public-profile.component';
 import { MyProjectsComponent } from './components/my-projects/my-projects.component';
 import { MocViewerComponent } from './components/moc-viewer/moc-viewer.component';
+import { MochubExploreComponent } from './components/mochub-explore/mochub-explore.component';
+import { MochubRepoComponent } from './components/mochub-repo/mochub-repo.component';
 
 
 
@@ -554,6 +560,11 @@ const routes: Routes = [
   {path: 'moccollaborators/:mocCollaboratorId', component: MocCollaboratorDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Collaborator' },
   {path: 'moccollaborator/:mocCollaboratorId', component: MocCollaboratorDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Collaborator' },
   {path: 'moccollaborator',  redirectTo: 'moccollaborators'},
+  {path: 'moccollaboratorchangehistories', component: MocCollaboratorChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moc Collaborator Change Histories' },
+  {path: 'moccollaboratorchangehistories/new', component: MocCollaboratorChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moc Collaborator Change History' },
+  {path: 'moccollaboratorchangehistories/:mocCollaboratorChangeHistoryId', component: MocCollaboratorChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Collaborator Change History' },
+  {path: 'moccollaboratorchangehistory/:mocCollaboratorChangeHistoryId', component: MocCollaboratorChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Collaborator Change History' },
+  {path: 'moccollaboratorchangehistory',  redirectTo: 'moccollaboratorchangehistories'},
   {path: 'moccomments', component: MocCommentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moc Comments' },
   {path: 'moccomments/new', component: MocCommentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moc Comment' },
   {path: 'moccomments/:mocCommentId', component: MocCommentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Comment' },
@@ -579,6 +590,11 @@ const routes: Routes = [
   {path: 'mocversions/:mocVersionId', component: MocVersionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Version' },
   {path: 'mocversion/:mocVersionId', component: MocVersionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Version' },
   {path: 'mocversion',  redirectTo: 'mocversions'},
+  {path: 'mocversionchangehistories', component: MocVersionChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Moc Version Change Histories' },
+  {path: 'mocversionchangehistories/new', component: MocVersionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Moc Version Change History' },
+  {path: 'mocversionchangehistories/:mocVersionChangeHistoryId', component: MocVersionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Version Change History' },
+  {path: 'mocversionchangehistory/:mocVersionChangeHistoryId', component: MocVersionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Moc Version Change History' },
+  {path: 'mocversionchangehistory',  redirectTo: 'mocversionchangehistories'},
   {path: 'modelbuildsteps', component: ModelBuildStepListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Model Build Steps' },
   {path: 'modelbuildsteps/new', component: ModelBuildStepDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Model Build Step' },
   {path: 'modelbuildsteps/:modelBuildStepId', component: ModelBuildStepDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Model Build Step' },
@@ -866,6 +882,10 @@ const routes: Routes = [
 
 
 
+
+    // MOCHub routes — public browse
+    { path: 'mochub', component: MochubExploreComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'MOCHub — Explore MOCs' },
+    { path: 'mochub/moc/:id', component: MochubRepoComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'MOC Detail' },
 
     { path: '**', component: NotFoundComponent, title: 'Page Not Found' }
 ];

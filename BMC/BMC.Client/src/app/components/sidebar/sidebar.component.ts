@@ -42,6 +42,12 @@ export class SidebarComponent {
             ]
         },
         {
+            label: 'COMMUNITY',
+            items: [
+                { icon: 'fas fa-code-branch', label: 'MOCHub', route: '/mochub' }
+            ]
+        },
+        {
             label: 'CREATE & BUILD',
             items: [
                 { icon: 'fas fa-puzzle-piece', label: 'My Projects', route: '/my-projects' },

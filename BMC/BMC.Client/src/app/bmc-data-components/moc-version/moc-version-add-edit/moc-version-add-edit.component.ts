@@ -36,7 +36,6 @@ import { AuthService } from '../../../services/auth.service';
 //
 interface MocVersionFormValues {
   publishedMocId: number | bigint,       // For FK link number
-  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   commitMessage: string,
   mpdSnapshot: string,
   partCount: string | null,     // Stored as string for form input, converted to number on submit.
@@ -45,6 +44,7 @@ interface MocVersionFormValues {
   modifiedPartCount: string | null,     // Stored as string for form input, converted to number on submit.
   snapshotDate: string,
   authorTenantGuid: string,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -78,7 +78,6 @@ export class MocVersionAddEditComponent {
 
   public mocVersionForm: FormGroup = this.fb.group({
         publishedMocId: [null, Validators.required],
-        versionNumber: [''],
         commitMessage: ['', Validators.required],
         mpdSnapshot: ['', Validators.required],
         partCount: [''],
@@ -87,6 +86,7 @@ export class MocVersionAddEditComponent {
         modifiedPartCount: [''],
         snapshotDate: ['', Validators.required],
         authorTenantGuid: ['', Validators.required],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -225,7 +225,6 @@ export class MocVersionAddEditComponent {
     const mocVersionSubmitData: MocVersionSubmitData = {
         id: this.mocVersionSubmitData?.id || 0,
         publishedMocId: Number(formValue.publishedMocId),
-        versionNumber: this.mocVersionSubmitData?.versionNumber ?? 0,
         commitMessage: formValue.commitMessage!.trim(),
         mpdSnapshot: formValue.mpdSnapshot!.trim(),
         partCount: formValue.partCount ? Number(formValue.partCount) : null,
@@ -234,6 +233,7 @@ export class MocVersionAddEditComponent {
         modifiedPartCount: formValue.modifiedPartCount ? Number(formValue.modifiedPartCount) : null,
         snapshotDate: dateTimeLocalToIsoUtc(formValue.snapshotDate!.trim())!,
         authorTenantGuid: formValue.authorTenantGuid!.trim(),
+        versionNumber: this.mocVersionSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -363,7 +363,6 @@ export class MocVersionAddEditComponent {
       //
       this.mocVersionForm.reset({
         publishedMocId: null,
-        versionNumber: '',
         commitMessage: '',
         mpdSnapshot: '',
         partCount: '',
@@ -372,6 +371,7 @@ export class MocVersionAddEditComponent {
         modifiedPartCount: '',
         snapshotDate: '',
         authorTenantGuid: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -384,7 +384,6 @@ export class MocVersionAddEditComponent {
         //
         this.mocVersionForm.reset({
         publishedMocId: mocVersionData.publishedMocId,
-        versionNumber: mocVersionData.versionNumber?.toString() ?? '',
         commitMessage: mocVersionData.commitMessage ?? '',
         mpdSnapshot: mocVersionData.mpdSnapshot ?? '',
         partCount: mocVersionData.partCount?.toString() ?? '',
@@ -393,6 +392,7 @@ export class MocVersionAddEditComponent {
         modifiedPartCount: mocVersionData.modifiedPartCount?.toString() ?? '',
         snapshotDate: isoUtcStringToDateTimeLocal(mocVersionData.snapshotDate) ?? '',
         authorTenantGuid: mocVersionData.authorTenantGuid ?? '',
+        versionNumber: mocVersionData.versionNumber?.toString() ?? '',
         active: mocVersionData.active ?? true,
         deleted: mocVersionData.deleted ?? false,
       }, { emitEvent: false});

@@ -1,0 +1,188 @@
+<!-- MOCHub Publish Modal — multi-step wizard for publishing a project as a MOC -->
+
+<div class="modal-backdrop" (click)="close()">
+    <div class="publish-modal" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="header-title">
+                <i class="fas fa-upload"></i>
+                <h2>Publish to MOCHub</h2>
+            </div>
+            <button class="close-btn" (click)="close()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+
+        <!-- Step 1: Select Project -->
+        <div class="modal-body" *ngIf="step === 'select'">
+            <p class="step-description">
+                Choose a project to publish to MOCHub
+            </p>
+
+            <div class="project-loading" *ngIf="projectsLoading">
+                <i class="fas fa-spinner fa-spin"></i> Loading your projects...
+            </div>
+
+            <div class="project-empty" *ngIf="!projectsLoading && projects.length === 0">
+                <i class="fas fa-folder-open"></i>
+                <p>No projects found</p>
+                <p class="hint">Create a project first, then come back to publish it</p>
+            </div>
+
+            <div class="project-list" *ngIf="!projectsLoading && projects.length > 0">
+                <div
+                    class="project-item"
+                    *ngFor="let project of projects"
+                    (click)="selectProject(project)">
+                    <div class="project-icon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <div class="project-info">
+                        <span class="project-name">{{ project.name || project.projectName }}</span>
+                        <span class="project-meta">{{ project.description || 'No description' }}</span>
+                    </div>
+                    <i class="fas fa-chevron-right project-arrow"></i>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Step 2: MOC Details -->
+        <div class="modal-body" *ngIf="step === 'details'">
+            <button class="back-btn" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i> Back to project selection
+            </button>
+
+            <div class="selected-project-badge">
+                <i class="fas fa-cube"></i>
+                {{ selectedProject?.name || selectedProject?.projectName }}
+            </div>
+
+            <!-- Error message -->
+            <div class="error-banner" *ngIf="errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+                {{ errorMessage }}
+            </div>
+
+            <div class="form-fields">
+                <!-- Name -->
+                <div class="field">
+                    <label for="pub-name">MOC Name *</label>
+                    <input
+                        id="pub-name"
+                        type="text"
+                        [(ngModel)]="mocName"
+                        placeholder="My Awesome MOC"
+                        maxlength="100">
+                </div>
+
+                <!-- Description -->
+                <div class="field">
+                    <label for="pub-desc">Description</label>
+                    <textarea
+                        id="pub-desc"
+                        [(ngModel)]="mocDescription"
+                        placeholder="A short description of your MOC..."
+                        rows="2"
+                        maxlength="500"></textarea>
+                </div>
+
+                <!-- Tags -->
+                <div class="field">
+                    <label for="pub-tags">Tags</label>
+                    <input
+                        id="pub-tags"
+                        type="text"
+                        [(ngModel)]="mocTags"
+                        placeholder="space, vehicle, technic (comma-separated)">
+                </div>
+
+                <!-- Visibility + Forking -->
+                <div class="field-row">
+                    <div class="field">
+                        <label for="pub-visibility">Visibility</label>
+                        <select id="pub-visibility" [(ngModel)]="mocVisibility">
+                            <option value="Public">Public</option>
+                            <option value="Unlisted">Unlisted</option>
+                            <option value="Private">Private</option>
+                        </select>
+                    </div>
+
+                    <div class="field checkbox-field">
+                        <label>
+                            <input type="checkbox" [(ngModel)]="allowForking">
+                            Allow forking
+                        </label>
+                    </div>
+                </div>
+
+                <!-- README -->
+                <div class="field">
+                    <label for="pub-readme">README (optional)</label>
+                    <textarea
+                        id="pub-readme"
+                        [(ngModel)]="mocReadme"
+                        placeholder="Write a README to help others understand your MOC..."
+                        rows="4"></textarea>
+                </div>
+
+                <!-- Commit Message -->
+                <div class="field">
+                    <label for="pub-commit">Commit Message</label>
+                    <input
+                        id="pub-commit"
+                        type="text"
+                        [(ngModel)]="commitMessage"
+                        placeholder="Initial publish">
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Step 3: Publishing -->
+        <div class="modal-body publishing-state" *ngIf="step === 'publishing'">
+            <div class="publish-animation">
+                <i class="fas fa-cog fa-spin"></i>
+            </div>
+            <h3>Publishing your MOC...</h3>
+            <p>Creating version snapshot and registering on MOCHub</p>
+        </div>
+
+
+        <!-- Step 4: Done -->
+        <div class="modal-body done-state" *ngIf="step === 'done'">
+            <div class="done-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Published!</h3>
+            <p>Your MOC is now live on MOCHub</p>
+        </div>
+
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="close()" *ngIf="step !== 'publishing'">
+                {{ step === 'done' ? 'Close' : 'Cancel' }}
+            </button>
+
+            <button
+                class="btn-publish"
+                *ngIf="step === 'details'"
+                [disabled]="!mocName.trim() || publishing"
+                (click)="publish()">
+                <i class="fas fa-upload"></i> Publish
+            </button>
+
+            <a
+                class="btn-view"
+                *ngIf="step === 'done' && publishedMocId"
+                [routerLink]="['/mochub/moc', publishedMocId]"
+                (click)="close()">
+                <i class="fas fa-external-link-alt"></i> View on MOCHub
+            </a>
+        </div>
+
+    </div>
+</div>

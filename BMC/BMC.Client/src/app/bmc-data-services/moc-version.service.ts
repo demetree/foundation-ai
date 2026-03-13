@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { PublishedMocData } from './published-moc.service';
+import { MocVersionChangeHistoryService, MocVersionChangeHistoryData } from './moc-version-change-history.service';
 import { MocForkService, MocForkData } from './moc-fork.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -30,7 +31,6 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class MocVersionQueryParameters {
     publishedMocId: bigint | number | null | undefined = null;
-    versionNumber: bigint | number | null | undefined = null;
     commitMessage: string | null | undefined = null;
     mpdSnapshot: string | null | undefined = null;
     partCount: bigint | number | null | undefined = null;
@@ -39,6 +39,7 @@ export class MocVersionQueryParameters {
     modifiedPartCount: bigint | number | null | undefined = null;
     snapshotDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     authorTenantGuid: string | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -55,7 +56,6 @@ export class MocVersionQueryParameters {
 export class MocVersionSubmitData {
     id!: bigint | number;
     publishedMocId!: bigint | number;
-    versionNumber!: bigint | number;
     commitMessage!: string;
     mpdSnapshot!: string;
     partCount: bigint | number | null = null;
@@ -64,6 +64,7 @@ export class MocVersionSubmitData {
     modifiedPartCount: bigint | number | null = null;
     snapshotDate!: string;      // ISO 8601 (full datetime)
     authorTenantGuid!: string;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
@@ -134,7 +135,6 @@ export class MocVersionBasicListData {
 export class MocVersionData {
     id!: bigint | number;
     publishedMocId!: bigint | number;
-    versionNumber!: bigint | number;
     commitMessage!: string;
     mpdSnapshot!: string;
     partCount!: bigint | number;
@@ -143,6 +143,7 @@ export class MocVersionData {
     modifiedPartCount!: bigint | number;
     snapshotDate!: string;      // ISO 8601 (full datetime)
     authorTenantGuid!: string;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -151,6 +152,11 @@ export class MocVersionData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _mocVersionChangeHistories: MocVersionChangeHistoryData[] | null = null;
+    private _mocVersionChangeHistoriesPromise: Promise<MocVersionChangeHistoryData[]> | null  = null;
+    private _mocVersionChangeHistoriesSubject = new BehaviorSubject<MocVersionChangeHistoryData[] | null>(null);
+
+                
     private _mocForks: MocForkData[] | null = null;
     private _mocForksPromise: Promise<MocForkData[]> | null  = null;
     private _mocForksSubject = new BehaviorSubject<MocForkData[] | null>(null);
@@ -172,6 +178,31 @@ export class MocVersionData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public MocVersionChangeHistories$ = this._mocVersionChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._mocVersionChangeHistories === null && this._mocVersionChangeHistoriesPromise === null) {
+            this.loadMocVersionChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _mocVersionChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get MocVersionChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._mocVersionChangeHistoriesCount$ === null) {
+            this._mocVersionChangeHistoriesCount$ = MocVersionChangeHistoryService.Instance.GetMocVersionChangeHistoriesRowCount({mocVersionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mocVersionChangeHistoriesCount$;
+    }
+
+
+
     public MocForks$ = this._mocForksSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -235,6 +266,11 @@ export class MocVersionData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._mocVersionChangeHistories = null;
+     this._mocVersionChangeHistoriesPromise = null;
+     this._mocVersionChangeHistoriesSubject.next(null);
+     this._mocVersionChangeHistoriesCount$ = null;
+
      this._mocForks = null;
      this._mocForksPromise = null;
      this._mocForksSubject.next(null);
@@ -249,6 +285,71 @@ export class MocVersionData {
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the MocVersionChangeHistories for this MocVersion.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.mocVersion.MocVersionChangeHistories.then(mocVersions => { ... })
+     *   or
+     *   await this.mocVersion.mocVersions
+     *
+    */
+    public get MocVersionChangeHistories(): Promise<MocVersionChangeHistoryData[]> {
+        if (this._mocVersionChangeHistories !== null) {
+            return Promise.resolve(this._mocVersionChangeHistories);
+        }
+
+        if (this._mocVersionChangeHistoriesPromise !== null) {
+            return this._mocVersionChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadMocVersionChangeHistories();
+
+        return this._mocVersionChangeHistoriesPromise!;
+    }
+
+
+
+    private loadMocVersionChangeHistories(): void {
+
+        this._mocVersionChangeHistoriesPromise = lastValueFrom(
+            MocVersionService.Instance.GetMocVersionChangeHistoriesForMocVersion(this.id)
+        )
+        .then(MocVersionChangeHistories => {
+            this._mocVersionChangeHistories = MocVersionChangeHistories ?? [];
+            this._mocVersionChangeHistoriesSubject.next(this._mocVersionChangeHistories);
+            return this._mocVersionChangeHistories;
+         })
+        .catch(err => {
+            this._mocVersionChangeHistories = [];
+            this._mocVersionChangeHistoriesSubject.next(this._mocVersionChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._mocVersionChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached MocVersionChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearMocVersionChangeHistoriesCache(): void {
+        this._mocVersionChangeHistories = null;
+        this._mocVersionChangeHistoriesPromise = null;
+        this._mocVersionChangeHistoriesSubject.next(this._mocVersionChangeHistories);      // Emit to observable
+    }
+
+    public get HasMocVersionChangeHistories(): Promise<boolean> {
+        return this.MocVersionChangeHistories.then(mocVersionChangeHistories => mocVersionChangeHistories.length > 0);
+    }
+
+
     /**
      *
      * Gets the MocForks for this MocVersion.
@@ -392,6 +493,7 @@ export class MocVersionService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private mocVersionChangeHistoryService: MocVersionChangeHistoryService,
         private mocForkService: MocForkService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -451,7 +553,6 @@ export class MocVersionService extends SecureEndpointBase {
 
         output.id = data.id;
         output.publishedMocId = data.publishedMocId;
-        output.versionNumber = data.versionNumber;
         output.commitMessage = data.commitMessage;
         output.mpdSnapshot = data.mpdSnapshot;
         output.partCount = data.partCount;
@@ -460,6 +561,7 @@ export class MocVersionService extends SecureEndpointBase {
         output.modifiedPartCount = data.modifiedPartCount;
         output.snapshotDate = data.snapshotDate;
         output.authorTenantGuid = data.authorTenantGuid;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -860,6 +962,16 @@ export class MocVersionService extends SecureEndpointBase {
         return userIsBMCMocVersionWriter;
     }
 
+    public GetMocVersionChangeHistoriesForMocVersion(mocVersionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MocVersionChangeHistoryData[]> {
+        return this.mocVersionChangeHistoryService.GetMocVersionChangeHistoryList({
+            mocVersionId: mocVersionId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetMocForksForMocVersion(mocVersionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MocForkData[]> {
         return this.mocForkService.GetMocForkList({
             mocVersionId: mocVersionId,
@@ -905,6 +1017,10 @@ export class MocVersionService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._mocVersionChangeHistories = null;
+    (revived as any)._mocVersionChangeHistoriesPromise = null;
+    (revived as any)._mocVersionChangeHistoriesSubject = new BehaviorSubject<MocVersionChangeHistoryData[] | null>(null);
+
     (revived as any)._mocForks = null;
     (revived as any)._mocForksPromise = null;
     (revived as any)._mocForksSubject = new BehaviorSubject<MocForkData[] | null>(null);
@@ -921,6 +1037,18 @@ export class MocVersionService extends SecureEndpointBase {
     // 2. But private methods (loadMocVersionXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).MocVersionChangeHistories$ = (revived as any)._mocVersionChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._mocVersionChangeHistories === null && (revived as any)._mocVersionChangeHistoriesPromise === null) {
+                (revived as any).loadMocVersionChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._mocVersionChangeHistoriesCount$ = null;
+
+
     (revived as any).MocForks$ = (revived as any)._mocForksSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._mocForks === null && (revived as any)._mocForksPromise === null) {

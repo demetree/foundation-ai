@@ -1,0 +1,327 @@
+<!-- MOCHub Repo — GitHub-style repository detail page for a published MOC -->
+
+<div class="mochub-repo">
+
+    <!-- Loading -->
+    <div class="repo-loading" *ngIf="loading">
+        <div class="skeleton-header"></div>
+        <div class="skeleton-content"></div>
+    </div>
+
+
+    <!-- Repo Content -->
+    <ng-container *ngIf="!loading && moc">
+
+        <!-- Breadcrumb -->
+        <div class="repo-breadcrumb">
+            <a (click)="goToExplore()" class="breadcrumb-link">
+                <i class="fas fa-code-branch"></i> MOCHub
+            </a>
+            <span class="breadcrumb-sep">/</span>
+            <span class="breadcrumb-current">{{ moc.name }}</span>
+        </div>
+
+
+        <!-- Repo Header -->
+        <header class="repo-header">
+            <div class="repo-title-row">
+                <div class="repo-name-group">
+                    <i class="fas fa-cube repo-icon"></i>
+                    <h1 class="repo-name">{{ moc.name }}</h1>
+                    <span class="visibility-badge" [class.public]="moc.visibility === 'Public'"
+                        [class.private]="moc.visibility !== 'Public'">
+                        <i [class]="moc.visibility === 'Public' ? 'fas fa-globe-americas' : 'fas fa-lock'"></i>
+                        {{ moc.visibility || 'Public' }}
+                    </span>
+                </div>
+
+                <div class="repo-actions">
+                    <!-- Star/Like Button -->
+                    <button class="action-btn star-btn">
+                        <i class="fas fa-star"></i>
+                        <span>Star</span>
+                        <span class="action-count">{{ formatNumber(moc.likeCount) }}</span>
+                    </button>
+
+                    <!-- Fork Button -->
+                    <button class="action-btn fork-btn"
+                        [disabled]="forking || !moc.allowForking"
+                        (click)="forkMoc()">
+                        <i class="fas fa-code-branch"></i>
+                        <span>{{ forking ? 'Forking...' : 'Fork' }}</span>
+                        <span class="action-count">{{ formatNumber(moc.forkCount) }}</span>
+                    </button>
+
+                    <!-- Commit Button (owner only) -->
+                    <button class="action-btn commit-btn" *ngIf="isOwner"
+                        (click)="commitModalOpen = true">
+                        <i class="fas fa-plus"></i>
+                        <span>Commit Version</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Forked-from indicator -->
+            <div class="forked-from" *ngIf="moc.forkedFromMocName">
+                <i class="fas fa-code-branch"></i>
+                Forked from <strong>{{ moc.forkedFromMocName }}</strong>
+            </div>
+
+            <!-- Description -->
+            <p class="repo-description" *ngIf="moc.description">{{ moc.description }}</p>
+
+            <!-- Meta Row -->
+            <div class="repo-meta">
+                <span class="meta-item" *ngIf="moc.partCount">
+                    <i class="fas fa-cubes"></i> {{ formatNumber(moc.partCount) }} parts
+                </span>
+                <span class="meta-item" *ngIf="moc.versionCount">
+                    <i class="fas fa-history"></i> {{ moc.versionCount }} {{ moc.versionCount === 1 ? 'version' : 'versions' }}
+                </span>
+                <span class="meta-item" *ngIf="moc.viewCount">
+                    <i class="fas fa-eye"></i> {{ formatNumber(moc.viewCount) }} views
+                </span>
+                <span class="meta-item" *ngIf="moc.publishedDate">
+                    <i class="fas fa-calendar"></i> Published {{ formatRelativeDate(moc.publishedDate) }}
+                </span>
+                <span class="meta-item" *ngIf="moc.tags">
+                    <i class="fas fa-tags"></i>
+                    <span class="meta-tags">
+                        <span class="meta-tag" *ngFor="let tag of moc.tags.split(',').slice(0, 5)">
+                            {{ tag.trim() }}
+                        </span>
+                    </span>
+                </span>
+            </div>
+        </header>
+
+
+        <!-- Content Layout: Tabs + Sidebar -->
+        <div class="repo-content-layout">
+
+            <!-- Main Column -->
+            <div class="repo-main">
+
+                <!-- Tab Navigation -->
+                <nav class="repo-tabs">
+                    <button class="tab-btn" [class.active]="activeTab === 'readme'" (click)="setTab('readme')">
+                        <i class="fas fa-book"></i> README
+                    </button>
+                    <button class="tab-btn" [class.active]="activeTab === 'versions'" (click)="setTab('versions')">
+                        <i class="fas fa-history"></i> Versions
+                        <span class="tab-count">{{ versions.length }}</span>
+                    </button>
+                    <button class="tab-btn" [class.active]="activeTab === 'forks'" (click)="setTab('forks')">
+                        <i class="fas fa-code-branch"></i> Forks
+                        <span class="tab-count">{{ forks.length }}</span>
+                    </button>
+                </nav>
+
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+
+                    <!-- README Tab -->
+                    <div class="readme-panel" *ngIf="activeTab === 'readme'">
+                        <div class="readme-header">
+                            <div class="readme-header-left">
+                                <i class="fas fa-book"></i>
+                                <span>README.md</span>
+                            </div>
+                            <div class="readme-header-actions" *ngIf="isOwner && !editingReadme">
+                                <button class="readme-edit-btn" (click)="startEditReadme()">
+                                    <i class="fas fa-pencil-alt"></i> Edit
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- View Mode -->
+                        <ng-container *ngIf="!editingReadme">
+                            <div class="readme-body" *ngIf="moc.readmeMarkdown">
+                                {{ moc.readmeMarkdown }}
+                            </div>
+                            <div class="readme-empty" *ngIf="!moc.readmeMarkdown">
+                                <i class="fas fa-file-alt"></i>
+                                <p>No README provided</p>
+                                <button class="readme-add-btn" *ngIf="isOwner" (click)="startEditReadme()">
+                                    <i class="fas fa-plus"></i> Add a README
+                                </button>
+                            </div>
+                        </ng-container>
+
+                        <!-- Edit Mode -->
+                        <div class="readme-editor" *ngIf="editingReadme">
+                            <textarea
+                                [(ngModel)]="readmeEditText"
+                                placeholder="Write your README in markdown..."
+                                rows="16"
+                                [disabled]="savingReadme"></textarea>
+                            <div class="readme-editor-actions">
+                                <button class="readme-cancel-btn" (click)="cancelEditReadme()" [disabled]="savingReadme">
+                                    Cancel
+                                </button>
+                                <button class="readme-save-btn" (click)="saveReadme()" [disabled]="savingReadme">
+                                    <i class="fas fa-check"></i>
+                                    {{ savingReadme ? 'Saving...' : 'Save README' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Versions Tab -->
+                    <div class="versions-panel" *ngIf="activeTab === 'versions'">
+
+                        <div class="version-loading" *ngIf="versionsLoading">
+                            Loading version history...
+                        </div>
+
+                        <div class="version-empty" *ngIf="!versionsLoading && versions.length === 0">
+                            <i class="fas fa-history"></i>
+                            <p>No versions committed yet</p>
+                        </div>
+
+                        <div class="version-timeline" *ngIf="!versionsLoading && versions.length > 0">
+                            <div class="version-entry" *ngFor="let v of versions" (click)="goToVersion(v)">
+                                <div class="version-dot"></div>
+                                <div class="version-content">
+                                    <div class="version-header">
+                                        <span class="version-number">v{{ v.versionNumber }}</span>
+                                        <span class="version-message">{{ v.commitMessage }}</span>
+                                    </div>
+                                    <div class="version-meta">
+                                        <span class="version-date">{{ formatRelativeDate(v.snapshotDate) }}</span>
+                                        <span class="version-parts" *ngIf="v.partCount">
+                                            {{ v.partCount }} parts
+                                        </span>
+                                        <span class="version-delta" [ngClass]="getDeltaClass(v.addedPartCount)"
+                                            *ngIf="v.addedPartCount">
+                                            {{ getDeltaText(v.addedPartCount) }} added
+                                        </span>
+                                        <span class="version-delta" [ngClass]="getDeltaClass(-(v.removedPartCount || 0))"
+                                            *ngIf="v.removedPartCount">
+                                            -{{ v.removedPartCount }} removed
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Forks Tab -->
+                    <div class="forks-panel" *ngIf="activeTab === 'forks'">
+
+                        <div class="forks-empty" *ngIf="forks.length === 0">
+                            <i class="fas fa-code-branch"></i>
+                            <p>No forks yet</p>
+                        </div>
+
+                        <div class="forks-list" *ngIf="forks.length > 0">
+                            <div class="fork-entry" *ngFor="let fork of forks">
+                                <i class="fas fa-code-branch fork-icon"></i>
+                                <div class="fork-info">
+                                    <span class="fork-name">{{ fork.forkedMocName || 'Forked MOC' }}</span>
+                                    <span class="fork-date">Forked {{ formatRelativeDate(fork.forkedDate) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <aside class="repo-sidebar">
+                <!-- Thumbnail -->
+                <div class="sidebar-thumbnail">
+                    <img [src]="getThumbnailUrl()" [alt]="moc.name"
+                        (error)="$event.target.style.display='none'">
+                </div>
+
+                <!-- Stats -->
+                <div class="sidebar-section">
+                    <h4>Stats</h4>
+                    <div class="sidebar-stat">
+                        <i class="fas fa-star"></i>
+                        <span>{{ formatNumber(moc.likeCount) }} likes</span>
+                    </div>
+                    <div class="sidebar-stat">
+                        <i class="fas fa-code-branch"></i>
+                        <span>{{ formatNumber(moc.forkCount) }} forks</span>
+                    </div>
+                    <div class="sidebar-stat">
+                        <i class="fas fa-eye"></i>
+                        <span>{{ formatNumber(moc.viewCount) }} views</span>
+                    </div>
+                    <div class="sidebar-stat">
+                        <i class="fas fa-cubes"></i>
+                        <span>{{ formatNumber(moc.partCount) }} parts</span>
+                    </div>
+                </div>
+
+                <!-- Version Info -->
+                <div class="sidebar-section" *ngIf="moc.latestVersion">
+                    <h4>Latest Version</h4>
+                    <div class="sidebar-version">
+                        <span class="version-badge">v{{ moc.latestVersion.versionNumber }}</span>
+                        <span class="version-msg">{{ moc.latestVersion.commitMessage }}</span>
+                        <span class="version-when">{{ formatRelativeDate(moc.latestVersion.snapshotDate) }}</span>
+                    </div>
+                </div>
+
+                <!-- License -->
+                <div class="sidebar-section" *ngIf="moc.licenseName">
+                    <h4>License</h4>
+                    <div class="sidebar-stat">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>{{ moc.licenseName }}</span>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+
+    </ng-container>
+
+
+    <!-- Not Found State -->
+    <div class="repo-not-found" *ngIf="!loading && !moc">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>MOC not found</h3>
+        <p>This MOC may have been removed or made private</p>
+        <button class="back-btn" (click)="goToExplore()">
+            <i class="fas fa-arrow-left"></i> Back to MOCHub
+        </button>
+    </div>
+
+
+    <!-- Commit Modal -->
+    <div class="modal-backdrop" *ngIf="commitModalOpen" (click)="commitModalOpen = false">
+        <div class="commit-modal" (click)="$event.stopPropagation()">
+            <h2>Commit Version</h2>
+            <p class="modal-subtitle">Create a new snapshot of your MOC's current state</p>
+
+            <div class="form-group">
+                <label for="commit-message">Commit message</label>
+                <textarea
+                    id="commit-message"
+                    [(ngModel)]="commitMessage"
+                    placeholder="Describe what changed in this version..."
+                    rows="3"
+                    [disabled]="committing"></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="modal-btn cancel" (click)="commitModalOpen = false" [disabled]="committing">
+                    Cancel
+                </button>
+                <button class="modal-btn confirm" (click)="commitVersion()"
+                    [disabled]="!commitMessage.trim() || committing">
+                    <i class="fas fa-check"></i>
+                    {{ committing ? 'Committing...' : 'Commit' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>

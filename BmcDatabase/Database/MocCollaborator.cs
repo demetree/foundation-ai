@@ -23,11 +23,15 @@ public partial class MocCollaborator
 
     public bool isAccepted { get; set; }
 
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<MocCollaboratorChangeHistory> MocCollaboratorChangeHistories { get; set; } = new List<MocCollaboratorChangeHistory>();
 
     public virtual PublishedMoc publishedMoc { get; set; }
 }

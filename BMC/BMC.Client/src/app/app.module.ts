@@ -104,11 +104,13 @@ import { LegoSetSubsetService } from './bmc-data-services/lego-set-subset.servic
 import { LegoThemeService } from './bmc-data-services/lego-theme.service';
 import { MarketDataCacheService } from './bmc-data-services/market-data-cache.service';
 import { MocCollaboratorService } from './bmc-data-services/moc-collaborator.service';
+import { MocCollaboratorChangeHistoryService } from './bmc-data-services/moc-collaborator-change-history.service';
 import { MocCommentService } from './bmc-data-services/moc-comment.service';
 import { MocFavouriteService } from './bmc-data-services/moc-favourite.service';
 import { MocForkService } from './bmc-data-services/moc-fork.service';
 import { MocLikeService } from './bmc-data-services/moc-like.service';
 import { MocVersionService } from './bmc-data-services/moc-version.service';
+import { MocVersionChangeHistoryService } from './bmc-data-services/moc-version-change-history.service';
 import { ModelBuildStepService } from './bmc-data-services/model-build-step.service';
 import { ModelDocumentService } from './bmc-data-services/model-document.service';
 import { ModelDocumentChangeHistoryService } from './bmc-data-services/model-document-change-history.service';
@@ -364,6 +366,10 @@ import { MocCollaboratorListingComponent } from './bmc-data-components/moc-colla
 import { MocCollaboratorAddEditComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-add-edit/moc-collaborator-add-edit.component';
 import { MocCollaboratorDetailComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-detail/moc-collaborator-detail.component';
 import { MocCollaboratorTableComponent } from './bmc-data-components/moc-collaborator/moc-collaborator-table/moc-collaborator-table.component';
+import { MocCollaboratorChangeHistoryListingComponent } from './bmc-data-components/moc-collaborator-change-history/moc-collaborator-change-history-listing/moc-collaborator-change-history-listing.component';
+import { MocCollaboratorChangeHistoryAddEditComponent } from './bmc-data-components/moc-collaborator-change-history/moc-collaborator-change-history-add-edit/moc-collaborator-change-history-add-edit.component';
+import { MocCollaboratorChangeHistoryDetailComponent } from './bmc-data-components/moc-collaborator-change-history/moc-collaborator-change-history-detail/moc-collaborator-change-history-detail.component';
+import { MocCollaboratorChangeHistoryTableComponent } from './bmc-data-components/moc-collaborator-change-history/moc-collaborator-change-history-table/moc-collaborator-change-history-table.component';
 import { MocCommentListingComponent } from './bmc-data-components/moc-comment/moc-comment-listing/moc-comment-listing.component';
 import { MocCommentAddEditComponent } from './bmc-data-components/moc-comment/moc-comment-add-edit/moc-comment-add-edit.component';
 import { MocCommentDetailComponent } from './bmc-data-components/moc-comment/moc-comment-detail/moc-comment-detail.component';
@@ -384,6 +390,10 @@ import { MocVersionListingComponent } from './bmc-data-components/moc-version/mo
 import { MocVersionAddEditComponent } from './bmc-data-components/moc-version/moc-version-add-edit/moc-version-add-edit.component';
 import { MocVersionDetailComponent } from './bmc-data-components/moc-version/moc-version-detail/moc-version-detail.component';
 import { MocVersionTableComponent } from './bmc-data-components/moc-version/moc-version-table/moc-version-table.component';
+import { MocVersionChangeHistoryListingComponent } from './bmc-data-components/moc-version-change-history/moc-version-change-history-listing/moc-version-change-history-listing.component';
+import { MocVersionChangeHistoryAddEditComponent } from './bmc-data-components/moc-version-change-history/moc-version-change-history-add-edit/moc-version-change-history-add-edit.component';
+import { MocVersionChangeHistoryDetailComponent } from './bmc-data-components/moc-version-change-history/moc-version-change-history-detail/moc-version-change-history-detail.component';
+import { MocVersionChangeHistoryTableComponent } from './bmc-data-components/moc-version-change-history/moc-version-change-history-table/moc-version-change-history-table.component';
 import { ModelBuildStepListingComponent } from './bmc-data-components/model-build-step/model-build-step-listing/model-build-step-listing.component';
 import { ModelBuildStepAddEditComponent } from './bmc-data-components/model-build-step/model-build-step-add-edit/model-build-step-add-edit.component';
 import { ModelBuildStepDetailComponent } from './bmc-data-components/model-build-step/model-build-step-detail/model-build-step-detail.component';
@@ -649,6 +659,9 @@ import { AuthNudgeModalComponent } from './components/auth-nudge-modal/auth-nudg
 import { MyProjectsComponent } from './components/my-projects/my-projects.component';
 import { UploadModelModalComponent } from './components/upload-model-modal/upload-model-modal.component';
 import { MocViewerComponent } from './components/moc-viewer/moc-viewer.component';
+import { MochubExploreComponent } from './components/mochub-explore/mochub-explore.component';
+import { MochubRepoComponent } from './components/mochub-repo/mochub-repo.component';
+import { MochubPublishModalComponent } from './components/mochub-publish-modal/mochub-publish-modal.component';
 
 
 @NgModule({
@@ -707,6 +720,9 @@ import { MocViewerComponent } from './components/moc-viewer/moc-viewer.component
         MyProjectsComponent,
         UploadModelModalComponent,
         MocViewerComponent,
+        MochubExploreComponent,
+        MochubRepoComponent,
+        MochubPublishModalComponent,
 
 
         //
@@ -904,6 +920,10 @@ MocCollaboratorListingComponent,
 MocCollaboratorAddEditComponent,
 MocCollaboratorDetailComponent,
 MocCollaboratorTableComponent,
+MocCollaboratorChangeHistoryListingComponent,
+MocCollaboratorChangeHistoryAddEditComponent,
+MocCollaboratorChangeHistoryDetailComponent,
+MocCollaboratorChangeHistoryTableComponent,
 MocCommentListingComponent,
 MocCommentAddEditComponent,
 MocCommentDetailComponent,
@@ -924,6 +944,10 @@ MocVersionListingComponent,
 MocVersionAddEditComponent,
 MocVersionDetailComponent,
 MocVersionTableComponent,
+MocVersionChangeHistoryListingComponent,
+MocVersionChangeHistoryAddEditComponent,
+MocVersionChangeHistoryDetailComponent,
+MocVersionChangeHistoryTableComponent,
 ModelBuildStepListingComponent,
 ModelBuildStepAddEditComponent,
 ModelBuildStepDetailComponent,
@@ -1236,11 +1260,13 @@ LegoSetSubsetService,
 LegoThemeService,
 MarketDataCacheService,
 MocCollaboratorService,
+MocCollaboratorChangeHistoryService,
 MocCommentService,
 MocFavouriteService,
 MocForkService,
 MocLikeService,
 MocVersionService,
+MocVersionChangeHistoryService,
 ModelBuildStepService,
 ModelDocumentService,
 ModelDocumentChangeHistoryService,

@@ -13,8 +13,6 @@ public partial class MocVersion
 
     public int publishedMocId { get; set; }
 
-    public int versionNumber { get; set; }
-
     public string commitMessage { get; set; }
 
     public string mpdSnapshot { get; set; }
@@ -31,6 +29,8 @@ public partial class MocVersion
 
     public Guid authorTenantGuid { get; set; }
 
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
@@ -38,6 +38,8 @@ public partial class MocVersion
     public bool deleted { get; set; }
 
     public virtual ICollection<MocFork> MocForks { get; set; } = new List<MocFork>();
+
+    public virtual ICollection<MocVersionChangeHistory> MocVersionChangeHistories { get; set; } = new List<MocVersionChangeHistory>();
 
     public virtual PublishedMoc publishedMoc { get; set; }
 }

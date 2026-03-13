@@ -12,6 +12,10 @@
     <ProjectReference Include="..\Foundation.Imaging\Foundation.Imaging.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.6" />
+  </ItemGroup>
+
 
 
 </Project>

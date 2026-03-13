@@ -1,0 +1,73 @@
+<div class="add-moc-version-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-moc-version-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Moc Version Change History" 
+        *ngIf="userIsBMCMocVersionChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #mocVersionChangeHistoryModal let-modal>
+   <div class="modal-header moc-version-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="mocVersionChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Moc Version Change History' : 'Add Moc Version Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body moc-version-change-history-modal-body">
+      <form [formGroup]="mocVersionChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('mocVersionId')">
+                <label for="MocVersionChangeHistory-mocVersionId" id="label-MocVersionChangeHistory-mocVersionId"><span class="text-danger">*</span>Moc Version</label>
+                <select id="MocVersionChangeHistory-mocVersionId" formControlName="mocVersionId" class="form-select moc-version-change-history-select" [disabled]="!userIsBMCMocVersionChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Moc Version</option>
+                    <option *ngFor="let mocVersion of mocVersions$ | async" [ngValue]="mocVersion.id">{{mocVersion.commitMessage}}</option>
+                </select>
+                <div *ngIf="mocVersionChangeHistoryForm.get('mocVersionId')?.invalid && mocVersionChangeHistoryForm.get('mocVersionId')?.touched" class="text-danger">
+                    Moc Version is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="MocVersionChangeHistory-versionNumber" id="label-MocVersionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="MocVersionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control moc-version-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="MocVersionChangeHistory-timeStamp" id="label-MocVersionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="MocVersionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control moc-version-change-history-input" [disabled]="!userIsBMCMocVersionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="mocVersionChangeHistoryForm.get('timeStamp')?.invalid && mocVersionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="MocVersionChangeHistory-userId" id="label-MocVersionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="MocVersionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control moc-version-change-history-input" [disabled]="!userIsBMCMocVersionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="mocVersionChangeHistoryForm.get('userId')?.invalid && mocVersionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="MocVersionChangeHistory-data" id="label-MocVersionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="MocVersionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control moc-version-change-history-input" [disabled]="!userIsBMCMocVersionChangeHistoryWriter()"></textarea>
+                <div *ngIf="mocVersionChangeHistoryForm.get('data')?.invalid && mocVersionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer moc-version-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Moc Version Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocVersionChangeHistoryForm.valid || mocVersionChangeHistoryForm.pristine  || userIsBMCMocVersionChangeHistoryWriter() == false " ngbTooltip="Save the Moc Version Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Moc Version Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

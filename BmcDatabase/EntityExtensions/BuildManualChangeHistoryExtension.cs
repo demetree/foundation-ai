@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = buildManualChangeHistory.timeStamp,
 				userId = buildManualChangeHistory.userId,
 				data = buildManualChangeHistory.data,
-				buildManual = BuildManual.CreateMinimalAnonymous(buildManualChangeHistory.buildManual),
+				buildManual = BuildManual.CreateMinimalAnonymous(buildManualChangeHistory.buildManual)
 			 };
 		}
 

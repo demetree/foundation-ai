@@ -1754,7 +1754,6 @@ All operational tables include multi-tenant support, versioning where appropriat
             mocVersionTable.AddMultiTenantSupport();
 
             mocVersionTable.AddForeignKeyField(publishedMocTable, false).AddScriptComments("The MOC this version belongs to");
-            mocVersionTable.AddIntField("versionNumber", false).AddScriptComments("Sequential version number within the MOC (1, 2, 3...)");
             mocVersionTable.AddString500Field("commitMessage", false).AddScriptComments("User-provided description of what changed in this version");
             mocVersionTable.AddTextField("mpdSnapshot", false).AddScriptComments("Full MPD (Multi-Part Document) text content at this version — the complete model definition");
             mocVersionTable.AddIntField("partCount", true).AddScriptComments("Total part count at this version");
@@ -1764,6 +1763,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             mocVersionTable.AddDateTimeField("snapshotDate", false).AddScriptComments("Date/time this version was committed");
             mocVersionTable.AddGuidField("authorTenantGuid", false).AddScriptComments("Tenant GUID of the user who committed this version (may differ from MOC owner for collaborators)");
 
+            mocVersionTable.AddVersionControl();
             mocVersionTable.AddControlFields();
 
             mocVersionTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "publishedMocId", "versionNumber" }, false);
@@ -1827,6 +1827,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             mocCollaboratorTable.AddDateTimeField("acceptedDate", true).AddScriptComments("Date/time the invitation was accepted (null = pending)");
             mocCollaboratorTable.AddBoolField("isAccepted", false, false).AddScriptComments("Whether the collaborator has accepted the invitation");
 
+            mocCollaboratorTable.AddVersionControl();
             mocCollaboratorTable.AddControlFields();
 
             mocCollaboratorTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "publishedMocId", "collaboratorTenantGuid" }, false);

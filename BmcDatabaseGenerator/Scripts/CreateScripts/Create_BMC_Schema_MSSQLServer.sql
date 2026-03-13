@@ -45,9 +45,11 @@ GO
 -- DROP TABLE [BMC].[MocFavourite]
 -- DROP TABLE [BMC].[MocComment]
 -- DROP TABLE [BMC].[MocLike]
+-- DROP TABLE [BMC].[MocCollaboratorChangeHistory]
 -- DROP TABLE [BMC].[MocCollaborator]
 -- DROP TABLE [BMC].[MocFork]
 -- DROP TABLE [BMC].[PublishedMocImage]
+-- DROP TABLE [BMC].[MocVersionChangeHistory]
 -- DROP TABLE [BMC].[MocVersion]
 -- DROP TABLE [BMC].[PublishedMocChangeHistory]
 -- DROP TABLE [BMC].[PublishedMoc]
@@ -156,9 +158,11 @@ GO
 -- ALTER INDEX ALL ON [BMC].[MocFavourite] DISABLE
 -- ALTER INDEX ALL ON [BMC].[MocComment] DISABLE
 -- ALTER INDEX ALL ON [BMC].[MocLike] DISABLE
+-- ALTER INDEX ALL ON [BMC].[MocCollaboratorChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[MocCollaborator] DISABLE
 -- ALTER INDEX ALL ON [BMC].[MocFork] DISABLE
 -- ALTER INDEX ALL ON [BMC].[PublishedMocImage] DISABLE
+-- ALTER INDEX ALL ON [BMC].[MocVersionChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[MocVersion] DISABLE
 -- ALTER INDEX ALL ON [BMC].[PublishedMocChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[PublishedMoc] DISABLE
@@ -267,9 +271,11 @@ GO
 -- ALTER INDEX ALL ON [BMC].[MocFavourite] REBUILD
 -- ALTER INDEX ALL ON [BMC].[MocComment] REBUILD
 -- ALTER INDEX ALL ON [BMC].[MocLike] REBUILD
+-- ALTER INDEX ALL ON [BMC].[MocCollaboratorChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[MocCollaborator] REBUILD
 -- ALTER INDEX ALL ON [BMC].[MocFork] REBUILD
 -- ALTER INDEX ALL ON [BMC].[PublishedMocImage] REBUILD
+-- ALTER INDEX ALL ON [BMC].[MocVersionChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[MocVersion] REBUILD
 -- ALTER INDEX ALL ON [BMC].[PublishedMocChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[PublishedMoc] REBUILD
@@ -3657,7 +3663,6 @@ CREATE TABLE [BMC].[MocVersion]
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[publishedMocId] INT NOT NULL,		-- The MOC this version belongs to
-	[versionNumber] INT NOT NULL,		-- Sequential version number within the MOC (1, 2, 3...)
 	[commitMessage] NVARCHAR(500) NOT NULL,		-- User-provided description of what changed in this version
 	[mpdSnapshot] NVARCHAR(MAX) NOT NULL,		-- Full MPD (Multi-Part Document) text content at this version — the complete model definition
 	[partCount] INT NULL,		-- Total part count at this version
@@ -3666,6 +3671,7 @@ CREATE TABLE [BMC].[MocVersion]
 	[modifiedPartCount] INT NULL,		-- Number of parts moved or recoloured since the previous version (null for first version)
 	[snapshotDate] DATETIME2(7) NOT NULL,		-- Date/time this version was committed
 	[authorTenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- Tenant GUID of the user who committed this version (may differ from MOC owner for collaborators)
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -3689,6 +3695,42 @@ GO
 
 -- Index on the MocVersion table's tenantGuid,deleted fields.
 CREATE INDEX [I_MocVersion_tenantGuid_deleted] ON [BMC].[MocVersion] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the MocVersion table.
+CREATE TABLE [BMC].[MocVersionChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[mocVersionId] INT NOT NULL,		-- Link to the MocVersion table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_MocVersionChangeHistory_MocVersion_mocVersionId] FOREIGN KEY ([mocVersionId]) REFERENCES [BMC].[MocVersion] ([id])		-- Foreign key to the MocVersion table.
+)
+GO
+
+-- Index on the MocVersionChangeHistory table's tenantGuid field.
+CREATE INDEX [I_MocVersionChangeHistory_tenantGuid] ON [BMC].[MocVersionChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_MocVersionChangeHistory_tenantGuid_versionNumber] ON [BMC].[MocVersionChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_MocVersionChangeHistory_tenantGuid_timeStamp] ON [BMC].[MocVersionChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_MocVersionChangeHistory_tenantGuid_userId] ON [BMC].[MocVersionChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,mocVersionId fields.
+CREATE INDEX [I_MocVersionChangeHistory_tenantGuid_mocVersionId] ON [BMC].[MocVersionChangeHistory] ([tenantGuid], [mocVersionId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -3778,6 +3820,7 @@ CREATE TABLE [BMC].[MocCollaborator]
 	[invitedDate] DATETIME2(7) NOT NULL,		-- Date/time the collaborator was invited
 	[acceptedDate] DATETIME2(7) NULL,		-- Date/time the invitation was accepted (null = pending)
 	[isAccepted] BIT NOT NULL DEFAULT 0,		-- Whether the collaborator has accepted the invitation
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -3801,6 +3844,42 @@ GO
 
 -- Index on the MocCollaborator table's tenantGuid,deleted fields.
 CREATE INDEX [I_MocCollaborator_tenantGuid_deleted] ON [BMC].[MocCollaborator] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the MocCollaborator table.
+CREATE TABLE [BMC].[MocCollaboratorChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[mocCollaboratorId] INT NOT NULL,		-- Link to the MocCollaborator table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_MocCollaboratorChangeHistory_MocCollaborator_mocCollaboratorId] FOREIGN KEY ([mocCollaboratorId]) REFERENCES [BMC].[MocCollaborator] ([id])		-- Foreign key to the MocCollaborator table.
+)
+GO
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid field.
+CREATE INDEX [I_MocCollaboratorChangeHistory_tenantGuid] ON [BMC].[MocCollaboratorChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_MocCollaboratorChangeHistory_tenantGuid_versionNumber] ON [BMC].[MocCollaboratorChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_MocCollaboratorChangeHistory_tenantGuid_timeStamp] ON [BMC].[MocCollaboratorChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_MocCollaboratorChangeHistory_tenantGuid_userId] ON [BMC].[MocCollaboratorChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,mocCollaboratorId fields.
+CREATE INDEX [I_MocCollaboratorChangeHistory_tenantGuid_mocCollaboratorId] ON [BMC].[MocCollaboratorChangeHistory] ([tenantGuid], [mocCollaboratorId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

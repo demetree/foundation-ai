@@ -49,9 +49,11 @@ CREATE SCHEMA "BMC"
 -- DROP TABLE "BMC"."MocFavourite"
 -- DROP TABLE "BMC"."MocComment"
 -- DROP TABLE "BMC"."MocLike"
+-- DROP TABLE "BMC"."MocCollaboratorChangeHistory"
 -- DROP TABLE "BMC"."MocCollaborator"
 -- DROP TABLE "BMC"."MocFork"
 -- DROP TABLE "BMC"."PublishedMocImage"
+-- DROP TABLE "BMC"."MocVersionChangeHistory"
 -- DROP TABLE "BMC"."MocVersion"
 -- DROP TABLE "BMC"."PublishedMocChangeHistory"
 -- DROP TABLE "BMC"."PublishedMoc"
@@ -160,9 +162,11 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "MocFavourite" DISABLE
 -- ALTER INDEX ALL ON "MocComment" DISABLE
 -- ALTER INDEX ALL ON "MocLike" DISABLE
+-- ALTER INDEX ALL ON "MocCollaboratorChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "MocCollaborator" DISABLE
 -- ALTER INDEX ALL ON "MocFork" DISABLE
 -- ALTER INDEX ALL ON "PublishedMocImage" DISABLE
+-- ALTER INDEX ALL ON "MocVersionChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "MocVersion" DISABLE
 -- ALTER INDEX ALL ON "PublishedMocChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "PublishedMoc" DISABLE
@@ -271,9 +275,11 @@ CREATE SCHEMA "BMC"
 -- ALTER INDEX ALL ON "MocFavourite" REBUILD
 -- ALTER INDEX ALL ON "MocComment" REBUILD
 -- ALTER INDEX ALL ON "MocLike" REBUILD
+-- ALTER INDEX ALL ON "MocCollaboratorChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "MocCollaborator" REBUILD
 -- ALTER INDEX ALL ON "MocFork" REBUILD
 -- ALTER INDEX ALL ON "PublishedMocImage" REBUILD
+-- ALTER INDEX ALL ON "MocVersionChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "MocVersion" REBUILD
 -- ALTER INDEX ALL ON "PublishedMocChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "PublishedMoc" REBUILD
@@ -3350,7 +3356,6 @@ CREATE TABLE "BMC"."MocVersion"
 	"id" SERIAL PRIMARY KEY NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	"publishedMocId" INT NOT NULL,		-- The MOC this version belongs to
-	"versionNumber" INT NOT NULL,		-- Sequential version number within the MOC (1, 2, 3...)
 	"commitMessage" VARCHAR(500) NOT NULL,		-- User-provided description of what changed in this version
 	"mpdSnapshot" TEXT NOT NULL,		-- Full MPD (Multi-Part Document) text content at this version — the complete model definition
 	"partCount" INT NULL,		-- Total part count at this version
@@ -3359,6 +3364,7 @@ CREATE TABLE "BMC"."MocVersion"
 	"modifiedPartCount" INT NULL,		-- Number of parts moved or recoloured since the previous version (null for first version)
 	"snapshotDate" TIMESTAMP NOT NULL,		-- Date/time this version was committed
 	"authorTenantGuid" VARCHAR(50) NOT NULL,		-- Tenant GUID of the user who committed this version (may differ from MOC owner for collaborators)
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
@@ -3379,6 +3385,39 @@ CREATE INDEX "I_MocVersion_tenantGuid_active" ON "BMC"."MocVersion" ("tenantGuid
 
 -- Index on the MocVersion table's tenantGuid,deleted fields.
 CREATE INDEX "I_MocVersion_tenantGuid_deleted" ON "BMC"."MocVersion" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the MocVersion table.
+CREATE TABLE "BMC"."MocVersionChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"mocVersionId" INT NOT NULL,		-- Link to the MocVersion table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "mocVersionId" FOREIGN KEY ("mocVersionId") REFERENCES "BMC"."MocVersion"("id")		-- Foreign key to the MocVersion table.
+);
+-- Index on the MocVersionChangeHistory table's tenantGuid field.
+CREATE INDEX "I_MocVersionChangeHistory_tenantGuid" ON "BMC"."MocVersionChangeHistory" ("tenantGuid")
+;
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_MocVersionChangeHistory_tenantGuid_versionNumber" ON "BMC"."MocVersionChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_MocVersionChangeHistory_tenantGuid_timeStamp" ON "BMC"."MocVersionChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_MocVersionChangeHistory_tenantGuid_userId" ON "BMC"."MocVersionChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the MocVersionChangeHistory table's tenantGuid,mocVersionId fields.
+CREATE INDEX "I_MocVersionChangeHistory_tenantGuid_mocVersionId" ON "BMC"."MocVersionChangeHistory" ("tenantGuid", "mocVersionId") INCLUDE ( versionNumber, timeStamp, userId )
 ;
 
 
@@ -3462,6 +3501,7 @@ CREATE TABLE "BMC"."MocCollaborator"
 	"invitedDate" TIMESTAMP NOT NULL,		-- Date/time the collaborator was invited
 	"acceptedDate" TIMESTAMP NULL,		-- Date/time the invitation was accepted (null = pending)
 	"isAccepted" BOOLEAN NOT NULL DEFAULT false,		-- Whether the collaborator has accepted the invitation
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
 	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
@@ -3482,6 +3522,39 @@ CREATE INDEX "I_MocCollaborator_tenantGuid_active" ON "BMC"."MocCollaborator" ("
 
 -- Index on the MocCollaborator table's tenantGuid,deleted fields.
 CREATE INDEX "I_MocCollaborator_tenantGuid_deleted" ON "BMC"."MocCollaborator" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the MocCollaborator table.
+CREATE TABLE "BMC"."MocCollaboratorChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"mocCollaboratorId" INT NOT NULL,		-- Link to the MocCollaborator table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "mocCollaboratorId" FOREIGN KEY ("mocCollaboratorId") REFERENCES "BMC"."MocCollaborator"("id")		-- Foreign key to the MocCollaborator table.
+);
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid field.
+CREATE INDEX "I_MocCollaboratorChangeHistory_tenantGuid" ON "BMC"."MocCollaboratorChangeHistory" ("tenantGuid")
+;
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_MocCollaboratorChangeHistory_tenantGuid_versionNumber" ON "BMC"."MocCollaboratorChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_MocCollaboratorChangeHistory_tenantGuid_timeStamp" ON "BMC"."MocCollaboratorChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_MocCollaboratorChangeHistory_tenantGuid_userId" ON "BMC"."MocCollaboratorChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the MocCollaboratorChangeHistory table's tenantGuid,mocCollaboratorId fields.
+CREATE INDEX "I_MocCollaboratorChangeHistory_tenantGuid_mocCollaboratorId" ON "BMC"."MocCollaboratorChangeHistory" ("tenantGuid", "mocCollaboratorId") INCLUDE ( versionNumber, timeStamp, userId )
 ;
 
 

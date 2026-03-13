@@ -283,7 +283,6 @@ namespace Foundation.BMC.Database
 			public Int32 id { get; set; }
 			[Required]
 			public Int32 publishedMocId { get; set; }
-			public Int32 versionNumber { get; set; }
 			[Required]
 			public String commitMessage { get; set; }
 			[Required]
@@ -296,6 +295,7 @@ namespace Foundation.BMC.Database
 			public DateTime snapshotDate { get; set; }
 			[Required]
 			public Guid authorTenantGuid { get; set; }
+			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -327,7 +327,6 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				publishedMocId = this.publishedMocId,
-				versionNumber = this.versionNumber,
 				commitMessage = this.commitMessage,
 				mpdSnapshot = this.mpdSnapshot,
 				partCount = this.partCount,
@@ -336,6 +335,7 @@ namespace Foundation.BMC.Database
 				modifiedPartCount = this.modifiedPartCount,
 				snapshotDate = this.snapshotDate,
 				authorTenantGuid = this.authorTenantGuid,
+				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -379,7 +379,6 @@ namespace Foundation.BMC.Database
 			{
 				id = this.id,
 				publishedMocId = this.publishedMocId,
-				versionNumber = this.versionNumber,
 				commitMessage = this.commitMessage,
 				mpdSnapshot = this.mpdSnapshot,
 				partCount = this.partCount,
@@ -388,6 +387,7 @@ namespace Foundation.BMC.Database
 				modifiedPartCount = this.modifiedPartCount,
 				snapshotDate = this.snapshotDate,
 				authorTenantGuid = this.authorTenantGuid,
+				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -432,7 +432,6 @@ namespace Foundation.BMC.Database
 			{
 				id = dto.id,
 				publishedMocId = dto.publishedMocId,
-				versionNumber = dto.versionNumber,
 				commitMessage = dto.commitMessage,
 				mpdSnapshot = dto.mpdSnapshot,
 				partCount = dto.partCount,
@@ -441,6 +440,7 @@ namespace Foundation.BMC.Database
 				modifiedPartCount = dto.modifiedPartCount,
 				snapshotDate = dto.snapshotDate,
 				authorTenantGuid = dto.authorTenantGuid,
+				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -461,7 +461,6 @@ namespace Foundation.BMC.Database
 			}
 
 			this.publishedMocId = dto.publishedMocId;
-			this.versionNumber = dto.versionNumber;
 			this.commitMessage = dto.commitMessage;
 			this.mpdSnapshot = dto.mpdSnapshot;
 			this.partCount = dto.partCount;
@@ -470,6 +469,7 @@ namespace Foundation.BMC.Database
 			this.modifiedPartCount = dto.modifiedPartCount;
 			this.snapshotDate = dto.snapshotDate;
 			this.authorTenantGuid = dto.authorTenantGuid;
+			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -496,7 +496,6 @@ namespace Foundation.BMC.Database
 				id = this.id,
 				tenantGuid = this.tenantGuid,
 				publishedMocId = this.publishedMocId,
-				versionNumber = this.versionNumber,
 				commitMessage = this.commitMessage,
 				mpdSnapshot = this.mpdSnapshot,
 				partCount = this.partCount,
@@ -505,6 +504,7 @@ namespace Foundation.BMC.Database
 				modifiedPartCount = this.modifiedPartCount,
 				snapshotDate = this.snapshotDate,
 				authorTenantGuid = this.authorTenantGuid,
+				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -562,7 +562,6 @@ namespace Foundation.BMC.Database
 			return new {
 				id = mocVersion.id,
 				publishedMocId = mocVersion.publishedMocId,
-				versionNumber = mocVersion.versionNumber,
 				commitMessage = mocVersion.commitMessage,
 				mpdSnapshot = mocVersion.mpdSnapshot,
 				partCount = mocVersion.partCount,
@@ -571,6 +570,7 @@ namespace Foundation.BMC.Database
 				modifiedPartCount = mocVersion.modifiedPartCount,
 				snapshotDate = mocVersion.snapshotDate,
 				authorTenantGuid = mocVersion.authorTenantGuid,
+				versionNumber = mocVersion.versionNumber,
 				objectGuid = mocVersion.objectGuid,
 				active = mocVersion.active,
 				deleted = mocVersion.deleted,
@@ -595,7 +595,6 @@ namespace Foundation.BMC.Database
 			return new {
 				id = mocVersion.id,
 				publishedMocId = mocVersion.publishedMocId,
-				versionNumber = mocVersion.versionNumber,
 				commitMessage = mocVersion.commitMessage,
 				mpdSnapshot = mocVersion.mpdSnapshot,
 				partCount = mocVersion.partCount,
@@ -604,6 +603,7 @@ namespace Foundation.BMC.Database
 				modifiedPartCount = mocVersion.modifiedPartCount,
 				snapshotDate = mocVersion.snapshotDate,
 				authorTenantGuid = mocVersion.authorTenantGuid,
+				versionNumber = mocVersion.versionNumber,
 				objectGuid = mocVersion.objectGuid,
 				active = mocVersion.active,
 				deleted = mocVersion.deleted,

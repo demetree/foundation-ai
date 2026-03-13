@@ -41,6 +41,7 @@ interface MocCollaboratorFormValues {
   invitedDate: string,
   acceptedDate: string | null,
   isAccepted: boolean,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -79,6 +80,7 @@ export class MocCollaboratorAddEditComponent {
         invitedDate: ['', Validators.required],
         acceptedDate: [''],
         isAccepted: [false],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -222,6 +224,7 @@ export class MocCollaboratorAddEditComponent {
         invitedDate: dateTimeLocalToIsoUtc(formValue.invitedDate!.trim())!,
         acceptedDate: formValue.acceptedDate ? dateTimeLocalToIsoUtc(formValue.acceptedDate.trim()) : null,
         isAccepted: !!formValue.isAccepted,
+        versionNumber: this.mocCollaboratorSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -235,6 +238,7 @@ export class MocCollaboratorAddEditComponent {
 
   private addMocCollaborator(mocCollaboratorData: MocCollaboratorSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    mocCollaboratorData.versionNumber = 0;
     mocCollaboratorData.active = true;
     mocCollaboratorData.deleted = false;
     this.mocCollaboratorService.PostMocCollaborator(mocCollaboratorData).pipe(
@@ -355,6 +359,7 @@ export class MocCollaboratorAddEditComponent {
         invitedDate: '',
         acceptedDate: '',
         isAccepted: false,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -372,6 +377,7 @@ export class MocCollaboratorAddEditComponent {
         invitedDate: isoUtcStringToDateTimeLocal(mocCollaboratorData.invitedDate) ?? '',
         acceptedDate: isoUtcStringToDateTimeLocal(mocCollaboratorData.acceptedDate) ?? '',
         isAccepted: mocCollaboratorData.isAccepted ?? false,
+        versionNumber: mocCollaboratorData.versionNumber?.toString() ?? '',
         active: mocCollaboratorData.active ?? true,
         deleted: mocCollaboratorData.deleted ?? false,
       }, { emitEvent: false});

@@ -24,6 +24,7 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { MocCollaboratorService, MocCollaboratorData, MocCollaboratorSubmitData } from '../../../bmc-data-services/moc-collaborator.service';
 import { PublishedMocService } from '../../../bmc-data-services/published-moc.service';
+import { MocCollaboratorChangeHistoryService } from '../../../bmc-data-services/moc-collaborator-change-history.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -41,6 +42,7 @@ interface MocCollaboratorFormValues {
   invitedDate: string,
   acceptedDate: string | null,
   isAccepted: boolean,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -76,6 +78,7 @@ export class MocCollaboratorDetailComponent implements OnInit, CanComponentDeact
         invitedDate: ['', Validators.required],
         acceptedDate: [''],
         isAccepted: [false],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -93,12 +96,14 @@ export class MocCollaboratorDetailComponent implements OnInit, CanComponentDeact
 
   mocCollaborators$ = this.mocCollaboratorService.GetMocCollaboratorList();
   public publishedMocs$ = this.publishedMocService.GetPublishedMocList();
+  public mocCollaboratorChangeHistories$ = this.mocCollaboratorChangeHistoryService.GetMocCollaboratorChangeHistoryList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public mocCollaboratorService: MocCollaboratorService,
     public publishedMocService: PublishedMocService,
+    public mocCollaboratorChangeHistoryService: MocCollaboratorChangeHistoryService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -386,6 +391,7 @@ export class MocCollaboratorDetailComponent implements OnInit, CanComponentDeact
         invitedDate: '',
         acceptedDate: '',
         isAccepted: false,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -403,6 +409,7 @@ export class MocCollaboratorDetailComponent implements OnInit, CanComponentDeact
         invitedDate: isoUtcStringToDateTimeLocal(mocCollaboratorData.invitedDate) ?? '',
         acceptedDate: isoUtcStringToDateTimeLocal(mocCollaboratorData.acceptedDate) ?? '',
         isAccepted: mocCollaboratorData.isAccepted ?? false,
+        versionNumber: mocCollaboratorData.versionNumber?.toString() ?? '',
         active: mocCollaboratorData.active ?? true,
         deleted: mocCollaboratorData.deleted ?? false,
       }, { emitEvent: false});
@@ -470,6 +477,7 @@ export class MocCollaboratorDetailComponent implements OnInit, CanComponentDeact
         invitedDate: dateTimeLocalToIsoUtc(formValue.invitedDate!.trim())!,
         acceptedDate: formValue.acceptedDate ? dateTimeLocalToIsoUtc(formValue.acceptedDate.trim()) : null,
         isAccepted: !!formValue.isAccepted,
+        versionNumber: this.mocCollaboratorData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

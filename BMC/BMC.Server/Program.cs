@@ -184,6 +184,11 @@ namespace Foundation.BMC
                 builder.Services.AddScoped<ModelExportService>();
 
                 //
+                // MOCHub versioning service — snapshot, diff, and fork logic
+                //
+                builder.Services.AddScoped<MocVersioningService>();
+
+                //
                 // Market data caching — reduces external API calls for Brickberg Terminal
                 //
                 builder.Services.Configure<MarketDataCacheOptions>(
@@ -347,6 +352,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(PublicBrowseController));
                 controllers.Add(typeof(MocImportController));
                 controllers.Add(typeof(MocExportController));
+                controllers.Add(typeof(MocHubController));
 
 
                 //
@@ -400,11 +406,13 @@ namespace Foundation.BMC
                 controllers.Add(typeof(LegoThemesController));
                 controllers.Add(typeof(MarketDataCachesController));
                 controllers.Add(typeof(MocCollaboratorsController));
+                controllers.Add(typeof(MocCollaboratorChangeHistoriesController));
                 controllers.Add(typeof(MocCommentsController));
                 controllers.Add(typeof(MocFavouritesController));
                 controllers.Add(typeof(MocForksController));
                 controllers.Add(typeof(MocLikesController));
                 controllers.Add(typeof(MocVersionsController));
+                controllers.Add(typeof(MocVersionChangeHistoriesController));
                 controllers.Add(typeof(ModelBuildStepsController));
                 controllers.Add(typeof(ModelDocumentsController));
                 controllers.Add(typeof(ModelDocumentChangeHistoriesController));

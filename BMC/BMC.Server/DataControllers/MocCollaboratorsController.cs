@@ -16,6 +16,7 @@ using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.BMC.Database;
+using Foundation.ChangeHistory;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -32,6 +33,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
+
+		static object mocCollaboratorPutSyncRoot = new object();
+		static object mocCollaboratorDeleteSyncRoot = new object();
 
 		private BMCContext _context;
 
@@ -68,6 +72,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? invitedDate = null,
 			DateTime? acceptedDate = null,
 			bool? isAccepted = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -157,6 +162,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (isAccepted.HasValue == true)
 			{
 				query = query.Where(mc => mc.isAccepted == isAccepted.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(mc => mc.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -268,6 +277,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? invitedDate = null,
 			DateTime? acceptedDate = null,
 			bool? isAccepted = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -337,6 +347,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (isAccepted.HasValue == true)
 			{
 				query = query.Where(mc => mc.isAccepted == isAccepted.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(mc => mc.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -593,62 +607,98 @@ namespace Foundation.BMC.Controllers.WebAPI
 				mocCollaborator.tenantGuid = existing.tenantGuid;
 			}
 
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (mocCollaborator.deleted == true || existing.deleted == true))
+			lock (mocCollaboratorPutSyncRoot)
 			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.MocCollaborator record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
-			}
+				//
+				// Validate the version number for the mocCollaborator being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != mocCollaborator.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "MocCollaborator save attempt was made but save request was with version " + mocCollaborator.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The MocCollaborator you are trying to update has already changed.  Please try your save again after reloading the MocCollaborator.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					mocCollaborator.versionNumber++;
+				}
 
-			if (mocCollaborator.accessLevel != null && mocCollaborator.accessLevel.Length > 50)
-			{
-				mocCollaborator.accessLevel = mocCollaborator.accessLevel.Substring(0, 50);
-			}
 
-			if (mocCollaborator.invitedDate.Kind != DateTimeKind.Utc)
-			{
-				mocCollaborator.invitedDate = mocCollaborator.invitedDate.ToUniversalTime();
-			}
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (mocCollaborator.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.MocCollaborator record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
 
-			if (mocCollaborator.acceptedDate.HasValue == true && mocCollaborator.acceptedDate.Value.Kind != DateTimeKind.Utc)
-			{
-				mocCollaborator.acceptedDate = mocCollaborator.acceptedDate.Value.ToUniversalTime();
-			}
+				if (mocCollaborator.accessLevel != null && mocCollaborator.accessLevel.Length > 50)
+				{
+					mocCollaborator.accessLevel = mocCollaborator.accessLevel.Substring(0, 50);
+				}
 
-			EntityEntry<Database.MocCollaborator> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(mocCollaborator);
+				if (mocCollaborator.invitedDate.Kind != DateTimeKind.Utc)
+				{
+					mocCollaborator.invitedDate = mocCollaborator.invitedDate.ToUniversalTime();
+				}
 
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
+				if (mocCollaborator.acceptedDate.HasValue == true && mocCollaborator.acceptedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					mocCollaborator.acceptedDate = mocCollaborator.acceptedDate.Value.ToUniversalTime();
+				}
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"BMC.MocCollaborator entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
-					null);
+				try
+				{
+				    EntityEntry<Database.MocCollaborator> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(mocCollaborator);
 
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        MocCollaboratorChangeHistory mocCollaboratorChangeHistory = new MocCollaboratorChangeHistory();
+				        mocCollaboratorChangeHistory.mocCollaboratorId = mocCollaborator.id;
+				        mocCollaboratorChangeHistory.versionNumber = mocCollaborator.versionNumber;
+				        mocCollaboratorChangeHistory.timeStamp = DateTime.UtcNow;
+				        mocCollaboratorChangeHistory.userId = securityUser.id;
+				        mocCollaboratorChangeHistory.tenantGuid = userTenantGuid;
+				        mocCollaboratorChangeHistory.data = JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator));
+				        _context.MocCollaboratorChangeHistories.Add(mocCollaboratorChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.MocCollaborator entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
+						null);
 
 				return Ok(Database.MocCollaborator.CreateAnonymous(mocCollaborator));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"BMC.MocCollaborator entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
-					ex);
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.MocCollaborator entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
+						ex);
 
-				return Problem(ex.Message);
-			}
+					return Problem(ex.Message);
+				}
 
+			}
 		}
 
         /// <summary>
@@ -723,21 +773,56 @@ namespace Foundation.BMC.Controllers.WebAPI
 				}
 
 				mocCollaborator.objectGuid = Guid.NewGuid();
+				mocCollaborator.versionNumber = 1;
+
 				_context.MocCollaborators.Add(mocCollaborator);
-				await _context.SaveChangesAsync(cancellationToken);
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"BMC.MocCollaborator entity successfully created.",
-					true,
-					mocCollaborator.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
-					null);
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
 
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the mocCollaborator object so that no further changes will be written to the database
+				    //
+				    _context.Entry(mocCollaborator).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					mocCollaborator.MocCollaboratorChangeHistories = null;
+					mocCollaborator.publishedMoc = null;
+
+
+				    MocCollaboratorChangeHistory mocCollaboratorChangeHistory = new MocCollaboratorChangeHistory();
+				    mocCollaboratorChangeHistory.mocCollaboratorId = mocCollaborator.id;
+				    mocCollaboratorChangeHistory.versionNumber = mocCollaborator.versionNumber;
+				    mocCollaboratorChangeHistory.timeStamp = DateTime.UtcNow;
+				    mocCollaboratorChangeHistory.userId = securityUser.id;
+				    mocCollaboratorChangeHistory.tenantGuid = userTenantGuid;
+				    mocCollaboratorChangeHistory.data = JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator));
+				    _context.MocCollaboratorChangeHistories.Add(mocCollaboratorChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"BMC.MocCollaborator entity successfully created.",
+						true,
+						mocCollaborator. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
+						null);
+
+
+				}
 			}
 			catch (Exception ex)
 			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.MocCollaborator entity creation failed.", false, mocCollaborator.id.ToString(), "", JsonSerializer.Serialize(mocCollaborator), ex);
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.MocCollaborator entity creation failed.", false, mocCollaborator.id.ToString(), "", JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)), ex);
 
 				return Problem(ex.Message);
 			}
@@ -749,6 +834,439 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+
+        /// <summary>
+        /// 
+        /// This rolls a MocCollaborator entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/MocCollaborator/Rollback/{id}")]
+		[Route("api/MocCollaborator/Rollback")]
+		public async Task<IActionResult> RollbackToMocCollaboratorVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.MocCollaborator> query = (from x in _context.MocCollaborators
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this MocCollaborator concurrently
+			//
+			lock (mocCollaboratorPutSyncRoot)
+			{
+				
+				Database.MocCollaborator mocCollaborator = query.FirstOrDefault();
+				
+				if (mocCollaborator == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for BMC.MocCollaborator rollback", id.ToString(), new Exception("No BMC.MocCollaborator entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the MocCollaborator current state so we can log it.
+				//
+				Database.MocCollaborator cloneOfExisting = (Database.MocCollaborator)_context.Entry(mocCollaborator).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.MocCollaboratorChangeHistories = null;
+				cloneOfExisting.publishedMoc = null;
+
+				if (versionNumber >= mocCollaborator.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for BMC.MocCollaborator rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for BMC.MocCollaborator rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				MocCollaboratorChangeHistory mocCollaboratorChangeHistory = (from x in _context.MocCollaboratorChangeHistories
+				                                               where
+				                                               x.mocCollaboratorId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (mocCollaboratorChangeHistory != null)
+				{
+				    Database.MocCollaborator oldMocCollaborator = JsonSerializer.Deserialize<Database.MocCollaborator>(mocCollaboratorChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    mocCollaborator.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    mocCollaborator.publishedMocId = oldMocCollaborator.publishedMocId;
+				    mocCollaborator.collaboratorTenantGuid = oldMocCollaborator.collaboratorTenantGuid;
+				    mocCollaborator.accessLevel = oldMocCollaborator.accessLevel;
+				    mocCollaborator.invitedDate = oldMocCollaborator.invitedDate;
+				    mocCollaborator.acceptedDate = oldMocCollaborator.acceptedDate;
+				    mocCollaborator.isAccepted = oldMocCollaborator.isAccepted;
+				    mocCollaborator.objectGuid = oldMocCollaborator.objectGuid;
+				    mocCollaborator.active = oldMocCollaborator.active;
+				    mocCollaborator.deleted = oldMocCollaborator.deleted;
+
+				    string serializedMocCollaborator = JsonSerializer.Serialize(mocCollaborator);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        MocCollaboratorChangeHistory newMocCollaboratorChangeHistory = new MocCollaboratorChangeHistory();
+				        newMocCollaboratorChangeHistory.mocCollaboratorId = mocCollaborator.id;
+				        newMocCollaboratorChangeHistory.versionNumber = mocCollaborator.versionNumber;
+				        newMocCollaboratorChangeHistory.timeStamp = DateTime.UtcNow;
+				        newMocCollaboratorChangeHistory.userId = securityUser.id;
+				        newMocCollaboratorChangeHistory.tenantGuid = userTenantGuid;
+				        newMocCollaboratorChangeHistory.data = JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator));
+				        _context.MocCollaboratorChangeHistories.Add(newMocCollaboratorChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.MocCollaborator rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
+						null);
+
+
+				    return Ok(Database.MocCollaborator.CreateAnonymous(mocCollaborator));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for BMC.MocCollaborator rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for BMC.MocCollaborator rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the change metadata (version info, timestamp, user) for a specific version of a MocCollaborator.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the MocCollaborator</param>
+        /// <param name="versionNumber">The version number to retrieve metadata for</param>
+        /// <returns>VersionInformation containing timestamp and user details</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/MocCollaborator/{id}/ChangeMetadata")]
+		public async Task<IActionResult> GetMocCollaboratorChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.MocCollaborator mocCollaborator = await _context.MocCollaborators.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (mocCollaborator == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				mocCollaborator.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.MocCollaborator> versionInfo = await mocCollaborator.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null)
+				{
+					return NotFound($"Version {versionNumber} not found.");
+				}
+
+				return Ok(versionInfo);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the full audit history for a MocCollaborator.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the MocCollaborator</param>
+        /// <param name="includeData">Whether to include the full entity data for each version (can be large)</param>
+        /// <returns>List of VersionInformation items</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/MocCollaborator/{id}/AuditHistory")]
+		public async Task<IActionResult> GetMocCollaboratorAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.MocCollaborator mocCollaborator = await _context.MocCollaborators.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (mocCollaborator == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				mocCollaborator.SetupVersionInquiry(_context, userTenantGuid);
+
+				List<VersionInformation<Database.MocCollaborator>> versions = await mocCollaborator.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
+
+				return Ok(versions);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets a specific version of a MocCollaborator.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the MocCollaborator</param>
+        /// <param name="version">The version number to retrieve</param>
+        /// <returns>The MocCollaborator object at that version</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/MocCollaborator/{id}/Version/{version}")]
+		public async Task<IActionResult> GetMocCollaboratorVersion(int id, int version, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.MocCollaborator mocCollaborator = await _context.MocCollaborators.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (mocCollaborator == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				mocCollaborator.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.MocCollaborator> versionInfo = await mocCollaborator.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound();
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the state of a MocCollaborator at a specific point in time.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the MocCollaborator</param>
+        /// <param name="time">The point in time (ISO format, UTC)</param>
+        /// <returns>The MocCollaborator object at that time</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/MocCollaborator/{id}/StateAtTime")]
+		public async Task<IActionResult> GetMocCollaboratorStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.MocCollaborator mocCollaborator = await _context.MocCollaborators.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (mocCollaborator == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				mocCollaborator.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.MocCollaborator> versionInfo = await mocCollaborator.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound("No state found at specified time.");
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
 
         /// <summary>
         /// 
@@ -807,33 +1325,52 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Database.MocCollaborator cloneOfExisting = (Database.MocCollaborator)_context.Entry(mocCollaborator).GetDatabaseValues().ToObject();
 
 
-			try
+			lock (mocCollaboratorDeleteSyncRoot)
 			{
-				mocCollaborator.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
+			    try
+			    {
+			        mocCollaborator.deleted = true;
+			        mocCollaborator.versionNumber++;
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.MocCollaborator entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
-					null);
+			        _context.SaveChanges();
 
+			        //
+			        // Now add the change history
+			        //
+			        MocCollaboratorChangeHistory mocCollaboratorChangeHistory = new MocCollaboratorChangeHistory();
+			        mocCollaboratorChangeHistory.mocCollaboratorId = mocCollaborator.id;
+			        mocCollaboratorChangeHistory.versionNumber = mocCollaborator.versionNumber;
+			        mocCollaboratorChangeHistory.timeStamp = DateTime.UtcNow;
+			        mocCollaboratorChangeHistory.userId = securityUser.id;
+			        mocCollaboratorChangeHistory.tenantGuid = userTenantGuid;
+			        mocCollaboratorChangeHistory.data = JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator));
+			        _context.MocCollaboratorChangeHistories.Add(mocCollaboratorChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.MocCollaborator entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.MocCollaborator entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
 			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.MocCollaborator entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.MocCollaborator.CreateAnonymousWithFirstLevelSubObjects(mocCollaborator)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
 		}
 
 
@@ -856,6 +1393,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			DateTime? invitedDate = null,
 			DateTime? acceptedDate = null,
 			bool? isAccepted = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -944,6 +1482,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (isAccepted.HasValue == true)
 			{
 				query = query.Where(mc => mc.isAccepted == isAccepted.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(mc => mc.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{

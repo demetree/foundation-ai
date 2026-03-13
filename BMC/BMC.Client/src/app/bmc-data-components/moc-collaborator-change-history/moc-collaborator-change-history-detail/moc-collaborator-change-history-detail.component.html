@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 moc-collaborator-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="moc-collaborator-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Moc Collaborator Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Moc Collaborator Change History' : 'Add Moc Collaborator Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCMocCollaboratorChangeHistoryReader()">
+                <div class="col m-2 moc-collaborator-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="mocCollaboratorChangeHistoryForm" (ngSubmit)="submitForm()" class="moc-collaborator-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('mocCollaboratorId')">
+                                <label for="MocCollaboratorChangeHistory-mocCollaboratorId" id="label-MocCollaboratorChangeHistory-mocCollaboratorId"><span class="text-danger">*</span>Moc Collaborator</label>
+                                <select id="MocCollaboratorChangeHistory-mocCollaboratorId" formControlName="mocCollaboratorId" class="form-select moc-collaborator-change-history-select" [disabled]="!userIsBMCMocCollaboratorChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Moc Collaborator</option>
+                                    <option *ngFor="let mocCollaborator of mocCollaborators$ | async" [ngValue]="mocCollaborator.id">{{mocCollaborator.accessLevel}}</option>
+                                </select>
+                                <div *ngIf="mocCollaboratorChangeHistoryForm.get('mocCollaboratorId')?.invalid && mocCollaboratorChangeHistoryForm.get('mocCollaboratorId')?.touched" class="text-danger">
+                                    Moc Collaborator is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="MocCollaboratorChangeHistory-versionNumber" id="label-MocCollaboratorChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="MocCollaboratorChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control moc-collaborator-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="MocCollaboratorChangeHistory-timeStamp" id="label-MocCollaboratorChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="MocCollaboratorChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control moc-collaborator-change-history-input" [disabled]="!userIsBMCMocCollaboratorChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="mocCollaboratorChangeHistoryForm.get('timeStamp')?.invalid && mocCollaboratorChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="MocCollaboratorChangeHistory-userId" id="label-MocCollaboratorChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="MocCollaboratorChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control moc-collaborator-change-history-input" [disabled]="!userIsBMCMocCollaboratorChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="mocCollaboratorChangeHistoryForm.get('userId')?.invalid && mocCollaboratorChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="MocCollaboratorChangeHistory-data" id="label-MocCollaboratorChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="MocCollaboratorChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control moc-collaborator-change-history-input" [disabled]="!userIsBMCMocCollaboratorChangeHistoryWriter()"></textarea>
+                                <div *ngIf="mocCollaboratorChangeHistoryForm.get('data')?.invalid && mocCollaboratorChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="moc-collaborator-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="mocCollaboratorChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Moc Collaborator Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mocCollaboratorChangeHistoryForm.valid || !mocCollaboratorChangeHistoryForm.dirty || mocCollaboratorChangeHistoryForm.pristine  || userIsBMCMocCollaboratorChangeHistoryWriter() == false " ngbTooltip="Save the Moc Collaborator Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Moc Collaborator Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

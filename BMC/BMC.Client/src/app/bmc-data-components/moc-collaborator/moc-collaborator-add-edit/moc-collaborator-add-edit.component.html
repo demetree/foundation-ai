@@ -59,6 +59,10 @@
                 <input type="checkbox" id="MocCollaborator-isAccepted" formControlName="isAccepted" class="form-check-input" [disabled]="!userIsBMCMocCollaboratorWriter()" />
                 <label for="MocCollaborator-isAccepted" class="form-check-label" id="label-MocCollaborator-isAccepted"><span class="text-danger">*</span>Is Accepted</label>
             </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="MocCollaborator-versionNumber" id="label-MocCollaborator-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="MocCollaborator-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control moc-collaborator-input" />
+            </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="MocCollaborator-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCMocCollaboratorWriter()" />
                 <label for="MocCollaborator-active" class="form-check-label" id="label-MocCollaborator-active"><span class="text-danger">*</span>Active</label>

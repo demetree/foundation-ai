@@ -283,7 +283,7 @@ namespace Foundation.BMC.Database
 				timeStamp = brickPartChangeHistory.timeStamp,
 				userId = brickPartChangeHistory.userId,
 				data = brickPartChangeHistory.data,
-				brickPart = BrickPart.CreateMinimalAnonymous(brickPartChangeHistory.brickPart),
+				brickPart = BrickPart.CreateMinimalAnonymous(brickPartChangeHistory.brickPart)
 			 };
 		}
 

@@ -1,0 +1,413 @@
+/*
+ * MOCHub Publish Modal — multi-step wizard
+ *
+ * Uses the BMC theming system (CSS custom properties)
+ */
+
+
+// ── Modal Backdrop ──
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.15s ease;
+}
+
+.publish-modal {
+    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-lg);
+    width: 92%;
+    max-width: 560px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--bmc-shadow-lg);
+    animation: slideUp 0.2s ease;
+}
+
+
+// ── Header ──
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--bmc-border);
+
+    .header-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        i {
+            color: var(--bmc-primary);
+            font-size: 18px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+    }
+
+    .close-btn {
+        background: transparent;
+        border: none;
+        color: var(--bmc-text-muted);
+        font-size: 16px;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        transition: all var(--transition-fast);
+
+        &:hover {
+            color: var(--bmc-text-primary);
+            background: var(--bmc-surface-hover);
+        }
+    }
+}
+
+
+// ── Body ──
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.step-description {
+    color: var(--bmc-text-secondary);
+    font-size: 14px;
+    margin: 0 0 16px;
+}
+
+
+// ── Project List ──
+.project-loading {
+    text-align: center;
+    padding: 32px;
+    color: var(--bmc-text-muted);
+    font-size: 14px;
+
+    i { margin-right: 8px; }
+}
+
+.project-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--bmc-text-muted);
+
+    i {
+        font-size: 36px;
+        margin-bottom: 12px;
+        color: var(--bmc-text-muted);
+    }
+
+    .hint {
+        font-size: 13px;
+        margin-top: 4px;
+    }
+}
+
+.project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.project-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+        border-color: var(--bmc-primary);
+        background: var(--bmc-surface-hover);
+
+        .project-arrow { color: var(--bmc-primary); }
+    }
+
+    .project-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bmc-accent-glow-soft);
+        color: var(--bmc-primary);
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+    }
+
+    .project-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: hidden;
+
+        .project-name {
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .project-meta {
+            font-size: 12px;
+            color: var(--bmc-text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .project-arrow {
+        color: var(--bmc-text-muted);
+        font-size: 12px;
+        transition: color var(--transition-fast);
+    }
+}
+
+
+// ── Details Form ──
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: var(--bmc-primary);
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 12px;
+    transition: opacity var(--transition-fast);
+
+    &:hover { opacity: 0.8; }
+}
+
+.selected-project-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--bmc-accent-glow-soft);
+    color: var(--bmc-primary);
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: rgba(248, 81, 73, 0.1);
+    border: 1px solid rgba(248, 81, 73, 0.3);
+    border-radius: var(--radius-sm);
+    color: #f85149;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--bmc-text-secondary);
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+        width: 100%;
+        padding: 8px 12px;
+        background: var(--bmc-bg-dark);
+        border: 1px solid var(--bmc-border);
+        border-radius: var(--radius-sm);
+        color: var(--bmc-text-primary);
+        font-size: 14px;
+        font-family: inherit;
+
+        &::placeholder { color: var(--bmc-text-muted); }
+
+        &:focus {
+            outline: none;
+            border-color: var(--bmc-primary);
+            box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
+        }
+    }
+
+    textarea { resize: vertical; }
+    select { cursor: pointer; }
+}
+
+.field-row {
+    display: flex;
+    gap: 14px;
+
+    .field { flex: 1; }
+}
+
+.checkbox-field {
+    label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        padding-top: 22px; // align with adjacent select
+    }
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--bmc-primary);
+    }
+}
+
+
+// ── Publishing State ──
+.publishing-state {
+    text-align: center;
+    padding: 48px 24px;
+
+    .publish-animation {
+        font-size: 48px;
+        color: var(--bmc-primary);
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+    }
+
+    p {
+        color: var(--bmc-text-muted);
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+
+// ── Done State ──
+.done-state {
+    text-align: center;
+    padding: 48px 24px;
+
+    .done-icon {
+        font-size: 48px;
+        color: var(--bmc-primary);
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+    }
+
+    p {
+        color: var(--bmc-text-muted);
+        font-size: 14px;
+        margin: 0;
+    }
+}
+
+
+// ── Footer ──
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--bmc-border);
+}
+
+.btn-cancel {
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-sm);
+    color: var(--bmc-text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover { background: var(--bmc-surface-hover); }
+}
+
+.btn-publish {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 18px;
+    background: linear-gradient(135deg, var(--bmc-primary-dark) 0%, var(--bmc-primary) 100%);
+    border: 1px solid var(--bmc-primary);
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover:not(:disabled) { opacity: 0.9; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-view {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 18px;
+    background: linear-gradient(135deg, var(--bmc-primary-dark) 0%, var(--bmc-primary) 100%);
+    border: 1px solid var(--bmc-primary);
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover { opacity: 0.9; color: #fff; }
+}
+
+
+// ── Animations ──
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

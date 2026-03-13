@@ -208,6 +208,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[MocCollaboratorChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[MocComment]",
          "ObjectType": 0
       },
@@ -225,6 +229,10 @@
       },
       {
          "Name": "[BMC].[MocVersion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[MocVersionChangeHistory]",
          "ObjectType": 0
       },
       {
