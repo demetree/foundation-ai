@@ -449,6 +449,48 @@
 }
 
 
+// ── Error State ──
+.error-state {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--bmc-text-muted);
+
+    i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        color: #f59e0b;
+    }
+
+    h3 {
+        font-size: 20px;
+        margin: 0 0 8px;
+        color: var(--bmc-text-primary);
+    }
+
+    p {
+        margin: 0 0 20px;
+        font-size: 14px;
+    }
+}
+
+.retry-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: var(--bmc-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.2s;
+
+    &:hover { filter: brightness(1.15); }
+}
+
+
 // ── Responsive ──
 @media (max-width: 768px) {
     .mochub-hero {

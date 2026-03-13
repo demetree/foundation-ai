@@ -58,6 +58,12 @@
                         <i class="fas fa-plus"></i>
                         <span>Commit Version</span>
                     </button>
+
+                    <!-- Settings Button (owner only) -->
+                    <button class="action-btn settings-btn" *ngIf="isOwner"
+                        (click)="goToSettings()">
+                        <i class="fas fa-cog"></i>
+                    </button>
                 </div>
             </div>
 
@@ -137,8 +143,8 @@
 
                         <!-- View Mode -->
                         <ng-container *ngIf="!editingReadme">
-                            <div class="readme-body" *ngIf="moc.readmeMarkdown">
-                                {{ moc.readmeMarkdown }}
+                            <div class="readme-body" *ngIf="moc.readmeMarkdown"
+                                [innerHTML]="getRenderedReadme()">
                             </div>
                             <div class="readme-empty" *ngIf="!moc.readmeMarkdown">
                                 <i class="fas fa-file-alt"></i>
@@ -182,29 +188,117 @@
                         </div>
 
                         <div class="version-timeline" *ngIf="!versionsLoading && versions.length > 0">
-                            <div class="version-entry" *ngFor="let v of versions" (click)="goToVersion(v)">
-                                <div class="version-dot"></div>
-                                <div class="version-content">
-                                    <div class="version-header">
-                                        <span class="version-number">v{{ v.versionNumber }}</span>
-                                        <span class="version-message">{{ v.commitMessage }}</span>
-                                    </div>
-                                    <div class="version-meta">
-                                        <span class="version-date">{{ formatRelativeDate(v.snapshotDate) }}</span>
-                                        <span class="version-parts" *ngIf="v.partCount">
-                                            {{ v.partCount }} parts
-                                        </span>
-                                        <span class="version-delta" [ngClass]="getDeltaClass(v.addedPartCount)"
-                                            *ngIf="v.addedPartCount">
-                                            {{ getDeltaText(v.addedPartCount) }} added
-                                        </span>
-                                        <span class="version-delta" [ngClass]="getDeltaClass(-(v.removedPartCount || 0))"
-                                            *ngIf="v.removedPartCount">
-                                            -{{ v.removedPartCount }} removed
-                                        </span>
+                            <ng-container *ngFor="let v of versions">
+
+                                <!-- Version Entry Row -->
+                                <div class="version-entry"
+                                    [class.selected]="selectedVersion?.versionNumber === v.versionNumber"
+                                    (click)="goToVersion(v)">
+                                    <div class="version-dot"></div>
+                                    <div class="version-content">
+                                        <div class="version-header">
+                                            <span class="version-number">v{{ v.versionNumber }}</span>
+                                            <span class="version-message">{{ v.commitMessage }}</span>
+                                            <i class="fas fa-chevron-down version-expand-icon"
+                                                [class.expanded]="selectedVersion?.versionNumber === v.versionNumber"></i>
+                                        </div>
+                                        <div class="version-meta">
+                                            <span class="version-date">{{ formatRelativeDate(v.snapshotDate) }}</span>
+                                            <span class="version-parts" *ngIf="v.partCount">
+                                                {{ v.partCount }} parts
+                                            </span>
+                                            <span class="version-delta" [ngClass]="getDeltaClass(v.addedPartCount)"
+                                                *ngIf="v.addedPartCount">
+                                                {{ getDeltaText(v.addedPartCount) }} added
+                                            </span>
+                                            <span class="version-delta" [ngClass]="getDeltaClass(-(v.removedPartCount || 0))"
+                                                *ngIf="v.removedPartCount">
+                                                -{{ v.removedPartCount }} removed
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+
+                                <!-- Inline Diff Panel -->
+                                <div class="diff-panel" *ngIf="selectedVersion?.versionNumber === v.versionNumber">
+
+                                    <!-- Diff Loading -->
+                                    <div class="diff-loading" *ngIf="diffLoading">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading diff...
+                                    </div>
+
+                                    <!-- First Version (no diff available) -->
+                                    <div class="diff-first-version" *ngIf="diffData?.isFirstVersion">
+                                        <i class="fas fa-flag"></i> Initial version — no prior version to compare.
+                                    </div>
+
+                                    <!-- Diff Error -->
+                                    <div class="diff-error" *ngIf="diffData?.error">
+                                        <i class="fas fa-exclamation-triangle"></i> Failed to load diff data.
+                                    </div>
+
+                                    <!-- Diff Content -->
+                                    <ng-container *ngIf="diffData && !diffData.isFirstVersion && !diffData.error && !diffLoading">
+
+                                        <!-- Diff Summary -->
+                                        <div class="diff-summary">
+                                            <span class="diff-stat diff-stat-added" *ngIf="diffData.addedCount">
+                                                <i class="fas fa-plus-circle"></i> {{ diffData.addedCount }} added
+                                            </span>
+                                            <span class="diff-stat diff-stat-removed" *ngIf="diffData.removedCount">
+                                                <i class="fas fa-minus-circle"></i> {{ diffData.removedCount }} removed
+                                            </span>
+                                            <span class="diff-stat" *ngIf="!diffData.addedCount && !diffData.removedCount">
+                                                No changes detected.
+                                            </span>
+
+                                            <button class="diff-3d-btn" (click)="toggle3dDiff(); $event.stopPropagation()"
+                                                *ngIf="diffData.addedCount || diffData.removedCount">
+                                                <i class="fas" [class.fa-cube]="!diff3dActive" [class.fa-times]="diff3dActive"></i>
+                                                {{ diff3dActive ? 'Close 3D' : 'View in 3D' }}
+                                            </button>
+                                        </div>
+
+                                        <!-- 3D Diff Viewer -->
+                                        <div class="diff-3d-viewer" *ngIf="diff3dActive">
+                                            <div class="diff-3d-loading" *ngIf="diff3dLoading">
+                                                <i class="fas fa-spinner fa-spin"></i> Loading 3D diff model...
+                                            </div>
+                                            <div class="diff-canvas-wrapper">
+                                                <canvas #diffCanvas></canvas>
+                                            </div>
+                                            <div class="diff-3d-legend">
+                                                <span class="legend-item legend-added">
+                                                    <span class="legend-swatch"></span> Added
+                                                </span>
+                                                <span class="legend-item legend-removed">
+                                                    <span class="legend-swatch"></span> Removed
+                                                </span>
+                                                <span class="legend-item legend-unchanged">
+                                                    <span class="legend-swatch"></span> Unchanged
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Diff Entry List -->
+                                        <div class="diff-entries" *ngIf="diffData.entries?.length > 0">
+                                            <div class="diff-entry" *ngFor="let entry of diffData.entries.slice(0, 50)"
+                                                [class.diff-added]="entry.changeType === 'Added'"
+                                                [class.diff-removed]="entry.changeType === 'Removed'">
+                                                <i class="fas" [class.fa-plus]="entry.changeType === 'Added'"
+                                                    [class.fa-minus]="entry.changeType === 'Removed'"></i>
+                                                <span class="diff-entry-part">{{ entry.partId }}</span>
+                                                <span class="diff-entry-pos">{{ entry.position }}</span>
+                                            </div>
+                                            <div class="diff-more" *ngIf="diffData.entries.length > 50">
+                                                ... and {{ diffData.entries.length - 50 }} more changes
+                                            </div>
+                                        </div>
+
+                                    </ng-container>
+                                </div>
+
+                            </ng-container>
                         </div>
                     </div>
 
@@ -212,18 +306,49 @@
                     <!-- Forks Tab -->
                     <div class="forks-panel" *ngIf="activeTab === 'forks'">
 
+                        <!-- Fork lineage header (if this MOC is itself a fork) -->
+                        <div class="fork-lineage" *ngIf="moc.forkedFromMocId">
+                            <div class="lineage-line">
+                                <i class="fas fa-code-branch"></i>
+                                <span>This MOC was forked from
+                                    <a class="lineage-link" (click)="navigateToFork({ forkedMocId: moc.forkedFromMocId })">
+                                        {{ moc.forkedFromMocName || 'original MOC' }}
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+
                         <div class="forks-empty" *ngIf="forks.length === 0">
                             <i class="fas fa-code-branch"></i>
                             <p>No forks yet</p>
+                            <p class="forks-empty-hint">Others can fork this MOC to create their own version</p>
                         </div>
 
-                        <div class="forks-list" *ngIf="forks.length > 0">
-                            <div class="fork-entry" *ngFor="let fork of forks">
-                                <i class="fas fa-code-branch fork-icon"></i>
-                                <div class="fork-info">
-                                    <span class="fork-name">{{ fork.forkedMocName || 'Forked MOC' }}</span>
-                                    <span class="fork-date">Forked {{ formatRelativeDate(fork.forkedDate) }}</span>
+                        <div class="fork-network" *ngIf="forks.length > 0">
+                            <div class="fork-network-header">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>{{ forks.length }} {{ forks.length === 1 ? 'fork' : 'forks' }}</span>
+                            </div>
+
+                            <div class="fork-card" *ngFor="let fork of forks"
+                                (click)="navigateToFork(fork)">
+                                <div class="fork-tree-line"></div>
+                                <div class="fork-card-content">
+                                    <div class="fork-card-header">
+                                        <i class="fas fa-code-branch fork-card-icon"></i>
+                                        <span class="fork-card-name">{{ fork.forkedMocName || 'Forked MOC' }}</span>
+                                        <span class="fork-card-version" *ngIf="fork.sourceVersionNumber">
+                                            from v{{ fork.sourceVersionNumber }}
+                                        </span>
+                                    </div>
+                                    <div class="fork-card-meta">
+                                        <span class="fork-card-date">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            Forked {{ formatRelativeDate(fork.forkedDate) }}
+                                        </span>
+                                    </div>
                                 </div>
+                                <i class="fas fa-chevron-right fork-card-arrow"></i>
                             </div>
                         </div>
                     </div>

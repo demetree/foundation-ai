@@ -1,0 +1,142 @@
+<!-- MOCHub Settings — MOC metadata management and danger zone -->
+
+<div class="mochub-settings">
+
+    <!-- Loading -->
+    <div class="settings-loading" *ngIf="loading">
+        <div class="skeleton-header"></div>
+        <div class="skeleton-content"></div>
+    </div>
+
+
+    <!-- Settings Content -->
+    <ng-container *ngIf="!loading && moc">
+
+        <!-- Header -->
+        <header class="settings-header">
+            <button class="back-btn" (click)="goBack()">
+                <i class="fas fa-arrow-left"></i> Back to MOC
+            </button>
+            <h1><i class="fas fa-cog"></i> Settings — {{ moc.name }}</h1>
+        </header>
+
+
+        <!-- General Settings -->
+        <section class="settings-section">
+            <h2>General</h2>
+
+            <div class="form-group">
+                <label for="settings-name">Name</label>
+                <input id="settings-name" type="text" [(ngModel)]="name"
+                    placeholder="MOC name" [disabled]="saving">
+            </div>
+
+            <div class="form-group">
+                <label for="settings-description">Description</label>
+                <textarea id="settings-description" [(ngModel)]="description"
+                    placeholder="Short description of your MOC" rows="3"
+                    [disabled]="saving"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="settings-tags">Tags</label>
+                <input id="settings-tags" type="text" [(ngModel)]="tags"
+                    placeholder="comma, separated, tags" [disabled]="saving">
+                <span class="form-hint">Comma-separated. Helps others discover your MOC.</span>
+            </div>
+        </section>
+
+
+        <!-- Visibility -->
+        <section class="settings-section">
+            <h2>Visibility</h2>
+
+            <div class="visibility-options">
+                <div class="visibility-option" *ngFor="let opt of visibilityOptions"
+                    [class.selected]="visibility === opt.value"
+                    (click)="visibility = opt.value">
+                    <i [class]="opt.icon"></i>
+                    <div class="visibility-text">
+                        <strong>{{ opt.label }}</strong>
+                        <span>{{ opt.desc }}</span>
+                    </div>
+                    <i class="fas fa-check visibility-check" *ngIf="visibility === opt.value"></i>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- License & Forking -->
+        <section class="settings-section">
+            <h2>License & Forking</h2>
+
+            <div class="form-group">
+                <label for="settings-license">License</label>
+                <select id="settings-license" [(ngModel)]="licenseName" [disabled]="saving">
+                    <option *ngFor="let lic of licenseOptions" [value]="lic">
+                        {{ lic || 'No license' }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group form-toggle">
+                <label>
+                    <input type="checkbox" [(ngModel)]="allowForking" [disabled]="saving">
+                    <span>Allow forking</span>
+                </label>
+                <span class="form-hint">When enabled, others can create their own copy of this MOC.</span>
+            </div>
+        </section>
+
+
+        <!-- Save Button -->
+        <div class="settings-actions">
+            <button class="save-btn" (click)="saveSettings()" [disabled]="saving">
+                <i class="fas" [class.fa-check]="!saving" [class.fa-spinner]="saving"
+                    [class.fa-spin]="saving"></i>
+                {{ saving ? 'Saving...' : 'Save Changes' }}
+            </button>
+            <span class="save-success" *ngIf="saveSuccess">
+                <i class="fas fa-check-circle"></i> Saved successfully
+            </span>
+        </div>
+
+
+        <!-- Danger Zone -->
+        <section class="settings-section danger-zone">
+            <h2><i class="fas fa-exclamation-triangle"></i> Danger Zone</h2>
+
+            <div class="danger-card">
+                <div class="danger-info">
+                    <strong>Unpublish this MOC</strong>
+                    <p>This will remove the MOC from public view. Forks will remain independent.</p>
+                </div>
+
+                <div class="danger-confirm">
+                    <label>Type <strong>{{ moc.name }}</strong> to confirm:</label>
+                    <input type="text" [(ngModel)]="unpublishConfirmText"
+                        [placeholder]="moc.name" [disabled]="unpublishing">
+
+                    <button class="danger-btn" (click)="unpublish()"
+                        [disabled]="unpublishConfirmText !== moc.name || unpublishing">
+                        <i class="fas" [class.fa-trash-alt]="!unpublishing"
+                            [class.fa-spinner]="unpublishing" [class.fa-spin]="unpublishing"></i>
+                        {{ unpublishing ? 'Unpublishing...' : 'Unpublish MOC' }}
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </ng-container>
+
+
+    <!-- Not Found -->
+    <div class="settings-not-found" *ngIf="!loading && !moc">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>MOC not found</h3>
+        <button class="back-btn" (click)="goBack()">
+            <i class="fas fa-arrow-left"></i> Go Back
+        </button>
+    </div>
+
+</div>

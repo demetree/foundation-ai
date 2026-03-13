@@ -1,9 +1,17 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
+import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { LDrawLoader } from 'three/examples/jsm/loaders/LDrawLoader.js';
+import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDrawConditionalLineMaterial.js';
 
 
 /**
@@ -51,6 +59,26 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
     savingReadme = false;
 
     //
+    // Version diff viewer state
+    //
+    selectedVersion: any = null;
+    diffData: any = null;
+    diffLoading = false;
+    diff3dActive = false;
+    diff3dLoading = false;
+
+    //
+    // Three.js diff viewer objects
+    //
+    @ViewChild('diffCanvas', { static: false }) diffCanvas!: ElementRef<HTMLCanvasElement>;
+    private diffScene: THREE.Scene | null = null;
+    private diffCamera: THREE.PerspectiveCamera | null = null;
+    private diffRenderer: THREE.WebGLRenderer | null = null;
+    private diffControls: OrbitControls | null = null;
+    private diffAnimationFrameId: number | null = null;
+    private diffModelGroup: THREE.Group | null = null;
+
+    //
     // Route params
     //
     mocId: number = 0;
@@ -68,7 +96,9 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private http: HttpClient,
-        private authService: AuthService
+        private authService: AuthService,
+        private fileCacheService: LDrawFileCacheService,
+        private sanitizer: DomSanitizer
     ) { }
 
 
@@ -105,6 +135,7 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
 
 
     ngOnDestroy(): void {
+        this.cleanupDiffScene();
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -240,13 +271,310 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
     }
 
     goToVersion(version: any): void {
-        // Future: navigate to version diff view
+        //
+        // Toggle: clicking the same version again closes the diff
+        //
+        if (this.selectedVersion?.versionNumber === version.versionNumber) {
+            this.closeDiff();
+            return;
+        }
+
+        this.selectedVersion = version;
+        this.diffData = null;
+        this.diff3dActive = false;
+        this.cleanupDiffScene();
+
+        //
+        // Don't load diff for first version (nothing to compare with)
+        //
+        if (version.versionNumber <= 1) {
+            this.diffData = { addedCount: 0, removedCount: 0, entries: [], isFirstVersion: true };
+            return;
+        }
+
+        this.diffLoading = true;
+
+        this.http.get<any>(`/api/mochub/moc/${this.mocId}/versions/${version.versionNumber}/diff`).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (diff) => {
+                this.diffData = diff;
+                this.diffLoading = false;
+            },
+            error: () => {
+                this.diffData = { addedCount: 0, removedCount: 0, entries: [], error: true };
+                this.diffLoading = false;
+            }
+        });
+    }
+
+
+    closeDiff(): void {
+        this.selectedVersion = null;
+        this.diffData = null;
+        this.diff3dActive = false;
+        this.cleanupDiffScene();
+    }
+
+
+    toggle3dDiff(): void {
+        if (this.diff3dActive) {
+            this.diff3dActive = false;
+            this.cleanupDiffScene();
+            return;
+        }
+
+        this.diff3dActive = true;
+        this.diff3dLoading = true;
+
+        //
+        // Wait for the canvas to render in the DOM, then load the 3D diff
+        //
+        setTimeout(() => this.loadDiffMpd(), 0);
+    }
+
+
+    goToSettings(): void {
+        this.router.navigate(['/mochub/moc', this.mocId, 'settings']);
+    }
+
+
+    //
+    // Three.js diff viewer
+    //
+
+    private async loadDiffMpd(): Promise<void> {
+        if (!this.diffCanvas || !this.selectedVersion) {
+            this.diff3dLoading = false;
+            return;
+        }
+
+        //
+        // Initialise the LDraw file cache
+        //
+        await this.fileCacheService.initialise();
+
+        this.initDiffScene();
+
+        //
+        // Fetch the diff MPD from the server
+        //
+        const versionNum = this.selectedVersion.versionNumber;
+        const url = `/api/mochub/moc/${this.mocId}/versions/${versionNum}/diff-mpd`;
+
+        try {
+            const mpdText = await this.http.get(url, { responseType: 'text' }).toPromise();
+
+            if (!mpdText || !this.diffScene) {
+                this.diff3dLoading = false;
+                return;
+            }
+
+            //
+            // Load the MPD using LDrawLoader
+            //
+            const loader = new LDrawLoader();
+            loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
+
+            const fileEndpoint = '/api/ldraw/file/';
+            loader.setPartsLibraryPath(fileEndpoint);
+
+            //
+            // Graceful missing file handling
+            //
+            const partsGeometryCache = (loader as any).partsCache;
+            if (partsGeometryCache?.parseCache) {
+                const parseCache = partsGeometryCache.parseCache;
+                const originalFetchData = parseCache.fetchData.bind(parseCache);
+                parseCache.fetchData = async (fileName: string) => {
+                    try { return await originalFetchData(fileName); }
+                    catch { return `0 // Not found: ${fileName}\n`; }
+                };
+            }
+
+            //
+            // Preload LDraw colour config
+            //
+            try {
+                await (loader as any).preloadMaterials(fileEndpoint + 'LDConfig.ldr');
+            } catch { }
+
+            //
+            // Parse the MPD text directly using LDrawLoader.parse()
+            //
+            const group = await new Promise<THREE.Group>((resolve, reject) => {
+                (loader as any).parse(mpdText, '', (result: THREE.Group) => resolve(result), reject);
+            });
+
+            //
+            // LDraw coordinate system — Y-axis flip
+            //
+            group.rotation.x = Math.PI;
+
+            this.diffModelGroup = group;
+            this.diffScene!.add(group);
+            this.centreAndFrameDiffModel(group);
+
+            this.diff3dLoading = false;
+
+        } catch (err) {
+            console.error('[DiffViewer] Failed to load diff MPD:', err);
+            this.diff3dLoading = false;
+        }
+    }
+
+
+    private initDiffScene(): void {
+        const canvas = this.diffCanvas.nativeElement;
+        const container = canvas.parentElement!;
+        const width = container.clientWidth;
+        const height = container.clientHeight || 400;
+
+        //
+        // Scene
+        //
+        this.diffScene = new THREE.Scene();
+
+        //
+        // Camera
+        //
+        this.diffCamera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
+        this.diffCamera.position.set(300, 200, 400);
+        this.diffCamera.lookAt(0, 0, 0);
+
+        //
+        // Renderer
+        //
+        this.diffRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        this.diffRenderer.setClearColor(0x000000, 0);
+        this.diffRenderer.setSize(width, height);
+        this.diffRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        this.diffRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.diffRenderer.toneMappingExposure = 1.0;
+
+        //
+        // Controls
+        //
+        this.diffControls = new OrbitControls(this.diffCamera, this.diffRenderer.domElement);
+        this.diffControls.enableDamping = true;
+        this.diffControls.dampingFactor = 0.08;
+
+        //
+        // Lighting — same as moc-viewer
+        //
+        this.diffScene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+        const keyLight = new THREE.DirectionalLight(0xfff5e6, 1.0);
+        keyLight.position.set(300, 400, 300);
+        this.diffScene.add(keyLight);
+
+        const fillLight = new THREE.DirectionalLight(0xb0d4f1, 0.4);
+        fillLight.position.set(-200, 150, -150);
+        this.diffScene.add(fillLight);
+
+        this.diffScene.add(new THREE.HemisphereLight(0x87ceeb, 0x362f2d, 0.3));
+
+        //
+        // Grid
+        //
+        const computedBorder = getComputedStyle(document.documentElement)
+            .getPropertyValue('--bmc-border').trim() || '#333355';
+        const gridColour = new THREE.Color(computedBorder);
+        const grid = new THREE.GridHelper(1000, 50, gridColour, gridColour);
+        (grid.material as THREE.Material).opacity = 0.3;
+        (grid.material as THREE.Material).transparent = true;
+        this.diffScene.add(grid);
+
+        //
+        // Render loop
+        //
+        const animate = () => {
+            this.diffAnimationFrameId = requestAnimationFrame(animate);
+            this.diffControls?.update();
+            if (this.diffRenderer && this.diffScene && this.diffCamera) {
+                this.diffRenderer.render(this.diffScene, this.diffCamera);
+            }
+        };
+
+        animate();
+    }
+
+
+    private centreAndFrameDiffModel(group: THREE.Group): void {
+        const box = new THREE.Box3().setFromObject(group);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const distance = maxDim * 1.5;
+
+        group.position.sub(center);
+
+        if (this.diffCamera) {
+            this.diffCamera.position.set(distance * 0.7, distance * 0.5, distance * 0.9);
+            this.diffCamera.lookAt(0, 0, 0);
+        }
+
+        if (this.diffControls) {
+            this.diffControls.target.set(0, 0, 0);
+            this.diffControls.update();
+        }
+    }
+
+
+    private cleanupDiffScene(): void {
+        if (this.diffAnimationFrameId != null) {
+            cancelAnimationFrame(this.diffAnimationFrameId);
+            this.diffAnimationFrameId = null;
+        }
+
+        if (this.diffModelGroup) {
+            this.diffModelGroup.traverse(child => {
+                if ((child as any).geometry) (child as any).geometry.dispose();
+                if ((child as any).material) {
+                    const mat = (child as any).material;
+                    if (Array.isArray(mat)) mat.forEach((m: any) => m.dispose());
+                    else mat.dispose();
+                }
+            });
+            this.diffModelGroup = null;
+        }
+
+        this.diffControls?.dispose();
+        this.diffRenderer?.dispose();
+        this.diffScene = null;
+        this.diffCamera = null;
+        this.diffRenderer = null;
+        this.diffControls = null;
+    }
+
+
+    navigateToFork(fork: any): void {
+        if (fork.forkedMocId) {
+            this.router.navigate(['/mochub/moc', fork.forkedMocId]);
+        }
     }
 
 
     //
     // Helpers
     //
+
+    private _renderedReadme: SafeHtml | null = null;
+    private _readmeSource: string | null = null;
+
+    getRenderedReadme(): SafeHtml {
+        const source = this.moc?.readmeMarkdown || '';
+        if (source !== this._readmeSource) {
+            this._readmeSource = source;
+            if (source) {
+                const html = marked.parse(source, { async: false }) as string;
+                this._renderedReadme = this.sanitizer.bypassSecurityTrustHtml(html);
+            } else {
+                this._renderedReadme = '';
+            }
+        }
+        return this._renderedReadme || '';
+    }
 
     formatDate(dateString: string): string {
         if (!dateString) return '';

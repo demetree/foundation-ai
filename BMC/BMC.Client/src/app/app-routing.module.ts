@@ -275,6 +275,7 @@ import { MyProjectsComponent } from './components/my-projects/my-projects.compon
 import { MocViewerComponent } from './components/moc-viewer/moc-viewer.component';
 import { MochubExploreComponent } from './components/mochub-explore/mochub-explore.component';
 import { MochubRepoComponent } from './components/mochub-repo/mochub-repo.component';
+import { MochubSettingsComponent } from './components/mochub-settings/mochub-settings.component';
 
 
 
@@ -893,6 +894,7 @@ const routes: Routes = [
     // MOCHub routes — public browse
     { path: 'mochub', component: MochubExploreComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'MOCHub — Explore MOCs' },
     { path: 'mochub/moc/:id', component: MochubRepoComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'MOC Detail' },
+    { path: 'mochub/moc/:id/settings', component: MochubSettingsComponent, canActivate: [AuthGuard], title: 'MOC Settings' },
 
     { path: '**', component: NotFoundComponent, title: 'Page Not Found' }
 ];

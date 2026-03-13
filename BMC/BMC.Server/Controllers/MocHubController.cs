@@ -440,6 +440,102 @@ namespace Foundation.BMC.Controllers.WebAPI
 
         /// <summary>
         ///
+        /// GET /api/mochub/moc/{id}/versions/{versionNum}/mpd
+        ///
+        /// Returns the raw MPD snapshot text for a specific version.
+        /// Used by the client 3D viewer to render a historical version of a MOC.
+        ///
+        /// </summary>
+        [HttpGet("moc/{id}/versions/{versionNum}/mpd")]
+        [AllowAnonymous]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.Global)]
+        public async Task<IActionResult> GetVersionMpd(
+            int id,
+            int versionNum,
+            CancellationToken cancellationToken = default)
+        {
+            //
+            // Verify the MOC is publicly accessible
+            //
+            bool isPublic = await _context.PublishedMocs
+                .AnyAsync(pm => pm.id == id
+                             && pm.visibility != "Private"
+                             && pm.active == true
+                             && pm.deleted == false,
+                    cancellationToken);
+
+            if (isPublic == false)
+            {
+                return NotFound("MOC not found.");
+            }
+
+            string mpdSnapshot = await _versioningService.GetVersionMpdAsync(id, versionNum, cancellationToken);
+
+            if (string.IsNullOrEmpty(mpdSnapshot))
+            {
+                return NotFound("Version not found.");
+            }
+
+            return Content(mpdSnapshot, "text/plain");
+        }
+
+
+        /// <summary>
+        ///
+        /// GET /api/mochub/moc/{id}/versions/{versionNum}/diff-mpd
+        ///
+        /// Returns a colour-coded diff MPD that visualises changes between two versions.
+        /// Added bricks are coloured green (LDraw 2), removed bricks translucent red (LDraw 36),
+        /// unchanged bricks keep their original colours.  The output is a valid LDraw MPD file
+        /// that can be loaded directly by LDrawLoader for 3D rendering.
+        ///
+        /// </summary>
+        [HttpGet("moc/{id}/versions/{versionNum}/diff-mpd")]
+        [AllowAnonymous]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.Global)]
+        public async Task<IActionResult> GetDiffMpd(
+            int id,
+            int versionNum,
+            int? compareWith = null,
+            CancellationToken cancellationToken = default)
+        {
+            int fromVersion = compareWith ?? (versionNum - 1);
+
+            if (fromVersion < 1)
+            {
+                return BadRequest("Cannot generate diff for the first version — no prior version.");
+            }
+
+            //
+            // Verify the MOC is publicly accessible
+            //
+            bool isPublic = await _context.PublishedMocs
+                .AnyAsync(pm => pm.id == id
+                             && pm.visibility != "Private"
+                             && pm.active == true
+                             && pm.deleted == false,
+                    cancellationToken);
+
+            if (isPublic == false)
+            {
+                return NotFound("MOC not found.");
+            }
+
+            try
+            {
+                string diffMpd = await _versioningService.GenerateDiffMpdAsync(
+                    id, fromVersion, versionNum, cancellationToken);
+
+                return Content(diffMpd, "text/plain");
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+
+        /// <summary>
+        ///
         /// GET /api/mochub/moc/{id}/forks
         ///
         /// Get the list of forks for a MOC.
@@ -471,6 +567,53 @@ namespace Foundation.BMC.Controllers.WebAPI
                 .ToListAsync(cancellationToken);
 
             return Ok(forks);
+        }
+
+
+        /// <summary>
+        ///
+        /// DELETE /api/mochub/moc/{id}
+        ///
+        /// Unpublish (soft-delete) a MOC.  Owner-only.
+        ///
+        /// </summary>
+        [HttpDelete("moc/{id}")]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.Global)]
+        public async Task<IActionResult> UnpublishMoc(int id, CancellationToken cancellationToken = default)
+        {
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+            if (securityUser == null)
+            {
+                return Unauthorized("Not authenticated.");
+            }
+
+            Guid ownerGuid;
+            try
+            {
+                ownerGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var moc = await _context.PublishedMocs
+                .FirstOrDefaultAsync(pm => pm.id == id
+                                        && pm.tenantGuid == ownerGuid
+                                        && pm.deleted == false,
+                    cancellationToken);
+
+            if (moc == null)
+            {
+                return NotFound("MOC not found or you do not have permission to delete it.");
+            }
+
+            moc.deleted = true;
+            moc.active = false;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return NoContent();
         }
 
 

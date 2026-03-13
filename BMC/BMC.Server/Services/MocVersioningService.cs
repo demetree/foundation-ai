@@ -470,7 +470,225 @@ namespace Foundation.BMC.Services
         }
 
 
+        /// <summary>
+        ///
+        /// Get the raw MPD snapshot text for a specific version.
+        ///
+        /// </summary>
+        public async Task<string> GetVersionMpdAsync(
+            int publishedMocId,
+            int versionNumber,
+            CancellationToken cancellationToken = default)
+        {
+            string mpdSnapshot = await _context.MocVersions
+                .Where(mv => mv.publishedMocId == publishedMocId
+                          && mv.versionNumber == versionNumber
+                          && mv.active == true)
+                .Select(mv => mv.mpdSnapshot)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return mpdSnapshot;
+        }
+
+
+        /// <summary>
+        ///
+        /// Generate a diff MPD — a single LDraw MPD file that visualises the differences
+        /// between two version snapshots.
+        ///
+        /// How it works:
+        ///   1. Parse type 1 lines (brick placements) from both snapshots
+        ///   2. Classify each line as Added, Removed, or Unchanged
+        ///   3. Emit a unified MPD where:
+        ///       - Unchanged bricks keep their original LDraw colour code
+        ///       - Added bricks are recoloured to LDraw colour 2 (bright green)
+        ///       - Removed bricks are recoloured to LDraw colour 36 (translucent red)
+        ///   4. Merge submodel definitions from both snapshots so all geometry resolves
+        ///
+        /// The output can be loaded directly by LDrawLoader to render a 3D diff view.
+        ///
+        /// </summary>
+        public async Task<string> GenerateDiffMpdAsync(
+            int publishedMocId,
+            int fromVersionNumber,
+            int toVersionNumber,
+            CancellationToken cancellationToken = default)
+        {
+            //
+            // Constants for diff highlight colours
+            //
+            const string COLOUR_ADDED = "2";         // Bright green
+            const string COLOUR_REMOVED = "36";       // Translucent red
+
+            //
+            // Load both version snapshots
+            //
+            MocVersion fromVersion = await _context.MocVersions
+                .Where(mv => mv.publishedMocId == publishedMocId
+                          && mv.versionNumber == fromVersionNumber
+                          && mv.active == true)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            MocVersion toVersion = await _context.MocVersions
+                .Where(mv => mv.publishedMocId == publishedMocId
+                          && mv.versionNumber == toVersionNumber
+                          && mv.active == true)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (fromVersion == null || toVersion == null)
+            {
+                throw new InvalidOperationException("One or both versions not found.");
+            }
+
+            string fromMpd = fromVersion.mpdSnapshot ?? "";
+            string toMpd = toVersion.mpdSnapshot ?? "";
+
+            //
+            // Extract type 1 lines (brick placements) from both snapshots.
+            // A type 1 line has the format:
+            //   1 <colour> <x> <y> <z> <a> <b> <c> <d> <e> <f> <g> <h> <i> <part>
+            //
+            HashSet<string> fromLines = ExtractPartLines(fromMpd);
+            HashSet<string> toLines = ExtractPartLines(toMpd);
+
+            //
+            // Classify each line
+            //
+            List<string> unchangedLines = new List<string>();
+            List<string> addedLines = new List<string>();
+            List<string> removedLines = new List<string>();
+
+            //
+            // Lines in both snapshots → unchanged (keep original colour)
+            // Lines only in 'to' → added (recolour to green)
+            // Lines only in 'from' → removed (recolour to red)
+            //
+            foreach (string line in toLines)
+            {
+                if (fromLines.Contains(line))
+                {
+                    unchangedLines.Add(line);
+                }
+                else
+                {
+                    addedLines.Add(ReplacePartLineColour(line, COLOUR_ADDED));
+                }
+            }
+
+            foreach (string line in fromLines)
+            {
+                if (toLines.Contains(line) == false)
+                {
+                    removedLines.Add(ReplacePartLineColour(line, COLOUR_REMOVED));
+                }
+            }
+
+            //
+            // Merge submodel definitions from both snapshots so that all part
+            // geometry referenced by type 1 lines can resolve.  If both snapshots
+            // define the same submodel, the 'to' version takes precedence.
+            //
+            Dictionary<string, string> fromSubmodels = ExtractSubmodels(fromMpd);
+            Dictionary<string, string> toSubmodels = ExtractSubmodels(toMpd);
+
+            Dictionary<string, string> mergedSubmodels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (KeyValuePair<string, string> kvp in fromSubmodels)
+            {
+                mergedSubmodels[kvp.Key] = kvp.Value;
+            }
+
+            foreach (KeyValuePair<string, string> kvp in toSubmodels)
+            {
+                //
+                // 'to' version takes precedence over 'from'
+                //
+                mergedSubmodels[kvp.Key] = kvp.Value;
+            }
+
+            //
+            // Build the unified diff MPD
+            //
+            StringBuilder diffMpd = new StringBuilder();
+
+            //
+            // Header
+            //
+            diffMpd.AppendLine("0 FILE DiffView.ldr");
+            diffMpd.AppendLine("0 Diff visualisation — green = added, red = removed");
+            diffMpd.AppendLine($"0 Comparing v{fromVersionNumber} → v{toVersionNumber}");
+            diffMpd.AppendLine();
+
+            //
+            // Unchanged bricks first (original colours)
+            //
+            if (unchangedLines.Count > 0)
+            {
+                diffMpd.AppendLine("0 // Unchanged bricks");
+
+                foreach (string line in unchangedLines)
+                {
+                    diffMpd.AppendLine(line);
+                }
+
+                diffMpd.AppendLine();
+            }
+
+            //
+            // Added bricks (green)
+            //
+            if (addedLines.Count > 0)
+            {
+                diffMpd.AppendLine("0 // Added bricks (green)");
+
+                foreach (string line in addedLines)
+                {
+                    diffMpd.AppendLine(line);
+                }
+
+                diffMpd.AppendLine();
+            }
+
+            //
+            // Removed bricks (translucent red)
+            //
+            if (removedLines.Count > 0)
+            {
+                diffMpd.AppendLine("0 // Removed bricks (translucent red)");
+
+                foreach (string line in removedLines)
+                {
+                    diffMpd.AppendLine(line);
+                }
+
+                diffMpd.AppendLine();
+            }
+
+            diffMpd.AppendLine("0 NOFILE");
+
+            //
+            // Append all merged submodel definitions so geometry resolves
+            //
+            foreach (KeyValuePair<string, string> kvp in mergedSubmodels)
+            {
+                diffMpd.AppendLine($"0 FILE {kvp.Key}");
+                diffMpd.AppendLine(kvp.Value);
+                diffMpd.AppendLine("0 NOFILE");
+            }
+
+            _logger.LogInformation(
+                "MOCHub: Generated diff MPD for MOC {MocId} v{From}→v{To}: {Unchanged} unchanged, {Added} added, {Removed} removed",
+                publishedMocId, fromVersionNumber, toVersionNumber,
+                unchangedLines.Count, addedLines.Count, removedLines.Count);
+
+            string result = diffMpd.ToString();
+
+            return result;
+        }
+
+
         #region Helpers
+
 
         /// <summary>
         /// Generate a URL-friendly slug from a MOC name.
@@ -609,6 +827,119 @@ namespace Foundation.BMC.Services
                 Position = position,
                 Details = $"{changeType} {partId} (colour {colourCode}) at {position}"
             };
+        }
+
+
+        /// <summary>
+        ///
+        /// Extract all submodel file blocks from an MPD string.
+        ///
+        /// LDraw MPD files use "0 FILE filename" / "0 NOFILE" markers to delimit
+        /// embedded submodel definitions.  This method extracts them into a dictionary
+        /// keyed by the filename (case-insensitive) so they can be merged across
+        /// version snapshots.
+        ///
+        /// Skips the first file block (the root model) since we rebuild that in the diff MPD.
+        ///
+        /// </summary>
+        private static Dictionary<string, string> ExtractSubmodels(string mpd)
+        {
+            Dictionary<string, string> submodels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (string.IsNullOrEmpty(mpd))
+            {
+                return submodels;
+            }
+
+            string[] lines = mpd.Split('\n');
+            string currentFileName = null;
+            List<string> currentContent = new List<string>();
+            bool isFirstFile = true;
+
+            foreach (string line in lines)
+            {
+                string trimmed = line.Trim();
+
+                if (trimmed.StartsWith("0 FILE "))
+                {
+                    //
+                    // Save the previous file block (if any) — skip the root model
+                    //
+                    if (currentFileName != null && isFirstFile == false)
+                    {
+                        submodels[currentFileName] = string.Join("\n", currentContent);
+                    }
+
+                    if (currentFileName != null && isFirstFile == true)
+                    {
+                        isFirstFile = false;
+                    }
+
+                    currentFileName = trimmed.Substring(7).Trim();
+                    currentContent = new List<string>();
+                    continue;
+                }
+
+                if (trimmed == "0 NOFILE")
+                {
+                    if (currentFileName != null && isFirstFile == false)
+                    {
+                        submodels[currentFileName] = string.Join("\n", currentContent);
+                    }
+
+                    if (isFirstFile == true)
+                    {
+                        isFirstFile = false;
+                    }
+
+                    currentFileName = null;
+                    currentContent = new List<string>();
+                    continue;
+                }
+
+                if (currentFileName != null)
+                {
+                    currentContent.Add(line.TrimEnd('\r'));
+                }
+            }
+
+            //
+            // Save the last file block if it wasn't closed with NOFILE
+            //
+            if (currentFileName != null && isFirstFile == false)
+            {
+                submodels[currentFileName] = string.Join("\n", currentContent);
+            }
+
+            return submodels;
+        }
+
+
+        /// <summary>
+        ///
+        /// Replace the colour code in a type 1 LDraw line.
+        ///
+        /// Type 1 format: 1 <colour> <x> <y> <z> <a> <b> <c> <d> <e> <f> <g> <h> <i> <part>
+        /// This swaps the second token (colour) with the given replacement colour code.
+        ///
+        /// </summary>
+        private static string ReplacePartLineColour(string line, string newColour)
+        {
+            string[] tokens = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            if (tokens.Length < 3)
+            {
+                return line;
+            }
+
+            //
+            // Token[0] = "1", Token[1] = colour code — replace it
+            //
+            tokens[1] = newColour;
+
+            string result = string.Join(" ", tokens);
+
+            return result;
         }
 
         #endregion

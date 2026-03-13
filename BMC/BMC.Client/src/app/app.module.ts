@@ -666,6 +666,7 @@ import { UploadModelModalComponent } from './components/upload-model-modal/uploa
 import { MocViewerComponent } from './components/moc-viewer/moc-viewer.component';
 import { MochubExploreComponent } from './components/mochub-explore/mochub-explore.component';
 import { MochubRepoComponent } from './components/mochub-repo/mochub-repo.component';
+import { MochubSettingsComponent } from './components/mochub-settings/mochub-settings.component';
 import { MochubPublishModalComponent } from './components/mochub-publish-modal/mochub-publish-modal.component';
 
 
@@ -727,6 +728,7 @@ import { MochubPublishModalComponent } from './components/mochub-publish-modal/m
         MocViewerComponent,
         MochubExploreComponent,
         MochubRepoComponent,
+        MochubSettingsComponent,
         MochubPublishModalComponent,
 
 

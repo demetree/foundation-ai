@@ -1,0 +1,389 @@
+/*
+ * MOCHub Settings — MOC metadata management page
+ *
+ * Uses the BMC theming system (CSS custom properties)
+ * so it adapts to all 8 app themes automatically.
+ */
+
+
+.mochub-settings {
+    min-height: 100vh;
+    background: var(--bmc-bg-deep);
+    color: var(--bmc-text-primary);
+    padding: 24px;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+
+// ── Loading ──
+.settings-loading {
+    .skeleton-header {
+        height: 60px;
+        background: var(--bmc-bg-card);
+        border-radius: var(--radius-md);
+        margin-bottom: 16px;
+        animation: pulse 1.5s infinite;
+    }
+
+    .skeleton-content {
+        height: 400px;
+        background: var(--bmc-bg-card);
+        border-radius: var(--radius-md);
+        animation: pulse 1.5s infinite;
+    }
+}
+
+
+// ── Header ──
+.settings-header {
+    margin-bottom: 24px;
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        background: transparent;
+        border: 1px solid var(--bmc-border);
+        border-radius: var(--radius-sm);
+        color: var(--bmc-primary);
+        font-size: 13px;
+        cursor: pointer;
+        margin-bottom: 12px;
+        transition: all var(--transition-fast);
+
+        &:hover {
+            background: var(--bmc-surface-hover);
+            border-color: var(--bmc-primary);
+        }
+    }
+
+    h1 {
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0;
+
+        i {
+            color: var(--bmc-text-muted);
+            margin-right: 8px;
+        }
+    }
+}
+
+
+// ── Sections ──
+.settings-section {
+    background: var(--bmc-bg-card);
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 16px;
+
+    h2 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--bmc-border);
+
+        i { margin-right: 6px; }
+    }
+}
+
+
+// ── Form Groups ──
+.form-group {
+    margin-bottom: 16px;
+
+    &:last-child { margin-bottom: 0; }
+
+    label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    input[type="text"], textarea, select {
+        width: 100%;
+        padding: 8px 12px;
+        background: var(--bmc-bg-dark);
+        border: 1px solid var(--bmc-border);
+        border-radius: var(--radius-sm);
+        color: var(--bmc-text-primary);
+        font-size: 14px;
+        font-family: inherit;
+        box-sizing: border-box;
+
+        &:focus {
+            outline: none;
+            border-color: var(--bmc-primary);
+            box-shadow: 0 0 0 3px var(--bmc-accent-glow-soft);
+        }
+
+        &:disabled { opacity: 0.5; }
+    }
+
+    textarea { resize: vertical; }
+
+    select {
+        cursor: pointer;
+    }
+}
+
+.form-hint {
+    display: block;
+    font-size: 12px;
+    color: var(--bmc-text-muted);
+    margin-top: 4px;
+}
+
+.form-toggle {
+    label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-weight: 400;
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--bmc-primary);
+        }
+
+        span { font-size: 14px; }
+    }
+}
+
+
+// ── Visibility Options ──
+.visibility-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.visibility-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--bmc-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+
+    &:hover {
+        background: var(--bmc-surface-hover);
+    }
+
+    &.selected {
+        border-color: var(--bmc-primary);
+        background: var(--bmc-accent-glow-soft);
+    }
+
+    > i:first-child {
+        width: 20px;
+        text-align: center;
+        color: var(--bmc-text-muted);
+        font-size: 14px;
+    }
+
+    .visibility-text {
+        flex: 1;
+
+        strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        span {
+            font-size: 12px;
+            color: var(--bmc-text-muted);
+        }
+    }
+
+    .visibility-check {
+        color: var(--bmc-primary);
+        font-size: 14px;
+    }
+}
+
+
+// ── Save Button ──
+.settings-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.save-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    background: linear-gradient(135deg, var(--bmc-primary-dark) 0%, var(--bmc-primary) 100%);
+    border: 1px solid var(--bmc-primary);
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity var(--transition-fast);
+
+    &:hover:not(:disabled) { opacity: 0.9; }
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.save-success {
+    font-size: 13px;
+    color: #3fb950;
+    animation: fadeIn 0.2s ease;
+
+    i { margin-right: 4px; }
+}
+
+
+// ── Danger Zone ──
+.danger-zone {
+    border-color: rgba(248, 81, 73, 0.4);
+
+    h2 {
+        color: #f85149;
+        border-bottom-color: rgba(248, 81, 73, 0.3);
+
+        i { color: #f85149; }
+    }
+}
+
+.danger-card {
+    .danger-info {
+        margin-bottom: 16px;
+
+        strong {
+            font-size: 15px;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        p {
+            font-size: 13px;
+            color: var(--bmc-text-muted);
+            margin: 0;
+        }
+    }
+
+    .danger-confirm {
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+
+            strong { color: var(--bmc-text-primary); }
+        }
+
+        input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bmc-bg-dark);
+            border: 1px solid var(--bmc-border);
+            border-radius: var(--radius-sm);
+            color: var(--bmc-text-primary);
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+
+            &:focus {
+                outline: none;
+                border-color: #f85149;
+                box-shadow: 0 0 0 3px rgba(248, 81, 73, 0.15);
+            }
+
+            &:disabled { opacity: 0.5; }
+        }
+    }
+}
+
+.danger-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #f85149;
+    border: 1px solid #f85149;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity var(--transition-fast);
+
+    &:hover:not(:disabled) { opacity: 0.9; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+
+// ── Not Found ──
+.settings-not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 24px;
+    text-align: center;
+    color: var(--bmc-text-muted);
+
+    i {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    h3 {
+        margin: 0 0 24px;
+        font-size: 20px;
+        color: var(--bmc-text-primary);
+    }
+
+    .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 20px;
+        background: var(--bmc-bg-card);
+        border: 1px solid var(--bmc-border);
+        border-radius: var(--radius-sm);
+        color: var(--bmc-primary);
+        font-size: 14px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+
+        &:hover {
+            background: var(--bmc-surface-hover);
+            border-color: var(--bmc-primary);
+        }
+    }
+}
+
+
+// ── Animations ──
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+
+// ── Responsive ──
+@media (max-width: 768px) {
+    .mochub-settings {
+        padding: 16px;
+    }
+}

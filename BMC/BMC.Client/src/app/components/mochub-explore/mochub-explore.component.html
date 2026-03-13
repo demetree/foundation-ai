@@ -67,8 +67,19 @@
     </div>
 
 
+    <!-- Error State -->
+    <div class="error-state" *ngIf="!loading && errorMessage">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Something went wrong</h3>
+        <p>{{ errorMessage }}</p>
+        <button class="retry-btn" (click)="loadMocs()">
+            <i class="fas fa-redo"></i> Try Again
+        </button>
+    </div>
+
+
     <!-- MOC Grid -->
-    <div class="moc-grid" *ngIf="!loading">
+    <div class="moc-grid" *ngIf="!loading && !errorMessage">
 
         <!-- Empty State -->
         <div class="empty-state" *ngIf="mocs.length === 0">

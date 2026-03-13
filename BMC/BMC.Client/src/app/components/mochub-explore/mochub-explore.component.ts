@@ -29,6 +29,7 @@ export class MochubExploreComponent implements OnInit, OnDestroy {
 
     mocs: any[] = [];
     loading = true;
+    errorMessage = '';
     totalCount = 0;
     pageNumber = 1;
     pageSize = 20;
@@ -97,10 +98,12 @@ export class MochubExploreComponent implements OnInit, OnDestroy {
                 this.mocs = response.items || [];
                 this.totalCount = response.totalCount || 0;
                 this.loading = false;
+                this.errorMessage = '';
             },
             error: () => {
                 this.mocs = [];
                 this.loading = false;
+                this.errorMessage = 'Failed to load MOCs. Please try again.';
             }
         });
     }
