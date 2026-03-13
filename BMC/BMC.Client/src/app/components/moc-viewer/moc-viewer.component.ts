@@ -18,6 +18,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { LDrawLoader } from 'three/examples/jsm/loaders/LDrawLoader.js';
 import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDrawConditionalLineMaterial.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { ProjectService, ProjectViewerSummary } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
@@ -411,7 +412,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
     // ────────────────────────────────────────────────────────────────
-    //  LDraw MPD Loading
+    //  Model Loading — GLB-first with LDrawLoader fallback
     // ────────────────────────────────────────────────────────────────
 
     private async loadMpdModel(): Promise<void> {
@@ -421,15 +422,108 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         this.modelLoadError = null;
 
         //
-        // Step 2: Load the MPD using LDrawLoader.load() — the standard pattern.
+        // Try GLB first — single HTTP request, sub-second load for large models.
+        // Falls back to the traditional LDrawLoader pipeline if GLB is unavailable.
         //
-        // IMPORTANT: We use load() instead of parse() because load() handles:
-        //   - addDefaultMaterials() (colour codes 16 and 24)
-        //   - FileLoader integration (uses THREE.Cache → IndexedDB persistence)
-        //   - Standard sub-file resolution via partsLibraryPath
-        //   - Proper embedded 0 FILE block handling
+        try {
+            const loaded = await this.tryLoadGlbModel();
+
+            if (loaded) {
+                console.log('[MocViewer] GLB model loaded successfully.');
+                this.isLoadingModel = false;
+                return;
+            }
+        } catch (err) {
+            console.warn('[MocViewer] GLB load failed, falling back to LDrawLoader:', err);
+        }
+
         //
-        // This matches the working pattern from catalog-part-detail.
+        // Fallback: LDrawLoader pipeline (text-based MPD, sub-file resolution)
+        //
+        await this.loadMpdModelViaLDraw();
+    }
+
+
+    /**
+     * Attempt to load the model as a pre-compiled GLB (binary glTF).
+     *
+     * The GLB is generated server-side by GlbExporter:
+     *   - One glTF node per build step (named step_0, step_1, ...)
+     *   - Triangles grouped by colour for minimal draw calls
+     *   - PBR materials tuned per LDraw finish type
+     *   - Y-axis already flipped (no rotation.x = Math.PI needed)
+     *
+     * Returns true if the GLB was loaded successfully, false otherwise.
+     */
+    private async tryLoadGlbModel(): Promise<boolean> {
+        const glbUrl = this.baseUrl + `api/moc/project/${this.projectId}/viewer-glb`;
+
+        console.log('[MocViewer] Attempting GLB load from:', glbUrl);
+
+        //
+        // Fetch the GLB binary with auth headers
+        //
+        const headers: any = {};
+
+        if (this.authService.isLoggedIn) {
+            headers['Authorization'] = `Bearer ${this.authService.accessToken}`;
+        }
+
+        const response = await fetch(glbUrl, { headers });
+
+        if (!response.ok) {
+            console.warn(`[MocViewer] GLB endpoint returned ${response.status}`);
+            return false;
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+
+        if (arrayBuffer.byteLength === 0) {
+            console.warn('[MocViewer] GLB response was empty');
+            return false;
+        }
+
+        //
+        // Parse the GLB with Three.js GLTFLoader
+        //
+        const loader = new GLTFLoader();
+        const gltf = await new Promise<any>((resolve, reject) => {
+            loader.parse(
+                arrayBuffer,
+                '',
+                (result: any) => resolve(result),
+                (error: any) => reject(error)
+            );
+        });
+
+        const group = gltf.scene as THREE.Group;
+        console.log('[MocViewer] GLB parsed:', group.children.length, 'top-level nodes');
+
+        //
+        // No Y-axis flip needed — GlbExporter already flips during export
+        //
+
+        this.modelGroup = group;
+        this.scene.add(group);
+        this.centreAndFrameModel(group);
+
+        //
+        // Discover build steps from GLB node names / extras
+        //
+        this.discoverBuildSteps(group);
+
+        return true;
+    }
+
+
+    /**
+     * Original LDraw MPD loading pipeline — used as fallback when GLB is unavailable.
+     */
+    private async loadMpdModelViaLDraw(): Promise<void> {
+        if (this.projectId == null) return;
+
+        //
+        // Load the MPD using LDrawLoader.load() — the standard pattern.
         //
         const loader = new LDrawLoader();
         loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
@@ -445,23 +539,12 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
         //
         // Point the parts library at the LDraw file endpoint.
-        // The server's LDrawFileService serves from an in-memory cache (O(1) lookups).
-        // THREE.Cache (backed by IndexedDB via LDrawFileCacheService) provides
-        // persistent caching across sessions — files are fetched once, ever.
         //
         const fileEndpoint = this.baseUrl + 'api/ldraw/file/';
         loader.setPartsLibraryPath(fileEndpoint);
 
         //
         // Monkey-patch fetchData to gracefully handle missing files.
-        //
-        // The standard fetchData throws a hard error when a file can't be
-        // found (after trying 12 URL combinations). This kills the ENTIRE
-        // model — even if only one obscure subpart is missing.
-        //
-        // We wrap the original fetchData to catch errors and return empty
-        // LDraw content instead. This allows the model to render with
-        // missing parts simply omitted (zero geometry) rather than failing.
         //
         const partsGeometryCache = (loader as any).partsCache;
         if (partsGeometryCache && partsGeometryCache.parseCache) {
@@ -492,12 +575,8 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         //
         // Load the model from the viewer-mpd endpoint URL.
         //
-        // loader.load() fetches the MPD text via FileLoader, calls
-        // addDefaultMaterials(), parses embedded FILE blocks, and resolves
-        // sub-file references through the standard pipeline.
-        //
         const viewerMpdUrl = this.baseUrl + `api/moc/project/${this.projectId}/viewer-mpd`;
-        console.log('[MocViewer] Starting load from:', viewerMpdUrl);
+        console.log('[MocViewer] Starting LDraw load from:', viewerMpdUrl);
 
         try {
             const group = await new Promise<THREE.Group>((resolve, reject) => {
@@ -513,7 +592,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
                 );
             });
 
-            console.log('[MocViewer] Model loaded:', group.children.length, 'children');
+            console.log('[MocViewer] LDraw model loaded:', group.children.length, 'children');
 
             //
             // LDraw coordinate system uses Y-up with Y pointing downward
@@ -601,12 +680,35 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     // ────────────────────────────────────────────────────────────────
 
     private discoverBuildSteps(group: THREE.Group): void {
-        //
-        // LDrawLoader groups children by step separators.
-        // Each direct child with userData.buildingStep is a step group.
-        //
         this.stepGroups = [];
 
+        //
+        // Strategy 1: GLB — step nodes are named step_0, step_1, ...
+        // with extras.stepIndex metadata set by GlbExporter.
+        //
+        const glbSteps: { index: number, node: THREE.Group }[] = [];
+
+        group.traverse(child => {
+            if (child.name && child.name.startsWith('step_') && child.userData?.['extras']?.['stepIndex'] !== undefined) {
+                glbSteps.push({ index: child.userData['extras']['stepIndex'], node: child as THREE.Group });
+            }
+        });
+
+        if (glbSteps.length > 0) {
+            //
+            // Sort by step index and use as the step groups
+            //
+            glbSteps.sort((a, b) => a.index - b.index);
+            this.stepGroups = glbSteps.map(s => s.node);
+            this.totalSteps = this.stepGroups.length;
+            this.currentStep = 0;
+            console.log(`[MocViewer] Discovered ${this.totalSteps} build steps from GLB extras.`);
+            return;
+        }
+
+        //
+        // Strategy 2: LDrawLoader — step groups marked with userData.buildingStep
+        //
         group.traverse(child => {
             if (child.userData && child.userData['buildingStep'] !== undefined) {
                 this.stepGroups.push(child as THREE.Group);
@@ -614,7 +716,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         });
 
         this.totalSteps = this.stepGroups.length;
-        this.currentStep = 0; // 0 = show all
+        this.currentStep = 0;
     }
 
 

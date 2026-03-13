@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = mocCollaboratorChangeHistory.timeStamp,
 				userId = mocCollaboratorChangeHistory.userId,
 				data = mocCollaboratorChangeHistory.data,
-				mocCollaborator = MocCollaborator.CreateMinimalAnonymous(mocCollaboratorChangeHistory.mocCollaborator)
+				mocCollaborator = MocCollaborator.CreateMinimalAnonymous(mocCollaboratorChangeHistory.mocCollaborator),
 			 };
 		}
 

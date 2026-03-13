@@ -6,6 +6,7 @@ and physics simulation of mechanical assemblies.
 All operational tables include multi-tenant support, versioning where appropriate, auditing, and security controls.
 */
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE "CompiledGlb"
 -- DROP TABLE "MarketDataCache"
 -- DROP TABLE "BrickOwlTransaction"
 -- DROP TABLE "BrickEconomyTransaction"
@@ -119,6 +120,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "BrickCategory"
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON "CompiledGlb" DISABLE
 -- ALTER INDEX ALL ON "MarketDataCache" DISABLE
 -- ALTER INDEX ALL ON "BrickOwlTransaction" DISABLE
 -- ALTER INDEX ALL ON "BrickEconomyTransaction" DISABLE
@@ -232,6 +234,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "BrickCategory" DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON "CompiledGlb" REBUILD
 -- ALTER INDEX ALL ON "MarketDataCache" REBUILD
 -- ALTER INDEX ALL ON "BrickOwlTransaction" REBUILD
 -- ALTER INDEX ALL ON "BrickEconomyTransaction" REBUILD
@@ -4462,6 +4465,41 @@ CREATE INDEX "I_MarketDataCache_active" ON "MarketDataCache" ("active")
 
 -- Index on the MarketDataCache table's deleted field.
 CREATE INDEX "I_MarketDataCache_deleted" ON "MarketDataCache" ("deleted")
+;
+
+
+-- Cached pre-compiled GLB (binary glTF) data for fast 3D model loading in the viewer. Purely a cache — can be dropped and rebuilt at any time. Invalidated by project version number.
+CREATE TABLE "CompiledGlb"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"projectId" INTEGER NOT NULL,		-- The project this compiled GLB belongs to
+	"projectVersionNumber" INTEGER NOT NULL,		-- Invalidation key — matches Project.versionNumber at compilation time. Stale when project version advances.
+	"includesEdgeLines" BIT NOT NULL DEFAULT 0,		-- Whether this GLB includes edge line geometry (LINES-mode meshes)
+	"glbData" BLOB NULL,		-- The compiled GLB binary data
+	"glbSizeBytes" BIGINT NOT NULL,		-- Size of the GLB data in bytes (for cache management and diagnostics)
+	"triangleCount" INTEGER NULL,		-- Total triangle count in the compiled mesh
+	"stepCount" INTEGER NULL,		-- Number of build steps encoded in the GLB
+	"compiledAt" DATETIME NOT NULL,		-- UTC timestamp when this GLB was compiled
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("projectId") REFERENCES "Project"("id")		-- Foreign key to the Project table.
+);
+-- Index on the CompiledGlb table's tenantGuid field.
+CREATE INDEX "I_CompiledGlb_tenantGuid" ON "CompiledGlb" ("tenantGuid")
+;
+
+-- Index on the CompiledGlb table's tenantGuid,projectId fields.
+CREATE INDEX "I_CompiledGlb_tenantGuid_projectId" ON "CompiledGlb" ("tenantGuid", "projectId")
+;
+
+-- Index on the CompiledGlb table's tenantGuid,active fields.
+CREATE INDEX "I_CompiledGlb_tenantGuid_active" ON "CompiledGlb" ("tenantGuid", "active")
+;
+
+-- Index on the CompiledGlb table's tenantGuid,deleted fields.
+CREATE INDEX "I_CompiledGlb_tenantGuid_deleted" ON "CompiledGlb" ("tenantGuid", "deleted")
 ;
 
 

@@ -105,6 +105,8 @@ import { BuildStepPartListingComponent } from './bmc-data-components/build-step-
 import { BuildStepPartDetailComponent } from './bmc-data-components/build-step-part/build-step-part-detail/build-step-part-detail.component';
 import { ColourFinishListingComponent } from './bmc-data-components/colour-finish/colour-finish-listing/colour-finish-listing.component';
 import { ColourFinishDetailComponent } from './bmc-data-components/colour-finish/colour-finish-detail/colour-finish-detail.component';
+import { CompiledGlbListingComponent } from './bmc-data-components/compiled-glb/compiled-glb-listing/compiled-glb-listing.component';
+import { CompiledGlbDetailComponent } from './bmc-data-components/compiled-glb/compiled-glb-detail/compiled-glb-detail.component';
 import { ConnectorTypeListingComponent } from './bmc-data-components/connector-type/connector-type-listing/connector-type-listing.component';
 import { ConnectorTypeDetailComponent } from './bmc-data-components/connector-type/connector-type-detail/connector-type-detail.component';
 import { ConnectorTypeCompatibilityListingComponent } from './bmc-data-components/connector-type-compatibility/connector-type-compatibility-listing/connector-type-compatibility-listing.component';
@@ -495,6 +497,11 @@ const routes: Routes = [
   {path: 'colourfinishes/:colourFinishId', component: ColourFinishDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Colour Finish' },
   {path: 'colourfinish/:colourFinishId', component: ColourFinishDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Colour Finish' },
   {path: 'colourfinish',  redirectTo: 'colourfinishes'},
+  {path: 'compiledglbs', component: CompiledGlbListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Compiled Glbs' },
+  {path: 'compiledglbs/new', component: CompiledGlbDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Compiled Glb' },
+  {path: 'compiledglbs/:compiledGlbId', component: CompiledGlbDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Compiled Glb' },
+  {path: 'compiledglb/:compiledGlbId', component: CompiledGlbDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Compiled Glb' },
+  {path: 'compiledglb',  redirectTo: 'compiledglbs'},
   {path: 'connectortypes', component: ConnectorTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Connector Types' },
   {path: 'connectortypes/new', component: ConnectorTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Connector Type' },
   {path: 'connectortypes/:connectorTypeId', component: ConnectorTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Connector Type' },

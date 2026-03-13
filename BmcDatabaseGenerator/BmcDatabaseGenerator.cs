@@ -2458,6 +2458,28 @@ All operational tables include multi-tenant support, versioning where appropriat
             // Composite unique constraint for cache lookups — ensures one cached entry per source+item+condition
             marketDataCacheTable.AddUniqueConstraint(new List<string>() { "source", "itemType", "itemNumber", "condition" }, true);
 
+
+            // ─────────────────────────────────────────────────────────────
+            //  CompiledGlb — Cached pre-compiled GLB binary for fast 3D viewer loading
+            // ─────────────────────────────────────────────────────────────
+
+            Database.Table compiledGlbTable = database.AddTable("CompiledGlb");
+            compiledGlbTable.comment = "Cached pre-compiled GLB (binary glTF) data for fast 3D model loading in the viewer. Purely a cache — can be dropped and rebuilt at any time. Invalidated by project version number.";
+            compiledGlbTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
+            compiledGlbTable.AddIdField();
+            compiledGlbTable.AddMultiTenantSupport();
+
+            compiledGlbTable.AddForeignKeyField(projectTable, false).AddScriptComments("The project this compiled GLB belongs to");
+            compiledGlbTable.AddIntField("projectVersionNumber", false).AddScriptComments("Invalidation key — matches Project.versionNumber at compilation time. Stale when project version advances.");
+            compiledGlbTable.AddBoolField("includesEdgeLines", false, false).AddScriptComments("Whether this GLB includes edge line geometry (LINES-mode meshes)");
+            compiledGlbTable.AddBinaryField("glbData").AddScriptComments("The compiled GLB binary data");
+            compiledGlbTable.AddLongField("glbSizeBytes", false).AddScriptComments("Size of the GLB data in bytes (for cache management and diagnostics)");
+            compiledGlbTable.AddIntField("triangleCount", true).AddScriptComments("Total triangle count in the compiled mesh");
+            compiledGlbTable.AddIntField("stepCount", true).AddScriptComments("Number of build steps encoded in the GLB");
+            compiledGlbTable.AddDateTimeField("compiledAt", false).AddScriptComments("UTC timestamp when this GLB was compiled");
+
+            compiledGlbTable.AddControlFields();
+
             #endregion
         }
     }

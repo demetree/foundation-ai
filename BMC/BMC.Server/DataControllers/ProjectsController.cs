@@ -792,6 +792,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 					project.thumbnailData = null;
 					project.BrickConnections = null;
 					project.BuildManuals = null;
+					project.CompiledGlbs = null;
 					project.ModelDocuments = null;
 					project.PlacedBricks = null;
 					project.ProjectCameraPresets = null;
@@ -919,6 +920,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				cloneOfExisting.thumbnailData = null;
 				cloneOfExisting.BrickConnections = null;
 				cloneOfExisting.BuildManuals = null;
+				cloneOfExisting.CompiledGlbs = null;
 				cloneOfExisting.ModelDocuments = null;
 				cloneOfExisting.PlacedBricks = null;
 				cloneOfExisting.ProjectCameraPresets = null;

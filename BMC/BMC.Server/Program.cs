@@ -182,6 +182,7 @@ namespace Foundation.BMC
                 //
                 builder.Services.AddScoped<ModelImportService>();
                 builder.Services.AddScoped<ModelExportService>();
+                builder.Services.AddScoped<GlbCacheService>();
 
                 //
                 // MOCHub versioning service — snapshot, diff, and fork logic
@@ -393,6 +394,7 @@ namespace Foundation.BMC
                 controllers.Add(typeof(BuildStepAnnotationTypesController));
                 controllers.Add(typeof(BuildStepPartsController));
                 controllers.Add(typeof(ColourFinishesController));
+                controllers.Add(typeof(CompiledGlbsController));
                 controllers.Add(typeof(ConnectorTypesController));
                 controllers.Add(typeof(ConnectorTypeCompatibilitiesController));
                 controllers.Add(typeof(ContentReportsController));

@@ -56,6 +56,7 @@ namespace Foundation.BMC.Controllers.WebAPI
         //
         private readonly BMCContext _context;
         private readonly ModelExportService _exportService;
+        private readonly GlbCacheService _glbCacheService;
         private readonly IConfiguration _configuration;
         private readonly ILogger<MocExportController> _logger;
 
@@ -72,12 +73,14 @@ namespace Foundation.BMC.Controllers.WebAPI
         public MocExportController(
             BMCContext context,
             ModelExportService exportService,
+            GlbCacheService glbCacheService,
             IConfiguration configuration,
             ILogger<MocExportController> logger)
             : base("BMC", "MocExport")
         {
             _context = context;
             _exportService = exportService;
+            _glbCacheService = glbCacheService;
             _configuration = configuration;
             _logger = logger;
         }
@@ -531,6 +534,110 @@ namespace Foundation.BMC.Controllers.WebAPI
             {
                 _logger.LogError(ex, "STL export failed for project {Id}", projectId);
                 return Problem("An error occurred while exporting the project to STL. Please try again or contact support.");
+            }
+        }
+
+
+        // ────────────────────────────────────────────────────────────────
+        //  GLB Viewer Data (Pre-compiled binary glTF for fast 3D loading)
+        // ────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        ///
+        /// GET /api/moc/project/{projectId}/viewer-glb?edgeLines=true
+        ///
+        /// Returns a pre-compiled GLB (binary glTF) for the client-side 3D viewer.
+        ///
+        /// The GLB contains:
+        ///   - One node per build step (with extras.stepIndex metadata)
+        ///   - Triangles grouped by colour for minimal draw calls
+        ///   - PBR materials tuned per LDraw finish type
+        ///   - Optional edge lines (LINES-mode primitives) for the outlined LEGO look
+        ///   - Smooth per-vertex normals
+        ///   - Y-axis flipped for glTF coordinate system
+        ///
+        /// This replaces the viewer-mpd text-based loading pipeline for dramatically
+        /// faster model load times (sub-second vs. 30+ seconds for large sets).
+        ///
+        /// AI-developed code — March 2026
+        ///
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.OnePerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/moc/project/{projectId}/viewer-glb")]
+        public async Task<IActionResult> GetViewerGlb(
+            int projectId,
+            bool edgeLines = true,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+            }
+
+            try
+            {
+                //
+                // Use the two-tier cache: RAM → DB → Build-on-miss.
+                // First request builds (~11s for Titanic), all subsequent requests
+                // serve from RAM cache (sub-millisecond) or DB (milliseconds).
+                //
+                _logger.LogInformation("GLB viewer request for project {Id}, edgeLines={EdgeLines}", projectId, edgeLines);
+
+                byte[] glbBytes = await _glbCacheService.GetOrBuildGlbAsync(
+                    projectId, userTenantGuid, edgeLines, cancellationToken);
+
+                if (glbBytes == null || glbBytes.Length == 0)
+                {
+                    return NotFound("Project geometry could not be compiled — the project may not have any placed bricks.");
+                }
+
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.ReadEntity,
+                    $"MOC GLB viewer — Project id={projectId}, edgeLines={edgeLines}, size={glbBytes.Length}",
+                    projectId.ToString());
+
+                _logger.LogInformation(
+                    "GLB viewer export complete — Project id={Id}, edgeLines={EdgeLines}, size={Size} bytes",
+                    projectId,
+                    edgeLines,
+                    glbBytes.Length);
+
+                //
+                // Cache for 1 hour — client will invalidate on project changes
+                //
+                Response.Headers["Cache-Control"] = "private, max-age=3600";
+
+                return File(glbBytes, "model/gltf-binary", "model.glb");
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogWarning("GLB export timed out or was cancelled for project {Id}", projectId);
+                return StatusCode(499, "GLB export timed out or was cancelled. Large models may take longer — please try again.");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "GLB export error for project {Id}", projectId);
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "GLB export failed for project {Id}", projectId);
+                return Problem("An error occurred while compiling the project to GLB. Please try again or contact support.");
             }
         }
 

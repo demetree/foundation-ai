@@ -258,6 +258,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="compiledGlbService.userIsBMCCompiledGlbReader()">
+                            <button ngbNavLink>Compiled Glbs
+                                <span class="badge bg-primary ms-2">
+                                    {{ (projectData?.CompiledGlbsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-compiled-glb-table [queryParams]="{ projectId: projectData?.id }" [showAddButton]="true" [preSeededData]="{ projectId: projectData?.id }" [hiddenFields]="['projectId']"></app-compiled-glb-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

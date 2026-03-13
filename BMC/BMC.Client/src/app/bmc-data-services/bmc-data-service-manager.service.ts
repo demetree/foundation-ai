@@ -44,6 +44,7 @@ import {BuildStepAnnotationService} from  './build-step-annotation.service';
 import {BuildStepAnnotationTypeService} from  './build-step-annotation-type.service';
 import {BuildStepPartService} from  './build-step-part.service';
 import {ColourFinishService} from  './colour-finish.service';
+import {CompiledGlbService} from  './compiled-glb.service';
 import {ConnectorTypeService} from  './connector-type.service';
 import {ConnectorTypeCompatibilityService} from  './connector-type-compatibility.service';
 import {ContentReportService} from  './content-report.service';
@@ -162,6 +163,7 @@ export class BMCDataServiceManagerService  {
               , public buildStepAnnotationTypeService: BuildStepAnnotationTypeService
               , public buildStepPartService: BuildStepPartService
               , public colourFinishService: ColourFinishService
+              , public compiledGlbService: CompiledGlbService
               , public connectorTypeService: ConnectorTypeService
               , public connectorTypeCompatibilityService: ConnectorTypeCompatibilityService
               , public contentReportService: ContentReportService
@@ -278,6 +280,7 @@ export class BMCDataServiceManagerService  {
         this.buildStepAnnotationTypeService.ClearAllCaches();
         this.buildStepPartService.ClearAllCaches();
         this.colourFinishService.ClearAllCaches();
+        this.compiledGlbService.ClearAllCaches();
         this.connectorTypeService.ClearAllCaches();
         this.connectorTypeCompatibilityService.ClearAllCaches();
         this.contentReportService.ClearAllCaches();

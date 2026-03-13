@@ -1884,6 +1884,74 @@ namespace BMC.LDraw.Render
             float blendedElevation = defaultElevation + blendFactor * delta;
             return blendedElevation;
         }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  GLB Export (binary glTF for fast client-side 3D loading)
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Export an LDraw file to GLB binary with build step support.
+        ///
+        /// The resulting GLB contains:
+        ///   - One glTF node per build step (with extras.stepIndex)
+        ///   - Triangles grouped by colour for minimal draw calls
+        ///   - PBR materials tuned per LDraw finish type
+        ///   - Optional edge lines as LINES-mode primitives
+        ///   - Smooth per-vertex normals
+        ///   - Y-axis flipped for glTF coordinate system
+        ///
+        /// AI-generated — Mar 2026.
+        /// </summary>
+        public byte[] ExportToGlb(string inputPath,
+                                   int colourCode = -1,
+                                   bool includeEdgeLines = true)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            LDrawMesh mesh = resolver.ResolveFile(inputPath, effectiveColour);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            NormalSmoother.Smooth(mesh);
+
+            return GlbExporter.Export(mesh, includeEdgeLines: includeEdgeLines);
+        }
+
+
+        /// <summary>
+        /// Export LDraw content (lines) to GLB binary with build step support.
+        /// Content-based — no temp file needed.
+        /// </summary>
+        public byte[] ExportToGlb(string[] lines, string fileName,
+                                   int colourCode = -1,
+                                   bool includeEdgeLines = true)
+        {
+            EnsureColours();
+
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+
+            LDrawMesh mesh = resolver.ResolveContentAllWithStepBoundaries(
+                lines, fileName, effectiveColour,
+                out int[] stepTriangleBounds, out int[] stepEdgeBounds);
+
+            if (mesh.Triangles.Count == 0)
+            {
+                return System.Array.Empty<byte>();
+            }
+
+            NormalSmoother.Smooth(mesh);
+
+            return GlbExporter.Export(mesh, stepTriangleBounds, stepEdgeBounds, includeEdgeLines);
+        }
     }
 }
 

@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = placedBrickChangeHistory.timeStamp,
 				userId = placedBrickChangeHistory.userId,
 				data = placedBrickChangeHistory.data,
-				placedBrick = PlacedBrick.CreateMinimalAnonymous(placedBrickChangeHistory.placedBrick)
+				placedBrick = PlacedBrick.CreateMinimalAnonymous(placedBrickChangeHistory.placedBrick),
 			 };
 		}
 

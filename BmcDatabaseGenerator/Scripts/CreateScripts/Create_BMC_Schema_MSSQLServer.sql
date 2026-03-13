@@ -18,6 +18,7 @@ CREATE SCHEMA [BMC]
 GO
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE [BMC].[CompiledGlb]
 -- DROP TABLE [BMC].[MarketDataCache]
 -- DROP TABLE [BMC].[BrickOwlTransaction]
 -- DROP TABLE [BMC].[BrickEconomyTransaction]
@@ -131,6 +132,7 @@ GO
 -- DROP TABLE [BMC].[BrickCategory]
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON [BMC].[CompiledGlb] DISABLE
 -- ALTER INDEX ALL ON [BMC].[MarketDataCache] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickOwlTransaction] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BrickEconomyTransaction] DISABLE
@@ -244,6 +246,7 @@ GO
 -- ALTER INDEX ALL ON [BMC].[BrickCategory] DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON [BMC].[CompiledGlb] REBUILD
 -- ALTER INDEX ALL ON [BMC].[MarketDataCache] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickOwlTransaction] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BrickEconomyTransaction] REBUILD
@@ -4896,6 +4899,44 @@ GO
 
 -- Index on the MarketDataCache table's deleted field.
 CREATE INDEX [I_MarketDataCache_deleted] ON [BMC].[MarketDataCache] ([deleted])
+GO
+
+
+-- Cached pre-compiled GLB (binary glTF) data for fast 3D model loading in the viewer. Purely a cache — can be dropped and rebuilt at any time. Invalidated by project version number.
+CREATE TABLE [BMC].[CompiledGlb]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[projectId] INT NOT NULL,		-- The project this compiled GLB belongs to
+	[projectVersionNumber] INT NOT NULL,		-- Invalidation key — matches Project.versionNumber at compilation time. Stale when project version advances.
+	[includesEdgeLines] BIT NOT NULL DEFAULT 0,		-- Whether this GLB includes edge line geometry (LINES-mode meshes)
+	[glbData] VARBINARY(MAX) NULL,		-- The compiled GLB binary data
+	[glbSizeBytes] BIGINT NOT NULL,		-- Size of the GLB data in bytes (for cache management and diagnostics)
+	[triangleCount] INT NULL,		-- Total triangle count in the compiled mesh
+	[stepCount] INT NULL,		-- Number of build steps encoded in the GLB
+	[compiledAt] DATETIME2(7) NOT NULL,		-- UTC timestamp when this GLB was compiled
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_CompiledGlb_Project_projectId] FOREIGN KEY ([projectId]) REFERENCES [BMC].[Project] ([id])		-- Foreign key to the Project table.
+)
+GO
+
+-- Index on the CompiledGlb table's tenantGuid field.
+CREATE INDEX [I_CompiledGlb_tenantGuid] ON [BMC].[CompiledGlb] ([tenantGuid])
+GO
+
+-- Index on the CompiledGlb table's tenantGuid,projectId fields.
+CREATE INDEX [I_CompiledGlb_tenantGuid_projectId] ON [BMC].[CompiledGlb] ([tenantGuid], [projectId])
+GO
+
+-- Index on the CompiledGlb table's tenantGuid,active fields.
+CREATE INDEX [I_CompiledGlb_tenantGuid_active] ON [BMC].[CompiledGlb] ([tenantGuid], [active])
+GO
+
+-- Index on the CompiledGlb table's tenantGuid,deleted fields.
+CREATE INDEX [I_CompiledGlb_tenantGuid_deleted] ON [BMC].[CompiledGlb] ([tenantGuid], [deleted])
 GO
 
 

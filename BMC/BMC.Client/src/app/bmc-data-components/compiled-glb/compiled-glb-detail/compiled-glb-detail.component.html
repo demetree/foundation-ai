@@ -1,0 +1,95 @@
+<div class="container-fluid p-1 m-0 compiled-glb-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="compiled-glb-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Compiled Glb</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Compiled Glb' : 'Add Compiled Glb'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsBMCCompiledGlbReader()">
+                <div class="col m-2 compiled-glb-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="compiledGlbForm" (ngSubmit)="submitForm()" class="compiled-glb-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('projectId')">
+                                <label for="CompiledGlb-projectId" id="label-CompiledGlb-projectId"><span class="text-danger">*</span>Project</label>
+                                <select id="CompiledGlb-projectId" formControlName="projectId" class="form-select compiled-glb-select" [disabled]="!userIsBMCCompiledGlbWriter()">
+                                    <option [ngValue]="null">Select Project</option>
+                                    <option *ngFor="let project of projects$ | async" [ngValue]="project.id">{{project.name}}</option>
+                                </select>
+                                <div *ngIf="compiledGlbForm.get('projectId')?.invalid && compiledGlbForm.get('projectId')?.touched" class="text-danger">
+                                    Project is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('projectVersionNumber')">
+                                <label for="CompiledGlb-projectVersionNumber" id="label-CompiledGlb-projectVersionNumber"><span class="text-danger">*</span>Project Version Number</label>
+                                <input type="number" id="CompiledGlb-projectVersionNumber" formControlName="projectVersionNumber" placeholder="Enter Project Version Number" class="form-control compiled-glb-input" [disabled]="!userIsBMCCompiledGlbWriter()" aria-labelledby="label-projectVersionNumber" />
+                                <div *ngIf="compiledGlbForm.get('projectVersionNumber')?.invalid && compiledGlbForm.get('projectVersionNumber')?.touched" class="text-danger">
+                                    Project Version Number is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('includesEdgeLines')">
+                                <input type="checkbox" id="CompiledGlb-includesEdgeLines" formControlName="includesEdgeLines" class="form-check-input" [disabled]="!userIsBMCCompiledGlbWriter()" />
+                                <label for="CompiledGlb-includesEdgeLines" class="form-check-label" id="label-CompiledGlb-includesEdgeLines"><span class="text-danger">*</span>Includes Edge Lines</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('glbData')">
+                                <label for="CompiledGlb-glbData" id="label-CompiledGlb-glbData">Glb Data</label>
+                                <input type="text" id="CompiledGlb-glbData" formControlName="glbData" placeholder="Enter Glb Data" class="form-control compiled-glb-input" [disabled]="!userIsBMCCompiledGlbWriter()" aria-labelledby="label-glbData" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('glbSizeBytes')">
+                                <label for="CompiledGlb-glbSizeBytes" id="label-CompiledGlb-glbSizeBytes"><span class="text-danger">*</span>Glb Size Bytes</label>
+                                <input type="number" id="CompiledGlb-glbSizeBytes" formControlName="glbSizeBytes" placeholder="Enter Glb Size Bytes" class="form-control compiled-glb-input" [disabled]="!userIsBMCCompiledGlbWriter()" aria-labelledby="label-glbSizeBytes" />
+                                <div *ngIf="compiledGlbForm.get('glbSizeBytes')?.invalid && compiledGlbForm.get('glbSizeBytes')?.touched" class="text-danger">
+                                    Glb Size Bytes is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('triangleCount')">
+                                <label for="CompiledGlb-triangleCount" id="label-CompiledGlb-triangleCount">Triangle Count</label>
+                                <input type="number" id="CompiledGlb-triangleCount" formControlName="triangleCount" placeholder="Enter Triangle Count" class="form-control compiled-glb-input" [disabled]="!userIsBMCCompiledGlbWriter()" aria-labelledby="label-triangleCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('stepCount')">
+                                <label for="CompiledGlb-stepCount" id="label-CompiledGlb-stepCount">Step Count</label>
+                                <input type="number" id="CompiledGlb-stepCount" formControlName="stepCount" placeholder="Enter Step Count" class="form-control compiled-glb-input" [disabled]="!userIsBMCCompiledGlbWriter()" aria-labelledby="label-stepCount" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('compiledAt')">
+                                <label for="CompiledGlb-compiledAt" id="label-CompiledGlb-compiledAt"><span class="text-danger">*</span>Compiled At</label>
+                                <input type="datetime-local" id="CompiledGlb-compiledAt" formControlName="compiledAt" placeholder="Enter Compiled At" class="form-control compiled-glb-input" [disabled]="!userIsBMCCompiledGlbWriter()" aria-labelledby="label-compiledAt" />
+                                <div *ngIf="compiledGlbForm.get('compiledAt')?.invalid && compiledGlbForm.get('compiledAt')?.touched" class="text-danger">
+                                    Compiled At is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="CompiledGlb-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCCompiledGlbWriter()" />
+                                <label for="CompiledGlb-active" class="form-check-label" id="label-CompiledGlb-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="CompiledGlb-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsBMCCompiledGlbWriter()" />
+                                <label for="CompiledGlb-deleted" class="form-check-label" id="label-CompiledGlb-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="compiled-glb-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="compiledGlbForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Compiled Glb">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !compiledGlbForm.valid || !compiledGlbForm.dirty || compiledGlbForm.pristine  || userIsBMCCompiledGlbWriter() == false " ngbTooltip="Save the Compiled Glb changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Compiled Glb' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

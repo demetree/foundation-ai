@@ -156,6 +156,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[CompiledGlb]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[ConnectorType]",
          "ObjectType": 0
       },

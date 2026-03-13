@@ -6,7 +6,6 @@ using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;
 using SharpGLTF.Scenes;
-using VERTEX = SharpGLTF.Geometry.VertexTypes.VertexPositionNormal;
 
 namespace BMC.LDraw.Render
 {
@@ -110,13 +109,15 @@ namespace BMC.LDraw.Render
                 NodeBuilder stepNode = new NodeBuilder($"step_{step}");
 
                 //
-                // Store step index in node extras for client-side discovery
+                // Store step index in node extras for client-side discovery.
+                // SharpGLTF accepts System.Text.Json.Nodes.JsonNode for extras.
                 //
-                stepNode.Extras = SharpGLTF.IO.JsonContent.CreateFrom(new Dictionary<string, object>
+                var extrasObj = new System.Text.Json.Nodes.JsonObject
                 {
                     ["stepIndex"] = step,
                     ["totalSteps"] = stepTriangleBounds.Length
-                });
+                };
+                stepNode.Extras = extrasObj;
 
                 //
                 // Build triangle mesh for this step
@@ -180,7 +181,7 @@ namespace BMC.LDraw.Render
             // Group triangles by material key — one primitive per unique colour
             //
             Dictionary<MaterialKey, MaterialBuilder> materialCache = new Dictionary<MaterialKey, MaterialBuilder>();
-            var meshBuilder = VERTEX.CreateCompatibleMesh(meshName);
+            var meshBuilder = new MeshBuilder<VertexPositionNormal>(meshName);
 
             for (int i = fromTri; i < toTri && i < mesh.Triangles.Count; i++)
             {
@@ -221,9 +222,9 @@ namespace BMC.LDraw.Render
                 //
                 // Vertex positions — negate Y to convert LDraw Y-down → glTF Y-up
                 //
-                var v1 = new VERTEX(FlipY(new Vector3(tri.X1, tri.Y1, tri.Z1)), n1);
-                var v2 = new VERTEX(FlipY(new Vector3(tri.X2, tri.Y2, tri.Z2)), n2);
-                var v3 = new VERTEX(FlipY(new Vector3(tri.X3, tri.Y3, tri.Z3)), n3);
+                var v1 = new VertexPositionNormal(FlipY(new Vector3(tri.X1, tri.Y1, tri.Z1)), n1);
+                var v2 = new VertexPositionNormal(FlipY(new Vector3(tri.X2, tri.Y2, tri.Z2)), n2);
+                var v3 = new VertexPositionNormal(FlipY(new Vector3(tri.X3, tri.Y3, tri.Z3)), n3);
 
                 primitive.AddTriangle(v1, v2, v3);
             }

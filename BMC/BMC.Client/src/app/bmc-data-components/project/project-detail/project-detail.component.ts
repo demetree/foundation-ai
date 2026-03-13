@@ -35,6 +35,7 @@ import { BuildManualService } from '../../../bmc-data-services/build-manual.serv
 import { ProjectRenderService } from '../../../bmc-data-services/project-render.service';
 import { ProjectExportService } from '../../../bmc-data-services/project-export.service';
 import { PublishedMocService } from '../../../bmc-data-services/published-moc.service';
+import { CompiledGlbService } from '../../../bmc-data-services/compiled-glb.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -121,6 +122,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
   public projectRenders$ = this.projectRenderService.GetProjectRenderList();
   public projectExports$ = this.projectExportService.GetProjectExportList();
   public publishedMocs$ = this.publishedMocService.GetPublishedMocList();
+  public compiledGlbs$ = this.compiledGlbService.GetCompiledGlbList();
 
   private destroy$ = new Subject<void>();
 
@@ -138,6 +140,7 @@ export class ProjectDetailComponent implements OnInit, CanComponentDeactivate {
     public projectRenderService: ProjectRenderService,
     public projectExportService: ProjectExportService,
     public publishedMocService: PublishedMocService,
+    public compiledGlbService: CompiledGlbService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

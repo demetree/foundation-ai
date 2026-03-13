@@ -91,6 +91,7 @@ import { BuildStepAnnotationService } from './bmc-data-services/build-step-annot
 import { BuildStepAnnotationTypeService } from './bmc-data-services/build-step-annotation-type.service';
 import { BuildStepPartService } from './bmc-data-services/build-step-part.service';
 import { ColourFinishService } from './bmc-data-services/colour-finish.service';
+import { CompiledGlbService } from './bmc-data-services/compiled-glb.service';
 import { ConnectorTypeService } from './bmc-data-services/connector-type.service';
 import { ConnectorTypeCompatibilityService } from './bmc-data-services/connector-type-compatibility.service';
 import { ContentReportService } from './bmc-data-services/content-report.service';
@@ -314,6 +315,10 @@ import { ColourFinishListingComponent } from './bmc-data-components/colour-finis
 import { ColourFinishAddEditComponent } from './bmc-data-components/colour-finish/colour-finish-add-edit/colour-finish-add-edit.component';
 import { ColourFinishDetailComponent } from './bmc-data-components/colour-finish/colour-finish-detail/colour-finish-detail.component';
 import { ColourFinishTableComponent } from './bmc-data-components/colour-finish/colour-finish-table/colour-finish-table.component';
+import { CompiledGlbListingComponent } from './bmc-data-components/compiled-glb/compiled-glb-listing/compiled-glb-listing.component';
+import { CompiledGlbAddEditComponent } from './bmc-data-components/compiled-glb/compiled-glb-add-edit/compiled-glb-add-edit.component';
+import { CompiledGlbDetailComponent } from './bmc-data-components/compiled-glb/compiled-glb-detail/compiled-glb-detail.component';
+import { CompiledGlbTableComponent } from './bmc-data-components/compiled-glb/compiled-glb-table/compiled-glb-table.component';
 import { ConnectorTypeListingComponent } from './bmc-data-components/connector-type/connector-type-listing/connector-type-listing.component';
 import { ConnectorTypeAddEditComponent } from './bmc-data-components/connector-type/connector-type-add-edit/connector-type-add-edit.component';
 import { ConnectorTypeDetailComponent } from './bmc-data-components/connector-type/connector-type-detail/connector-type-detail.component';
@@ -868,6 +873,10 @@ ColourFinishListingComponent,
 ColourFinishAddEditComponent,
 ColourFinishDetailComponent,
 ColourFinishTableComponent,
+CompiledGlbListingComponent,
+CompiledGlbAddEditComponent,
+CompiledGlbDetailComponent,
+CompiledGlbTableComponent,
 ConnectorTypeListingComponent,
 ConnectorTypeAddEditComponent,
 ConnectorTypeDetailComponent,
@@ -1247,6 +1256,7 @@ BuildStepAnnotationService,
 BuildStepAnnotationTypeService,
 BuildStepPartService,
 ColourFinishService,
+CompiledGlbService,
 ConnectorTypeService,
 ConnectorTypeCompatibilityService,
 ContentReportService,

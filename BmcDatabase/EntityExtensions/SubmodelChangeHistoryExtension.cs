@@ -284,7 +284,7 @@ namespace Foundation.BMC.Database
 				timeStamp = submodelChangeHistory.timeStamp,
 				userId = submodelChangeHistory.userId,
 				data = submodelChangeHistory.data,
-				submodel = Submodel.CreateMinimalAnonymous(submodelChangeHistory.submodel)
+				submodel = Submodel.CreateMinimalAnonymous(submodelChangeHistory.submodel),
 			 };
 		}
 

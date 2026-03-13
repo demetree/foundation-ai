@@ -28,6 +28,7 @@ import { BuildManualService, BuildManualData } from './build-manual.service';
 import { ProjectRenderService, ProjectRenderData } from './project-render.service';
 import { ProjectExportService, ProjectExportData } from './project-export.service';
 import { PublishedMocService, PublishedMocData } from './published-moc.service';
+import { CompiledGlbService, CompiledGlbData } from './compiled-glb.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -214,6 +215,11 @@ export class ProjectData {
     private _publishedMocs: PublishedMocData[] | null = null;
     private _publishedMocsPromise: Promise<PublishedMocData[]> | null  = null;
     private _publishedMocsSubject = new BehaviorSubject<PublishedMocData[] | null>(null);
+
+                
+    private _compiledGlbs: CompiledGlbData[] | null = null;
+    private _compiledGlbsPromise: Promise<CompiledGlbData[]> | null  = null;
+    private _compiledGlbsSubject = new BehaviorSubject<CompiledGlbData[] | null>(null);
 
                 
 
@@ -532,6 +538,31 @@ export class ProjectData {
 
 
 
+    public CompiledGlbs$ = this._compiledGlbsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._compiledGlbs === null && this._compiledGlbsPromise === null) {
+            this.loadCompiledGlbs(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _compiledGlbsCount$: Observable<bigint | number> | null = null;
+    public get CompiledGlbsCount$(): Observable<bigint | number> {
+        if (this._compiledGlbsCount$ === null) {
+            this._compiledGlbsCount$ = CompiledGlbService.Instance.GetCompiledGlbsRowCount({projectId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._compiledGlbsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -629,6 +660,11 @@ export class ProjectData {
      this._publishedMocsPromise = null;
      this._publishedMocsSubject.next(null);
      this._publishedMocsCount$ = null;
+
+     this._compiledGlbs = null;
+     this._compiledGlbsPromise = null;
+     this._compiledGlbsSubject.next(null);
+     this._compiledGlbsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1419,6 +1455,71 @@ export class ProjectData {
     }
 
 
+    /**
+     *
+     * Gets the CompiledGlbs for this Project.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.project.CompiledGlbs.then(projects => { ... })
+     *   or
+     *   await this.project.projects
+     *
+    */
+    public get CompiledGlbs(): Promise<CompiledGlbData[]> {
+        if (this._compiledGlbs !== null) {
+            return Promise.resolve(this._compiledGlbs);
+        }
+
+        if (this._compiledGlbsPromise !== null) {
+            return this._compiledGlbsPromise;
+        }
+
+        // Start the load
+        this.loadCompiledGlbs();
+
+        return this._compiledGlbsPromise!;
+    }
+
+
+
+    private loadCompiledGlbs(): void {
+
+        this._compiledGlbsPromise = lastValueFrom(
+            ProjectService.Instance.GetCompiledGlbsForProject(this.id)
+        )
+        .then(CompiledGlbs => {
+            this._compiledGlbs = CompiledGlbs ?? [];
+            this._compiledGlbsSubject.next(this._compiledGlbs);
+            return this._compiledGlbs;
+         })
+        .catch(err => {
+            this._compiledGlbs = [];
+            this._compiledGlbsSubject.next(this._compiledGlbs);
+            throw err;
+        })
+        .finally(() => {
+            this._compiledGlbsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached CompiledGlb. Call after mutations to force refresh.
+     */
+    public ClearCompiledGlbsCache(): void {
+        this._compiledGlbs = null;
+        this._compiledGlbsPromise = null;
+        this._compiledGlbsSubject.next(this._compiledGlbs);      // Emit to observable
+    }
+
+    public get HasCompiledGlbs(): Promise<boolean> {
+        return this.CompiledGlbs.then(compiledGlbs => compiledGlbs.length > 0);
+    }
+
+
 
 
     //
@@ -1509,6 +1610,7 @@ export class ProjectService extends SecureEndpointBase {
         private projectRenderService: ProjectRenderService,
         private projectExportService: ProjectExportService,
         private publishedMocService: PublishedMocService,
+        private compiledGlbService: CompiledGlbService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -2095,6 +2197,16 @@ export class ProjectService extends SecureEndpointBase {
     }
 
 
+    public GetCompiledGlbsForProject(projectId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<CompiledGlbData[]> {
+        return this.compiledGlbService.GetCompiledGlbList({
+            projectId: projectId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full ProjectData instance.
@@ -2177,6 +2289,10 @@ export class ProjectService extends SecureEndpointBase {
     (revived as any)._publishedMocs = null;
     (revived as any)._publishedMocsPromise = null;
     (revived as any)._publishedMocsSubject = new BehaviorSubject<PublishedMocData[] | null>(null);
+
+    (revived as any)._compiledGlbs = null;
+    (revived as any)._compiledGlbsPromise = null;
+    (revived as any)._compiledGlbsSubject = new BehaviorSubject<CompiledGlbData[] | null>(null);
 
 
     //
@@ -2332,6 +2448,18 @@ export class ProjectService extends SecureEndpointBase {
       );
 
     (revived as any)._publishedMocsCount$ = null;
+
+
+    (revived as any).CompiledGlbs$ = (revived as any)._compiledGlbsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._compiledGlbs === null && (revived as any)._compiledGlbsPromise === null) {
+                (revived as any).loadCompiledGlbs();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._compiledGlbsCount$ = null;
 
 
 
