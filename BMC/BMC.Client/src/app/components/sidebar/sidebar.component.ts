@@ -49,18 +49,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
             ]
         },
         {
-            label: 'COMMUNITY',
-            items: [
-                { icon: 'fas fa-code-branch', label: 'MOCHub', route: '/mochub' }
-            ]
-        },
-        {
             label: 'CREATE & BUILD',
             items: [
                 { icon: 'fas fa-puzzle-piece', label: 'My Projects', route: '/my-projects' },
-                { icon: 'fas fa-camera', label: 'Renderer', route: '/part-renderer' },
-                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
-                { icon: 'fas fa-edit', label: 'Manual Editor', route: '/manual-editor' }
+                { icon: 'fas fa-code-branch', label: 'MOCHub', route: '/mochub' }
                 //, { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
             ]
         },
@@ -78,8 +70,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
         {
             label: 'TOOLS',
             items: [
+                { icon: 'fas fa-camera', label: 'Renderer', route: '/part-renderer' },
+                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
                 { icon: 'fas fa-chart-line', label: 'Brickberg', route: '/brickberg', requiresBrickberg: true },
-                { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
                 { icon: 'fas fa-plug', label: 'Integrations', route: '/integrations' },
                 { icon: 'fas fa-robot', label: 'AI Assistant', route: '/ai' },
                 { icon: 'fas fa-heartbeat', label: 'System Health', route: '/system-health' }

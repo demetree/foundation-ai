@@ -16,6 +16,7 @@ using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.BMC.Database;
+using Foundation.ChangeHistory;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -32,6 +33,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 20;
+
+		static object buildManualPagePutSyncRoot = new object();
+		static object buildManualPageDeleteSyncRoot = new object();
 
 		private BMCContext _context;
 
@@ -66,6 +70,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? pageNum = null,
 			string title = null,
 			string notes = null,
+			string backgroundTheme = null,
+			string layoutPreset = null,
+			string backgroundColorHex = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -135,6 +143,22 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bmp => bmp.notes == notes);
 			}
+			if (string.IsNullOrEmpty(backgroundTheme) == false)
+			{
+				query = query.Where(bmp => bmp.backgroundTheme == backgroundTheme);
+			}
+			if (string.IsNullOrEmpty(layoutPreset) == false)
+			{
+				query = query.Where(bmp => bmp.layoutPreset == layoutPreset);
+			}
+			if (string.IsNullOrEmpty(backgroundColorHex) == false)
+			{
+				query = query.Where(bmp => bmp.backgroundColorHex == backgroundColorHex);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bmp => bmp.versionNumber == versionNumber.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bmp => bmp.objectGuid == objectGuid);
@@ -164,7 +188,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bmp => bmp.deleted == false);
 			}
 
-			query = query.OrderBy(bmp => bmp.title);
+			query = query.OrderBy(bmp => bmp.title).ThenBy(bmp => bmp.backgroundTheme).ThenBy(bmp => bmp.layoutPreset);
 
 
 			//
@@ -177,6 +201,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.title.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.backgroundTheme.Contains(anyStringContains)
+			       || x.layoutPreset.Contains(anyStringContains)
+			       || x.backgroundColorHex.Contains(anyStringContains)
 			       || (includeRelations == true && x.buildManual.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.buildManual.description.Contains(anyStringContains))
 			   );
@@ -237,6 +264,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? pageNum = null,
 			string title = null,
 			string notes = null,
+			string backgroundTheme = null,
+			string layoutPreset = null,
+			string backgroundColorHex = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -286,6 +317,22 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bmp => bmp.notes == notes);
 			}
+			if (backgroundTheme != null)
+			{
+				query = query.Where(bmp => bmp.backgroundTheme == backgroundTheme);
+			}
+			if (layoutPreset != null)
+			{
+				query = query.Where(bmp => bmp.layoutPreset == layoutPreset);
+			}
+			if (backgroundColorHex != null)
+			{
+				query = query.Where(bmp => bmp.backgroundColorHex == backgroundColorHex);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bmp => bmp.versionNumber == versionNumber.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bmp => bmp.objectGuid == objectGuid);
@@ -325,6 +372,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.title.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.backgroundTheme.Contains(anyStringContains)
+			       || x.layoutPreset.Contains(anyStringContains)
+			       || x.backgroundColorHex.Contains(anyStringContains)
 			       || x.buildManual.name.Contains(anyStringContains)
 			       || x.buildManual.description.Contains(anyStringContains)
 			   );
@@ -535,52 +585,103 @@ namespace Foundation.BMC.Controllers.WebAPI
 				buildManualPage.tenantGuid = existing.tenantGuid;
 			}
 
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (buildManualPage.deleted == true || existing.deleted == true))
+			lock (buildManualPagePutSyncRoot)
 			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildManualPage record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
-			}
+				//
+				// Validate the version number for the buildManualPage being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != buildManualPage.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "BuildManualPage save attempt was made but save request was with version " + buildManualPage.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The BuildManualPage you are trying to update has already changed.  Please try your save again after reloading the BuildManualPage.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					buildManualPage.versionNumber++;
+				}
 
-			if (buildManualPage.title != null && buildManualPage.title.Length > 250)
-			{
-				buildManualPage.title = buildManualPage.title.Substring(0, 250);
-			}
 
-			EntityEntry<Database.BuildManualPage> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(buildManualPage);
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (buildManualPage.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildManualPage record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
 
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
+				if (buildManualPage.title != null && buildManualPage.title.Length > 250)
+				{
+					buildManualPage.title = buildManualPage.title.Substring(0, 250);
+				}
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildManualPage entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
-					null);
+				if (buildManualPage.backgroundTheme != null && buildManualPage.backgroundTheme.Length > 50)
+				{
+					buildManualPage.backgroundTheme = buildManualPage.backgroundTheme.Substring(0, 50);
+				}
 
+				if (buildManualPage.layoutPreset != null && buildManualPage.layoutPreset.Length > 50)
+				{
+					buildManualPage.layoutPreset = buildManualPage.layoutPreset.Substring(0, 50);
+				}
+
+				if (buildManualPage.backgroundColorHex != null && buildManualPage.backgroundColorHex.Length > 10)
+				{
+					buildManualPage.backgroundColorHex = buildManualPage.backgroundColorHex.Substring(0, 10);
+				}
+
+				try
+				{
+				    EntityEntry<Database.BuildManualPage> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(buildManualPage);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildManualPageChangeHistory buildManualPageChangeHistory = new BuildManualPageChangeHistory();
+				        buildManualPageChangeHistory.buildManualPageId = buildManualPage.id;
+				        buildManualPageChangeHistory.versionNumber = buildManualPage.versionNumber;
+				        buildManualPageChangeHistory.timeStamp = DateTime.UtcNow;
+				        buildManualPageChangeHistory.userId = securityUser.id;
+				        buildManualPageChangeHistory.tenantGuid = userTenantGuid;
+				        buildManualPageChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage));
+				        _context.BuildManualPageChangeHistories.Add(buildManualPageChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildManualPage entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
+						null);
 
 				return Ok(Database.BuildManualPage.CreateAnonymous(buildManualPage));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildManualPage entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
-					ex);
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildManualPage entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
+						ex);
 
-				return Problem(ex.Message);
-			}
+					return Problem(ex.Message);
+				}
 
+			}
 		}
 
         /// <summary>
@@ -644,22 +745,73 @@ namespace Foundation.BMC.Controllers.WebAPI
 					buildManualPage.title = buildManualPage.title.Substring(0, 250);
 				}
 
+				if (buildManualPage.backgroundTheme != null && buildManualPage.backgroundTheme.Length > 50)
+				{
+					buildManualPage.backgroundTheme = buildManualPage.backgroundTheme.Substring(0, 50);
+				}
+
+				if (buildManualPage.layoutPreset != null && buildManualPage.layoutPreset.Length > 50)
+				{
+					buildManualPage.layoutPreset = buildManualPage.layoutPreset.Substring(0, 50);
+				}
+
+				if (buildManualPage.backgroundColorHex != null && buildManualPage.backgroundColorHex.Length > 10)
+				{
+					buildManualPage.backgroundColorHex = buildManualPage.backgroundColorHex.Substring(0, 10);
+				}
+
 				buildManualPage.objectGuid = Guid.NewGuid();
+				buildManualPage.versionNumber = 1;
+
 				_context.BuildManualPages.Add(buildManualPage);
-				await _context.SaveChangesAsync(cancellationToken);
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"BMC.BuildManualPage entity successfully created.",
-					true,
-					buildManualPage.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
-					null);
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
 
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the buildManualPage object so that no further changes will be written to the database
+				    //
+				    _context.Entry(buildManualPage).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					buildManualPage.BuildManualPageChangeHistories = null;
+					buildManualPage.BuildManualSteps = null;
+					buildManualPage.buildManual = null;
+
+
+				    BuildManualPageChangeHistory buildManualPageChangeHistory = new BuildManualPageChangeHistory();
+				    buildManualPageChangeHistory.buildManualPageId = buildManualPage.id;
+				    buildManualPageChangeHistory.versionNumber = buildManualPage.versionNumber;
+				    buildManualPageChangeHistory.timeStamp = DateTime.UtcNow;
+				    buildManualPageChangeHistory.userId = securityUser.id;
+				    buildManualPageChangeHistory.tenantGuid = userTenantGuid;
+				    buildManualPageChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage));
+				    _context.BuildManualPageChangeHistories.Add(buildManualPageChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"BMC.BuildManualPage entity successfully created.",
+						true,
+						buildManualPage. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
+						null);
+
+
+				}
 			}
 			catch (Exception ex)
 			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildManualPage entity creation failed.", false, buildManualPage.id.ToString(), "", JsonSerializer.Serialize(buildManualPage), ex);
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildManualPage entity creation failed.", false, buildManualPage.id.ToString(), "", JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)), ex);
 
 				return Problem(ex.Message);
 			}
@@ -671,6 +823,441 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+
+        /// <summary>
+        /// 
+        /// This rolls a BuildManualPage entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualPage/Rollback/{id}")]
+		[Route("api/BuildManualPage/Rollback")]
+		public async Task<IActionResult> RollbackToBuildManualPageVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.BuildManualPage> query = (from x in _context.BuildManualPages
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this BuildManualPage concurrently
+			//
+			lock (buildManualPagePutSyncRoot)
+			{
+				
+				Database.BuildManualPage buildManualPage = query.FirstOrDefault();
+				
+				if (buildManualPage == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for BMC.BuildManualPage rollback", id.ToString(), new Exception("No BMC.BuildManualPage entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the BuildManualPage current state so we can log it.
+				//
+				Database.BuildManualPage cloneOfExisting = (Database.BuildManualPage)_context.Entry(buildManualPage).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.BuildManualPageChangeHistories = null;
+				cloneOfExisting.BuildManualSteps = null;
+				cloneOfExisting.buildManual = null;
+
+				if (versionNumber >= buildManualPage.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for BMC.BuildManualPage rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for BMC.BuildManualPage rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				BuildManualPageChangeHistory buildManualPageChangeHistory = (from x in _context.BuildManualPageChangeHistories
+				                                               where
+				                                               x.buildManualPageId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (buildManualPageChangeHistory != null)
+				{
+				    Database.BuildManualPage oldBuildManualPage = JsonSerializer.Deserialize<Database.BuildManualPage>(buildManualPageChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    buildManualPage.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    buildManualPage.buildManualId = oldBuildManualPage.buildManualId;
+				    buildManualPage.pageNum = oldBuildManualPage.pageNum;
+				    buildManualPage.title = oldBuildManualPage.title;
+				    buildManualPage.notes = oldBuildManualPage.notes;
+				    buildManualPage.backgroundTheme = oldBuildManualPage.backgroundTheme;
+				    buildManualPage.layoutPreset = oldBuildManualPage.layoutPreset;
+				    buildManualPage.backgroundColorHex = oldBuildManualPage.backgroundColorHex;
+				    buildManualPage.objectGuid = oldBuildManualPage.objectGuid;
+				    buildManualPage.active = oldBuildManualPage.active;
+				    buildManualPage.deleted = oldBuildManualPage.deleted;
+
+				    string serializedBuildManualPage = JsonSerializer.Serialize(buildManualPage);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildManualPageChangeHistory newBuildManualPageChangeHistory = new BuildManualPageChangeHistory();
+				        newBuildManualPageChangeHistory.buildManualPageId = buildManualPage.id;
+				        newBuildManualPageChangeHistory.versionNumber = buildManualPage.versionNumber;
+				        newBuildManualPageChangeHistory.timeStamp = DateTime.UtcNow;
+				        newBuildManualPageChangeHistory.userId = securityUser.id;
+				        newBuildManualPageChangeHistory.tenantGuid = userTenantGuid;
+				        newBuildManualPageChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage));
+				        _context.BuildManualPageChangeHistories.Add(newBuildManualPageChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildManualPage rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
+						null);
+
+
+				    return Ok(Database.BuildManualPage.CreateAnonymous(buildManualPage));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for BMC.BuildManualPage rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for BMC.BuildManualPage rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the change metadata (version info, timestamp, user) for a specific version of a BuildManualPage.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualPage</param>
+        /// <param name="versionNumber">The version number to retrieve metadata for</param>
+        /// <returns>VersionInformation containing timestamp and user details</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualPage/{id}/ChangeMetadata")]
+		public async Task<IActionResult> GetBuildManualPageChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualPage buildManualPage = await _context.BuildManualPages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualPage == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualPage.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildManualPage> versionInfo = await buildManualPage.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null)
+				{
+					return NotFound($"Version {versionNumber} not found.");
+				}
+
+				return Ok(versionInfo);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the full audit history for a BuildManualPage.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualPage</param>
+        /// <param name="includeData">Whether to include the full entity data for each version (can be large)</param>
+        /// <returns>List of VersionInformation items</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualPage/{id}/AuditHistory")]
+		public async Task<IActionResult> GetBuildManualPageAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualPage buildManualPage = await _context.BuildManualPages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualPage == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualPage.SetupVersionInquiry(_context, userTenantGuid);
+
+				List<VersionInformation<Database.BuildManualPage>> versions = await buildManualPage.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
+
+				return Ok(versions);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets a specific version of a BuildManualPage.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualPage</param>
+        /// <param name="version">The version number to retrieve</param>
+        /// <returns>The BuildManualPage object at that version</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualPage/{id}/Version/{version}")]
+		public async Task<IActionResult> GetBuildManualPageVersion(int id, int version, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualPage buildManualPage = await _context.BuildManualPages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualPage == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualPage.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildManualPage> versionInfo = await buildManualPage.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound();
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the state of a BuildManualPage at a specific point in time.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualPage</param>
+        /// <param name="time">The point in time (ISO format, UTC)</param>
+        /// <returns>The BuildManualPage object at that time</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualPage/{id}/StateAtTime")]
+		public async Task<IActionResult> GetBuildManualPageStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualPage buildManualPage = await _context.BuildManualPages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualPage == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualPage.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildManualPage> versionInfo = await buildManualPage.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound("No state found at specified time.");
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
 
         /// <summary>
         /// 
@@ -729,33 +1316,52 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Database.BuildManualPage cloneOfExisting = (Database.BuildManualPage)_context.Entry(buildManualPage).GetDatabaseValues().ToObject();
 
 
-			try
+			lock (buildManualPageDeleteSyncRoot)
 			{
-				buildManualPage.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
+			    try
+			    {
+			        buildManualPage.deleted = true;
+			        buildManualPage.versionNumber++;
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildManualPage entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
-					null);
+			        _context.SaveChanges();
 
+			        //
+			        // Now add the change history
+			        //
+			        BuildManualPageChangeHistory buildManualPageChangeHistory = new BuildManualPageChangeHistory();
+			        buildManualPageChangeHistory.buildManualPageId = buildManualPage.id;
+			        buildManualPageChangeHistory.versionNumber = buildManualPage.versionNumber;
+			        buildManualPageChangeHistory.timeStamp = DateTime.UtcNow;
+			        buildManualPageChangeHistory.userId = securityUser.id;
+			        buildManualPageChangeHistory.tenantGuid = userTenantGuid;
+			        buildManualPageChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage));
+			        _context.BuildManualPageChangeHistories.Add(buildManualPageChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildManualPage entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildManualPage entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
 			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildManualPage entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualPage.CreateAnonymousWithFirstLevelSubObjects(buildManualPage)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
 		}
 
 
@@ -776,6 +1382,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			int? pageNum = null,
 			string title = null,
 			string notes = null,
+			string backgroundTheme = null,
+			string layoutPreset = null,
+			string backgroundColorHex = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -844,6 +1454,22 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bmp => bmp.notes == notes);
 			}
+			if (string.IsNullOrEmpty(backgroundTheme) == false)
+			{
+				query = query.Where(bmp => bmp.backgroundTheme == backgroundTheme);
+			}
+			if (string.IsNullOrEmpty(layoutPreset) == false)
+			{
+				query = query.Where(bmp => bmp.layoutPreset == layoutPreset);
+			}
+			if (string.IsNullOrEmpty(backgroundColorHex) == false)
+			{
+				query = query.Where(bmp => bmp.backgroundColorHex == backgroundColorHex);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bmp => bmp.versionNumber == versionNumber.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bmp => bmp.objectGuid == objectGuid);
@@ -884,6 +1510,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.title.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.backgroundTheme.Contains(anyStringContains)
+			       || x.layoutPreset.Contains(anyStringContains)
+			       || x.backgroundColorHex.Contains(anyStringContains)
 			       || x.buildManual.name.Contains(anyStringContains)
 			       || x.buildManual.description.Contains(anyStringContains)
 			   );
@@ -893,7 +1522,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.title);
+			query = query.OrderBy(x => x.title).ThenBy(x => x.backgroundTheme).ThenBy(x => x.layoutPreset);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

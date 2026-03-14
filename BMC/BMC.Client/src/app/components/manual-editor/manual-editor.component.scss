@@ -9,21 +9,21 @@
 
 // ─── Design Tokens ──────────────────────────────────────────────────────
 
-$bg-dark: #0d1117;
-$bg-surface: #161b22;
-$bg-elevated: #1c2333;
-$bg-card: #21262d;
-$border-color: #30363d;
-$border-focus: #58a6ff;
-$text-primary: #e6edf3;
-$text-secondary: #8b949e;
-$text-muted: #6e7681;
-$accent: #58a6ff;
+$bg-dark: var(--bmc-bg-deep);
+$bg-surface: var(--bmc-bg-dark);
+$bg-elevated: var(--bmc-bg-card);
+$bg-card: var(--bmc-bg-elevated);
+$border-color: var(--bmc-border);
+$border-focus: var(--bmc-primary);
+$text-primary: var(--bmc-text-primary);
+$text-secondary: var(--bmc-text-secondary);
+$text-muted: var(--bmc-text-muted);
+$accent: var(--bmc-primary);
 $accent-green: #3fb950;
-$accent-orange: #d29922;
+$accent-orange: var(--bmc-primary);
 $accent-red: #f85149;
-$selected-bg: rgba(88, 166, 255, 0.12);
-$selected-border: $accent;
+$selected-bg: var(--bmc-surface-hover);
+$selected-border: var(--bmc-primary);
 
 
 // ─── Host ───────────────────────────────────────────────────────────────
@@ -151,7 +151,7 @@ $selected-border: $accent;
         gap: 6px;
         padding: 6px 16px;
         background: $accent;
-        color: #fff;
+        color: var(--bmc-text-primary);
         border: none;
         border-radius: 6px;
         font-size: 13px;
@@ -159,7 +159,7 @@ $selected-border: $accent;
         cursor: pointer;
         transition: background 0.2s, opacity 0.2s;
 
-        &:hover:not(:disabled) { background: lighten($accent, 8%); }
+        &:hover:not(:disabled) { background: var(--bmc-primary-dark); }
         &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
 }
@@ -186,7 +186,7 @@ $selected-border: $accent;
     &.active {
         background: $selected-bg;
         color: $accent;
-        border-color: rgba($accent, 0.3);
+        border-color: var(--bmc-border-strong);
     }
 }
 
@@ -265,11 +265,11 @@ $selected-border: $accent;
 
         &.selected {
             border-color: $accent;
-            box-shadow: 0 0 0 1px rgba($accent, 0.3);
+            box-shadow: 0 0 0 1px var(--bmc-border-strong);
         }
 
         .page-thumb-preview {
-            background: #fff;
+            background: var(--bmc-bg-card);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -280,7 +280,7 @@ $selected-border: $accent;
         .page-num {
             font-size: 20px;
             font-weight: 700;
-            color: #ccc;
+            color: var(--bmc-text-muted);
         }
 
         .step-indicators {
@@ -314,7 +314,7 @@ $selected-border: $accent;
             right: 4px;
             width: 20px;
             height: 20px;
-            background: rgba(0, 0, 0, 0.6);
+            background: var(--bmc-bg-card);
             border: none;
             color: $text-muted;
             border-radius: 50%;
@@ -348,11 +348,9 @@ $selected-border: $accent;
     overflow: auto;
 
     .canvas-page-frame {
-        background: #fff;
+        background: var(--bmc-bg-card);
         border-radius: 4px;
-        box-shadow:
-            0 4px 24px rgba(0, 0, 0, 0.4),
-            0 0 0 1px rgba(255, 255, 255, 0.06);
+        box-shadow: var(--bmc-shadow-md), 0 0 0 1px var(--bmc-border);
         width: 100%;
         max-width: 640px;
         display: flex;
@@ -362,19 +360,19 @@ $selected-border: $accent;
 
     .page-header-bar {
         padding: 16px 20px 8px;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid var(--bmc-border);
 
         .page-title-input {
             width: 100%;
             border: none;
             font-size: 16px;
             font-weight: 700;
-            color: #1f2937;
+            color: var(--bmc-text-primary);
             background: transparent;
             padding: 4px 0;
 
             &:focus { outline: none; }
-            &::placeholder { color: #d1d5db; }
+            &::placeholder { color: var(--bmc-text-muted); }
         }
     }
 
@@ -387,8 +385,8 @@ $selected-border: $accent;
     }
 
     .step-card {
-        background: #f9fafb;
-        border: 2px solid #e5e7eb;
+        background: var(--bmc-bg-elevated);
+        border: 2px solid var(--bmc-border);
         border-radius: 8px;
         padding: 10px;
         cursor: pointer;
@@ -398,14 +396,14 @@ $selected-border: $accent;
         min-height: 120px;
 
         &:hover {
-            border-color: #93c5fd;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+            border-color: var(--bmc-primary-light);
+            box-shadow: 0 2px 8px var(--bmc-accent-glow-soft);
         }
 
         &.selected {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-            background: #eff6ff;
+            border-color: var(--bmc-primary);
+            box-shadow: 0 0 0 2px var(--bmc-accent-glow);
+            background: var(--bmc-surface-hover);
         }
 
         .step-header {
@@ -418,7 +416,7 @@ $selected-border: $accent;
         .step-number {
             font-size: 18px;
             font-weight: 800;
-            color: #1f2937;
+            color: var(--bmc-text-primary);
             line-height: 1;
         }
 
@@ -430,14 +428,14 @@ $selected-border: $accent;
             justify-content: center;
             background: transparent;
             border: none;
-            color: #d1d5db;
+            color: var(--bmc-text-muted);
             border-radius: 4px;
             cursor: pointer;
             font-size: 11px;
             opacity: 0;
             transition: all 0.2s;
 
-            &:hover { color: #ef4444; }
+            &:hover { color: var(--bmc-accent); }
         }
 
         &:hover .btn-icon-xs { opacity: 1; }
@@ -448,6 +446,14 @@ $selected-border: $accent;
             align-items: center;
             justify-content: center;
             min-height: 80px;
+            overflow: hidden;
+        }
+
+        .step-render-image {
+            max-width: 100%;
+            max-height: 120px;
+            object-fit: contain;
+            border-radius: 4px;
         }
 
         .render-placeholder {
@@ -455,7 +461,7 @@ $selected-border: $accent;
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            color: #d1d5db;
+            color: var(--bmc-text-muted);
 
             i { font-size: 28px; }
             span { font-size: 11px; }
@@ -478,59 +484,59 @@ $selected-border: $accent;
             white-space: nowrap;
 
             &.camera {
-                background: #f3f4f6;
-                color: #6b7280;
+                background: var(--bmc-bg-card);
+                color: var(--bmc-text-secondary);
             }
 
             &.exploded {
-                background: #fef3c7;
-                color: #92400e;
+                background: var(--bmc-primary-light);
+                color: var(--bmc-bg-deep);
             }
         }
     }
 
     .add-step-card {
         border-style: dashed;
-        border-color: #d1d5db;
+        border-color: var(--bmc-border);
         background: transparent;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         gap: 8px;
-        color: #9ca3af;
+        color: var(--bmc-text-muted);
         font-size: 13px;
         min-height: 120px;
 
         i { font-size: 24px; }
 
         &:hover {
-            border-color: #3b82f6;
-            color: #3b82f6;
-            background: #f0f7ff;
+            border-color: var(--bmc-primary);
+            color: var(--bmc-primary);
+            background: var(--bmc-surface-hover);
         }
     }
 
     .page-notes-bar {
         padding: 8px 20px 16px;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid var(--bmc-border);
 
         .page-notes-input {
             width: 100%;
-            border: 1px solid #e5e7eb;
+            border: 1px solid var(--bmc-border);
             border-radius: 6px;
             padding: 8px 10px;
             font-size: 12px;
-            color: #6b7280;
-            background: #f9fafb;
+            color: var(--bmc-text-secondary);
+            background: var(--bmc-bg-dark);
             resize: vertical;
 
             &:focus {
                 outline: none;
-                border-color: #3b82f6;
+                border-color: var(--bmc-primary);
             }
 
-            &::placeholder { color: #d1d5db; }
+            &::placeholder { color: var(--bmc-text-muted); }
         }
     }
 
@@ -660,7 +666,7 @@ $selected-border: $accent;
     gap: 6px;
     padding: 8px 20px;
     background: $accent;
-    color: #fff;
+    color: var(--bmc-text-primary);
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -668,7 +674,7 @@ $selected-border: $accent;
     cursor: pointer;
     transition: background 0.2s;
 
-    &:hover { background: lighten($accent, 10%); }
+    &:hover { background: var(--bmc-primary-dark); }
 }
 
 

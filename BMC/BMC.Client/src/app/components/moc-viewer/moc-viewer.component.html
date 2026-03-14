@@ -26,7 +26,7 @@
             <button class="tab-btn" [class.active]="activeViewerTab === 'render'" (click)="switchToRenderTab()" id="tab-render-btn">
                 <i class="fas fa-camera"></i> Photo Booth
             </button>
-            <button class="tab-btn" [class.active]="activeViewerTab === 'manual'" (click)="activeViewerTab = 'manual'; initManualTab()" id="tab-manual-btn">
+            <button class="tab-btn" [class.active]="activeViewerTab === 'manual'" (click)="activeViewerTab = 'manual'" id="tab-manual-btn">
                 <i class="fas fa-book"></i> Manual
             </button>
         </div>
@@ -188,79 +188,7 @@
 
         <!-- ═══════ Manual Tab ═══════ -->
         <div class="manual-tab-content" *ngIf="activeViewerTab === 'manual'">
-
-            <!-- Generation Progress -->
-            <div class="manual-progress" *ngIf="isGenerating">
-                <div class="progress-header">
-                    <span>Generating manual… Step {{ generationProgress }} / {{ generationTotal }}</span>
-                    <button class="btn-cancel" (click)="cancelGeneration()" id="cancel-manual-btn">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" [style.width.%]="progressPercent"></div>
-                </div>
-                <div class="step-preview" *ngIf="currentPreview">
-                    <img [src]="currentPreview" alt="Step preview">
-                </div>
-                <div class="reconnecting-notice" *ngIf="isReconnecting">
-                    <i class="fas fa-wifi"></i> Reconnecting…
-                </div>
-            </div>
-
-            <!-- Result Preview -->
-            <div class="manual-result" *ngIf="manualPages.length > 0 && !isGenerating">
-                <div class="manual-stats" *ngIf="resultStats">
-                    <span><i class="fas fa-layer-group"></i> {{ resultStats.totalSteps }} steps</span>
-                    <span><i class="fas fa-puzzle-piece"></i> {{ resultStats.totalParts }} parts</span>
-                    <span><i class="fas fa-clock"></i> {{ resultStats.renderTimeMs | number }}ms</span>
-                </div>
-                <div class="manual-page-viewer">
-                    <div class="manual-page" [innerHTML]="manualPages[manualCurrentPage]"></div>
-                </div>
-                <div class="manual-page-nav">
-                    <button class="btn-page" (click)="manualPrevPage()" [disabled]="manualCurrentPage <= 0">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <span class="page-label">Page {{ manualCurrentPage + 1 }} / {{ manualPages.length }}</span>
-                    <button class="btn-page" (click)="manualNextPage()" [disabled]="manualCurrentPage >= manualPages.length - 1">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                <div class="manual-download-bar">
-                    <button class="btn-manual-dl" (click)="downloadManualHtml()" *ngIf="generatedHtml || htmlDownloadUrl" id="dl-manual-html-btn">
-                        <i class="fas fa-file-code"></i> HTML
-                    </button>
-                    <button class="btn-manual-dl" (click)="downloadManualPdf()" *ngIf="pdfDownloadUrl" id="dl-manual-pdf-btn">
-                        <i class="fas fa-file-pdf"></i> PDF
-                    </button>
-                    <button class="btn-manual-dl" (click)="printManual()" *ngIf="generatedHtml" id="print-manual-btn">
-                        <i class="fas fa-print"></i> Print
-                    </button>
-                    <button class="btn-manual-dl btn-reset" (click)="resetManual()" id="reset-manual-btn">
-                        <i class="fas fa-redo"></i> New
-                    </button>
-                </div>
-            </div>
-
-            <!-- Error -->
-            <div class="render-error-msg" *ngIf="generationError && !isGenerating">
-                <i class="fas fa-exclamation-triangle"></i> {{ generationError }}
-            </div>
-
-            <!-- Empty state -->
-            <div class="render-empty" *ngIf="!isGenerating && manualPages.length === 0 && !generationError">
-                <i class="fas fa-book fa-3x"></i>
-                <p>Generate a printable build manual with step-by-step instructions</p>
-                <div class="manual-action-buttons">
-                    <button class="btn-generate" (click)="generateManual()" id="generate-manual-btn">
-                        <i class="fas fa-magic"></i> Quick Generate
-                    </button>
-                    <button class="btn-generate btn-editor" (click)="createManual()" id="open-manual-editor-btn">
-                        <i class="fas fa-edit"></i> Open Manual Editor
-                    </button>
-                </div>
-            </div>
+            <app-manual-editor [projectId]="projectId" *ngIf="projectId"></app-manual-editor>
         </div>
 
 
@@ -493,75 +421,20 @@
             <!-- ═══ Manual Tab Sidebar ═══ -->
             <ng-container *ngIf="activeViewerTab === 'manual'">
                 <div class="sidebar-section">
-                    <h3><i class="fas fa-sliders-h"></i> Manual Options</h3>
-                    <div class="option-row">
-                        <label>Page Size</label>
-                        <select [(ngModel)]="manualOptions.pageSize">
-                            <option value="a4">A4</option>
-                            <option value="letter">Letter</option>
-                        </select>
-                    </div>
-                    <div class="option-row">
-                        <label>Image Size</label>
-                        <select [(ngModel)]="manualOptions.imageSize">
-                            <option [ngValue]="400">Small (400px)</option>
-                            <option [ngValue]="600">Medium (600px)</option>
-                            <option [ngValue]="800">Large (800px)</option>
-                            <option [ngValue]="1024">XL (1024px)</option>
-                        </select>
-                    </div>
-                    <div class="option-row">
-                        <label>Output</label>
-                        <select [(ngModel)]="manualOptions.outputFormat">
-                            <option value="html">HTML</option>
-                            <option value="pdf">PDF</option>
-                        </select>
-                    </div>
-                    <div class="option-row">
-                        <label>Renderer</label>
-                        <select [(ngModel)]="manualOptions.renderer">
-                            <option value="rasterizer">Rasterizer</option>
-                            <option value="raytrace">Ray Tracer</option>
-                        </select>
-                    </div>
-                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="manualOptions.renderEdges"> Edge lines</label>
-                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="manualOptions.smoothShading"> Smooth shading</label>
+                    <h3><i class="fas fa-book"></i> Manual Editor</h3>
+                    <p class="sidebar-help-text">
+                        Create step-by-step build instructions for this MOC.
+                        Use the editor panel to add pages and configure each step's
+                        camera angle and exploded view settings.
+                    </p>
                 </div>
 
                 <div class="sidebar-section">
-                    <button class="btn-render-main" [disabled]="isGenerating || isAnalysing" (click)="generateManual()" id="sidebar-generate-btn">
-                        <i class="fas" [ngClass]="isGenerating ? 'fa-circle-notch fa-spin' : 'fa-magic'"></i>
-                        {{ isGenerating ? 'Generating…' : 'Generate Manual' }}
-                    </button>
-                    <button class="btn-analyse" [disabled]="isAnalysing || isGenerating" (click)="analyseProject()" id="analyse-project-btn">
-                        <i class="fas" [ngClass]="isAnalysing ? 'fa-circle-notch fa-spin' : 'fa-search'"></i>
-                        {{ isAnalysing ? 'Analysing…' : 'Analyse Steps' }}
-                    </button>
-                    <button class="btn-analyse btn-editor-sidebar" (click)="createManual()" id="sidebar-manual-editor-btn">
-                        <i class="fas fa-edit"></i> Open Manual Editor
-                    </button>
-                </div>
-
-                <!-- Analysis Results -->
-                <div class="sidebar-section" *ngIf="analysis">
-                    <h3><i class="fas fa-chart-bar"></i> Analysis</h3>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Steps</span>
-                            <span class="info-value">{{ analysis.stepCount }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Total Parts</span>
-                            <span class="info-value">{{ analysis.totalParts | number }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Unique Parts</span>
-                            <span class="info-value">{{ analysis.uniquePartCount | number }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Triangles</span>
-                            <span class="info-value">{{ analysis.totalTriangleCount | number }}</span>
-                        </div>
+                    <h3><i class="fas fa-keyboard"></i> Quick Tips</h3>
+                    <div class="sidebar-tips">
+                        <div class="tip-item"><i class="fas fa-plus-circle"></i> Click <strong>Add Page</strong> in the left panel to start</div>
+                        <div class="tip-item"><i class="fas fa-mouse-pointer"></i> Click a step card to edit its properties</div>
+                        <div class="tip-item"><i class="fas fa-save"></i> Changes auto-save on blur, or use the Save button</div>
                     </div>
                 </div>
             </ng-container>

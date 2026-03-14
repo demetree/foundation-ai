@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { BuildManualData } from './build-manual.service';
+import { BuildManualPageChangeHistoryService, BuildManualPageChangeHistoryData } from './build-manual-page-change-history.service';
 import { BuildManualStepService, BuildManualStepData } from './build-manual-step.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -33,6 +34,10 @@ export class BuildManualPageQueryParameters {
     pageNum: bigint | number | null | undefined = null;
     title: string | null | undefined = null;
     notes: string | null | undefined = null;
+    backgroundTheme: string | null | undefined = null;
+    layoutPreset: string | null | undefined = null;
+    backgroundColorHex: string | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -52,10 +57,34 @@ export class BuildManualPageSubmitData {
     pageNum: bigint | number | null = null;
     title: string | null = null;
     notes: string | null = null;
+    backgroundTheme: string | null = null;
+    layoutPreset: string | null = null;
+    backgroundColorHex: string | null = null;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class BuildManualPageBasicListData {
   id!: bigint | number;
@@ -105,6 +134,10 @@ export class BuildManualPageData {
     pageNum!: bigint | number;
     title!: string | null;
     notes!: string | null;
+    backgroundTheme!: string | null;
+    layoutPreset!: string | null;
+    backgroundColorHex!: string | null;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -113,11 +146,25 @@ export class BuildManualPageData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _buildManualPageChangeHistories: BuildManualPageChangeHistoryData[] | null = null;
+    private _buildManualPageChangeHistoriesPromise: Promise<BuildManualPageChangeHistoryData[]> | null  = null;
+    private _buildManualPageChangeHistoriesSubject = new BehaviorSubject<BuildManualPageChangeHistoryData[] | null>(null);
+
+                
     private _buildManualSteps: BuildManualStepData[] | null = null;
     private _buildManualStepsPromise: Promise<BuildManualStepData[]> | null  = null;
     private _buildManualStepsSubject = new BehaviorSubject<BuildManualStepData[] | null>(null);
 
                 
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<BuildManualPageData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<BuildManualPageData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildManualPageData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -125,6 +172,31 @@ export class BuildManualPageData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public BuildManualPageChangeHistories$ = this._buildManualPageChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._buildManualPageChangeHistories === null && this._buildManualPageChangeHistoriesPromise === null) {
+            this.loadBuildManualPageChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _buildManualPageChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get BuildManualPageChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._buildManualPageChangeHistoriesCount$ === null) {
+            this._buildManualPageChangeHistoriesCount$ = BuildManualPageChangeHistoryService.Instance.GetBuildManualPageChangeHistoriesRowCount({buildManualPageId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildManualPageChangeHistoriesCount$;
+    }
+
+
+
     public BuildManualSteps$ = this._buildManualStepsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -188,17 +260,90 @@ export class BuildManualPageData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._buildManualPageChangeHistories = null;
+     this._buildManualPageChangeHistoriesPromise = null;
+     this._buildManualPageChangeHistoriesSubject.next(null);
+     this._buildManualPageChangeHistoriesCount$ = null;
+
      this._buildManualSteps = null;
      this._buildManualStepsPromise = null;
      this._buildManualStepsSubject.next(null);
      this._buildManualStepsCount$ = null;
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the BuildManualPageChangeHistories for this BuildManualPage.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.buildManualPage.BuildManualPageChangeHistories.then(buildManualPages => { ... })
+     *   or
+     *   await this.buildManualPage.buildManualPages
+     *
+    */
+    public get BuildManualPageChangeHistories(): Promise<BuildManualPageChangeHistoryData[]> {
+        if (this._buildManualPageChangeHistories !== null) {
+            return Promise.resolve(this._buildManualPageChangeHistories);
+        }
+
+        if (this._buildManualPageChangeHistoriesPromise !== null) {
+            return this._buildManualPageChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadBuildManualPageChangeHistories();
+
+        return this._buildManualPageChangeHistoriesPromise!;
+    }
+
+
+
+    private loadBuildManualPageChangeHistories(): void {
+
+        this._buildManualPageChangeHistoriesPromise = lastValueFrom(
+            BuildManualPageService.Instance.GetBuildManualPageChangeHistoriesForBuildManualPage(this.id)
+        )
+        .then(BuildManualPageChangeHistories => {
+            this._buildManualPageChangeHistories = BuildManualPageChangeHistories ?? [];
+            this._buildManualPageChangeHistoriesSubject.next(this._buildManualPageChangeHistories);
+            return this._buildManualPageChangeHistories;
+         })
+        .catch(err => {
+            this._buildManualPageChangeHistories = [];
+            this._buildManualPageChangeHistoriesSubject.next(this._buildManualPageChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._buildManualPageChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BuildManualPageChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearBuildManualPageChangeHistoriesCache(): void {
+        this._buildManualPageChangeHistories = null;
+        this._buildManualPageChangeHistoriesPromise = null;
+        this._buildManualPageChangeHistoriesSubject.next(this._buildManualPageChangeHistories);      // Emit to observable
+    }
+
+    public get HasBuildManualPageChangeHistories(): Promise<boolean> {
+        return this.BuildManualPageChangeHistories.then(buildManualPageChangeHistories => buildManualPageChangeHistories.length > 0);
+    }
+
+
     /**
      *
      * Gets the BuildManualSteps for this BuildManualPage.
@@ -266,6 +411,49 @@ export class BuildManualPageData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (buildManualPage.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await buildManualPage.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<BuildManualPageData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<BuildManualPageData>> {
+        const info = await lastValueFrom(
+            BuildManualPageService.Instance.GetBuildManualPageChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this BuildManualPageData object using values from another object that has some or all of the fields needed.
      */
@@ -299,6 +487,7 @@ export class BuildManualPageService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private buildManualPageChangeHistoryService: BuildManualPageChangeHistoryService,
         private buildManualStepService: BuildManualStepService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -361,6 +550,10 @@ export class BuildManualPageService extends SecureEndpointBase {
         output.pageNum = data.pageNum;
         output.title = data.title;
         output.notes = data.notes;
+        output.backgroundTheme = data.backgroundTheme;
+        output.layoutPreset = data.layoutPreset;
+        output.backgroundColorHex = data.backgroundColorHex;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -588,6 +781,108 @@ export class BuildManualPageService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackBuildManualPage(id: bigint | number, versionNumber: bigint | number) : Observable<BuildManualPageData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<BuildManualPageData>(this.baseUrl + 'api/BuildManualPage/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveBuildManualPage(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackBuildManualPage(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a BuildManualPage.
+     */
+    public GetBuildManualPageChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<BuildManualPageData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildManualPageData>>(this.baseUrl + 'api/BuildManualPage/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualPageChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a BuildManualPage.
+     */
+    public GetBuildManualPageAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<BuildManualPageData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildManualPageData>[]>(this.baseUrl + 'api/BuildManualPage/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualPageAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a BuildManualPage.
+     */
+    public GetBuildManualPageVersion(id: bigint | number, version: number): Observable<BuildManualPageData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildManualPageData>(this.baseUrl + 'api/BuildManualPage/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildManualPage(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualPageVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a BuildManualPage at a specific point in time.
+     */
+    public GetBuildManualPageStateAtTime(id: bigint | number, time: string): Observable<BuildManualPageData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildManualPageData>(this.baseUrl + 'api/BuildManualPage/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildManualPage(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualPageStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: BuildManualPageQueryParameters | any): string {
 
@@ -659,6 +954,16 @@ export class BuildManualPageService extends SecureEndpointBase {
         return userIsBMCBuildManualPageWriter;
     }
 
+    public GetBuildManualPageChangeHistoriesForBuildManualPage(buildManualPageId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildManualPageChangeHistoryData[]> {
+        return this.buildManualPageChangeHistoryService.GetBuildManualPageChangeHistoryList({
+            buildManualPageId: buildManualPageId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetBuildManualStepsForBuildManualPage(buildManualPageId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildManualStepData[]> {
         return this.buildManualStepService.GetBuildManualStepList({
             buildManualPageId: buildManualPageId,
@@ -704,6 +1009,10 @@ export class BuildManualPageService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._buildManualPageChangeHistories = null;
+    (revived as any)._buildManualPageChangeHistoriesPromise = null;
+    (revived as any)._buildManualPageChangeHistoriesSubject = new BehaviorSubject<BuildManualPageChangeHistoryData[] | null>(null);
+
     (revived as any)._buildManualSteps = null;
     (revived as any)._buildManualStepsPromise = null;
     (revived as any)._buildManualStepsSubject = new BehaviorSubject<BuildManualStepData[] | null>(null);
@@ -720,6 +1029,18 @@ export class BuildManualPageService extends SecureEndpointBase {
     // 2. But private methods (loadBuildManualPageXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).BuildManualPageChangeHistories$ = (revived as any)._buildManualPageChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._buildManualPageChangeHistories === null && (revived as any)._buildManualPageChangeHistoriesPromise === null) {
+                (revived as any).loadBuildManualPageChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._buildManualPageChangeHistoriesCount$ = null;
+
+
     (revived as any).BuildManualSteps$ = (revived as any)._buildManualStepsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._buildManualSteps === null && (revived as any)._buildManualStepsPromise === null) {
@@ -731,6 +1052,23 @@ export class BuildManualPageService extends SecureEndpointBase {
 
     (revived as any)._buildManualStepsCount$ = null;
 
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildManualPageData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
     return revived;

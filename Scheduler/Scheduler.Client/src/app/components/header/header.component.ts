@@ -5,6 +5,7 @@ import { AlertService } from '../../services/alert.service';
 import { HttpClient } from '@angular/common/http';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 import { SchedulerHelperService } from '../../services/scheduler-helper.service';
+import { ThemeService, ThemeDefinition } from '../../services/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -36,7 +37,8 @@ export class HeaderComponent implements OnInit {
     @Inject('BASE_URL') private baseUrl: string,
     private http: HttpClient,
     private router: Router,
-    private schedulerHelperService: SchedulerHelperService) { }
+    private schedulerHelperService: SchedulerHelperService,
+    public themeService: ThemeService) { }
 
   ngOnInit(): void {
     this.LoadData();

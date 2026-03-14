@@ -16,6 +16,7 @@ using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.BMC.Database;
+using Foundation.ChangeHistory;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -32,6 +33,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 20;
+
+		static object buildStepAnnotationPutSyncRoot = new object();
+		static object buildStepAnnotationDeleteSyncRoot = new object();
 
 		private BMCContext _context;
 
@@ -70,6 +74,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? height = null,
 			string text = null,
 			int? placedBrickId = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -153,6 +158,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (placedBrickId.HasValue == true)
 			{
 				query = query.Where(bsa => bsa.placedBrickId == placedBrickId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bsa => bsa.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -246,6 +255,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? height = null,
 			string text = null,
 			int? placedBrickId = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -309,6 +319,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (placedBrickId.HasValue == true)
 			{
 				query = query.Where(bsa => bsa.placedBrickId == placedBrickId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bsa => bsa.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -545,47 +559,83 @@ namespace Foundation.BMC.Controllers.WebAPI
 				buildStepAnnotation.tenantGuid = existing.tenantGuid;
 			}
 
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (buildStepAnnotation.deleted == true || existing.deleted == true))
+			lock (buildStepAnnotationPutSyncRoot)
 			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildStepAnnotation record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
-			}
+				//
+				// Validate the version number for the buildStepAnnotation being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != buildStepAnnotation.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "BuildStepAnnotation save attempt was made but save request was with version " + buildStepAnnotation.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The BuildStepAnnotation you are trying to update has already changed.  Please try your save again after reloading the BuildStepAnnotation.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					buildStepAnnotation.versionNumber++;
+				}
 
-			EntityEntry<Database.BuildStepAnnotation> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(buildStepAnnotation);
 
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (buildStepAnnotation.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildStepAnnotation record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildStepAnnotation entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
-					null);
+				try
+				{
+				    EntityEntry<Database.BuildStepAnnotation> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(buildStepAnnotation);
 
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildStepAnnotationChangeHistory buildStepAnnotationChangeHistory = new BuildStepAnnotationChangeHistory();
+				        buildStepAnnotationChangeHistory.buildStepAnnotationId = buildStepAnnotation.id;
+				        buildStepAnnotationChangeHistory.versionNumber = buildStepAnnotation.versionNumber;
+				        buildStepAnnotationChangeHistory.timeStamp = DateTime.UtcNow;
+				        buildStepAnnotationChangeHistory.userId = securityUser.id;
+				        buildStepAnnotationChangeHistory.tenantGuid = userTenantGuid;
+				        buildStepAnnotationChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation));
+				        _context.BuildStepAnnotationChangeHistories.Add(buildStepAnnotationChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildStepAnnotation entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
+						null);
 
 				return Ok(Database.BuildStepAnnotation.CreateAnonymous(buildStepAnnotation));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildStepAnnotation entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
-					ex);
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildStepAnnotation entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
+						ex);
 
-				return Problem(ex.Message);
-			}
+					return Problem(ex.Message);
+				}
 
+			}
 		}
 
         /// <summary>
@@ -645,21 +695,58 @@ namespace Foundation.BMC.Controllers.WebAPI
 				buildStepAnnotation.tenantGuid = userTenantGuid;
 
 				buildStepAnnotation.objectGuid = Guid.NewGuid();
+				buildStepAnnotation.versionNumber = 1;
+
 				_context.BuildStepAnnotations.Add(buildStepAnnotation);
-				await _context.SaveChangesAsync(cancellationToken);
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"BMC.BuildStepAnnotation entity successfully created.",
-					true,
-					buildStepAnnotation.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
-					null);
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
 
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the buildStepAnnotation object so that no further changes will be written to the database
+				    //
+				    _context.Entry(buildStepAnnotation).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					buildStepAnnotation.BuildStepAnnotationChangeHistories = null;
+					buildStepAnnotation.buildManualStep = null;
+					buildStepAnnotation.buildStepAnnotationType = null;
+					buildStepAnnotation.placedBrick = null;
+
+
+				    BuildStepAnnotationChangeHistory buildStepAnnotationChangeHistory = new BuildStepAnnotationChangeHistory();
+				    buildStepAnnotationChangeHistory.buildStepAnnotationId = buildStepAnnotation.id;
+				    buildStepAnnotationChangeHistory.versionNumber = buildStepAnnotation.versionNumber;
+				    buildStepAnnotationChangeHistory.timeStamp = DateTime.UtcNow;
+				    buildStepAnnotationChangeHistory.userId = securityUser.id;
+				    buildStepAnnotationChangeHistory.tenantGuid = userTenantGuid;
+				    buildStepAnnotationChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation));
+				    _context.BuildStepAnnotationChangeHistories.Add(buildStepAnnotationChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"BMC.BuildStepAnnotation entity successfully created.",
+						true,
+						buildStepAnnotation. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
+						null);
+
+
+				}
 			}
 			catch (Exception ex)
 			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildStepAnnotation entity creation failed.", false, buildStepAnnotation.id.ToString(), "", JsonSerializer.Serialize(buildStepAnnotation), ex);
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildStepAnnotation entity creation failed.", false, buildStepAnnotation.id.ToString(), "", JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)), ex);
 
 				return Problem(ex.Message);
 			}
@@ -671,6 +758,443 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+
+        /// <summary>
+        /// 
+        /// This rolls a BuildStepAnnotation entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepAnnotation/Rollback/{id}")]
+		[Route("api/BuildStepAnnotation/Rollback")]
+		public async Task<IActionResult> RollbackToBuildStepAnnotationVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.BuildStepAnnotation> query = (from x in _context.BuildStepAnnotations
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this BuildStepAnnotation concurrently
+			//
+			lock (buildStepAnnotationPutSyncRoot)
+			{
+				
+				Database.BuildStepAnnotation buildStepAnnotation = query.FirstOrDefault();
+				
+				if (buildStepAnnotation == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for BMC.BuildStepAnnotation rollback", id.ToString(), new Exception("No BMC.BuildStepAnnotation entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the BuildStepAnnotation current state so we can log it.
+				//
+				Database.BuildStepAnnotation cloneOfExisting = (Database.BuildStepAnnotation)_context.Entry(buildStepAnnotation).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.BuildStepAnnotationChangeHistories = null;
+				cloneOfExisting.buildManualStep = null;
+				cloneOfExisting.buildStepAnnotationType = null;
+				cloneOfExisting.placedBrick = null;
+
+				if (versionNumber >= buildStepAnnotation.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for BMC.BuildStepAnnotation rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for BMC.BuildStepAnnotation rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				BuildStepAnnotationChangeHistory buildStepAnnotationChangeHistory = (from x in _context.BuildStepAnnotationChangeHistories
+				                                               where
+				                                               x.buildStepAnnotationId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (buildStepAnnotationChangeHistory != null)
+				{
+				    Database.BuildStepAnnotation oldBuildStepAnnotation = JsonSerializer.Deserialize<Database.BuildStepAnnotation>(buildStepAnnotationChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    buildStepAnnotation.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    buildStepAnnotation.buildManualStepId = oldBuildStepAnnotation.buildManualStepId;
+				    buildStepAnnotation.buildStepAnnotationTypeId = oldBuildStepAnnotation.buildStepAnnotationTypeId;
+				    buildStepAnnotation.positionX = oldBuildStepAnnotation.positionX;
+				    buildStepAnnotation.positionY = oldBuildStepAnnotation.positionY;
+				    buildStepAnnotation.width = oldBuildStepAnnotation.width;
+				    buildStepAnnotation.height = oldBuildStepAnnotation.height;
+				    buildStepAnnotation.text = oldBuildStepAnnotation.text;
+				    buildStepAnnotation.placedBrickId = oldBuildStepAnnotation.placedBrickId;
+				    buildStepAnnotation.objectGuid = oldBuildStepAnnotation.objectGuid;
+				    buildStepAnnotation.active = oldBuildStepAnnotation.active;
+				    buildStepAnnotation.deleted = oldBuildStepAnnotation.deleted;
+
+				    string serializedBuildStepAnnotation = JsonSerializer.Serialize(buildStepAnnotation);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildStepAnnotationChangeHistory newBuildStepAnnotationChangeHistory = new BuildStepAnnotationChangeHistory();
+				        newBuildStepAnnotationChangeHistory.buildStepAnnotationId = buildStepAnnotation.id;
+				        newBuildStepAnnotationChangeHistory.versionNumber = buildStepAnnotation.versionNumber;
+				        newBuildStepAnnotationChangeHistory.timeStamp = DateTime.UtcNow;
+				        newBuildStepAnnotationChangeHistory.userId = securityUser.id;
+				        newBuildStepAnnotationChangeHistory.tenantGuid = userTenantGuid;
+				        newBuildStepAnnotationChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation));
+				        _context.BuildStepAnnotationChangeHistories.Add(newBuildStepAnnotationChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildStepAnnotation rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
+						null);
+
+
+				    return Ok(Database.BuildStepAnnotation.CreateAnonymous(buildStepAnnotation));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for BMC.BuildStepAnnotation rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for BMC.BuildStepAnnotation rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the change metadata (version info, timestamp, user) for a specific version of a BuildStepAnnotation.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepAnnotation</param>
+        /// <param name="versionNumber">The version number to retrieve metadata for</param>
+        /// <returns>VersionInformation containing timestamp and user details</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepAnnotation/{id}/ChangeMetadata")]
+		public async Task<IActionResult> GetBuildStepAnnotationChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepAnnotation buildStepAnnotation = await _context.BuildStepAnnotations.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepAnnotation == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepAnnotation.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildStepAnnotation> versionInfo = await buildStepAnnotation.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null)
+				{
+					return NotFound($"Version {versionNumber} not found.");
+				}
+
+				return Ok(versionInfo);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the full audit history for a BuildStepAnnotation.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepAnnotation</param>
+        /// <param name="includeData">Whether to include the full entity data for each version (can be large)</param>
+        /// <returns>List of VersionInformation items</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepAnnotation/{id}/AuditHistory")]
+		public async Task<IActionResult> GetBuildStepAnnotationAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepAnnotation buildStepAnnotation = await _context.BuildStepAnnotations.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepAnnotation == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepAnnotation.SetupVersionInquiry(_context, userTenantGuid);
+
+				List<VersionInformation<Database.BuildStepAnnotation>> versions = await buildStepAnnotation.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
+
+				return Ok(versions);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets a specific version of a BuildStepAnnotation.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepAnnotation</param>
+        /// <param name="version">The version number to retrieve</param>
+        /// <returns>The BuildStepAnnotation object at that version</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepAnnotation/{id}/Version/{version}")]
+		public async Task<IActionResult> GetBuildStepAnnotationVersion(int id, int version, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepAnnotation buildStepAnnotation = await _context.BuildStepAnnotations.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepAnnotation == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepAnnotation.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildStepAnnotation> versionInfo = await buildStepAnnotation.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound();
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the state of a BuildStepAnnotation at a specific point in time.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepAnnotation</param>
+        /// <param name="time">The point in time (ISO format, UTC)</param>
+        /// <returns>The BuildStepAnnotation object at that time</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepAnnotation/{id}/StateAtTime")]
+		public async Task<IActionResult> GetBuildStepAnnotationStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepAnnotation buildStepAnnotation = await _context.BuildStepAnnotations.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepAnnotation == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepAnnotation.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildStepAnnotation> versionInfo = await buildStepAnnotation.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound("No state found at specified time.");
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
 
         /// <summary>
         /// 
@@ -729,33 +1253,52 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Database.BuildStepAnnotation cloneOfExisting = (Database.BuildStepAnnotation)_context.Entry(buildStepAnnotation).GetDatabaseValues().ToObject();
 
 
-			try
+			lock (buildStepAnnotationDeleteSyncRoot)
 			{
-				buildStepAnnotation.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
+			    try
+			    {
+			        buildStepAnnotation.deleted = true;
+			        buildStepAnnotation.versionNumber++;
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildStepAnnotation entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
-					null);
+			        _context.SaveChanges();
 
+			        //
+			        // Now add the change history
+			        //
+			        BuildStepAnnotationChangeHistory buildStepAnnotationChangeHistory = new BuildStepAnnotationChangeHistory();
+			        buildStepAnnotationChangeHistory.buildStepAnnotationId = buildStepAnnotation.id;
+			        buildStepAnnotationChangeHistory.versionNumber = buildStepAnnotation.versionNumber;
+			        buildStepAnnotationChangeHistory.timeStamp = DateTime.UtcNow;
+			        buildStepAnnotationChangeHistory.userId = securityUser.id;
+			        buildStepAnnotationChangeHistory.tenantGuid = userTenantGuid;
+			        buildStepAnnotationChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation));
+			        _context.BuildStepAnnotationChangeHistories.Add(buildStepAnnotationChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildStepAnnotation entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildStepAnnotation entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
 			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildStepAnnotation entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepAnnotation.CreateAnonymousWithFirstLevelSubObjects(buildStepAnnotation)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
 		}
 
 
@@ -780,6 +1323,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? height = null,
 			string text = null,
 			int? placedBrickId = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -862,6 +1406,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (placedBrickId.HasValue == true)
 			{
 				query = query.Where(bsa => bsa.placedBrickId == placedBrickId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bsa => bsa.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{

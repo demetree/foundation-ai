@@ -429,6 +429,7 @@ All operational tables include multi-tenant support, versioning where appropriat
             // -------------------------------------------------
             Database.Table projectTable = database.AddTable("Project");
             projectTable.comment = "A user's building project. Contains placed bricks and their connections to form a model.";
+            projectTable.webAPIPostToBeOverridden = true;
             projectTable.SetMinimumPermissionLevels(BMC_READER_PERMISSION_LEVEL, BMC_BUILDER_WRITER_PERMISSION_LEVEL);
             projectTable.AddIdField();
             projectTable.AddMultiTenantSupport();
@@ -1301,6 +1302,10 @@ All operational tables include multi-tenant support, versioning where appropriat
             buildManualPageTable.AddString250Field("title").AddScriptComments("Optional page title (e.g. 'Bag 1', 'Chassis Assembly')");
             buildManualPageTable.AddTextField("notes").AddScriptComments("Optional internal notes about this page");
 
+            buildManualPageTable.AddString50Field("backgroundTheme", true).AddScriptComments("Background theme for the page (e.g. Blueprint, Clean White, Dark Mode)");
+            buildManualPageTable.AddString50Field("layoutPreset", true).AddScriptComments("Layout preset (e.g. SingleStep, Grid, TwoColumn)");
+            buildManualPageTable.AddHTMLColorField("backgroundColorHex", true).AddScriptComments("Custom background colour hex from LPub3D PAGE BACKGROUND COLOR (e.g. #FFFFFF)");
+            buildManualPageTable.AddVersionControl();
             buildManualPageTable.AddControlFields();
 
 
@@ -1330,6 +1335,13 @@ All operational tables include multi-tenant support, versioning where appropriat
             buildManualStepTable.AddBoolField("showExplodedView", false, false).AddScriptComments("Whether to render the step with newly-added parts pulled apart for clarity");
             buildManualStepTable.AddSingleField("explodedDistance", true).AddScriptComments("Distance in LDU to pull apart exploded parts (null = use default)");
 
+            buildManualStepTable.AddTextField("renderImagePath", true).AddScriptComments("Base64 data URI of the generated render image for this step");
+            buildManualStepTable.AddTextField("pliImagePath", true).AddScriptComments("Base64 data URI of the generated Parts List Indicator (PLI) image for this step");
+            buildManualStepTable.AddBoolField("fadeStepEnabled", false, true).AddScriptComments("When true, previous step parts are rendered faded (ghosted)");
+            buildManualStepTable.AddBoolField("isCallout", false, false).AddScriptComments("Whether this step is a callout (submodel assembly shown in-line)");
+            buildManualStepTable.AddString250Field("calloutModelName", true).AddScriptComments("Name of the submodel this callout refers to (from LPub3D CALLOUT meta)");
+            buildManualStepTable.AddBoolField("showPartsListImage", false, true).AddScriptComments("Whether to show the Parts List Indicator (PLI) image for this step");
+            buildManualStepTable.AddVersionControl();
             buildManualStepTable.AddControlFields();
 
 
@@ -1345,7 +1357,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             buildStepPartTable.AddForeignKeyField(buildManualStepTable, false).AddScriptComments("The build step this part is added during");
             buildStepPartTable.AddForeignKeyField(placedBrickTable, false).AddScriptComments("The placed brick in the project that is added in this step");
-
+            buildStepPartTable.AddVersionControl();
             buildStepPartTable.AddControlFields();
 
 
@@ -1390,7 +1402,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             buildStepAnnotationTable.AddTextField("text").AddScriptComments("Optional text content for labels and callouts");
             buildStepAnnotationTable.AddForeignKeyField(placedBrickTable, true).AddScriptComments("Optional target placed brick that this annotation points to or highlights");
-
+            buildStepAnnotationTable.AddVersionControl();
             buildStepAnnotationTable.AddControlFields();
 
             #endregion

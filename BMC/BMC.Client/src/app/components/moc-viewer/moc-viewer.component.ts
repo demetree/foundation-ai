@@ -23,10 +23,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { ProjectService, ProjectViewerSummary } from '../../services/project.service';
 import { AuthService } from '../../services/auth.service';
 import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
-import { ManualGeneratorSignalrService, StepProgressEvent, GenerationCompleteEvent, ManualOptionsDto } from '../../services/manual-generator-signalr.service';
-import { ManualEditorService } from '../../services/manual-editor.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { DomSanitizer, SafeUrl, SafeHtml } from '@angular/platform-browser';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 
 @Component({
@@ -167,37 +165,6 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         { label: 'Studio', icon: 'bi-lightbulb', top: '#e8e8e8', bottom: '#f5f5f5', bg: '' },
     ];
 
-    // ────────────────────────────────────────────────────────────────
-    //  Build Manual Tab — State
-    // ────────────────────────────────────────────────────────────────
-    isAnalysing = false;
-    analysis: any = null;
-    manualOptions: ManualOptionsDto = {
-        pageSize: 'a4',
-        imageSize: 800,
-        elevation: 30,
-        azimuth: -45,
-        renderEdges: true,
-        smoothShading: true,
-        outputFormat: 'html',
-        renderer: 'rasterizer',
-        enablePbr: true,
-        exposure: 1.0,
-        aperture: 0
-    };
-    isGenerating = false;
-    generationProgress = 0;
-    generationTotal = 0;
-    currentPreview: string | null = null;
-    generationError: string | null = null;
-    isReconnecting = false;
-    generatedHtml: string | null = null;
-    pdfDownloadUrl: string | null = null;
-    htmlDownloadUrl: string | null = null;
-    resultStats: { totalSteps: number; totalParts: number; renderTimeMs: number } | null = null;
-    manualCurrentPage = 0;
-    manualPages: SafeHtml[] = [];
-    private manualSubs: Subscription[] = [];
 
     private baseUrl: string;
     private destroy$ = new Subject<void>();
@@ -209,10 +176,8 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         private location: Location,
         private http: HttpClient,
         private projectService: ProjectService,
-        public authService: AuthService,
+        private authService: AuthService,
         private fileCacheService: LDrawFileCacheService,
-        private signalr: ManualGeneratorSignalrService,
-        private manualEditorService: ManualEditorService,
         private sanitizer: DomSanitizer,
         @Inject('BASE_URL') baseUrl: string
     ) {
@@ -240,8 +205,6 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         this.stopAnimation();
         this.cleanupThreeJs();
         this.revokeRenderBlob();
-        this.manualSubs.forEach(s => s.unsubscribe());
-        this.signalr.disconnect();
         this.destroy$.next();
         this.destroy$.complete();
     }
@@ -252,28 +215,10 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
 
-    /** Create a new BuildManual for this project and navigate to the editor */
+    /** Switch to the embedded manual editor tab */
     createManual(): void {
         if (this.projectId == null) return;
-
-        this.manualEditorService.createManual({
-            projectId: this.projectId,
-            name: `${this.summary?.name || 'Untitled'} — Instructions`,
-            description: `Build instructions for ${this.summary?.name || 'project'}`,
-            pageWidthMm: 210,
-            pageHeightMm: 297,
-            isPublished: false,
-            active: true,
-            deleted: false
-        }).subscribe({
-            next: (manual) => {
-                this.router.navigate(['/manual-editor', manual.id]);
-            },
-            error: (err) => {
-                console.error('[MocViewer] Failed to create manual:', err);
-                this.generationError = 'Failed to create manual. Please try again.';
-            }
-        });
+        this.activeViewerTab = 'manual';
     }
 
 
@@ -1500,237 +1445,4 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         }
     }
 
-
-    // ────────────────────────────────────────────────────────────────
-    //  Build Manual Tab — Methods
-    //
-    //  AI-developed — March 2026
-    // ────────────────────────────────────────────────────────────────
-
-    initManualTab(): void {
-        if (this.manualSubs.length > 0) return; // already initialised
-
-        this.manualSubs.push(
-            this.signalr.onStepProgress$.subscribe((e: StepProgressEvent) => {
-                this.generationProgress = e.step;
-                this.generationTotal = e.total;
-                this.currentPreview = 'data:image/png;base64,' + e.previewBase64;
-            }),
-            this.signalr.onComplete$.subscribe((e: GenerationCompleteEvent) => {
-                this.isGenerating = false;
-                this.generationError = null;
-                this.resultStats = {
-                    totalSteps: e.totalSteps,
-                    totalParts: e.totalParts,
-                    renderTimeMs: e.renderTimeMs
-                };
-                if (e.format === 'pdf') {
-                    this.pdfDownloadUrl = e.downloadUrl ?? null;
-                } else if (e.downloadUrl) {
-                    this.htmlDownloadUrl = e.downloadUrl;
-                    fetch(e.downloadUrl, {
-                        headers: { Authorization: 'Bearer ' + this.authService.accessToken }
-                    })
-                        .then(r => r.ok ? r.text() : Promise.reject(r.statusText))
-                        .then(html => {
-                            this.generatedHtml = html;
-                            this.splitManualPages(html);
-                        })
-                        .catch(() => { this.generationError = 'Failed to download HTML manual.'; });
-                } else {
-                    this.generatedHtml = e.html;
-                    this.splitManualPages(e.html!);
-                }
-                this.signalr.disconnect();
-            }),
-            this.signalr.onError$.subscribe((msg: string) => {
-                if (this.resultStats != null) return;
-                this.isGenerating = false;
-                this.generationError = msg;
-                this.signalr.disconnect();
-            }),
-            this.signalr.onConnectionChange$.subscribe((connected: boolean) => {
-                if (this.isGenerating) {
-                    this.isReconnecting = !connected;
-                }
-            })
-        );
-    }
-
-
-    analyseProject(): void {
-        if (this.projectId == null || this.isAnalysing) return;
-
-        this.isAnalysing = true;
-        this.analysis = null;
-
-        const headers = this.authService.GetAuthenticationHeaders();
-        this.http.post<any>(`/api/manual-generator/analyse-project/${this.projectId}`, null, { headers })
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (res) => {
-                    this.analysis = res;
-                    this.isAnalysing = false;
-                },
-                error: (err) => {
-                    this.generationError = err.error || 'Analysis failed.';
-                    this.isAnalysing = false;
-                }
-            });
-    }
-
-
-    async generateManual(): Promise<void> {
-        if (this.projectId == null) return;
-
-        this.initManualTab();
-        this.isGenerating = true;
-        this.generationProgress = 0;
-        this.generationTotal = 0;
-        this.currentPreview = null;
-        this.generationError = null;
-        this.generatedHtml = null;
-        this.pdfDownloadUrl = null;
-        this.htmlDownloadUrl = null;
-        this.resultStats = null;
-        this.manualPages = [];
-
-        const headers = new HttpHeaders({
-            'Authorization': `Bearer ${this.authService.accessToken}`
-        });
-
-        try {
-            const response = await firstValueFrom(
-                this.http.post<{ generationId: string }>(
-                    `/api/manual-generator/generate-project/${this.projectId}`, null, { headers }
-                )
-            );
-
-            if (response?.generationId == null) {
-                this.generationError = 'Server did not return a generation ID.';
-                this.isGenerating = false;
-                return;
-            }
-
-            await this.signalr.connect();
-            await this.signalr.generateManual(response.generationId, this.manualOptions);
-
-        } catch (err: any) {
-            if (this.resultStats == null) {
-                this.generationError = err?.error || 'Failed to start generation.';
-                this.isGenerating = false;
-            }
-        }
-    }
-
-
-    cancelGeneration(): void {
-        this.isGenerating = false;
-        this.isReconnecting = false;
-        this.generationError = 'Generation cancelled.';
-        this.signalr.disconnect();
-    }
-
-
-    get progressPercent(): number {
-        if (this.generationTotal === 0) return 0;
-        return Math.round((this.generationProgress / this.generationTotal) * 100);
-    }
-
-
-    private splitManualPages(html: string): void {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const pageElements = doc.querySelectorAll('.page');
-        this.manualPages = [];
-        pageElements.forEach(page => {
-            this.manualPages.push(this.sanitizer.bypassSecurityTrustHtml(page.outerHTML));
-        });
-        this.manualCurrentPage = 0;
-    }
-
-    manualPrevPage(): void {
-        if (this.manualCurrentPage > 0) this.manualCurrentPage--;
-    }
-
-    manualNextPage(): void {
-        if (this.manualCurrentPage < this.manualPages.length - 1) this.manualCurrentPage++;
-    }
-
-    @HostListener('document:keydown', ['$event'])
-    onKeyDown(event: KeyboardEvent): void {
-        if (this.activeViewerTab !== 'manual' || this.manualPages.length === 0) return;
-        if (event.key === 'ArrowLeft') this.manualPrevPage();
-        if (event.key === 'ArrowRight') this.manualNextPage();
-    }
-
-
-    downloadManualHtml(): void {
-        const downloadName = (this.summary?.name ?? 'manual') + '_build-manual.html';
-        if (this.generatedHtml) {
-            const blob = new Blob([this.generatedHtml], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = downloadName;
-            a.click();
-            URL.revokeObjectURL(url);
-            return;
-        }
-        if (this.htmlDownloadUrl) {
-            fetch(this.htmlDownloadUrl, {
-                headers: { Authorization: 'Bearer ' + this.authService.accessToken }
-            })
-                .then(r => r.ok ? r.blob() : Promise.reject(r.statusText))
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = downloadName;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                });
-        }
-    }
-
-
-    downloadManualPdf(): void {
-        if (!this.pdfDownloadUrl) return;
-        const downloadName = (this.summary?.name ?? 'manual') + '_build-manual.pdf';
-        fetch(this.pdfDownloadUrl, {
-            headers: { Authorization: 'Bearer ' + this.authService.accessToken }
-        })
-            .then(r => r.ok ? r.blob() : Promise.reject(r.statusText))
-            .then(blob => {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = downloadName;
-                a.click();
-                URL.revokeObjectURL(url);
-            });
-    }
-
-
-    printManual(): void {
-        if (!this.generatedHtml) return;
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(this.generatedHtml);
-            printWindow.document.close();
-            printWindow.onload = () => { printWindow.print(); };
-        }
-    }
-
-
-    resetManual(): void {
-        this.analysis = null;
-        this.generatedHtml = null;
-        this.pdfDownloadUrl = null;
-        this.htmlDownloadUrl = null;
-        this.resultStats = null;
-        this.manualPages = [];
-        this.currentPreview = null;
-        this.generationError = null;
-    }
 }

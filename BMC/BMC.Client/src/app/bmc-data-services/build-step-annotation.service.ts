@@ -19,6 +19,7 @@ import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { BuildManualStepData } from './build-manual-step.service';
 import { BuildStepAnnotationTypeData } from './build-step-annotation-type.service';
 import { PlacedBrickData } from './placed-brick.service';
+import { BuildStepAnnotationChangeHistoryService, BuildStepAnnotationChangeHistoryData } from './build-step-annotation-change-history.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -38,6 +39,7 @@ export class BuildStepAnnotationQueryParameters {
     height: number | null | undefined = null;
     text: string | null | undefined = null;
     placedBrickId: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -61,10 +63,31 @@ export class BuildStepAnnotationSubmitData {
     height: number | null = null;
     text: string | null = null;
     placedBrickId: bigint | number | null = null;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class BuildStepAnnotationBasicListData {
   id!: bigint | number;
@@ -118,6 +141,7 @@ export class BuildStepAnnotationData {
     height!: number | null;
     text!: string | null;
     placedBrickId!: bigint | number;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -128,6 +152,20 @@ export class BuildStepAnnotationData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _buildStepAnnotationChangeHistories: BuildStepAnnotationChangeHistoryData[] | null = null;
+    private _buildStepAnnotationChangeHistoriesPromise: Promise<BuildStepAnnotationChangeHistoryData[]> | null  = null;
+    private _buildStepAnnotationChangeHistoriesSubject = new BehaviorSubject<BuildStepAnnotationChangeHistoryData[] | null>(null);
+
+                
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<BuildStepAnnotationData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<BuildStepAnnotationData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildStepAnnotationData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -135,6 +173,31 @@ export class BuildStepAnnotationData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public BuildStepAnnotationChangeHistories$ = this._buildStepAnnotationChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._buildStepAnnotationChangeHistories === null && this._buildStepAnnotationChangeHistoriesPromise === null) {
+            this.loadBuildStepAnnotationChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _buildStepAnnotationChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get BuildStepAnnotationChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._buildStepAnnotationChangeHistoriesCount$ === null) {
+            this._buildStepAnnotationChangeHistoriesCount$ = BuildStepAnnotationChangeHistoryService.Instance.GetBuildStepAnnotationChangeHistoriesRowCount({buildStepAnnotationId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildStepAnnotationChangeHistoriesCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -173,12 +236,128 @@ export class BuildStepAnnotationData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._buildStepAnnotationChangeHistories = null;
+     this._buildStepAnnotationChangeHistoriesPromise = null;
+     this._buildStepAnnotationChangeHistoriesSubject.next(null);
+     this._buildStepAnnotationChangeHistoriesCount$ = null;
+
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the BuildStepAnnotationChangeHistories for this BuildStepAnnotation.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.buildStepAnnotation.BuildStepAnnotationChangeHistories.then(buildStepAnnotations => { ... })
+     *   or
+     *   await this.buildStepAnnotation.buildStepAnnotations
+     *
+    */
+    public get BuildStepAnnotationChangeHistories(): Promise<BuildStepAnnotationChangeHistoryData[]> {
+        if (this._buildStepAnnotationChangeHistories !== null) {
+            return Promise.resolve(this._buildStepAnnotationChangeHistories);
+        }
+
+        if (this._buildStepAnnotationChangeHistoriesPromise !== null) {
+            return this._buildStepAnnotationChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadBuildStepAnnotationChangeHistories();
+
+        return this._buildStepAnnotationChangeHistoriesPromise!;
+    }
+
+
+
+    private loadBuildStepAnnotationChangeHistories(): void {
+
+        this._buildStepAnnotationChangeHistoriesPromise = lastValueFrom(
+            BuildStepAnnotationService.Instance.GetBuildStepAnnotationChangeHistoriesForBuildStepAnnotation(this.id)
+        )
+        .then(BuildStepAnnotationChangeHistories => {
+            this._buildStepAnnotationChangeHistories = BuildStepAnnotationChangeHistories ?? [];
+            this._buildStepAnnotationChangeHistoriesSubject.next(this._buildStepAnnotationChangeHistories);
+            return this._buildStepAnnotationChangeHistories;
+         })
+        .catch(err => {
+            this._buildStepAnnotationChangeHistories = [];
+            this._buildStepAnnotationChangeHistoriesSubject.next(this._buildStepAnnotationChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._buildStepAnnotationChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BuildStepAnnotationChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearBuildStepAnnotationChangeHistoriesCache(): void {
+        this._buildStepAnnotationChangeHistories = null;
+        this._buildStepAnnotationChangeHistoriesPromise = null;
+        this._buildStepAnnotationChangeHistoriesSubject.next(this._buildStepAnnotationChangeHistories);      // Emit to observable
+    }
+
+    public get HasBuildStepAnnotationChangeHistories(): Promise<boolean> {
+        return this.BuildStepAnnotationChangeHistories.then(buildStepAnnotationChangeHistories => buildStepAnnotationChangeHistories.length > 0);
+    }
+
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (buildStepAnnotation.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await buildStepAnnotation.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<BuildStepAnnotationData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<BuildStepAnnotationData>> {
+        const info = await lastValueFrom(
+            BuildStepAnnotationService.Instance.GetBuildStepAnnotationChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
 
 
     /**
@@ -214,6 +393,7 @@ export class BuildStepAnnotationService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private buildStepAnnotationChangeHistoryService: BuildStepAnnotationChangeHistoryService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -279,6 +459,7 @@ export class BuildStepAnnotationService extends SecureEndpointBase {
         output.height = data.height;
         output.text = data.text;
         output.placedBrickId = data.placedBrickId;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -506,6 +687,108 @@ export class BuildStepAnnotationService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackBuildStepAnnotation(id: bigint | number, versionNumber: bigint | number) : Observable<BuildStepAnnotationData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<BuildStepAnnotationData>(this.baseUrl + 'api/BuildStepAnnotation/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveBuildStepAnnotation(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackBuildStepAnnotation(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a BuildStepAnnotation.
+     */
+    public GetBuildStepAnnotationChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<BuildStepAnnotationData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildStepAnnotationData>>(this.baseUrl + 'api/BuildStepAnnotation/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepAnnotationChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a BuildStepAnnotation.
+     */
+    public GetBuildStepAnnotationAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<BuildStepAnnotationData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildStepAnnotationData>[]>(this.baseUrl + 'api/BuildStepAnnotation/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepAnnotationAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a BuildStepAnnotation.
+     */
+    public GetBuildStepAnnotationVersion(id: bigint | number, version: number): Observable<BuildStepAnnotationData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildStepAnnotationData>(this.baseUrl + 'api/BuildStepAnnotation/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildStepAnnotation(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepAnnotationVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a BuildStepAnnotation at a specific point in time.
+     */
+    public GetBuildStepAnnotationStateAtTime(id: bigint | number, time: string): Observable<BuildStepAnnotationData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildStepAnnotationData>(this.baseUrl + 'api/BuildStepAnnotation/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildStepAnnotation(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepAnnotationStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: BuildStepAnnotationQueryParameters | any): string {
 
@@ -577,6 +860,16 @@ export class BuildStepAnnotationService extends SecureEndpointBase {
         return userIsBMCBuildStepAnnotationWriter;
     }
 
+    public GetBuildStepAnnotationChangeHistoriesForBuildStepAnnotation(buildStepAnnotationId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildStepAnnotationChangeHistoryData[]> {
+        return this.buildStepAnnotationChangeHistoryService.GetBuildStepAnnotationChangeHistoryList({
+            buildStepAnnotationId: buildStepAnnotationId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full BuildStepAnnotationData instance.
@@ -612,6 +905,10 @@ export class BuildStepAnnotationService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._buildStepAnnotationChangeHistories = null;
+    (revived as any)._buildStepAnnotationChangeHistoriesPromise = null;
+    (revived as any)._buildStepAnnotationChangeHistoriesSubject = new BehaviorSubject<BuildStepAnnotationChangeHistoryData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -624,6 +921,35 @@ export class BuildStepAnnotationService extends SecureEndpointBase {
     // 2. But private methods (loadBuildStepAnnotationXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).BuildStepAnnotationChangeHistories$ = (revived as any)._buildStepAnnotationChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._buildStepAnnotationChangeHistories === null && (revived as any)._buildStepAnnotationChangeHistoriesPromise === null) {
+                (revived as any).loadBuildStepAnnotationChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._buildStepAnnotationChangeHistoriesCount$ = null;
+
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildStepAnnotationData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
 
     return revived;
   }

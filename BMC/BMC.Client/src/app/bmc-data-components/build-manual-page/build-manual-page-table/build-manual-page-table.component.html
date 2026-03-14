@@ -43,6 +43,18 @@
                 Notes
                 <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('backgroundTheme')">
+                Background  Theme
+                <span *ngIf="sortColumn === 'backgroundTheme'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('layoutPreset')">
+                Layout  Preset
+                <span *ngIf="sortColumn === 'layoutPreset'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('backgroundColorHex')">
+                Background  Color  Hex
+                <span *ngIf="sortColumn === 'backgroundColorHex'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -132,6 +144,9 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/buildmanualpage', buildManualPage.id]" class="btn btn-link text-left" ngbTooltip="Open Build Manual Page details">{{buildManualPage.pageNum | bigNumberFormat : '1.0-2'}}</a></td>
             <td class="text-truncate">{{buildManualPage.title}}</td>
             <td class="text-truncate">{{buildManualPage.notes}}</td>
+            <td class="text-truncate">{{buildManualPage.backgroundTheme}}</td>
+            <td class="text-truncate">{{buildManualPage.layoutPreset}}</td>
+            <td class="text-truncate">{{buildManualPage.backgroundColorHex}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -294,6 +309,18 @@ End of commented block for alternate definition option -->
             <p class="build-manual-page-info" *ngIf="buildManualPage.notes != null">
               <strong>Notes: </strong>
               {{buildManualPage.notes}}
+            </p>
+            <p class="build-manual-page-info" *ngIf="buildManualPage.backgroundTheme != null">
+              <strong>Background Theme: </strong>
+              {{buildManualPage.backgroundTheme}}
+            </p>
+            <p class="build-manual-page-info" *ngIf="buildManualPage.layoutPreset != null">
+              <strong>Layout Preset: </strong>
+              {{buildManualPage.layoutPreset}}
+            </p>
+            <p class="build-manual-page-info" *ngIf="buildManualPage.backgroundColorHex != null">
+              <strong>Background Color Hex: </strong>
+              {{buildManualPage.backgroundColorHex}}
             </p>
             </div>
          </div>

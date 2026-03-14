@@ -376,6 +376,106 @@ namespace Foundation.BMC.Services
             await _context.SaveChangesAsync(cancellationToken);
 
             //
+            // Clone Build Manuals
+            //
+            List<BuildManual> sourceManuals = await _context.BuildManuals
+                .Where(bm => bm.projectId == sourceProject.id
+                          && bm.tenantGuid == sourceMoc.tenantGuid
+                          && bm.active == true
+                          && bm.deleted == false)
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
+
+            foreach (BuildManual manual in sourceManuals)
+            {
+                BuildManual clonedManual = new BuildManual
+                {
+                    projectId = newProject.id,
+                    tenantGuid = targetTenantGuid,
+                    name = manual.name,
+                    description = manual.description,
+                    pageWidthMm = manual.pageWidthMm,
+                    pageHeightMm = manual.pageHeightMm,
+                    isPublished = manual.isPublished,
+                    objectGuid = Guid.NewGuid(),
+                    versionNumber = 1,
+                    active = true,
+                    deleted = false
+                };
+
+                _context.BuildManuals.Add(clonedManual);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                // Clone Pages for this manual
+                List<BuildManualPage> sourcePages = await _context.BuildManualPages
+                    .Where(bmp => bmp.buildManualId == manual.id
+                               && bmp.tenantGuid == sourceMoc.tenantGuid
+                               && bmp.active == true
+                               && bmp.deleted == false)
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+
+                foreach (BuildManualPage page in sourcePages)
+                {
+                    BuildManualPage clonedPage = new BuildManualPage
+                    {
+                        buildManualId = clonedManual.id,
+                        tenantGuid = targetTenantGuid,
+                        pageNum = page.pageNum,
+                        title = page.title,
+                        notes = page.notes,
+                        backgroundTheme = page.backgroundTheme,
+                        layoutPreset = page.layoutPreset,
+                        objectGuid = Guid.NewGuid(),
+                        versionNumber = 1,
+                        active = true,
+                        deleted = false
+                    };
+
+                    _context.BuildManualPages.Add(clonedPage);
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    // Clone Steps for this page
+                    List<BuildManualStep> sourceSteps = await _context.BuildManualSteps
+                        .Where(bms => bms.buildManualPageId == page.id
+                                   && bms.tenantGuid == sourceMoc.tenantGuid
+                                   && bms.active == true
+                                   && bms.deleted == false)
+                        .AsNoTracking()
+                        .ToListAsync(cancellationToken);
+
+                    foreach (BuildManualStep step in sourceSteps)
+                    {
+                        BuildManualStep clonedStep = new BuildManualStep
+                        {
+                            buildManualPageId = clonedPage.id,
+                            tenantGuid = targetTenantGuid,
+                            stepNumber = step.stepNumber,
+                            cameraPositionX = step.cameraPositionX,
+                            cameraPositionY = step.cameraPositionY,
+                            cameraPositionZ = step.cameraPositionZ,
+                            cameraTargetX = step.cameraTargetX,
+                            cameraTargetY = step.cameraTargetY,
+                            cameraTargetZ = step.cameraTargetZ,
+                            cameraZoom = step.cameraZoom,
+                            showExplodedView = step.showExplodedView,
+                            explodedDistance = step.explodedDistance,
+                            renderImagePath = step.renderImagePath,
+                            pliImagePath = step.pliImagePath,
+                            fadeStepEnabled = step.fadeStepEnabled,
+                            objectGuid = Guid.NewGuid(),
+                            versionNumber = 1,
+                            active = true,
+                            deleted = false
+                        };
+
+                        _context.BuildManualSteps.Add(clonedStep);
+                    }
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
+
+            //
             // Create the new PublishedMoc (the fork)
             //
             string slug = GenerateSlug(sourceMoc.name);

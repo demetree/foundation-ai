@@ -39,6 +39,10 @@ interface BuildManualPageFormValues {
   pageNum: string | null,     // Stored as string for form input, converted to number on submit.
   title: string | null,
   notes: string | null,
+  backgroundTheme: string | null,
+  layoutPreset: string | null,
+  backgroundColorHex: string | null,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -75,6 +79,10 @@ export class BuildManualPageAddEditComponent {
         pageNum: [''],
         title: [''],
         notes: [''],
+        backgroundTheme: [''],
+        layoutPreset: [''],
+        backgroundColorHex: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -216,6 +224,10 @@ export class BuildManualPageAddEditComponent {
         pageNum: formValue.pageNum ? Number(formValue.pageNum) : null,
         title: formValue.title?.trim() || null,
         notes: formValue.notes?.trim() || null,
+        backgroundTheme: formValue.backgroundTheme?.trim() || null,
+        layoutPreset: formValue.layoutPreset?.trim() || null,
+        backgroundColorHex: formValue.backgroundColorHex?.trim() || null,
+        versionNumber: this.buildManualPageSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -229,6 +241,7 @@ export class BuildManualPageAddEditComponent {
 
   private addBuildManualPage(buildManualPageData: BuildManualPageSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    buildManualPageData.versionNumber = 0;
     buildManualPageData.active = true;
     buildManualPageData.deleted = false;
     this.buildManualPageService.PostBuildManualPage(buildManualPageData).pipe(
@@ -347,6 +360,10 @@ export class BuildManualPageAddEditComponent {
         pageNum: '',
         title: '',
         notes: '',
+        backgroundTheme: '',
+        layoutPreset: '',
+        backgroundColorHex: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -362,6 +379,10 @@ export class BuildManualPageAddEditComponent {
         pageNum: buildManualPageData.pageNum?.toString() ?? '',
         title: buildManualPageData.title ?? '',
         notes: buildManualPageData.notes ?? '',
+        backgroundTheme: buildManualPageData.backgroundTheme ?? '',
+        layoutPreset: buildManualPageData.layoutPreset ?? '',
+        backgroundColorHex: buildManualPageData.backgroundColorHex ?? '',
+        versionNumber: buildManualPageData.versionNumber?.toString() ?? '',
         active: buildManualPageData.active ?? true,
         deleted: buildManualPageData.deleted ?? false,
       }, { emitEvent: false});

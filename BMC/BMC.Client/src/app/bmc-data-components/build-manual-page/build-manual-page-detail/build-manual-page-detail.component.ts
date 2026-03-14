@@ -24,6 +24,7 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BuildManualPageService, BuildManualPageData, BuildManualPageSubmitData } from '../../../bmc-data-services/build-manual-page.service';
 import { BuildManualService } from '../../../bmc-data-services/build-manual.service';
+import { BuildManualPageChangeHistoryService } from '../../../bmc-data-services/build-manual-page-change-history.service';
 import { BuildManualStepService } from '../../../bmc-data-services/build-manual-step.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -40,6 +41,10 @@ interface BuildManualPageFormValues {
   pageNum: string | null,     // Stored as string for form input, converted to number on submit.
   title: string | null,
   notes: string | null,
+  backgroundTheme: string | null,
+  layoutPreset: string | null,
+  backgroundColorHex: string | null,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -73,6 +78,10 @@ export class BuildManualPageDetailComponent implements OnInit, CanComponentDeact
         pageNum: [''],
         title: [''],
         notes: [''],
+        backgroundTheme: [''],
+        layoutPreset: [''],
+        backgroundColorHex: [''],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -90,6 +99,7 @@ export class BuildManualPageDetailComponent implements OnInit, CanComponentDeact
 
   buildManualPages$ = this.buildManualPageService.GetBuildManualPageList();
   public buildManuals$ = this.buildManualService.GetBuildManualList();
+  public buildManualPageChangeHistories$ = this.buildManualPageChangeHistoryService.GetBuildManualPageChangeHistoryList();
   public buildManualSteps$ = this.buildManualStepService.GetBuildManualStepList();
 
   private destroy$ = new Subject<void>();
@@ -97,6 +107,7 @@ export class BuildManualPageDetailComponent implements OnInit, CanComponentDeact
   constructor(
     public buildManualPageService: BuildManualPageService,
     public buildManualService: BuildManualService,
+    public buildManualPageChangeHistoryService: BuildManualPageChangeHistoryService,
     public buildManualStepService: BuildManualStepService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -383,6 +394,10 @@ export class BuildManualPageDetailComponent implements OnInit, CanComponentDeact
         pageNum: '',
         title: '',
         notes: '',
+        backgroundTheme: '',
+        layoutPreset: '',
+        backgroundColorHex: '',
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -398,6 +413,10 @@ export class BuildManualPageDetailComponent implements OnInit, CanComponentDeact
         pageNum: buildManualPageData.pageNum?.toString() ?? '',
         title: buildManualPageData.title ?? '',
         notes: buildManualPageData.notes ?? '',
+        backgroundTheme: buildManualPageData.backgroundTheme ?? '',
+        layoutPreset: buildManualPageData.layoutPreset ?? '',
+        backgroundColorHex: buildManualPageData.backgroundColorHex ?? '',
+        versionNumber: buildManualPageData.versionNumber?.toString() ?? '',
         active: buildManualPageData.active ?? true,
         deleted: buildManualPageData.deleted ?? false,
       }, { emitEvent: false});
@@ -463,6 +482,10 @@ export class BuildManualPageDetailComponent implements OnInit, CanComponentDeact
         pageNum: formValue.pageNum ? Number(formValue.pageNum) : null,
         title: formValue.title?.trim() || null,
         notes: formValue.notes?.trim() || null,
+        backgroundTheme: formValue.backgroundTheme?.trim() || null,
+        layoutPreset: formValue.layoutPreset?.trim() || null,
+        backgroundColorHex: formValue.backgroundColorHex?.trim() || null,
+        versionNumber: this.buildManualPageData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

@@ -1,0 +1,73 @@
+<div class="add-build-step-part-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-build-step-part-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Build Step Part Change History" 
+        *ngIf="userIsBMCBuildStepPartChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #buildStepPartChangeHistoryModal let-modal>
+   <div class="modal-header build-step-part-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="buildStepPartChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Build Step Part Change History' : 'Add Build Step Part Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body build-step-part-change-history-modal-body">
+      <form [formGroup]="buildStepPartChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('buildStepPartId')">
+                <label for="BuildStepPartChangeHistory-buildStepPartId" id="label-BuildStepPartChangeHistory-buildStepPartId"><span class="text-danger">*</span>Build Step Part</label>
+                <select id="BuildStepPartChangeHistory-buildStepPartId" formControlName="buildStepPartId" class="form-select build-step-part-change-history-select" [disabled]="!userIsBMCBuildStepPartChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Build Step Part</option>
+                    <option *ngFor="let buildStepPart of buildStepParts$ | async" [ngValue]="buildStepPart.id">{{buildStepPart.id}}</option>
+                </select>
+                <div *ngIf="buildStepPartChangeHistoryForm.get('buildStepPartId')?.invalid && buildStepPartChangeHistoryForm.get('buildStepPartId')?.touched" class="text-danger">
+                    Build Step Part is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="BuildStepPartChangeHistory-versionNumber" id="label-BuildStepPartChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="BuildStepPartChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-step-part-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="BuildStepPartChangeHistory-timeStamp" id="label-BuildStepPartChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="BuildStepPartChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control build-step-part-change-history-input" [disabled]="!userIsBMCBuildStepPartChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="buildStepPartChangeHistoryForm.get('timeStamp')?.invalid && buildStepPartChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="BuildStepPartChangeHistory-userId" id="label-BuildStepPartChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="BuildStepPartChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control build-step-part-change-history-input" [disabled]="!userIsBMCBuildStepPartChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="buildStepPartChangeHistoryForm.get('userId')?.invalid && buildStepPartChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="BuildStepPartChangeHistory-data" id="label-BuildStepPartChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="BuildStepPartChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control build-step-part-change-history-input" [disabled]="!userIsBMCBuildStepPartChangeHistoryWriter()"></textarea>
+                <div *ngIf="buildStepPartChangeHistoryForm.get('data')?.invalid && buildStepPartChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer build-step-part-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Build Step Part Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildStepPartChangeHistoryForm.valid || buildStepPartChangeHistoryForm.pristine  || userIsBMCBuildStepPartChangeHistoryWriter() == false " ngbTooltip="Save the Build Step Part Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Build Step Part Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

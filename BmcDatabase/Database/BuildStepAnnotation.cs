@@ -27,11 +27,15 @@ public partial class BuildStepAnnotation
 
     public int? placedBrickId { get; set; }
 
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<BuildStepAnnotationChangeHistory> BuildStepAnnotationChangeHistories { get; set; } = new List<BuildStepAnnotationChangeHistory>();
 
     public virtual BuildManualStep buildManualStep { get; set; }
 

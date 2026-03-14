@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BuildStepPartService, BuildStepPartData, BuildStepPartSubmitData } from '../../../bmc-data-services/build-step-part.service';
 import { BuildManualStepService } from '../../../bmc-data-services/build-manual-step.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
+import { BuildStepPartChangeHistoryService } from '../../../bmc-data-services/build-step-part-change-history.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -38,6 +39,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 interface BuildStepPartFormValues {
   buildManualStepId: number | bigint,       // For FK link number
   placedBrickId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -69,6 +71,7 @@ export class BuildStepPartDetailComponent implements OnInit, CanComponentDeactiv
   public buildStepPartForm: FormGroup = this.fb.group({
         buildManualStepId: [null, Validators.required],
         placedBrickId: [null, Validators.required],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -87,6 +90,7 @@ export class BuildStepPartDetailComponent implements OnInit, CanComponentDeactiv
   buildStepParts$ = this.buildStepPartService.GetBuildStepPartList();
   public buildManualSteps$ = this.buildManualStepService.GetBuildManualStepList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
+  public buildStepPartChangeHistories$ = this.buildStepPartChangeHistoryService.GetBuildStepPartChangeHistoryList();
 
   private destroy$ = new Subject<void>();
 
@@ -94,6 +98,7 @@ export class BuildStepPartDetailComponent implements OnInit, CanComponentDeactiv
     public buildStepPartService: BuildStepPartService,
     public buildManualStepService: BuildManualStepService,
     public placedBrickService: PlacedBrickService,
+    public buildStepPartChangeHistoryService: BuildStepPartChangeHistoryService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -377,6 +382,7 @@ export class BuildStepPartDetailComponent implements OnInit, CanComponentDeactiv
       this.buildStepPartForm.reset({
         buildManualStepId: null,
         placedBrickId: null,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -390,6 +396,7 @@ export class BuildStepPartDetailComponent implements OnInit, CanComponentDeactiv
         this.buildStepPartForm.reset({
         buildManualStepId: buildStepPartData.buildManualStepId,
         placedBrickId: buildStepPartData.placedBrickId,
+        versionNumber: buildStepPartData.versionNumber?.toString() ?? '',
         active: buildStepPartData.active ?? true,
         deleted: buildStepPartData.deleted ?? false,
       }, { emitEvent: false});
@@ -453,6 +460,7 @@ export class BuildStepPartDetailComponent implements OnInit, CanComponentDeactiv
         id: this.buildStepPartData?.id || 0,
         buildManualStepId: Number(formValue.buildManualStepId),
         placedBrickId: Number(formValue.placedBrickId),
+        versionNumber: this.buildStepPartData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

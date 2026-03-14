@@ -48,8 +48,7 @@ export class HeaderComponent {
             label: 'CREATE & BUILD',
             items: [
                 { icon: 'fas fa-puzzle-piece', label: 'My Projects', route: '/my-projects' },
-                { icon: 'fas fa-camera', label: 'Renderer', route: '/part-renderer' },
-                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' }
+                { icon: 'fas fa-code-branch', label: 'MOCHub', route: '/mochub' }
                 //, { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
             ]
         },
@@ -67,7 +66,8 @@ export class HeaderComponent {
         {
             label: 'TOOLS',
             items: [
-                { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
+                { icon: 'fas fa-camera', label: 'Renderer', route: '/part-renderer' },
+                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
                 { icon: 'fas fa-robot', label: 'AI Assistant', route: '/ai' },
                 { icon: 'fas fa-heartbeat', label: 'System Health', route: '/system-health' }
             ]

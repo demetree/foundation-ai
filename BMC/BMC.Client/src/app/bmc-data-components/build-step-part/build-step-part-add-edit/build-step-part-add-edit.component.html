@@ -24,7 +24,7 @@
                 <label for="BuildStepPart-buildManualStepId" id="label-BuildStepPart-buildManualStepId"><span class="text-danger">*</span>Build Manual Step</label>
                 <select id="BuildStepPart-buildManualStepId" formControlName="buildManualStepId" class="form-select build-step-part-select" [disabled]="!userIsBMCBuildStepPartWriter()">
                     <option [ngValue]="null">Select Build Manual Step</option>
-                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.id}}</option>
+                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.renderImagePath}}</option>
                 </select>
                 <div *ngIf="buildStepPartForm.get('buildManualStepId')?.invalid && buildStepPartForm.get('buildManualStepId')?.touched" class="text-danger">
                     Build Manual Step is required
@@ -39,6 +39,10 @@
                 <div *ngIf="buildStepPartForm.get('placedBrickId')?.invalid && buildStepPartForm.get('placedBrickId')?.touched" class="text-danger">
                     Placed Brick is required
                 </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="BuildStepPart-versionNumber" id="label-BuildStepPart-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="BuildStepPart-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-step-part-input" />
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="BuildStepPart-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildStepPartWriter()" />

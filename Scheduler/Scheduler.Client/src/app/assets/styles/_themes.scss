@@ -1,0 +1,453 @@
+/**
+ * Scheduler Theme System — CSS Custom Properties
+ *
+ * AI-DEVELOPED: Theme system adapted from BMC's theme architecture for the Scheduler application.
+ *
+ * Five professional themes: Default (clean light), Warm (amber light), Midnight (navy dark),
+ * Slate (cool dark), Ocean (deep blue dark).
+ *
+ * Applied via [data-theme] attribute on <body>.
+ *
+ * Token naming convention: --sch-* prefix for all Scheduler-specific tokens.
+ */
+
+
+// ─── Default Theme (clean professional light) ───────────────────────────────
+body,
+body[data-theme="default"] {
+
+    // Brand Colors — professional blue
+    --sch-primary: #2563eb;
+    --sch-primary-dark: #1d4ed8;
+    --sch-primary-light: #60a5fa;
+    --sch-accent: #0891b2;
+    --sch-accent-light: #22d3ee;
+
+    // Surface Colors — clean white/gray
+    --sch-bg-deep: #f1f5f9;
+    --sch-bg-dark: #e2e8f0;
+    --sch-bg-card: #ffffff;
+    --sch-bg-elevated: #f8fafc;
+    --sch-bg-hover: #f1f5f9;
+
+    // Text
+    --sch-text-primary: #0f172a;
+    --sch-text-secondary: #475569;
+    --sch-text-muted: #94a3b8;
+
+    // Borders
+    --sch-border: #e2e8f0;
+    --sch-border-strong: #cbd5e1;
+
+    // Shadows
+    --sch-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --sch-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --sch-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+
+    // Gradients
+    --sch-gradient-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+
+    // Accent glow
+    --sch-accent-glow: rgba(37, 99, 235, 0.15);
+    --sch-accent-glow-soft: rgba(37, 99, 235, 0.06);
+
+    // Header / Navbar
+    --sch-header-bg: #ffffff;
+    --sch-header-border: #e2e8f0;
+
+    // Sidebar
+    --sch-sidebar-bg: #ffffff;
+    --sch-sidebar-active-bg: rgba(37, 99, 235, 0.08);
+    --sch-sidebar-active-border: #2563eb;
+
+    // Subtle surfaces
+    --sch-surface-subtle: rgba(0, 0, 0, 0.02);
+    --sch-surface-hover: rgba(37, 99, 235, 0.04);
+
+    // Scrollbar
+    --sch-scrollbar-thumb: rgba(0, 0, 0, 0.15);
+    --sch-scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+
+    // Table
+    --sch-table-striped-bg: rgba(0, 0, 0, 0.02);
+    --sch-table-header-bg: #f8fafc;
+
+    // Button
+    --sch-btn-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    --sch-btn-shadow-hover: 0 4px 16px rgba(37, 99, 235, 0.3);
+
+    // Form controls
+    --sch-input-bg: #ffffff;
+    --sch-input-border: #cbd5e1;
+    --sch-input-focus-border: #2563eb;
+    --sch-input-focus-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+
+    // Modal
+    --sch-modal-bg: #ffffff;
+    --sch-modal-backdrop: rgba(0, 0, 0, 0.5);
+
+    // Close button filter
+    --sch-close-btn-filter: none;
+
+    // Login background
+    --sch-login-bg-gradient: linear-gradient(135deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.80) 50%, rgba(15, 23, 42, 0.90) 100%);
+    --sch-login-bg-color: #0f172a;
+
+    // Status colors
+    --sch-success: #16a34a;
+    --sch-warning: #d97706;
+    --sch-danger: #dc2626;
+    --sch-info: #0891b2;
+}
+
+
+// ─── Warm Theme (amber light) ───────────────────────────────────────────────
+body[data-theme="warm"] {
+
+    // Brand Colors — warm amber/orange
+    --sch-primary: #d97706;
+    --sch-primary-dark: #b45309;
+    --sch-primary-light: #fbbf24;
+    --sch-accent: #c2410c;
+    --sch-accent-light: #ea580c;
+
+    // Surface Colors — warm cream/ivory base
+    --sch-bg-deep: #faf5ee;
+    --sch-bg-dark: #f0e8db;
+    --sch-bg-card: #fffdf8;
+    --sch-bg-elevated: #fefcf6;
+    --sch-bg-hover: #f5efe5;
+
+    // Text
+    --sch-text-primary: #1c1408;
+    --sch-text-secondary: #5e4c2e;
+    --sch-text-muted: #a08d6c;
+
+    // Borders
+    --sch-border: #e8dcc8;
+    --sch-border-strong: #d4c4a8;
+
+    // Shadows
+    --sch-shadow-sm: 0 1px 3px rgba(100, 70, 20, 0.06);
+    --sch-shadow-md: 0 4px 12px rgba(100, 70, 20, 0.08);
+    --sch-shadow-lg: 0 12px 40px rgba(100, 70, 20, 0.1);
+
+    // Gradients
+    --sch-gradient-primary: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+
+    // Accent glow
+    --sch-accent-glow: rgba(217, 119, 6, 0.18);
+    --sch-accent-glow-soft: rgba(217, 119, 6, 0.08);
+
+    // Header / Navbar
+    --sch-header-bg: #fffdf8;
+    --sch-header-border: #e8dcc8;
+
+    // Sidebar
+    --sch-sidebar-bg: #fffdf8;
+    --sch-sidebar-active-bg: rgba(217, 119, 6, 0.08);
+    --sch-sidebar-active-border: #d97706;
+
+    // Subtle surfaces
+    --sch-surface-subtle: rgba(100, 70, 20, 0.02);
+    --sch-surface-hover: rgba(217, 119, 6, 0.04);
+
+    // Scrollbar
+    --sch-scrollbar-thumb: rgba(100, 70, 20, 0.15);
+    --sch-scrollbar-thumb-hover: rgba(100, 70, 20, 0.25);
+
+    // Table
+    --sch-table-striped-bg: rgba(100, 70, 20, 0.02);
+    --sch-table-header-bg: #fefcf6;
+
+    // Button
+    --sch-btn-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+    --sch-btn-shadow-hover: 0 4px 16px rgba(217, 119, 6, 0.3);
+
+    // Form controls
+    --sch-input-bg: #fffdf8;
+    --sch-input-border: #d4c4a8;
+    --sch-input-focus-border: #d97706;
+    --sch-input-focus-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+
+    // Modal
+    --sch-modal-bg: #fffdf8;
+    --sch-modal-backdrop: rgba(28, 20, 8, 0.5);
+
+    // Close button filter
+    --sch-close-btn-filter: none;
+
+    // Login background
+    --sch-login-bg-gradient: linear-gradient(135deg, rgba(28, 20, 8, 0.88) 0%, rgba(60, 40, 15, 0.80) 50%, rgba(28, 20, 8, 0.88) 100%);
+    --sch-login-bg-color: #1c1408;
+
+    // Status colors
+    --sch-success: #16a34a;
+    --sch-warning: #d97706;
+    --sch-danger: #dc2626;
+    --sch-info: #0891b2;
+}
+
+
+// ─── Midnight Theme (deep navy dark) ────────────────────────────────────────
+body[data-theme="midnight"] {
+
+    // Brand Colors — cool blue
+    --sch-primary: #60a5fa;
+    --sch-primary-dark: #3b82f6;
+    --sch-primary-light: #93c5fd;
+    --sch-accent: #818cf8;
+    --sch-accent-light: #a5b4fc;
+
+    // Surface Colors — deep navy/charcoal
+    --sch-bg-deep: #0b1120;
+    --sch-bg-dark: #111a2e;
+    --sch-bg-card: #162032;
+    --sch-bg-elevated: #1c2840;
+    --sch-bg-hover: #22304a;
+
+    // Text
+    --sch-text-primary: rgba(255, 255, 255, 0.92);
+    --sch-text-secondary: rgba(255, 255, 255, 0.60);
+    --sch-text-muted: rgba(255, 255, 255, 0.35);
+
+    // Borders
+    --sch-border: rgba(96, 165, 250, 0.10);
+    --sch-border-strong: rgba(96, 165, 250, 0.18);
+
+    // Shadows
+    --sch-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --sch-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+    --sch-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+    // Gradients
+    --sch-gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+    // Accent glow
+    --sch-accent-glow: rgba(96, 165, 250, 0.2);
+    --sch-accent-glow-soft: rgba(96, 165, 250, 0.08);
+
+    // Header / Navbar
+    --sch-header-bg: linear-gradient(135deg, #0b1120 0%, #162032 100%);
+    --sch-header-border: rgba(96, 165, 250, 0.10);
+
+    // Sidebar
+    --sch-sidebar-bg: linear-gradient(180deg, #111a2e 0%, #0b1120 100%);
+    --sch-sidebar-active-bg: rgba(96, 165, 250, 0.10);
+    --sch-sidebar-active-border: #60a5fa;
+
+    // Subtle surfaces
+    --sch-surface-subtle: rgba(255, 255, 255, 0.02);
+    --sch-surface-hover: rgba(96, 165, 250, 0.06);
+
+    // Scrollbar
+    --sch-scrollbar-thumb: rgba(96, 165, 250, 0.18);
+    --sch-scrollbar-thumb-hover: rgba(96, 165, 250, 0.30);
+
+    // Table
+    --sch-table-striped-bg: rgba(96, 165, 250, 0.03);
+    --sch-table-header-bg: #1c2840;
+
+    // Button
+    --sch-btn-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+    --sch-btn-shadow-hover: 0 4px 16px rgba(59, 130, 246, 0.35);
+
+    // Form controls
+    --sch-input-bg: #111a2e;
+    --sch-input-border: rgba(96, 165, 250, 0.15);
+    --sch-input-focus-border: #60a5fa;
+    --sch-input-focus-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+
+    // Modal
+    --sch-modal-bg: #162032;
+    --sch-modal-backdrop: rgba(0, 0, 0, 0.6);
+
+    // Close button filter — invert for dark backgrounds
+    --sch-close-btn-filter: invert(1) brightness(0.8);
+
+    // Login background
+    --sch-login-bg-gradient: linear-gradient(135deg, rgba(11, 17, 32, 0.92) 0%, rgba(22, 32, 50, 0.85) 50%, rgba(11, 17, 32, 0.92) 100%);
+    --sch-login-bg-color: #0b1120;
+
+    // Status colors
+    --sch-success: #4ade80;
+    --sch-warning: #fbbf24;
+    --sch-danger: #f87171;
+    --sch-info: #22d3ee;
+}
+
+
+// ─── Slate Theme (cool slate dark) ──────────────────────────────────────────
+body[data-theme="slate"] {
+
+    // Brand Colors — muted teal
+    --sch-primary: #2dd4bf;
+    --sch-primary-dark: #14b8a6;
+    --sch-primary-light: #5eead4;
+    --sch-accent: #94a3b8;
+    --sch-accent-light: #cbd5e1;
+
+    // Surface Colors — cool slate/charcoal
+    --sch-bg-deep: #0f1419;
+    --sch-bg-dark: #161c24;
+    --sch-bg-card: #1c242e;
+    --sch-bg-elevated: #232d3a;
+    --sch-bg-hover: #2a3545;
+
+    // Text
+    --sch-text-primary: rgba(255, 255, 255, 0.90);
+    --sch-text-secondary: rgba(255, 255, 255, 0.55);
+    --sch-text-muted: rgba(255, 255, 255, 0.32);
+
+    // Borders
+    --sch-border: rgba(45, 212, 191, 0.08);
+    --sch-border-strong: rgba(45, 212, 191, 0.16);
+
+    // Shadows
+    --sch-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+    --sch-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --sch-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+    // Gradients
+    --sch-gradient-primary: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+
+    // Accent glow
+    --sch-accent-glow: rgba(45, 212, 191, 0.2);
+    --sch-accent-glow-soft: rgba(45, 212, 191, 0.06);
+
+    // Header / Navbar
+    --sch-header-bg: linear-gradient(135deg, #0f1419 0%, #1c242e 100%);
+    --sch-header-border: rgba(45, 212, 191, 0.08);
+
+    // Sidebar
+    --sch-sidebar-bg: linear-gradient(180deg, #161c24 0%, #0f1419 100%);
+    --sch-sidebar-active-bg: rgba(45, 212, 191, 0.10);
+    --sch-sidebar-active-border: #2dd4bf;
+
+    // Subtle surfaces
+    --sch-surface-subtle: rgba(255, 255, 255, 0.02);
+    --sch-surface-hover: rgba(45, 212, 191, 0.05);
+
+    // Scrollbar
+    --sch-scrollbar-thumb: rgba(45, 212, 191, 0.15);
+    --sch-scrollbar-thumb-hover: rgba(45, 212, 191, 0.28);
+
+    // Table
+    --sch-table-striped-bg: rgba(45, 212, 191, 0.02);
+    --sch-table-header-bg: #232d3a;
+
+    // Button
+    --sch-btn-shadow: 0 2px 8px rgba(20, 184, 166, 0.2);
+    --sch-btn-shadow-hover: 0 4px 16px rgba(20, 184, 166, 0.3);
+
+    // Form controls
+    --sch-input-bg: #161c24;
+    --sch-input-border: rgba(45, 212, 191, 0.12);
+    --sch-input-focus-border: #2dd4bf;
+    --sch-input-focus-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+
+    // Modal
+    --sch-modal-bg: #1c242e;
+    --sch-modal-backdrop: rgba(0, 0, 0, 0.6);
+
+    // Close button filter
+    --sch-close-btn-filter: invert(1) brightness(0.8);
+
+    // Login background
+    --sch-login-bg-gradient: linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(28, 36, 46, 0.85) 50%, rgba(15, 20, 25, 0.92) 100%);
+    --sch-login-bg-color: #0f1419;
+
+    // Status colors
+    --sch-success: #4ade80;
+    --sch-warning: #fbbf24;
+    --sch-danger: #f87171;
+    --sch-info: #22d3ee;
+}
+
+
+// ─── Ocean Theme (deep blue dark) ───────────────────────────────────────────
+body[data-theme="ocean"] {
+
+    // Brand Colors — teal/cyan
+    --sch-primary: #06b6d4;
+    --sch-primary-dark: #0891b2;
+    --sch-primary-light: #22d3ee;
+    --sch-accent: #3b82f6;
+    --sch-accent-light: #60a5fa;
+
+    // Surface Colors — deep ocean blue
+    --sch-bg-deep: #061018;
+    --sch-bg-dark: #0a1a28;
+    --sch-bg-card: #0e2234;
+    --sch-bg-elevated: #142c42;
+    --sch-bg-hover: #1a3650;
+
+    // Text
+    --sch-text-primary: rgba(255, 255, 255, 0.92);
+    --sch-text-secondary: rgba(255, 255, 255, 0.58);
+    --sch-text-muted: rgba(255, 255, 255, 0.32);
+
+    // Borders
+    --sch-border: rgba(6, 182, 212, 0.10);
+    --sch-border-strong: rgba(6, 182, 212, 0.18);
+
+    // Shadows
+    --sch-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+    --sch-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --sch-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+    // Gradients
+    --sch-gradient-primary: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+
+    // Accent glow
+    --sch-accent-glow: rgba(6, 182, 212, 0.22);
+    --sch-accent-glow-soft: rgba(6, 182, 212, 0.08);
+
+    // Header / Navbar
+    --sch-header-bg: linear-gradient(135deg, #061018 0%, #0e2234 100%);
+    --sch-header-border: rgba(6, 182, 212, 0.10);
+
+    // Sidebar
+    --sch-sidebar-bg: linear-gradient(180deg, #0a1a28 0%, #061018 100%);
+    --sch-sidebar-active-bg: rgba(6, 182, 212, 0.10);
+    --sch-sidebar-active-border: #06b6d4;
+
+    // Subtle surfaces
+    --sch-surface-subtle: rgba(255, 255, 255, 0.02);
+    --sch-surface-hover: rgba(6, 182, 212, 0.05);
+
+    // Scrollbar
+    --sch-scrollbar-thumb: rgba(6, 182, 212, 0.16);
+    --sch-scrollbar-thumb-hover: rgba(6, 182, 212, 0.28);
+
+    // Table
+    --sch-table-striped-bg: rgba(6, 182, 212, 0.02);
+    --sch-table-header-bg: #142c42;
+
+    // Button
+    --sch-btn-shadow: 0 2px 8px rgba(8, 145, 178, 0.22);
+    --sch-btn-shadow-hover: 0 4px 16px rgba(8, 145, 178, 0.32);
+
+    // Form controls
+    --sch-input-bg: #0a1a28;
+    --sch-input-border: rgba(6, 182, 212, 0.14);
+    --sch-input-focus-border: #06b6d4;
+    --sch-input-focus-shadow: 0 0 0 3px rgba(6, 182, 212, 0.14);
+
+    // Modal
+    --sch-modal-bg: #0e2234;
+    --sch-modal-backdrop: rgba(0, 0, 0, 0.6);
+
+    // Close button filter
+    --sch-close-btn-filter: invert(1) brightness(0.8);
+
+    // Login background
+    --sch-login-bg-gradient: linear-gradient(135deg, rgba(6, 16, 24, 0.92) 0%, rgba(14, 34, 52, 0.85) 50%, rgba(6, 16, 24, 0.92) 100%);
+    --sch-login-bg-color: #061018;
+
+    // Status colors
+    --sch-success: #4ade80;
+    --sch-warning: #fbbf24;
+    --sch-danger: #f87171;
+    --sch-info: #22d3ee;
+}

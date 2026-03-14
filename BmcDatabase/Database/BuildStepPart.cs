@@ -15,11 +15,15 @@ public partial class BuildStepPart
 
     public int placedBrickId { get; set; }
 
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<BuildStepPartChangeHistory> BuildStepPartChangeHistories { get; set; } = new List<BuildStepPartChangeHistory>();
 
     public virtual BuildManualStep buildManualStep { get; set; }
 

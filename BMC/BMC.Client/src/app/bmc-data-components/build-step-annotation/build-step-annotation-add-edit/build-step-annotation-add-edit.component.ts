@@ -45,6 +45,7 @@ interface BuildStepAnnotationFormValues {
   height: string | null,     // Stored as string for form input, converted to number on submit.
   text: string | null,
   placedBrickId: number | bigint | null,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -85,6 +86,7 @@ export class BuildStepAnnotationAddEditComponent {
         height: [''],
         text: [''],
         placedBrickId: [null],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -234,6 +236,7 @@ export class BuildStepAnnotationAddEditComponent {
         height: formValue.height ? Number(formValue.height) : null,
         text: formValue.text?.trim() || null,
         placedBrickId: formValue.placedBrickId ? Number(formValue.placedBrickId) : null,
+        versionNumber: this.buildStepAnnotationSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -247,6 +250,7 @@ export class BuildStepAnnotationAddEditComponent {
 
   private addBuildStepAnnotation(buildStepAnnotationData: BuildStepAnnotationSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    buildStepAnnotationData.versionNumber = 0;
     buildStepAnnotationData.active = true;
     buildStepAnnotationData.deleted = false;
     this.buildStepAnnotationService.PostBuildStepAnnotation(buildStepAnnotationData).pipe(
@@ -369,6 +373,7 @@ export class BuildStepAnnotationAddEditComponent {
         height: '',
         text: '',
         placedBrickId: null,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -388,6 +393,7 @@ export class BuildStepAnnotationAddEditComponent {
         height: buildStepAnnotationData.height?.toString() ?? '',
         text: buildStepAnnotationData.text ?? '',
         placedBrickId: buildStepAnnotationData.placedBrickId,
+        versionNumber: buildStepAnnotationData.versionNumber?.toString() ?? '',
         active: buildStepAnnotationData.active ?? true,
         deleted: buildStepAnnotationData.deleted ?? false,
       }, { emitEvent: false});

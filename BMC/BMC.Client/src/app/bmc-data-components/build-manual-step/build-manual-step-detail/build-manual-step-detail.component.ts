@@ -24,6 +24,7 @@ import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { BuildManualStepService, BuildManualStepData, BuildManualStepSubmitData } from '../../../bmc-data-services/build-manual-step.service';
 import { BuildManualPageService } from '../../../bmc-data-services/build-manual-page.service';
+import { BuildManualStepChangeHistoryService } from '../../../bmc-data-services/build-manual-step-change-history.service';
 import { BuildStepPartService } from '../../../bmc-data-services/build-step-part.service';
 import { BuildStepAnnotationService } from '../../../bmc-data-services/build-step-annotation.service';
 import { AuthService } from '../../../services/auth.service';
@@ -48,6 +49,13 @@ interface BuildManualStepFormValues {
   cameraZoom: string | null,     // Stored as string for form input, converted to number on submit.
   showExplodedView: boolean,
   explodedDistance: string | null,     // Stored as string for form input, converted to number on submit.
+  renderImagePath: string | null,
+  pliImagePath: string | null,
+  fadeStepEnabled: boolean,
+  isCallout: boolean,
+  calloutModelName: string | null,
+  showPartsListImage: boolean,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -88,6 +96,13 @@ export class BuildManualStepDetailComponent implements OnInit, CanComponentDeact
         cameraZoom: [''],
         showExplodedView: [false],
         explodedDistance: [''],
+        renderImagePath: [''],
+        pliImagePath: [''],
+        fadeStepEnabled: [false],
+        isCallout: [false],
+        calloutModelName: [''],
+        showPartsListImage: [false],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -105,6 +120,7 @@ export class BuildManualStepDetailComponent implements OnInit, CanComponentDeact
 
   buildManualSteps$ = this.buildManualStepService.GetBuildManualStepList();
   public buildManualPages$ = this.buildManualPageService.GetBuildManualPageList();
+  public buildManualStepChangeHistories$ = this.buildManualStepChangeHistoryService.GetBuildManualStepChangeHistoryList();
   public buildStepParts$ = this.buildStepPartService.GetBuildStepPartList();
   public buildStepAnnotations$ = this.buildStepAnnotationService.GetBuildStepAnnotationList();
 
@@ -113,6 +129,7 @@ export class BuildManualStepDetailComponent implements OnInit, CanComponentDeact
   constructor(
     public buildManualStepService: BuildManualStepService,
     public buildManualPageService: BuildManualPageService,
+    public buildManualStepChangeHistoryService: BuildManualStepChangeHistoryService,
     public buildStepPartService: BuildStepPartService,
     public buildStepAnnotationService: BuildStepAnnotationService,
     private authService: AuthService,
@@ -407,6 +424,13 @@ export class BuildManualStepDetailComponent implements OnInit, CanComponentDeact
         cameraZoom: '',
         showExplodedView: false,
         explodedDistance: '',
+        renderImagePath: '',
+        pliImagePath: '',
+        fadeStepEnabled: false,
+        isCallout: false,
+        calloutModelName: '',
+        showPartsListImage: false,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -429,6 +453,13 @@ export class BuildManualStepDetailComponent implements OnInit, CanComponentDeact
         cameraZoom: buildManualStepData.cameraZoom?.toString() ?? '',
         showExplodedView: buildManualStepData.showExplodedView ?? false,
         explodedDistance: buildManualStepData.explodedDistance?.toString() ?? '',
+        renderImagePath: buildManualStepData.renderImagePath ?? '',
+        pliImagePath: buildManualStepData.pliImagePath ?? '',
+        fadeStepEnabled: buildManualStepData.fadeStepEnabled ?? false,
+        isCallout: buildManualStepData.isCallout ?? false,
+        calloutModelName: buildManualStepData.calloutModelName ?? '',
+        showPartsListImage: buildManualStepData.showPartsListImage ?? false,
+        versionNumber: buildManualStepData.versionNumber?.toString() ?? '',
         active: buildManualStepData.active ?? true,
         deleted: buildManualStepData.deleted ?? false,
       }, { emitEvent: false});
@@ -501,6 +532,13 @@ export class BuildManualStepDetailComponent implements OnInit, CanComponentDeact
         cameraZoom: formValue.cameraZoom ? Number(formValue.cameraZoom) : null,
         showExplodedView: !!formValue.showExplodedView,
         explodedDistance: formValue.explodedDistance ? Number(formValue.explodedDistance) : null,
+        renderImagePath: formValue.renderImagePath?.trim() || null,
+        pliImagePath: formValue.pliImagePath?.trim() || null,
+        fadeStepEnabled: !!formValue.fadeStepEnabled,
+        isCallout: !!formValue.isCallout,
+        calloutModelName: formValue.calloutModelName?.trim() || null,
+        showPartsListImage: !!formValue.showPartsListImage,
+        versionNumber: this.buildManualStepData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

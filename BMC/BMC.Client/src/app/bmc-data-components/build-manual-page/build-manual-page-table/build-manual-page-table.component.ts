@@ -179,6 +179,9 @@ export class BuildManualPageTableComponent implements OnInit, OnChanges, AfterVi
     { key: 'pageNum', label: 'Page Num', width: undefined },
     { key: 'title', label: 'Title', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/buildmanualpage', 'id']  },
     { key: 'notes', label: 'Notes', width: undefined },
+    { key: 'backgroundTheme', label: 'Background Theme', width: undefined },
+    { key: 'layoutPreset', label: 'Layout Preset', width: undefined },
+    { key: 'backgroundColorHex', label: 'Background Color Hex', width: "50px", template: 'color' },
 
     ];
 
@@ -190,11 +193,13 @@ export class BuildManualPageTableComponent implements OnInit, OnChanges, AfterVi
     const isAdmin = this.authService.isBMCAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
      defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -328,6 +333,9 @@ export class BuildManualPageTableComponent implements OnInit, OnChanges, AfterVi
                       'pageNum',
                       'title',
                       'notes',
+                      'backgroundTheme',
+                      'layoutPreset',
+                      'backgroundColorHex',
         ];
 
         result = result.filter((buildManualPage) =>

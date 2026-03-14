@@ -68,10 +68,14 @@ GO
 -- DROP TABLE [BMC].[ExportFormat]
 -- DROP TABLE [BMC].[ProjectRender]
 -- DROP TABLE [BMC].[RenderPreset]
+-- DROP TABLE [BMC].[BuildStepAnnotationChangeHistory]
 -- DROP TABLE [BMC].[BuildStepAnnotation]
 -- DROP TABLE [BMC].[BuildStepAnnotationType]
+-- DROP TABLE [BMC].[BuildStepPartChangeHistory]
 -- DROP TABLE [BMC].[BuildStepPart]
+-- DROP TABLE [BMC].[BuildManualStepChangeHistory]
 -- DROP TABLE [BMC].[BuildManualStep]
+-- DROP TABLE [BMC].[BuildManualPageChangeHistory]
 -- DROP TABLE [BMC].[BuildManualPage]
 -- DROP TABLE [BMC].[BuildManualChangeHistory]
 -- DROP TABLE [BMC].[BuildManual]
@@ -182,10 +186,14 @@ GO
 -- ALTER INDEX ALL ON [BMC].[ExportFormat] DISABLE
 -- ALTER INDEX ALL ON [BMC].[ProjectRender] DISABLE
 -- ALTER INDEX ALL ON [BMC].[RenderPreset] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BuildStepAnnotationChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildStepAnnotation] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildStepAnnotationType] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BuildStepPartChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildStepPart] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BuildManualStepChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildManualStep] DISABLE
+-- ALTER INDEX ALL ON [BMC].[BuildManualPageChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildManualPage] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildManualChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [BMC].[BuildManual] DISABLE
@@ -296,10 +304,14 @@ GO
 -- ALTER INDEX ALL ON [BMC].[ExportFormat] REBUILD
 -- ALTER INDEX ALL ON [BMC].[ProjectRender] REBUILD
 -- ALTER INDEX ALL ON [BMC].[RenderPreset] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BuildStepAnnotationChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildStepAnnotation] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildStepAnnotationType] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BuildStepPartChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildStepPart] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BuildManualStepChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildManualStep] REBUILD
+-- ALTER INDEX ALL ON [BMC].[BuildManualPageChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildManualPage] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildManualChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [BMC].[BuildManual] REBUILD
@@ -2777,6 +2789,10 @@ CREATE TABLE [BMC].[BuildManualPage]
 	[pageNum] INT NULL,		-- Sequential page number within the manual.  Note purposely not called pageNumber to not clash with code generated parameter
 	[title] NVARCHAR(250) NULL,		-- Optional page title (e.g. 'Bag 1', 'Chassis Assembly')
 	[notes] NVARCHAR(MAX) NULL,		-- Optional internal notes about this page
+	[backgroundTheme] NVARCHAR(50) NULL,		-- Background theme for the page (e.g. Blueprint, Clean White, Dark Mode)
+	[layoutPreset] NVARCHAR(50) NULL,		-- Layout preset (e.g. SingleStep, Grid, TwoColumn)
+	[backgroundColorHex] NVARCHAR(10) NULL,		-- Custom background colour hex from LPub3D PAGE BACKGROUND COLOR (e.g. #FFFFFF)
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -2802,6 +2818,42 @@ CREATE INDEX [I_BuildManualPage_tenantGuid_deleted] ON [BMC].[BuildManualPage] (
 GO
 
 
+-- The change history for records from the BuildManualPage table.
+CREATE TABLE [BMC].[BuildManualPageChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[buildManualPageId] INT NOT NULL,		-- Link to the BuildManualPage table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_BuildManualPageChangeHistory_BuildManualPage_buildManualPageId] FOREIGN KEY ([buildManualPageId]) REFERENCES [BMC].[BuildManualPage] ([id])		-- Foreign key to the BuildManualPage table.
+)
+GO
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid field.
+CREATE INDEX [I_BuildManualPageChangeHistory_tenantGuid] ON [BMC].[BuildManualPageChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_BuildManualPageChangeHistory_tenantGuid_versionNumber] ON [BMC].[BuildManualPageChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_BuildManualPageChangeHistory_tenantGuid_timeStamp] ON [BMC].[BuildManualPageChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_BuildManualPageChangeHistory_tenantGuid_userId] ON [BMC].[BuildManualPageChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,buildManualPageId fields.
+CREATE INDEX [I_BuildManualPageChangeHistory_tenantGuid_buildManualPageId] ON [BMC].[BuildManualPageChangeHistory] ([tenantGuid], [buildManualPageId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
 -- A single build step within a manual page. Defines the camera angle and display options for that step's rendered view.
 CREATE TABLE [BMC].[BuildManualStep]
 (
@@ -2818,6 +2870,13 @@ CREATE TABLE [BMC].[BuildManualStep]
 	[cameraZoom] REAL NULL,		-- Camera zoom / field of view for this step
 	[showExplodedView] BIT NOT NULL DEFAULT 0,		-- Whether to render the step with newly-added parts pulled apart for clarity
 	[explodedDistance] REAL NULL,		-- Distance in LDU to pull apart exploded parts (null = use default)
+	[renderImagePath] NVARCHAR(MAX) NULL,		-- Base64 data URI of the generated render image for this step
+	[pliImagePath] NVARCHAR(MAX) NULL,		-- Base64 data URI of the generated Parts List Indicator (PLI) image for this step
+	[fadeStepEnabled] BIT NOT NULL DEFAULT 1,		-- When true, previous step parts are rendered faded (ghosted)
+	[isCallout] BIT NOT NULL DEFAULT 0,		-- Whether this step is a callout (submodel assembly shown in-line)
+	[calloutModelName] NVARCHAR(250) NULL,		-- Name of the submodel this callout refers to (from LPub3D CALLOUT meta)
+	[showPartsListImage] BIT NOT NULL DEFAULT 1,		-- Whether to show the Parts List Indicator (PLI) image for this step
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -2843,6 +2902,42 @@ CREATE INDEX [I_BuildManualStep_tenantGuid_deleted] ON [BMC].[BuildManualStep] (
 GO
 
 
+-- The change history for records from the BuildManualStep table.
+CREATE TABLE [BMC].[BuildManualStepChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[buildManualStepId] INT NOT NULL,		-- Link to the BuildManualStep table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_BuildManualStepChangeHistory_BuildManualStep_buildManualStepId] FOREIGN KEY ([buildManualStepId]) REFERENCES [BMC].[BuildManualStep] ([id])		-- Foreign key to the BuildManualStep table.
+)
+GO
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid field.
+CREATE INDEX [I_BuildManualStepChangeHistory_tenantGuid] ON [BMC].[BuildManualStepChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_BuildManualStepChangeHistory_tenantGuid_versionNumber] ON [BMC].[BuildManualStepChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_BuildManualStepChangeHistory_tenantGuid_timeStamp] ON [BMC].[BuildManualStepChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_BuildManualStepChangeHistory_tenantGuid_userId] ON [BMC].[BuildManualStepChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,buildManualStepId fields.
+CREATE INDEX [I_BuildManualStepChangeHistory_tenantGuid_buildManualStepId] ON [BMC].[BuildManualStepChangeHistory] ([tenantGuid], [buildManualStepId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
 -- Maps which placed bricks are added during a specific build step. Links to the actual PlacedBrick in the project.
 CREATE TABLE [BMC].[BuildStepPart]
 (
@@ -2850,6 +2945,7 @@ CREATE TABLE [BMC].[BuildStepPart]
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[buildManualStepId] INT NOT NULL,		-- The build step this part is added during
 	[placedBrickId] INT NOT NULL,		-- The placed brick in the project that is added in this step
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -2877,6 +2973,42 @@ GO
 
 -- Index on the BuildStepPart table's tenantGuid,deleted fields.
 CREATE INDEX [I_BuildStepPart_tenantGuid_deleted] ON [BMC].[BuildStepPart] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the BuildStepPart table.
+CREATE TABLE [BMC].[BuildStepPartChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[buildStepPartId] INT NOT NULL,		-- Link to the BuildStepPart table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_BuildStepPartChangeHistory_BuildStepPart_buildStepPartId] FOREIGN KEY ([buildStepPartId]) REFERENCES [BMC].[BuildStepPart] ([id])		-- Foreign key to the BuildStepPart table.
+)
+GO
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid field.
+CREATE INDEX [I_BuildStepPartChangeHistory_tenantGuid] ON [BMC].[BuildStepPartChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_BuildStepPartChangeHistory_tenantGuid_versionNumber] ON [BMC].[BuildStepPartChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_BuildStepPartChangeHistory_tenantGuid_timeStamp] ON [BMC].[BuildStepPartChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_BuildStepPartChangeHistory_tenantGuid_userId] ON [BMC].[BuildStepPartChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,buildStepPartId fields.
+CREATE INDEX [I_BuildStepPartChangeHistory_tenantGuid_buildStepPartId] ON [BMC].[BuildStepPartChangeHistory] ([tenantGuid], [buildStepPartId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -2935,6 +3067,7 @@ CREATE TABLE [BMC].[BuildStepAnnotation]
 	[height] REAL NULL,		-- Height of the annotation element (null = auto-size)
 	[text] NVARCHAR(MAX) NULL,		-- Optional text content for labels and callouts
 	[placedBrickId] INT NULL,		-- Optional target placed brick that this annotation points to or highlights
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -2967,6 +3100,42 @@ GO
 
 -- Index on the BuildStepAnnotation table's tenantGuid,deleted fields.
 CREATE INDEX [I_BuildStepAnnotation_tenantGuid_deleted] ON [BMC].[BuildStepAnnotation] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the BuildStepAnnotation table.
+CREATE TABLE [BMC].[BuildStepAnnotationChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[buildStepAnnotationId] INT NOT NULL,		-- Link to the BuildStepAnnotation table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_BuildStepAnnotationChangeHistory_BuildStepAnnotation_buildStepAnnotationId] FOREIGN KEY ([buildStepAnnotationId]) REFERENCES [BMC].[BuildStepAnnotation] ([id])		-- Foreign key to the BuildStepAnnotation table.
+)
+GO
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid field.
+CREATE INDEX [I_BuildStepAnnotationChangeHistory_tenantGuid] ON [BMC].[BuildStepAnnotationChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_BuildStepAnnotationChangeHistory_tenantGuid_versionNumber] ON [BMC].[BuildStepAnnotationChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_BuildStepAnnotationChangeHistory_tenantGuid_timeStamp] ON [BMC].[BuildStepAnnotationChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_BuildStepAnnotationChangeHistory_tenantGuid_userId] ON [BMC].[BuildStepAnnotationChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,buildStepAnnotationId fields.
+CREATE INDEX [I_BuildStepAnnotationChangeHistory_tenantGuid_buildStepAnnotationId] ON [BMC].[BuildStepAnnotationChangeHistory] ([tenantGuid], [buildStepAnnotationId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

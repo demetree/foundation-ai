@@ -16,8 +16,9 @@
 // AI-assisted development — reviewed and adapted to project conventions.
 //
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, SimpleChanges, OnChanges } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
     ManualEditorService,
@@ -33,7 +34,15 @@ import {
     templateUrl: './manual-editor.component.html',
     styleUrls: ['./manual-editor.component.scss']
 })
-export class ManualEditorComponent implements OnInit, OnDestroy {
+export class ManualEditorComponent implements OnInit, OnDestroy, OnChanges {
+
+    // ─── Input — allows embedding inside MOC Viewer ─────────────────────
+    //
+    // When provided as an @Input (embedded mode), the component loads the
+    // manual for this project.  When null, falls back to route params
+    // for standalone /manual-editor/:id usage.
+    //
+    @Input() projectId: number | null = null;
 
     // ─── Manual Document ────────────────────────────────────────────────
     manual: BuildManualDto | null = null;
@@ -64,6 +73,7 @@ export class ManualEditorComponent implements OnInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
+        private location: Location,
         private editorService: ManualEditorService
     ) { }
 
@@ -71,14 +81,61 @@ export class ManualEditorComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         document.title = 'Manual Editor';
 
+        //
+        // Embedded mode: projectId is provided via @Input from the MOC Viewer.
+        // In this case, skip route param resolution entirely.
+        //
+        if (this.projectId != null && this.projectId > 0) {
+            this.initDraftManual(this.projectId);
+            return;
+        }
+
+        //
+        // Standalone mode: read manual ID from route params, or projectId
+        // from query params, to determine what to load.
+        //
         this.subs.push(
             this.route.params.subscribe(params => {
                 const id = +params['id'];
                 if (id) {
                     this.loadManual(id);
+                } else {
+                    const projectId = +this.route.snapshot.queryParams['projectId'];
+                    if (projectId) {
+                        this.initDraftManual(projectId);
+                    } else {
+                        this.isLoading = false;
+                        this.loadError = 'No manual ID or project ID provided.';
+                    }
                 }
             })
         );
+    }
+
+
+    ngOnChanges(changes: SimpleChanges): void {
+        //
+        // Handle projectId changing while embedded (e.g. navigating between projects)
+        //
+        if (changes['projectId'] && !changes['projectId'].firstChange) {
+            const newId = changes['projectId'].currentValue;
+            if (newId != null && newId > 0) {
+                this.resetState();
+                this.initDraftManual(newId);
+            }
+        }
+    }
+
+
+    private resetState(): void {
+        this.manual = null;
+        this.pages = [];
+        this.stepsMap.clear();
+        this.annotationsMap.clear();
+        this.selectedPageIndex = 0;
+        this.selectedStep = null;
+        this.isLoading = true;
+        this.loadError = null;
     }
 
 
@@ -90,6 +147,45 @@ export class ManualEditorComponent implements OnInit, OnDestroy {
     // ═══════════════════════════════════════════════════════════════════
     //  Data Loading
     // ═══════════════════════════════════════════════════════════════════
+
+    private initDraftManual(projectId: number): void {
+        this.isLoading = true;
+        this.loadError = null;
+
+        this.editorService.getManuals(projectId).subscribe({
+            next: (manuals) => {
+                if (manuals && manuals.length > 0) {
+                    // Manual exists for this project, load the first one
+                    this.manual = manuals[0];
+                    this.loadPages(this.manual.id);
+                    this.location.replaceState(`/my-projects/${this.manual.projectId}/viewer?tab=manual`);
+                } else {
+                    // Start a new in-memory draft
+                    this.manual = {
+                        id: 0,
+                        projectId: projectId,
+                        name: 'Untitled Instructions',
+                        description: '',
+                        pageWidthMm: 210,
+                        pageHeightMm: 297,
+                        isPublished: false,
+                        versionNumber: 1,
+                        objectGuid: '00000000-0000-0000-0000-000000000000',
+                        active: true,
+                        deleted: false
+                    };
+                    this.pages = [];
+                    this.stepsMap.clear();
+                    this.annotationsMap.clear();
+                    this.isLoading = false;
+                }
+            },
+            error: (err) => {
+                this.isLoading = false;
+                this.loadError = 'Failed to check existing manuals. ' + (err?.error || err?.message || '');
+            }
+        });
+    }
 
     private loadManual(id: number): void {
         this.isLoading = true;
@@ -182,12 +278,35 @@ export class ManualEditorComponent implements OnInit, OnDestroy {
     addPage(): void {
         if (!this.manual) return;
 
+        if (this.manual.id === 0) {
+            // Must auto-save manual first to get an ID
+            this.isSaving = true;
+            this.editorService.createManual(this.manual).subscribe({
+                next: (created) => {
+                    this.manual = created;
+                    this.isSaving = false;
+                    this.location.replaceState(`/my-projects/${this.manual!.projectId}/viewer?tab=manual`);
+                    this.executeAddPage();
+                },
+                error: (err) => {
+                    this.isSaving = false;
+                    alert('Failed to save manual before adding page. ' + (err?.error || ''));
+                }
+            });
+        } else {
+            this.executeAddPage();
+        }
+    }
+
+    private executeAddPage(): void {
+        if (!this.manual) return;
         const newPageNum = this.pages.length + 1;
         this.editorService.createPage({
             buildManualId: this.manual.id,
             pageNum: newPageNum,
             title: `Page ${newPageNum}`,
             notes: '',
+            objectGuid: '00000000-0000-0000-0000-000000000000',
             active: true,
             deleted: false
         }).subscribe({
@@ -245,6 +364,7 @@ export class ManualEditorComponent implements OnInit, OnDestroy {
             cameraZoom: 1,
             showExplodedView: false,
             explodedDistance: 0,
+            objectGuid: '00000000-0000-0000-0000-000000000000',
             active: true,
             deleted: false
         }).subscribe({
@@ -283,15 +403,33 @@ export class ManualEditorComponent implements OnInit, OnDestroy {
         if (!this.manual) return;
 
         this.isSaving = true;
-        this.editorService.updateManual(this.manual.id, this.manual).subscribe({
-            next: (updated) => {
-                this.manual = updated;
-                this.isSaving = false;
-            },
-            error: () => {
-                this.isSaving = false;
-            }
-        });
+        
+        if (this.manual.id === 0) {
+            // First time save for draft
+            this.editorService.createManual(this.manual).subscribe({
+                next: (created) => {
+                    this.manual = created;
+                    this.isSaving = false;
+                    this.location.replaceState(`/my-projects/${this.manual!.projectId}/viewer?tab=manual`);
+                },
+                error: (err) => {
+                    this.isSaving = false;
+                    alert('Failed to create manual. ' + (err?.error || ''));
+                }
+            });
+        } else {
+            // Update existing
+            this.editorService.updateManual(this.manual.id, this.manual).subscribe({
+                next: (updated) => {
+                    this.manual = updated;
+                    this.isSaving = false;
+                },
+                error: (err) => {
+                    this.isSaving = false;
+                    alert('Failed to update manual. ' + (err?.error || ''));
+                }
+            });
+        }
     }
 
     saveStep(): void {
@@ -337,6 +475,10 @@ export class ManualEditorComponent implements OnInit, OnDestroy {
     }
 
     goBack(): void {
-        this.router.navigate(['/manual-generator']);
+        if (this.manual?.projectId) {
+            this.router.navigate(['/my-projects', this.manual.projectId, 'viewer']);
+        } else {
+            this.router.navigate(['/my-projects']);
+        }
     }
 }

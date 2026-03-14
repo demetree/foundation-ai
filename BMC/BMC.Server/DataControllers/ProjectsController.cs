@@ -692,6 +692,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 		}
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new Project record
@@ -841,6 +842,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 			return CreatedAtRoute("Project", new { id = project.id }, Database.Project.CreateAnonymousWithFirstLevelSubObjects(project));
 		}
 
+*/
 
 
         /// <summary>

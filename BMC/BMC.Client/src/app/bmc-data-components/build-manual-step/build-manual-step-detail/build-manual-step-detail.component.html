@@ -67,6 +67,34 @@
                                 <label for="BuildManualStep-explodedDistance" id="label-BuildManualStep-explodedDistance">Exploded Distance</label>
                                 <input type="number" id="BuildManualStep-explodedDistance" formControlName="explodedDistance" placeholder="Enter Exploded Distance" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-explodedDistance" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('renderImagePath')">
+                                <label for="BuildManualStep-renderImagePath" id="label-BuildManualStep-renderImagePath">Render Image Path</label>
+                                <textarea id="BuildManualStep-renderImagePath" formControlName="renderImagePath" placeholder="Enter Render Image Path" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('pliImagePath')">
+                                <label for="BuildManualStep-pliImagePath" id="label-BuildManualStep-pliImagePath">Pli Image Path</label>
+                                <textarea id="BuildManualStep-pliImagePath" formControlName="pliImagePath" placeholder="Enter Pli Image Path" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('fadeStepEnabled')">
+                                <input type="checkbox" id="BuildManualStep-fadeStepEnabled" formControlName="fadeStepEnabled" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
+                                <label for="BuildManualStep-fadeStepEnabled" class="form-check-label" id="label-BuildManualStep-fadeStepEnabled"><span class="text-danger">*</span>Fade Step Enabled</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isCallout')">
+                                <input type="checkbox" id="BuildManualStep-isCallout" formControlName="isCallout" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
+                                <label for="BuildManualStep-isCallout" class="form-check-label" id="label-BuildManualStep-isCallout"><span class="text-danger">*</span>Is Callout</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('calloutModelName')">
+                                <label for="BuildManualStep-calloutModelName" id="label-BuildManualStep-calloutModelName">Callout Model Name</label>
+                                <input type="text" id="BuildManualStep-calloutModelName" formControlName="calloutModelName" placeholder="Enter Callout Model Name" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-calloutModelName" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('showPartsListImage')">
+                                <input type="checkbox" id="BuildManualStep-showPartsListImage" formControlName="showPartsListImage" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
+                                <label for="BuildManualStep-showPartsListImage" class="form-check-label" id="label-BuildManualStep-showPartsListImage"><span class="text-danger">*</span>Show Parts List Image</label>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="BuildManualStep-versionNumber" id="label-BuildManualStep-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="BuildManualStep-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-manual-step-input" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="BuildManualStep-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
                                 <label for="BuildManualStep-active" class="form-check-label" id="label-BuildManualStep-active"><span class="text-danger">*</span>Active</label>
@@ -98,6 +126,20 @@
                 <div class="col m-2 build-manual-step-details-body">
 
                     <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="buildManualStepChangeHistoryService.userIsBMCBuildManualStepChangeHistoryReader()">
+                            <button ngbNavLink>Build Manual Step Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (buildManualStepData?.BuildManualStepChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-build-manual-step-change-history-table [queryParams]="{ buildManualStepId: buildManualStepData?.id }" [showAddButton]="true" [preSeededData]="{ buildManualStepId: buildManualStepData?.id }" [hiddenFields]="['buildManualStepId']"></app-build-manual-step-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="buildStepPartService.userIsBMCBuildStepPartReader()">
                             <button ngbNavLink>Build Step Parts
                                 <span class="badge bg-primary ms-2">

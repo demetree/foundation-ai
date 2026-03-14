@@ -42,6 +42,40 @@
                 <label for="BuildManualPage-notes" id="label-BuildManualPage-notes">Notes</label>
                 <textarea id="BuildManualPage-notes" formControlName="notes" placeholder="Enter Notes" class="form-control build-manual-page-input" [disabled]="!userIsBMCBuildManualPageWriter()"></textarea>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('backgroundTheme')">
+                <label for="BuildManualPage-backgroundTheme" id="label-BuildManualPage-backgroundTheme">Background Theme</label>
+                <input type="text" id="BuildManualPage-backgroundTheme" formControlName="backgroundTheme" placeholder="Enter Background Theme" class="form-control build-manual-page-input" [disabled]="!userIsBMCBuildManualPageWriter()" aria-labelledby="label-backgroundTheme" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('layoutPreset')">
+                <label for="BuildManualPage-layoutPreset" id="label-BuildManualPage-layoutPreset">Layout Preset</label>
+                <input type="text" id="BuildManualPage-layoutPreset" formControlName="layoutPreset" placeholder="Enter Layout Preset" class="form-control build-manual-page-input" [disabled]="!userIsBMCBuildManualPageWriter()" aria-labelledby="label-layoutPreset" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('backgroundColorHex')">
+                <label for="BuildManualPage-backgroundColorHex" id="label-BuildManualPage-backgroundColorHex">Background Color Hex</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="BuildManualPage-backgroundColorHex" 
+                        formControlName="backgroundColorHex" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsBMCBuildManualPageWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="buildManualPageForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="BuildManualPage-versionNumber" id="label-BuildManualPage-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="BuildManualPage-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-manual-page-input" />
+            </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="BuildManualPage-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildManualPageWriter()" />
                 <label for="BuildManualPage-active" class="form-check-label" id="label-BuildManualPage-active"><span class="text-danger">*</span>Active</label>

@@ -14,7 +14,6 @@ import { AppComponent } from './app.component';
 import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { LoginComponent } from './components/login/login.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { WelcomeComponent } from './components/welcome/welcome.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 
@@ -86,10 +85,14 @@ import { BuildChallengeEntryService } from './bmc-data-services/build-challenge-
 import { BuildManualService } from './bmc-data-services/build-manual.service';
 import { BuildManualChangeHistoryService } from './bmc-data-services/build-manual-change-history.service';
 import { BuildManualPageService } from './bmc-data-services/build-manual-page.service';
+import { BuildManualPageChangeHistoryService } from './bmc-data-services/build-manual-page-change-history.service';
 import { BuildManualStepService } from './bmc-data-services/build-manual-step.service';
+import { BuildManualStepChangeHistoryService } from './bmc-data-services/build-manual-step-change-history.service';
 import { BuildStepAnnotationService } from './bmc-data-services/build-step-annotation.service';
+import { BuildStepAnnotationChangeHistoryService } from './bmc-data-services/build-step-annotation-change-history.service';
 import { BuildStepAnnotationTypeService } from './bmc-data-services/build-step-annotation-type.service';
 import { BuildStepPartService } from './bmc-data-services/build-step-part.service';
+import { BuildStepPartChangeHistoryService } from './bmc-data-services/build-step-part-change-history.service';
 import { ColourFinishService } from './bmc-data-services/colour-finish.service';
 import { CompiledGlbService } from './bmc-data-services/compiled-glb.service';
 import { ConnectorTypeService } from './bmc-data-services/connector-type.service';
@@ -295,14 +298,26 @@ import { BuildManualPageListingComponent } from './bmc-data-components/build-man
 import { BuildManualPageAddEditComponent } from './bmc-data-components/build-manual-page/build-manual-page-add-edit/build-manual-page-add-edit.component';
 import { BuildManualPageDetailComponent } from './bmc-data-components/build-manual-page/build-manual-page-detail/build-manual-page-detail.component';
 import { BuildManualPageTableComponent } from './bmc-data-components/build-manual-page/build-manual-page-table/build-manual-page-table.component';
+import { BuildManualPageChangeHistoryListingComponent } from './bmc-data-components/build-manual-page-change-history/build-manual-page-change-history-listing/build-manual-page-change-history-listing.component';
+import { BuildManualPageChangeHistoryAddEditComponent } from './bmc-data-components/build-manual-page-change-history/build-manual-page-change-history-add-edit/build-manual-page-change-history-add-edit.component';
+import { BuildManualPageChangeHistoryDetailComponent } from './bmc-data-components/build-manual-page-change-history/build-manual-page-change-history-detail/build-manual-page-change-history-detail.component';
+import { BuildManualPageChangeHistoryTableComponent } from './bmc-data-components/build-manual-page-change-history/build-manual-page-change-history-table/build-manual-page-change-history-table.component';
 import { BuildManualStepListingComponent } from './bmc-data-components/build-manual-step/build-manual-step-listing/build-manual-step-listing.component';
 import { BuildManualStepAddEditComponent } from './bmc-data-components/build-manual-step/build-manual-step-add-edit/build-manual-step-add-edit.component';
 import { BuildManualStepDetailComponent } from './bmc-data-components/build-manual-step/build-manual-step-detail/build-manual-step-detail.component';
 import { BuildManualStepTableComponent } from './bmc-data-components/build-manual-step/build-manual-step-table/build-manual-step-table.component';
+import { BuildManualStepChangeHistoryListingComponent } from './bmc-data-components/build-manual-step-change-history/build-manual-step-change-history-listing/build-manual-step-change-history-listing.component';
+import { BuildManualStepChangeHistoryAddEditComponent } from './bmc-data-components/build-manual-step-change-history/build-manual-step-change-history-add-edit/build-manual-step-change-history-add-edit.component';
+import { BuildManualStepChangeHistoryDetailComponent } from './bmc-data-components/build-manual-step-change-history/build-manual-step-change-history-detail/build-manual-step-change-history-detail.component';
+import { BuildManualStepChangeHistoryTableComponent } from './bmc-data-components/build-manual-step-change-history/build-manual-step-change-history-table/build-manual-step-change-history-table.component';
 import { BuildStepAnnotationListingComponent } from './bmc-data-components/build-step-annotation/build-step-annotation-listing/build-step-annotation-listing.component';
 import { BuildStepAnnotationAddEditComponent } from './bmc-data-components/build-step-annotation/build-step-annotation-add-edit/build-step-annotation-add-edit.component';
 import { BuildStepAnnotationDetailComponent } from './bmc-data-components/build-step-annotation/build-step-annotation-detail/build-step-annotation-detail.component';
 import { BuildStepAnnotationTableComponent } from './bmc-data-components/build-step-annotation/build-step-annotation-table/build-step-annotation-table.component';
+import { BuildStepAnnotationChangeHistoryListingComponent } from './bmc-data-components/build-step-annotation-change-history/build-step-annotation-change-history-listing/build-step-annotation-change-history-listing.component';
+import { BuildStepAnnotationChangeHistoryAddEditComponent } from './bmc-data-components/build-step-annotation-change-history/build-step-annotation-change-history-add-edit/build-step-annotation-change-history-add-edit.component';
+import { BuildStepAnnotationChangeHistoryDetailComponent } from './bmc-data-components/build-step-annotation-change-history/build-step-annotation-change-history-detail/build-step-annotation-change-history-detail.component';
+import { BuildStepAnnotationChangeHistoryTableComponent } from './bmc-data-components/build-step-annotation-change-history/build-step-annotation-change-history-table/build-step-annotation-change-history-table.component';
 import { BuildStepAnnotationTypeListingComponent } from './bmc-data-components/build-step-annotation-type/build-step-annotation-type-listing/build-step-annotation-type-listing.component';
 import { BuildStepAnnotationTypeAddEditComponent } from './bmc-data-components/build-step-annotation-type/build-step-annotation-type-add-edit/build-step-annotation-type-add-edit.component';
 import { BuildStepAnnotationTypeDetailComponent } from './bmc-data-components/build-step-annotation-type/build-step-annotation-type-detail/build-step-annotation-type-detail.component';
@@ -311,6 +326,10 @@ import { BuildStepPartListingComponent } from './bmc-data-components/build-step-
 import { BuildStepPartAddEditComponent } from './bmc-data-components/build-step-part/build-step-part-add-edit/build-step-part-add-edit.component';
 import { BuildStepPartDetailComponent } from './bmc-data-components/build-step-part/build-step-part-detail/build-step-part-detail.component';
 import { BuildStepPartTableComponent } from './bmc-data-components/build-step-part/build-step-part-table/build-step-part-table.component';
+import { BuildStepPartChangeHistoryListingComponent } from './bmc-data-components/build-step-part-change-history/build-step-part-change-history-listing/build-step-part-change-history-listing.component';
+import { BuildStepPartChangeHistoryAddEditComponent } from './bmc-data-components/build-step-part-change-history/build-step-part-change-history-add-edit/build-step-part-change-history-add-edit.component';
+import { BuildStepPartChangeHistoryDetailComponent } from './bmc-data-components/build-step-part-change-history/build-step-part-change-history-detail/build-step-part-change-history-detail.component';
+import { BuildStepPartChangeHistoryTableComponent } from './bmc-data-components/build-step-part-change-history/build-step-part-change-history-table/build-step-part-change-history-table.component';
 import { ColourFinishListingComponent } from './bmc-data-components/colour-finish/colour-finish-listing/colour-finish-listing.component';
 import { ColourFinishAddEditComponent } from './bmc-data-components/colour-finish/colour-finish-add-edit/colour-finish-add-edit.component';
 import { ColourFinishDetailComponent } from './bmc-data-components/colour-finish/colour-finish-detail/colour-finish-detail.component';
@@ -677,7 +696,6 @@ import { MochubPublishModalComponent } from './components/mochub-publish-modal/m
         HeaderComponent,
         SidebarComponent,
         LoginComponent,
-        DashboardComponent,
         WelcomeComponent,
         NotFoundComponent,
 
@@ -857,14 +875,26 @@ BuildManualPageListingComponent,
 BuildManualPageAddEditComponent,
 BuildManualPageDetailComponent,
 BuildManualPageTableComponent,
+BuildManualPageChangeHistoryListingComponent,
+BuildManualPageChangeHistoryAddEditComponent,
+BuildManualPageChangeHistoryDetailComponent,
+BuildManualPageChangeHistoryTableComponent,
 BuildManualStepListingComponent,
 BuildManualStepAddEditComponent,
 BuildManualStepDetailComponent,
 BuildManualStepTableComponent,
+BuildManualStepChangeHistoryListingComponent,
+BuildManualStepChangeHistoryAddEditComponent,
+BuildManualStepChangeHistoryDetailComponent,
+BuildManualStepChangeHistoryTableComponent,
 BuildStepAnnotationListingComponent,
 BuildStepAnnotationAddEditComponent,
 BuildStepAnnotationDetailComponent,
 BuildStepAnnotationTableComponent,
+BuildStepAnnotationChangeHistoryListingComponent,
+BuildStepAnnotationChangeHistoryAddEditComponent,
+BuildStepAnnotationChangeHistoryDetailComponent,
+BuildStepAnnotationChangeHistoryTableComponent,
 BuildStepAnnotationTypeListingComponent,
 BuildStepAnnotationTypeAddEditComponent,
 BuildStepAnnotationTypeDetailComponent,
@@ -873,6 +903,10 @@ BuildStepPartListingComponent,
 BuildStepPartAddEditComponent,
 BuildStepPartDetailComponent,
 BuildStepPartTableComponent,
+BuildStepPartChangeHistoryListingComponent,
+BuildStepPartChangeHistoryAddEditComponent,
+BuildStepPartChangeHistoryDetailComponent,
+BuildStepPartChangeHistoryTableComponent,
 ColourFinishListingComponent,
 ColourFinishAddEditComponent,
 ColourFinishDetailComponent,
@@ -1255,10 +1289,14 @@ BuildChallengeEntryService,
 BuildManualService,
 BuildManualChangeHistoryService,
 BuildManualPageService,
+BuildManualPageChangeHistoryService,
 BuildManualStepService,
+BuildManualStepChangeHistoryService,
 BuildStepAnnotationService,
+BuildStepAnnotationChangeHistoryService,
 BuildStepAnnotationTypeService,
 BuildStepPartService,
+BuildStepPartChangeHistoryService,
 ColourFinishService,
 CompiledGlbService,
 ConnectorTypeService,

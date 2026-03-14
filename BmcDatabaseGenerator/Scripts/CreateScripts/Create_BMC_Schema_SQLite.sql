@@ -56,10 +56,14 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "ExportFormat"
 -- DROP TABLE "ProjectRender"
 -- DROP TABLE "RenderPreset"
+-- DROP TABLE "BuildStepAnnotationChangeHistory"
 -- DROP TABLE "BuildStepAnnotation"
 -- DROP TABLE "BuildStepAnnotationType"
+-- DROP TABLE "BuildStepPartChangeHistory"
 -- DROP TABLE "BuildStepPart"
+-- DROP TABLE "BuildManualStepChangeHistory"
 -- DROP TABLE "BuildManualStep"
+-- DROP TABLE "BuildManualPageChangeHistory"
 -- DROP TABLE "BuildManualPage"
 -- DROP TABLE "BuildManualChangeHistory"
 -- DROP TABLE "BuildManual"
@@ -170,10 +174,14 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "ExportFormat" DISABLE
 -- ALTER INDEX ALL ON "ProjectRender" DISABLE
 -- ALTER INDEX ALL ON "RenderPreset" DISABLE
+-- ALTER INDEX ALL ON "BuildStepAnnotationChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "BuildStepAnnotation" DISABLE
 -- ALTER INDEX ALL ON "BuildStepAnnotationType" DISABLE
+-- ALTER INDEX ALL ON "BuildStepPartChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "BuildStepPart" DISABLE
+-- ALTER INDEX ALL ON "BuildManualStepChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "BuildManualStep" DISABLE
+-- ALTER INDEX ALL ON "BuildManualPageChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "BuildManualPage" DISABLE
 -- ALTER INDEX ALL ON "BuildManualChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "BuildManual" DISABLE
@@ -284,10 +292,14 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "ExportFormat" REBUILD
 -- ALTER INDEX ALL ON "ProjectRender" REBUILD
 -- ALTER INDEX ALL ON "RenderPreset" REBUILD
+-- ALTER INDEX ALL ON "BuildStepAnnotationChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "BuildStepAnnotation" REBUILD
 -- ALTER INDEX ALL ON "BuildStepAnnotationType" REBUILD
+-- ALTER INDEX ALL ON "BuildStepPartChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "BuildStepPart" REBUILD
+-- ALTER INDEX ALL ON "BuildManualStepChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "BuildManualStep" REBUILD
+-- ALTER INDEX ALL ON "BuildManualPageChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "BuildManualPage" REBUILD
 -- ALTER INDEX ALL ON "BuildManualChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "BuildManual" REBUILD
@@ -2543,6 +2555,10 @@ CREATE TABLE "BuildManualPage"
 	"pageNum" INTEGER NULL,		-- Sequential page number within the manual.  Note purposely not called pageNumber to not clash with code generated parameter
 	"title" VARCHAR(250) NULL COLLATE NOCASE,		-- Optional page title (e.g. 'Bag 1', 'Chassis Assembly')
 	"notes" TEXT NULL COLLATE NOCASE,		-- Optional internal notes about this page
+	"backgroundTheme" VARCHAR(50) NULL COLLATE NOCASE,		-- Background theme for the page (e.g. Blueprint, Clean White, Dark Mode)
+	"layoutPreset" VARCHAR(50) NULL COLLATE NOCASE,		-- Layout preset (e.g. SingleStep, Grid, TwoColumn)
+	"backgroundColorHex" VARCHAR(10) NULL COLLATE NOCASE,		-- Custom background colour hex from LPub3D PAGE BACKGROUND COLOR (e.g. #FFFFFF)
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -2565,6 +2581,39 @@ CREATE INDEX "I_BuildManualPage_tenantGuid_deleted" ON "BuildManualPage" ("tenan
 ;
 
 
+-- The change history for records from the BuildManualPage table.
+CREATE TABLE "BuildManualPageChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"buildManualPageId" INTEGER NOT NULL,		-- Link to the BuildManualPage table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("buildManualPageId") REFERENCES "BuildManualPage"("id")		-- Foreign key to the BuildManualPage table.
+);
+-- Index on the BuildManualPageChangeHistory table's tenantGuid field.
+CREATE INDEX "I_BuildManualPageChangeHistory_tenantGuid" ON "BuildManualPageChangeHistory" ("tenantGuid")
+;
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_BuildManualPageChangeHistory_tenantGuid_versionNumber" ON "BuildManualPageChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_BuildManualPageChangeHistory_tenantGuid_timeStamp" ON "BuildManualPageChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_BuildManualPageChangeHistory_tenantGuid_userId" ON "BuildManualPageChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the BuildManualPageChangeHistory table's tenantGuid,buildManualPageId fields.
+CREATE INDEX "I_BuildManualPageChangeHistory_tenantGuid_buildManualPageId" ON "BuildManualPageChangeHistory" ("tenantGuid", "buildManualPageId", "versionNumber", "timeStamp", "userId")
+;
+
+
 -- A single build step within a manual page. Defines the camera angle and display options for that step's rendered view.
 CREATE TABLE "BuildManualStep"
 (
@@ -2581,6 +2630,13 @@ CREATE TABLE "BuildManualStep"
 	"cameraZoom" REAL NULL,		-- Camera zoom / field of view for this step
 	"showExplodedView" BIT NOT NULL DEFAULT 0,		-- Whether to render the step with newly-added parts pulled apart for clarity
 	"explodedDistance" REAL NULL,		-- Distance in LDU to pull apart exploded parts (null = use default)
+	"renderImagePath" TEXT NULL COLLATE NOCASE,		-- Base64 data URI of the generated render image for this step
+	"pliImagePath" TEXT NULL COLLATE NOCASE,		-- Base64 data URI of the generated Parts List Indicator (PLI) image for this step
+	"fadeStepEnabled" BIT NOT NULL DEFAULT 1,		-- When true, previous step parts are rendered faded (ghosted)
+	"isCallout" BIT NOT NULL DEFAULT 0,		-- Whether this step is a callout (submodel assembly shown in-line)
+	"calloutModelName" VARCHAR(250) NULL COLLATE NOCASE,		-- Name of the submodel this callout refers to (from LPub3D CALLOUT meta)
+	"showPartsListImage" BIT NOT NULL DEFAULT 1,		-- Whether to show the Parts List Indicator (PLI) image for this step
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -2603,6 +2659,39 @@ CREATE INDEX "I_BuildManualStep_tenantGuid_deleted" ON "BuildManualStep" ("tenan
 ;
 
 
+-- The change history for records from the BuildManualStep table.
+CREATE TABLE "BuildManualStepChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"buildManualStepId" INTEGER NOT NULL,		-- Link to the BuildManualStep table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("buildManualStepId") REFERENCES "BuildManualStep"("id")		-- Foreign key to the BuildManualStep table.
+);
+-- Index on the BuildManualStepChangeHistory table's tenantGuid field.
+CREATE INDEX "I_BuildManualStepChangeHistory_tenantGuid" ON "BuildManualStepChangeHistory" ("tenantGuid")
+;
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_BuildManualStepChangeHistory_tenantGuid_versionNumber" ON "BuildManualStepChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_BuildManualStepChangeHistory_tenantGuid_timeStamp" ON "BuildManualStepChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_BuildManualStepChangeHistory_tenantGuid_userId" ON "BuildManualStepChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the BuildManualStepChangeHistory table's tenantGuid,buildManualStepId fields.
+CREATE INDEX "I_BuildManualStepChangeHistory_tenantGuid_buildManualStepId" ON "BuildManualStepChangeHistory" ("tenantGuid", "buildManualStepId", "versionNumber", "timeStamp", "userId")
+;
+
+
 -- Maps which placed bricks are added during a specific build step. Links to the actual PlacedBrick in the project.
 CREATE TABLE "BuildStepPart"
 (
@@ -2610,6 +2699,7 @@ CREATE TABLE "BuildStepPart"
 	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
 	"buildManualStepId" INTEGER NOT NULL,		-- The build step this part is added during
 	"placedBrickId" INTEGER NOT NULL,		-- The placed brick in the project that is added in this step
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -2634,6 +2724,39 @@ CREATE INDEX "I_BuildStepPart_tenantGuid_active" ON "BuildStepPart" ("tenantGuid
 
 -- Index on the BuildStepPart table's tenantGuid,deleted fields.
 CREATE INDEX "I_BuildStepPart_tenantGuid_deleted" ON "BuildStepPart" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the BuildStepPart table.
+CREATE TABLE "BuildStepPartChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"buildStepPartId" INTEGER NOT NULL,		-- Link to the BuildStepPart table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("buildStepPartId") REFERENCES "BuildStepPart"("id")		-- Foreign key to the BuildStepPart table.
+);
+-- Index on the BuildStepPartChangeHistory table's tenantGuid field.
+CREATE INDEX "I_BuildStepPartChangeHistory_tenantGuid" ON "BuildStepPartChangeHistory" ("tenantGuid")
+;
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_BuildStepPartChangeHistory_tenantGuid_versionNumber" ON "BuildStepPartChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_BuildStepPartChangeHistory_tenantGuid_timeStamp" ON "BuildStepPartChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_BuildStepPartChangeHistory_tenantGuid_userId" ON "BuildStepPartChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the BuildStepPartChangeHistory table's tenantGuid,buildStepPartId fields.
+CREATE INDEX "I_BuildStepPartChangeHistory_tenantGuid_buildStepPartId" ON "BuildStepPartChangeHistory" ("tenantGuid", "buildStepPartId", "versionNumber", "timeStamp", "userId")
 ;
 
 
@@ -2685,6 +2808,7 @@ CREATE TABLE "BuildStepAnnotation"
 	"height" REAL NULL,		-- Height of the annotation element (null = auto-size)
 	"text" TEXT NULL COLLATE NOCASE,		-- Optional text content for labels and callouts
 	"placedBrickId" INTEGER NULL,		-- Optional target placed brick that this annotation points to or highlights
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
@@ -2714,6 +2838,39 @@ CREATE INDEX "I_BuildStepAnnotation_tenantGuid_active" ON "BuildStepAnnotation" 
 
 -- Index on the BuildStepAnnotation table's tenantGuid,deleted fields.
 CREATE INDEX "I_BuildStepAnnotation_tenantGuid_deleted" ON "BuildStepAnnotation" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the BuildStepAnnotation table.
+CREATE TABLE "BuildStepAnnotationChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"buildStepAnnotationId" INTEGER NOT NULL,		-- Link to the BuildStepAnnotation table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("buildStepAnnotationId") REFERENCES "BuildStepAnnotation"("id")		-- Foreign key to the BuildStepAnnotation table.
+);
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid field.
+CREATE INDEX "I_BuildStepAnnotationChangeHistory_tenantGuid" ON "BuildStepAnnotationChangeHistory" ("tenantGuid")
+;
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_BuildStepAnnotationChangeHistory_tenantGuid_versionNumber" ON "BuildStepAnnotationChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_BuildStepAnnotationChangeHistory_tenantGuid_timeStamp" ON "BuildStepAnnotationChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_BuildStepAnnotationChangeHistory_tenantGuid_userId" ON "BuildStepAnnotationChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the BuildStepAnnotationChangeHistory table's tenantGuid,buildStepAnnotationId fields.
+CREATE INDEX "I_BuldStpnnttnChngHstry_tnntGud_buldStpnnttnd" ON "BuildStepAnnotationChangeHistory" ("tenantGuid", "buildStepAnnotationId", "versionNumber", "timeStamp", "userId")
 ;
 
 

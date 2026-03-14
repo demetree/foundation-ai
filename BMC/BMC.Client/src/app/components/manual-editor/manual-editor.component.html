@@ -13,20 +13,20 @@
 <!-- ═══ Top Toolbar ═══════════════════════════════════════════════════ -->
 <div class="editor-toolbar" *ngIf="manual">
     <div class="toolbar-left">
-        <button class="btn-icon" (click)="goBack()" title="Back to Manual Generator">
+        <button class="btn-icon" *ngIf="!projectId" (click)="goBack()" title="Back to Manual Generator">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <span class="toolbar-divider"></span>
-        <div class="manual-title-group">
+        <span class="toolbar-divider" *ngIf="!projectId"></span>
+        <div class="manual-title-group" *ngIf="!projectId">
             <input class="manual-name-input"
                    [(ngModel)]="manual.name"
                    placeholder="Manual Name"
                    (blur)="saveManual()" />
-            <span class="page-count-badge">
-                <i class="fas fa-file-alt"></i>
-                {{ pages.length }} page{{ pages.length !== 1 ? 's' : '' }}
-            </span>
         </div>
+        <span class="page-count-badge">
+            <i class="fas fa-file-alt"></i>
+            {{ pages.length }} page{{ pages.length !== 1 ? 's' : '' }}
+        </span>
     </div>
     <div class="toolbar-center">
         <div class="page-size-selector">
@@ -121,7 +121,11 @@
                         </button>
                     </div>
                     <div class="step-render-area">
-                        <div class="render-placeholder">
+                        <img *ngIf="step.renderImagePath"
+                             [src]="step.renderImagePath"
+                             class="step-render-image"
+                             alt="Step {{ step.stepNumber }}" />
+                        <div *ngIf="!step.renderImagePath" class="render-placeholder">
                             <i class="fas fa-cube"></i>
                             <span>Step {{ step.stepNumber }}</span>
                         </div>

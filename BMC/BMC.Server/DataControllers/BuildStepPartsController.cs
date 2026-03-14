@@ -16,6 +16,7 @@ using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.BMC.Database;
+using Foundation.ChangeHistory;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -32,6 +33,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 20;
+
+		static object buildStepPartPutSyncRoot = new object();
+		static object buildStepPartDeleteSyncRoot = new object();
 
 		private BMCContext _context;
 
@@ -64,6 +68,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetBuildStepParts(
 			int? buildManualStepId = null,
 			int? placedBrickId = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -123,6 +128,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (placedBrickId.HasValue == true)
 			{
 				query = query.Where(bsp => bsp.placedBrickId == placedBrickId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bsp => bsp.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -209,6 +218,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			int? buildManualStepId = null,
 			int? placedBrickId = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -248,6 +258,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (placedBrickId.HasValue == true)
 			{
 				query = query.Where(bsp => bsp.placedBrickId == placedBrickId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bsp => bsp.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -483,47 +497,83 @@ namespace Foundation.BMC.Controllers.WebAPI
 				buildStepPart.tenantGuid = existing.tenantGuid;
 			}
 
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (buildStepPart.deleted == true || existing.deleted == true))
+			lock (buildStepPartPutSyncRoot)
 			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildStepPart record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
-			}
+				//
+				// Validate the version number for the buildStepPart being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != buildStepPart.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "BuildStepPart save attempt was made but save request was with version " + buildStepPart.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The BuildStepPart you are trying to update has already changed.  Please try your save again after reloading the BuildStepPart.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					buildStepPart.versionNumber++;
+				}
 
-			EntityEntry<Database.BuildStepPart> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(buildStepPart);
 
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (buildStepPart.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildStepPart record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildStepPart entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
-					null);
+				try
+				{
+				    EntityEntry<Database.BuildStepPart> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(buildStepPart);
 
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildStepPartChangeHistory buildStepPartChangeHistory = new BuildStepPartChangeHistory();
+				        buildStepPartChangeHistory.buildStepPartId = buildStepPart.id;
+				        buildStepPartChangeHistory.versionNumber = buildStepPart.versionNumber;
+				        buildStepPartChangeHistory.timeStamp = DateTime.UtcNow;
+				        buildStepPartChangeHistory.userId = securityUser.id;
+				        buildStepPartChangeHistory.tenantGuid = userTenantGuid;
+				        buildStepPartChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart));
+				        _context.BuildStepPartChangeHistories.Add(buildStepPartChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildStepPart entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
+						null);
 
 				return Ok(Database.BuildStepPart.CreateAnonymous(buildStepPart));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildStepPart entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
-					ex);
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildStepPart entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
+						ex);
 
-				return Problem(ex.Message);
-			}
+					return Problem(ex.Message);
+				}
 
+			}
 		}
 
         /// <summary>
@@ -583,21 +633,57 @@ namespace Foundation.BMC.Controllers.WebAPI
 				buildStepPart.tenantGuid = userTenantGuid;
 
 				buildStepPart.objectGuid = Guid.NewGuid();
+				buildStepPart.versionNumber = 1;
+
 				_context.BuildStepParts.Add(buildStepPart);
-				await _context.SaveChangesAsync(cancellationToken);
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"BMC.BuildStepPart entity successfully created.",
-					true,
-					buildStepPart.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
-					null);
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
 
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the buildStepPart object so that no further changes will be written to the database
+				    //
+				    _context.Entry(buildStepPart).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					buildStepPart.BuildStepPartChangeHistories = null;
+					buildStepPart.buildManualStep = null;
+					buildStepPart.placedBrick = null;
+
+
+				    BuildStepPartChangeHistory buildStepPartChangeHistory = new BuildStepPartChangeHistory();
+				    buildStepPartChangeHistory.buildStepPartId = buildStepPart.id;
+				    buildStepPartChangeHistory.versionNumber = buildStepPart.versionNumber;
+				    buildStepPartChangeHistory.timeStamp = DateTime.UtcNow;
+				    buildStepPartChangeHistory.userId = securityUser.id;
+				    buildStepPartChangeHistory.tenantGuid = userTenantGuid;
+				    buildStepPartChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart));
+				    _context.BuildStepPartChangeHistories.Add(buildStepPartChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"BMC.BuildStepPart entity successfully created.",
+						true,
+						buildStepPart. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
+						null);
+
+
+				}
 			}
 			catch (Exception ex)
 			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildStepPart entity creation failed.", false, buildStepPart.id.ToString(), "", JsonSerializer.Serialize(buildStepPart), ex);
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildStepPart entity creation failed.", false, buildStepPart.id.ToString(), "", JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)), ex);
 
 				return Problem(ex.Message);
 			}
@@ -609,6 +695,436 @@ namespace Foundation.BMC.Controllers.WebAPI
 		}
 
 
+
+        /// <summary>
+        /// 
+        /// This rolls a BuildStepPart entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepPart/Rollback/{id}")]
+		[Route("api/BuildStepPart/Rollback")]
+		public async Task<IActionResult> RollbackToBuildStepPartVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.BuildStepPart> query = (from x in _context.BuildStepParts
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this BuildStepPart concurrently
+			//
+			lock (buildStepPartPutSyncRoot)
+			{
+				
+				Database.BuildStepPart buildStepPart = query.FirstOrDefault();
+				
+				if (buildStepPart == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for BMC.BuildStepPart rollback", id.ToString(), new Exception("No BMC.BuildStepPart entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the BuildStepPart current state so we can log it.
+				//
+				Database.BuildStepPart cloneOfExisting = (Database.BuildStepPart)_context.Entry(buildStepPart).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.BuildStepPartChangeHistories = null;
+				cloneOfExisting.buildManualStep = null;
+				cloneOfExisting.placedBrick = null;
+
+				if (versionNumber >= buildStepPart.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for BMC.BuildStepPart rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for BMC.BuildStepPart rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				BuildStepPartChangeHistory buildStepPartChangeHistory = (from x in _context.BuildStepPartChangeHistories
+				                                               where
+				                                               x.buildStepPartId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (buildStepPartChangeHistory != null)
+				{
+				    Database.BuildStepPart oldBuildStepPart = JsonSerializer.Deserialize<Database.BuildStepPart>(buildStepPartChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    buildStepPart.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    buildStepPart.buildManualStepId = oldBuildStepPart.buildManualStepId;
+				    buildStepPart.placedBrickId = oldBuildStepPart.placedBrickId;
+				    buildStepPart.objectGuid = oldBuildStepPart.objectGuid;
+				    buildStepPart.active = oldBuildStepPart.active;
+				    buildStepPart.deleted = oldBuildStepPart.deleted;
+
+				    string serializedBuildStepPart = JsonSerializer.Serialize(buildStepPart);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildStepPartChangeHistory newBuildStepPartChangeHistory = new BuildStepPartChangeHistory();
+				        newBuildStepPartChangeHistory.buildStepPartId = buildStepPart.id;
+				        newBuildStepPartChangeHistory.versionNumber = buildStepPart.versionNumber;
+				        newBuildStepPartChangeHistory.timeStamp = DateTime.UtcNow;
+				        newBuildStepPartChangeHistory.userId = securityUser.id;
+				        newBuildStepPartChangeHistory.tenantGuid = userTenantGuid;
+				        newBuildStepPartChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart));
+				        _context.BuildStepPartChangeHistories.Add(newBuildStepPartChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildStepPart rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
+						null);
+
+
+				    return Ok(Database.BuildStepPart.CreateAnonymous(buildStepPart));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for BMC.BuildStepPart rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for BMC.BuildStepPart rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the change metadata (version info, timestamp, user) for a specific version of a BuildStepPart.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepPart</param>
+        /// <param name="versionNumber">The version number to retrieve metadata for</param>
+        /// <returns>VersionInformation containing timestamp and user details</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepPart/{id}/ChangeMetadata")]
+		public async Task<IActionResult> GetBuildStepPartChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepPart buildStepPart = await _context.BuildStepParts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepPart == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepPart.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildStepPart> versionInfo = await buildStepPart.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null)
+				{
+					return NotFound($"Version {versionNumber} not found.");
+				}
+
+				return Ok(versionInfo);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the full audit history for a BuildStepPart.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepPart</param>
+        /// <param name="includeData">Whether to include the full entity data for each version (can be large)</param>
+        /// <returns>List of VersionInformation items</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepPart/{id}/AuditHistory")]
+		public async Task<IActionResult> GetBuildStepPartAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepPart buildStepPart = await _context.BuildStepParts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepPart == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepPart.SetupVersionInquiry(_context, userTenantGuid);
+
+				List<VersionInformation<Database.BuildStepPart>> versions = await buildStepPart.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
+
+				return Ok(versions);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets a specific version of a BuildStepPart.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepPart</param>
+        /// <param name="version">The version number to retrieve</param>
+        /// <returns>The BuildStepPart object at that version</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepPart/{id}/Version/{version}")]
+		public async Task<IActionResult> GetBuildStepPartVersion(int id, int version, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepPart buildStepPart = await _context.BuildStepParts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepPart == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepPart.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildStepPart> versionInfo = await buildStepPart.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound();
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the state of a BuildStepPart at a specific point in time.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildStepPart</param>
+        /// <param name="time">The point in time (ISO format, UTC)</param>
+        /// <returns>The BuildStepPart object at that time</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildStepPart/{id}/StateAtTime")]
+		public async Task<IActionResult> GetBuildStepPartStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildStepPart buildStepPart = await _context.BuildStepParts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildStepPart == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildStepPart.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildStepPart> versionInfo = await buildStepPart.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound("No state found at specified time.");
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
 
         /// <summary>
         /// 
@@ -667,33 +1183,52 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Database.BuildStepPart cloneOfExisting = (Database.BuildStepPart)_context.Entry(buildStepPart).GetDatabaseValues().ToObject();
 
 
-			try
+			lock (buildStepPartDeleteSyncRoot)
 			{
-				buildStepPart.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
+			    try
+			    {
+			        buildStepPart.deleted = true;
+			        buildStepPart.versionNumber++;
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildStepPart entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
-					null);
+			        _context.SaveChanges();
 
+			        //
+			        // Now add the change history
+			        //
+			        BuildStepPartChangeHistory buildStepPartChangeHistory = new BuildStepPartChangeHistory();
+			        buildStepPartChangeHistory.buildStepPartId = buildStepPart.id;
+			        buildStepPartChangeHistory.versionNumber = buildStepPart.versionNumber;
+			        buildStepPartChangeHistory.timeStamp = DateTime.UtcNow;
+			        buildStepPartChangeHistory.userId = securityUser.id;
+			        buildStepPartChangeHistory.tenantGuid = userTenantGuid;
+			        buildStepPartChangeHistory.data = JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart));
+			        _context.BuildStepPartChangeHistories.Add(buildStepPartChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildStepPart entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildStepPart entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
 			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildStepPart entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildStepPart.CreateAnonymousWithFirstLevelSubObjects(buildStepPart)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
 		}
 
 
@@ -712,6 +1247,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			int? buildManualStepId = null,
 			int? placedBrickId = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -770,6 +1306,10 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (placedBrickId.HasValue == true)
 			{
 				query = query.Where(bsp => bsp.placedBrickId == placedBrickId.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bsp => bsp.versionNumber == versionNumber.Value);
 			}
 			if (objectGuid.HasValue == true)
 			{

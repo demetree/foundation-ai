@@ -38,6 +38,7 @@ import { AuthService } from '../../../services/auth.service';
 interface BuildStepPartFormValues {
   buildManualStepId: number | bigint,       // For FK link number
   placedBrickId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -72,6 +73,7 @@ export class BuildStepPartAddEditComponent {
   public buildStepPartForm: FormGroup = this.fb.group({
         buildManualStepId: [null, Validators.required],
         placedBrickId: [null, Validators.required],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -213,6 +215,7 @@ export class BuildStepPartAddEditComponent {
         id: this.buildStepPartSubmitData?.id || 0,
         buildManualStepId: Number(formValue.buildManualStepId),
         placedBrickId: Number(formValue.placedBrickId),
+        versionNumber: this.buildStepPartSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -226,6 +229,7 @@ export class BuildStepPartAddEditComponent {
 
   private addBuildStepPart(buildStepPartData: BuildStepPartSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    buildStepPartData.versionNumber = 0;
     buildStepPartData.active = true;
     buildStepPartData.deleted = false;
     this.buildStepPartService.PostBuildStepPart(buildStepPartData).pipe(
@@ -342,6 +346,7 @@ export class BuildStepPartAddEditComponent {
       this.buildStepPartForm.reset({
         buildManualStepId: null,
         placedBrickId: null,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -355,6 +360,7 @@ export class BuildStepPartAddEditComponent {
         this.buildStepPartForm.reset({
         buildManualStepId: buildStepPartData.buildManualStepId,
         placedBrickId: buildStepPartData.placedBrickId,
+        versionNumber: buildStepPartData.versionNumber?.toString() ?? '',
         active: buildStepPartData.active ?? true,
         deleted: buildStepPartData.deleted ?? false,
       }, { emitEvent: false});

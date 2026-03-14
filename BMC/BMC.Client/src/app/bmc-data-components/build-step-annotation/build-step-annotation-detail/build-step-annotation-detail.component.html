@@ -21,7 +21,7 @@
                                 <label for="BuildStepAnnotation-buildManualStepId" id="label-BuildStepAnnotation-buildManualStepId"><span class="text-danger">*</span>Build Manual Step</label>
                                 <select id="BuildStepAnnotation-buildManualStepId" formControlName="buildManualStepId" class="form-select build-step-annotation-select" [disabled]="!userIsBMCBuildStepAnnotationWriter()">
                                     <option [ngValue]="null">Select Build Manual Step</option>
-                                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.id}}</option>
+                                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.renderImagePath}}</option>
                                 </select>
                                 <div *ngIf="buildStepAnnotationForm.get('buildManualStepId')?.invalid && buildStepAnnotationForm.get('buildManualStepId')?.touched" class="text-danger">
                                     Build Manual Step is required
@@ -64,6 +64,10 @@
                                     <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
                                 </select>
                             </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="BuildStepAnnotation-versionNumber" id="label-BuildStepAnnotation-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="BuildStepAnnotation-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-step-annotation-input" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="BuildStepAnnotation-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" />
                                 <label for="BuildStepAnnotation-active" class="form-check-label" id="label-BuildStepAnnotation-active"><span class="text-danger">*</span>Active</label>
@@ -87,6 +91,30 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsBMCBuildStepAnnotationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 build-step-annotation-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="buildStepAnnotationChangeHistoryService.userIsBMCBuildStepAnnotationChangeHistoryReader()">
+                            <button ngbNavLink>Build Step Annotation Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (buildStepAnnotationData?.BuildStepAnnotationChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-build-step-annotation-change-history-table [queryParams]="{ buildStepAnnotationId: buildStepAnnotationData?.id }" [showAddButton]="true" [preSeededData]="{ buildStepAnnotationId: buildStepAnnotationData?.id }" [hiddenFields]="['buildStepAnnotationId']"></app-build-step-annotation-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
                 </div>
             </div>
         </div>

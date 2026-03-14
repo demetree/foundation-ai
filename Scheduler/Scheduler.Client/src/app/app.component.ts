@@ -16,6 +16,7 @@ import { LocalStoreManager } from './services/local-store-manager.service';
 import { AppTitleService } from './services/app-title.service';
 import { AuthService } from './services/auth.service';
 import { ConfigurationService } from './services/configuration.service';
+import { ThemeService } from './services/theme.service';
 import { Alertify } from './models/Alertify';
 import { LoginComponent } from './components/login/login.component';
 import { Modal } from 'bootstrap';
@@ -64,7 +65,8 @@ export class AppComponent implements OnInit, OnDestroy {
     public router: Router,
     private navigationService: NavigationService,
     @Inject('BASE_URL') private baseUrl: string,
-    private http: HttpClient,) {
+    private http: HttpClient,
+    private themeService: ThemeService,) {
 
     storageManager.initialiseStorageSyncListener();
 
@@ -94,6 +96,13 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnInit() {
 
     this.isUserLoggedIn = this.authService.isLoggedIn;
+
+    //
+    // Initialize theme from server if user is already logged in (e.g., page refresh)
+    //
+    if (this.isUserLoggedIn === true) {
+      this.themeService.initializeAfterLogin();
+    }
 
     this.schedulerDataServiceManagerService.ClearAllCaches();
 
@@ -141,6 +150,13 @@ export class AppComponent implements OnInit, OnDestroy {
       this.schedulerDataServiceManagerService.ClearAllCaches();
 
       this.isUserLoggedIn = isLoggedIn;
+
+      //
+      // Initialize the theme service after login to resolve tenant/user theme preferences
+      //
+      if (isLoggedIn === true) {
+        this.themeService.initializeAfterLogin();
+      }
 
 
       setTimeout(() => {

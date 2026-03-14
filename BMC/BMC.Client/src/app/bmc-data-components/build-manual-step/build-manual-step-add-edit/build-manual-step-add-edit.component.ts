@@ -46,6 +46,13 @@ interface BuildManualStepFormValues {
   cameraZoom: string | null,     // Stored as string for form input, converted to number on submit.
   showExplodedView: boolean,
   explodedDistance: string | null,     // Stored as string for form input, converted to number on submit.
+  renderImagePath: string | null,
+  pliImagePath: string | null,
+  fadeStepEnabled: boolean,
+  isCallout: boolean,
+  calloutModelName: string | null,
+  showPartsListImage: boolean,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -89,6 +96,13 @@ export class BuildManualStepAddEditComponent {
         cameraZoom: [''],
         showExplodedView: [false],
         explodedDistance: [''],
+        renderImagePath: [''],
+        pliImagePath: [''],
+        fadeStepEnabled: [false],
+        isCallout: [false],
+        calloutModelName: [''],
+        showPartsListImage: [false],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -237,6 +251,13 @@ export class BuildManualStepAddEditComponent {
         cameraZoom: formValue.cameraZoom ? Number(formValue.cameraZoom) : null,
         showExplodedView: !!formValue.showExplodedView,
         explodedDistance: formValue.explodedDistance ? Number(formValue.explodedDistance) : null,
+        renderImagePath: formValue.renderImagePath?.trim() || null,
+        pliImagePath: formValue.pliImagePath?.trim() || null,
+        fadeStepEnabled: !!formValue.fadeStepEnabled,
+        isCallout: !!formValue.isCallout,
+        calloutModelName: formValue.calloutModelName?.trim() || null,
+        showPartsListImage: !!formValue.showPartsListImage,
+        versionNumber: this.buildManualStepSubmitData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -250,6 +271,7 @@ export class BuildManualStepAddEditComponent {
 
   private addBuildManualStep(buildManualStepData: BuildManualStepSubmitData) {
     // Assign initial values to non-nullable control fields suitable for adding new data.
+    buildManualStepData.versionNumber = 0;
     buildManualStepData.active = true;
     buildManualStepData.deleted = false;
     this.buildManualStepService.PostBuildManualStep(buildManualStepData).pipe(
@@ -375,6 +397,13 @@ export class BuildManualStepAddEditComponent {
         cameraZoom: '',
         showExplodedView: false,
         explodedDistance: '',
+        renderImagePath: '',
+        pliImagePath: '',
+        fadeStepEnabled: false,
+        isCallout: false,
+        calloutModelName: '',
+        showPartsListImage: false,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -397,6 +426,13 @@ export class BuildManualStepAddEditComponent {
         cameraZoom: buildManualStepData.cameraZoom?.toString() ?? '',
         showExplodedView: buildManualStepData.showExplodedView ?? false,
         explodedDistance: buildManualStepData.explodedDistance?.toString() ?? '',
+        renderImagePath: buildManualStepData.renderImagePath ?? '',
+        pliImagePath: buildManualStepData.pliImagePath ?? '',
+        fadeStepEnabled: buildManualStepData.fadeStepEnabled ?? false,
+        isCallout: buildManualStepData.isCallout ?? false,
+        calloutModelName: buildManualStepData.calloutModelName ?? '',
+        showPartsListImage: buildManualStepData.showPartsListImage ?? false,
+        versionNumber: buildManualStepData.versionNumber?.toString() ?? '',
         active: buildManualStepData.active ?? true,
         deleted: buildManualStepData.deleted ?? false,
       }, { emitEvent: false});

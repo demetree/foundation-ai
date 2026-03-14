@@ -263,29 +263,7 @@ export class MyProjectsComponent implements OnInit, OnDestroy {
 
     createManual(project: ProjectSummary, event: Event): void {
         event.stopPropagation();
-
-        this.manualEditorService.createManual({
-            projectId: project.id,
-            name: `${project.name || 'Untitled'} — Instructions`,
-            description: `Build instructions for ${project.name}`,
-            pageWidthMm: 210,
-            pageHeightMm: 297,
-            isPublished: false,
-            active: true,
-            deleted: false
-        }).subscribe({
-            next: (manual) => {
-                this.alertService.showMessage(
-                    'Manual Created',
-                    `Created instruction manual for "${project.name}"`,
-                    MessageSeverity.success
-                );
-                this.router.navigate(['/manual-editor', manual.id]);
-            },
-            error: () => {
-                this.alertService.showMessage('Error', 'Failed to create manual', MessageSeverity.error);
-            }
-        });
+        this.router.navigate(['/my-projects', project.id, 'viewer']);
     }
 
 

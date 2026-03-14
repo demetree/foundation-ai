@@ -16,6 +16,7 @@ using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.BMC.Database;
+using Foundation.ChangeHistory;
 
 namespace Foundation.BMC.Controllers.WebAPI
 {
@@ -32,6 +33,9 @@ namespace Foundation.BMC.Controllers.WebAPI
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
 		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 20;
+
+		static object buildManualStepPutSyncRoot = new object();
+		static object buildManualStepDeleteSyncRoot = new object();
 
 		private BMCContext _context;
 
@@ -73,11 +77,19 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? cameraZoom = null,
 			bool? showExplodedView = null,
 			float? explodedDistance = null,
+			string renderImagePath = null,
+			string pliImagePath = null,
+			bool? fadeStepEnabled = null,
+			bool? isCallout = null,
+			string calloutModelName = null,
+			bool? showPartsListImage = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
+			string anyStringContains = null,
 			bool includeRelations = true,
 			CancellationToken cancellationToken = default)
 		{
@@ -169,6 +181,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bms => bms.explodedDistance == explodedDistance.Value);
 			}
+			if (string.IsNullOrEmpty(renderImagePath) == false)
+			{
+				query = query.Where(bms => bms.renderImagePath == renderImagePath);
+			}
+			if (string.IsNullOrEmpty(pliImagePath) == false)
+			{
+				query = query.Where(bms => bms.pliImagePath == pliImagePath);
+			}
+			if (fadeStepEnabled.HasValue == true)
+			{
+				query = query.Where(bms => bms.fadeStepEnabled == fadeStepEnabled.Value);
+			}
+			if (isCallout.HasValue == true)
+			{
+				query = query.Where(bms => bms.isCallout == isCallout.Value);
+			}
+			if (string.IsNullOrEmpty(calloutModelName) == false)
+			{
+				query = query.Where(bms => bms.calloutModelName == calloutModelName);
+			}
+			if (showPartsListImage.HasValue == true)
+			{
+				query = query.Where(bms => bms.showPartsListImage == showPartsListImage.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bms => bms.versionNumber == versionNumber.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bms => bms.objectGuid == objectGuid);
@@ -198,7 +238,27 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bms => bms.deleted == false);
 			}
 
-			query = query.OrderBy(bms => bms.id);
+			query = query.OrderBy(bms => bms.calloutModelName);
+
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Build Manual Step, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.renderImagePath.Contains(anyStringContains)
+			       || x.pliImagePath.Contains(anyStringContains)
+			       || x.calloutModelName.Contains(anyStringContains)
+			       || (includeRelations == true && x.buildManualPage.title.Contains(anyStringContains))
+			       || (includeRelations == true && x.buildManualPage.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.buildManualPage.backgroundTheme.Contains(anyStringContains))
+			       || (includeRelations == true && x.buildManualPage.layoutPreset.Contains(anyStringContains))
+			       || (includeRelations == true && x.buildManualPage.backgroundColorHex.Contains(anyStringContains))
+			   );
+			}
 
 			if (includeRelations == true)
 			{
@@ -262,9 +322,17 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? cameraZoom = null,
 			bool? showExplodedView = null,
 			float? explodedDistance = null,
+			string renderImagePath = null,
+			string pliImagePath = null,
+			bool? fadeStepEnabled = null,
+			bool? isCallout = null,
+			string calloutModelName = null,
+			bool? showPartsListImage = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
+			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -338,6 +406,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bms => bms.explodedDistance == explodedDistance.Value);
 			}
+			if (renderImagePath != null)
+			{
+				query = query.Where(bms => bms.renderImagePath == renderImagePath);
+			}
+			if (pliImagePath != null)
+			{
+				query = query.Where(bms => bms.pliImagePath == pliImagePath);
+			}
+			if (fadeStepEnabled.HasValue == true)
+			{
+				query = query.Where(bms => bms.fadeStepEnabled == fadeStepEnabled.Value);
+			}
+			if (isCallout.HasValue == true)
+			{
+				query = query.Where(bms => bms.isCallout == isCallout.Value);
+			}
+			if (calloutModelName != null)
+			{
+				query = query.Where(bms => bms.calloutModelName == calloutModelName);
+			}
+			if (showPartsListImage.HasValue == true)
+			{
+				query = query.Where(bms => bms.showPartsListImage == showPartsListImage.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bms => bms.versionNumber == versionNumber.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bms => bms.objectGuid == objectGuid);
@@ -366,6 +462,26 @@ namespace Foundation.BMC.Controllers.WebAPI
 				query = query.Where(bms => bms.active == true);
 				query = query.Where(bms => bms.deleted == false);
 			}
+
+			//
+			// Add the any string contains parameter to span all the string fields on the Build Manual Step, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.renderImagePath.Contains(anyStringContains)
+			       || x.pliImagePath.Contains(anyStringContains)
+			       || x.calloutModelName.Contains(anyStringContains)
+			       || x.buildManualPage.title.Contains(anyStringContains)
+			       || x.buildManualPage.notes.Contains(anyStringContains)
+			       || x.buildManualPage.backgroundTheme.Contains(anyStringContains)
+			       || x.buildManualPage.layoutPreset.Contains(anyStringContains)
+			       || x.buildManualPage.backgroundColorHex.Contains(anyStringContains)
+			   );
+			}
+
 
 			int output = await query.CountAsync(cancellationToken);
 
@@ -440,7 +556,7 @@ namespace Foundation.BMC.Controllers.WebAPI
 
 					await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, userIsAdmin == true ? "BMC.BuildManualStep Entity was read with Admin privilege." : "BMC.BuildManualStep Entity was read.");
 
-					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BuildManualStep", materialized.id, materialized.id.ToString()));
+					BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BuildManualStep", materialized.id, materialized.calloutModelName));
 
 
 					// Create a new output object that only includes the relations if necessary, and doesn't include the empty list objects, so that we can reduce the amount of data being transferred.
@@ -571,47 +687,88 @@ namespace Foundation.BMC.Controllers.WebAPI
 				buildManualStep.tenantGuid = existing.tenantGuid;
 			}
 
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (buildManualStep.deleted == true || existing.deleted == true))
+			lock (buildManualStepPutSyncRoot)
 			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildManualStep record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
-			}
+				//
+				// Validate the version number for the buildManualStep being saved.  Error out if the database version is different than what is being saved.  If they are the same, then increment the version for this save.
+				//
+				if (existing.versionNumber != buildManualStep.versionNumber)
+				{
+					// Record has changed
+					CreateAuditEvent(AuditEngine.AuditType.Miscellaneous, "BuildManualStep save attempt was made but save request was with version " + buildManualStep.versionNumber + " and the current version number is " + existing.versionNumber, false);
+					return Problem("The BuildManualStep you are trying to update has already changed.  Please try your save again after reloading the BuildManualStep.");
+				}
+				else
+				{
+					// Same record.  Increase version.
+					buildManualStep.versionNumber++;
+				}
 
-			EntityEntry<Database.BuildManualStep> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(buildManualStep);
 
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (buildManualStep.deleted == true || existing.deleted == true))
+				{
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted BMC.BuildManualStep record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildManualStep entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
-					null);
+				if (buildManualStep.calloutModelName != null && buildManualStep.calloutModelName.Length > 250)
+				{
+					buildManualStep.calloutModelName = buildManualStep.calloutModelName.Substring(0, 250);
+				}
 
+				try
+				{
+				    EntityEntry<Database.BuildManualStep> attached = _context.Entry(existing);
+				    attached.CurrentValues.SetValues(buildManualStep);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildManualStepChangeHistory buildManualStepChangeHistory = new BuildManualStepChangeHistory();
+				        buildManualStepChangeHistory.buildManualStepId = buildManualStep.id;
+				        buildManualStepChangeHistory.versionNumber = buildManualStep.versionNumber;
+				        buildManualStepChangeHistory.timeStamp = DateTime.UtcNow;
+				        buildManualStepChangeHistory.userId = securityUser.id;
+				        buildManualStepChangeHistory.tenantGuid = userTenantGuid;
+				        buildManualStepChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep));
+				        _context.BuildManualStepChangeHistories.Add(buildManualStepChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildManualStep entity successfully updated.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
+						null);
 
 				return Ok(Database.BuildManualStep.CreateAnonymous(buildManualStep));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"BMC.BuildManualStep entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
-					ex);
+				}
+				catch (Exception ex)
+				{
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildManualStep entity update failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
+						ex);
 
-				return Problem(ex.Message);
-			}
+					return Problem(ex.Message);
+				}
 
+			}
 		}
 
         /// <summary>
@@ -670,33 +827,521 @@ namespace Foundation.BMC.Controllers.WebAPI
 				//
 				buildManualStep.tenantGuid = userTenantGuid;
 
+				if (buildManualStep.calloutModelName != null && buildManualStep.calloutModelName.Length > 250)
+				{
+					buildManualStep.calloutModelName = buildManualStep.calloutModelName.Substring(0, 250);
+				}
+
 				buildManualStep.objectGuid = Guid.NewGuid();
+				buildManualStep.versionNumber = 1;
+
 				_context.BuildManualSteps.Add(buildManualStep);
-				await _context.SaveChangesAsync(cancellationToken);
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"BMC.BuildManualStep entity successfully created.",
-					true,
-					buildManualStep.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
-					null);
+				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+				{
+				    await _context.SaveChangesAsync(cancellationToken);
 
+				    //
+				    // Now add the change history
+				    //
+
+				    //
+				    // Detach the buildManualStep object so that no further changes will be written to the database
+				    //
+				    _context.Entry(buildManualStep).State = EntityState.Detached;
+
+				    //
+				    // Nullify all object properties before serializing.
+				    //
+					buildManualStep.BuildManualStepChangeHistories = null;
+					buildManualStep.BuildStepAnnotations = null;
+					buildManualStep.BuildStepParts = null;
+					buildManualStep.buildManualPage = null;
+
+
+				    BuildManualStepChangeHistory buildManualStepChangeHistory = new BuildManualStepChangeHistory();
+				    buildManualStepChangeHistory.buildManualStepId = buildManualStep.id;
+				    buildManualStepChangeHistory.versionNumber = buildManualStep.versionNumber;
+				    buildManualStepChangeHistory.timeStamp = DateTime.UtcNow;
+				    buildManualStepChangeHistory.userId = securityUser.id;
+				    buildManualStepChangeHistory.tenantGuid = userTenantGuid;
+				    buildManualStepChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep));
+				    _context.BuildManualStepChangeHistories.Add(buildManualStepChangeHistory);
+				    await _context.SaveChangesAsync(cancellationToken);
+
+				    await transaction.CommitAsync(cancellationToken);
+
+					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+						"BMC.BuildManualStep entity successfully created.",
+						true,
+						buildManualStep. id.ToString(),
+						"",
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
+						null);
+
+
+				}
 			}
 			catch (Exception ex)
 			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildManualStep entity creation failed.", false, buildManualStep.id.ToString(), "", JsonSerializer.Serialize(buildManualStep), ex);
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "BMC.BuildManualStep entity creation failed.", false, buildManualStep.id.ToString(), "", JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)), ex);
 
 				return Problem(ex.Message);
 			}
 
 
-			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BuildManualStep", buildManualStep.id, buildManualStep.id.ToString()));
+			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "BuildManualStep", buildManualStep.id, buildManualStep.calloutModelName));
 
 			return CreatedAtRoute("BuildManualStep", new { id = buildManualStep.id }, Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep));
 		}
 
 
+
+        /// <summary>
+        /// 
+        /// This rolls a BuildManualStep entity back to the state it was in at a prior version number.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+		[HttpPut]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualStep/Rollback/{id}")]
+		[Route("api/BuildManualStep/Rollback")]
+		public async Task<IActionResult> RollbackToBuildManualStepVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+			//
+			// Data rollback is an admin only function, like Deletes.
+			//
+			StartAuditEventClock();
+			
+			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+			
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+			
+
+			
+			IQueryable <Database.BuildManualStep> query = (from x in _context.BuildManualSteps
+			        where
+			        (x.id == id)
+			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+
+			//
+			// Make sure nobody else is editing this BuildManualStep concurrently
+			//
+			lock (buildManualStepPutSyncRoot)
+			{
+				
+				Database.BuildManualStep buildManualStep = query.FirstOrDefault();
+				
+				if (buildManualStep == null)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for BMC.BuildManualStep rollback", id.ToString(), new Exception("No BMC.BuildManualStep entity could be find with the primary key provided for the rollback operation."));
+				    return NotFound();
+				}
+				
+				//
+				// Make a copy of the BuildManualStep current state so we can log it.
+				//
+				Database.BuildManualStep cloneOfExisting = (Database.BuildManualStep)_context.Entry(buildManualStep).GetDatabaseValues().ToObject();
+				
+				//
+				// Remove any object fields from the clone object so that it can serialize effectively
+				//
+				cloneOfExisting.BuildManualStepChangeHistories = null;
+				cloneOfExisting.BuildStepAnnotations = null;
+				cloneOfExisting.BuildStepParts = null;
+				cloneOfExisting.buildManualPage = null;
+
+				if (versionNumber >= buildManualStep.versionNumber)
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for BMC.BuildManualStep rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for BMC.BuildManualStep rollback operation.Version number provided is " + versionNumber));
+				    return NotFound();
+				}
+				
+				BuildManualStepChangeHistory buildManualStepChangeHistory = (from x in _context.BuildManualStepChangeHistories
+				                                               where
+				                                               x.buildManualStepId == id &&
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
+				                                               select x)
+				                                               .AsNoTracking()
+				                                               .FirstOrDefault();
+
+				if (buildManualStepChangeHistory != null)
+				{
+				    Database.BuildManualStep oldBuildManualStep = JsonSerializer.Deserialize<Database.BuildManualStep>(buildManualStepChangeHistory.data);
+				
+				    //
+				    // Increase the version number
+				    //
+				    buildManualStep.versionNumber++;
+				
+				    //
+				    // Put all other fields back the way that they were 
+				    //
+				    buildManualStep.buildManualPageId = oldBuildManualStep.buildManualPageId;
+				    buildManualStep.stepNumber = oldBuildManualStep.stepNumber;
+				    buildManualStep.cameraPositionX = oldBuildManualStep.cameraPositionX;
+				    buildManualStep.cameraPositionY = oldBuildManualStep.cameraPositionY;
+				    buildManualStep.cameraPositionZ = oldBuildManualStep.cameraPositionZ;
+				    buildManualStep.cameraTargetX = oldBuildManualStep.cameraTargetX;
+				    buildManualStep.cameraTargetY = oldBuildManualStep.cameraTargetY;
+				    buildManualStep.cameraTargetZ = oldBuildManualStep.cameraTargetZ;
+				    buildManualStep.cameraZoom = oldBuildManualStep.cameraZoom;
+				    buildManualStep.showExplodedView = oldBuildManualStep.showExplodedView;
+				    buildManualStep.explodedDistance = oldBuildManualStep.explodedDistance;
+				    buildManualStep.renderImagePath = oldBuildManualStep.renderImagePath;
+				    buildManualStep.pliImagePath = oldBuildManualStep.pliImagePath;
+				    buildManualStep.fadeStepEnabled = oldBuildManualStep.fadeStepEnabled;
+				    buildManualStep.isCallout = oldBuildManualStep.isCallout;
+				    buildManualStep.calloutModelName = oldBuildManualStep.calloutModelName;
+				    buildManualStep.showPartsListImage = oldBuildManualStep.showPartsListImage;
+				    buildManualStep.objectGuid = oldBuildManualStep.objectGuid;
+				    buildManualStep.active = oldBuildManualStep.active;
+				    buildManualStep.deleted = oldBuildManualStep.deleted;
+
+				    string serializedBuildManualStep = JsonSerializer.Serialize(buildManualStep);
+
+				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+				    {
+
+				        _context.SaveChanges();
+
+				        //
+				        // Now add the change history
+				        //
+				        BuildManualStepChangeHistory newBuildManualStepChangeHistory = new BuildManualStepChangeHistory();
+				        newBuildManualStepChangeHistory.buildManualStepId = buildManualStep.id;
+				        newBuildManualStepChangeHistory.versionNumber = buildManualStep.versionNumber;
+				        newBuildManualStepChangeHistory.timeStamp = DateTime.UtcNow;
+				        newBuildManualStepChangeHistory.userId = securityUser.id;
+				        newBuildManualStepChangeHistory.tenantGuid = userTenantGuid;
+				        newBuildManualStepChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep));
+				        _context.BuildManualStepChangeHistories.Add(newBuildManualStepChangeHistory);
+
+				        _context.SaveChanges();
+
+				        transaction.Commit();
+				    }
+
+					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
+						"BMC.BuildManualStep rollback process successfully rolled back to version number " + versionNumber,
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
+						null);
+
+
+				    return Ok(Database.BuildManualStep.CreateAnonymous(buildManualStep));
+				}
+				else
+				{
+				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for BMC.BuildManualStep rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for BMC.BuildManualStep rollback.  Version number provided is " + versionNumber));
+
+				    return BadRequest();
+				}
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the change metadata (version info, timestamp, user) for a specific version of a BuildManualStep.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualStep</param>
+        /// <param name="versionNumber">The version number to retrieve metadata for</param>
+        /// <returns>VersionInformation containing timestamp and user details</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualStep/{id}/ChangeMetadata")]
+		public async Task<IActionResult> GetBuildManualStepChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualStep buildManualStep = await _context.BuildManualSteps.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualStep == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualStep.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildManualStep> versionInfo = await buildManualStep.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null)
+				{
+					return NotFound($"Version {versionNumber} not found.");
+				}
+
+				return Ok(versionInfo);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the full audit history for a BuildManualStep.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualStep</param>
+        /// <param name="includeData">Whether to include the full entity data for each version (can be large)</param>
+        /// <returns>List of VersionInformation items</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualStep/{id}/AuditHistory")]
+		public async Task<IActionResult> GetBuildManualStepAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualStep buildManualStep = await _context.BuildManualSteps.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualStep == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualStep.SetupVersionInquiry(_context, userTenantGuid);
+
+				List<VersionInformation<Database.BuildManualStep>> versions = await buildManualStep.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
+
+				return Ok(versions);
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets a specific version of a BuildManualStep.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualStep</param>
+        /// <param name="version">The version number to retrieve</param>
+        /// <returns>The BuildManualStep object at that version</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualStep/{id}/Version/{version}")]
+		public async Task<IActionResult> GetBuildManualStepVersion(int id, int version, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualStep buildManualStep = await _context.BuildManualSteps.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualStep == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualStep.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildManualStep> versionInfo = await buildManualStep.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound();
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the state of a BuildManualStep at a specific point in time.
+        ///
+        /// The rate limit is 2 per second per user.
+        /// 
+        /// </summary>
+        /// <param name="id">The primary key of the BuildManualStep</param>
+        /// <param name="time">The point in time (ISO format, UTC)</param>
+        /// <returns>The BuildManualStep object at that time</returns>
+		[HttpGet]
+		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+		[Route("api/BuildManualStep/{id}/StateAtTime")]
+		public async Task<IActionResult> GetBuildManualStepStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
+		{
+
+			//
+			// BMC Reader role or better needed to read from this table, as well as the minimum read permission level.
+			//
+			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+			{
+			   return Forbid();
+			}
+
+
+			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
+			Database.BuildManualStep buildManualStep = await _context.BuildManualSteps.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
+			).FirstOrDefaultAsync(cancellationToken);
+
+			if (buildManualStep == null)
+			{
+				return NotFound();
+			}
+
+			try
+			{
+				buildManualStep.SetupVersionInquiry(_context, userTenantGuid);
+
+				VersionInformation<Database.BuildManualStep> versionInfo = await buildManualStep.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
+
+				if (versionInfo == null || versionInfo.data == null)
+				{
+					return NotFound("No state found at specified time.");
+				}
+
+				return Ok(versionInfo.data.ToOutputDTO());
+			}
+			catch (Exception ex)
+			{
+				return Problem(ex.Message);
+			}
+		}
 
         /// <summary>
         /// 
@@ -755,33 +1400,52 @@ namespace Foundation.BMC.Controllers.WebAPI
 			Database.BuildManualStep cloneOfExisting = (Database.BuildManualStep)_context.Entry(buildManualStep).GetDatabaseValues().ToObject();
 
 
-			try
+			lock (buildManualStepDeleteSyncRoot)
 			{
-				buildManualStep.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
+			    try
+			    {
+			        buildManualStep.deleted = true;
+			        buildManualStep.versionNumber++;
 
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildManualStep entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
-					null);
+			        _context.SaveChanges();
 
+			        //
+			        // Now add the change history
+			        //
+			        BuildManualStepChangeHistory buildManualStepChangeHistory = new BuildManualStepChangeHistory();
+			        buildManualStepChangeHistory.buildManualStepId = buildManualStep.id;
+			        buildManualStepChangeHistory.versionNumber = buildManualStep.versionNumber;
+			        buildManualStepChangeHistory.timeStamp = DateTime.UtcNow;
+			        buildManualStepChangeHistory.userId = securityUser.id;
+			        buildManualStepChangeHistory.tenantGuid = userTenantGuid;
+			        buildManualStepChangeHistory.data = JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep));
+			        _context.BuildManualStepChangeHistories.Add(buildManualStepChangeHistory);
+
+			        _context.SaveChanges();
+
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildManualStep entity successfully deleted.",
+						true,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
+						null);
+
+			    }
+			    catch (Exception ex)
+			    {
+					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
+						"BMC.BuildManualStep entity delete failed",
+						false,
+						id.ToString(),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
+						JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
+						ex);
+
+			        return Problem(ex.Message);
+			    }
+			    return Ok();
 			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"BMC.BuildManualStep entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.BuildManualStep.CreateAnonymousWithFirstLevelSubObjects(buildManualStep)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
 		}
 
 
@@ -809,9 +1473,17 @@ namespace Foundation.BMC.Controllers.WebAPI
 			float? cameraZoom = null,
 			bool? showExplodedView = null,
 			float? explodedDistance = null,
+			string renderImagePath = null,
+			string pliImagePath = null,
+			bool? fadeStepEnabled = null,
+			bool? isCallout = null,
+			string calloutModelName = null,
+			bool? showPartsListImage = null,
+			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
+			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -904,6 +1576,34 @@ namespace Foundation.BMC.Controllers.WebAPI
 			{
 				query = query.Where(bms => bms.explodedDistance == explodedDistance.Value);
 			}
+			if (string.IsNullOrEmpty(renderImagePath) == false)
+			{
+				query = query.Where(bms => bms.renderImagePath == renderImagePath);
+			}
+			if (string.IsNullOrEmpty(pliImagePath) == false)
+			{
+				query = query.Where(bms => bms.pliImagePath == pliImagePath);
+			}
+			if (fadeStepEnabled.HasValue == true)
+			{
+				query = query.Where(bms => bms.fadeStepEnabled == fadeStepEnabled.Value);
+			}
+			if (isCallout.HasValue == true)
+			{
+				query = query.Where(bms => bms.isCallout == isCallout.Value);
+			}
+			if (string.IsNullOrEmpty(calloutModelName) == false)
+			{
+				query = query.Where(bms => bms.calloutModelName == calloutModelName);
+			}
+			if (showPartsListImage.HasValue == true)
+			{
+				query = query.Where(bms => bms.showPartsListImage == showPartsListImage.Value);
+			}
+			if (versionNumber.HasValue == true)
+			{
+				query = query.Where(bms => bms.versionNumber == versionNumber.Value);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(bms => bms.objectGuid == objectGuid);
@@ -934,10 +1634,30 @@ namespace Foundation.BMC.Controllers.WebAPI
 			}
 
 
+			//
+			// Add the any string contains parameter to span all the string fields on the Build Manual Step, or on an any of the string fields on its immediate relations
+			//
+			// Note that this will be a time intensive parameter to apply, so use it with that understanding.
+			//
+			if (!string.IsNullOrEmpty(anyStringContains))
+			{
+			   query = query.Where(x =>
+			       x.renderImagePath.Contains(anyStringContains)
+			       || x.pliImagePath.Contains(anyStringContains)
+			       || x.calloutModelName.Contains(anyStringContains)
+			       || x.buildManualPage.title.Contains(anyStringContains)
+			       || x.buildManualPage.notes.Contains(anyStringContains)
+			       || x.buildManualPage.backgroundTheme.Contains(anyStringContains)
+			       || x.buildManualPage.layoutPreset.Contains(anyStringContains)
+			       || x.buildManualPage.backgroundColorHex.Contains(anyStringContains)
+			   );
+			}
+
+
 			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
-			query = query.OrderBy(x => x.id);
+			query = query.OrderBy(x => x.calloutModelName);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

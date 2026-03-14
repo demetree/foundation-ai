@@ -26,6 +26,7 @@ import { BuildStepAnnotationService, BuildStepAnnotationData, BuildStepAnnotatio
 import { BuildManualStepService } from '../../../bmc-data-services/build-manual-step.service';
 import { BuildStepAnnotationTypeService } from '../../../bmc-data-services/build-step-annotation-type.service';
 import { PlacedBrickService } from '../../../bmc-data-services/placed-brick.service';
+import { BuildStepAnnotationChangeHistoryService } from '../../../bmc-data-services/build-step-annotation-change-history.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -45,6 +46,7 @@ interface BuildStepAnnotationFormValues {
   height: string | null,     // Stored as string for form input, converted to number on submit.
   text: string | null,
   placedBrickId: number | bigint | null,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
   active: boolean,
   deleted: boolean,
 };
@@ -82,6 +84,7 @@ export class BuildStepAnnotationDetailComponent implements OnInit, CanComponentD
         height: [''],
         text: [''],
         placedBrickId: [null],
+        versionNumber: [''],
         active: [true],
         deleted: [false],
       });
@@ -101,6 +104,7 @@ export class BuildStepAnnotationDetailComponent implements OnInit, CanComponentD
   public buildManualSteps$ = this.buildManualStepService.GetBuildManualStepList();
   public buildStepAnnotationTypes$ = this.buildStepAnnotationTypeService.GetBuildStepAnnotationTypeList();
   public placedBricks$ = this.placedBrickService.GetPlacedBrickList();
+  public buildStepAnnotationChangeHistories$ = this.buildStepAnnotationChangeHistoryService.GetBuildStepAnnotationChangeHistoryList();
 
   private destroy$ = new Subject<void>();
 
@@ -109,6 +113,7 @@ export class BuildStepAnnotationDetailComponent implements OnInit, CanComponentD
     public buildManualStepService: BuildManualStepService,
     public buildStepAnnotationTypeService: BuildStepAnnotationTypeService,
     public placedBrickService: PlacedBrickService,
+    public buildStepAnnotationChangeHistoryService: BuildStepAnnotationChangeHistoryService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -398,6 +403,7 @@ export class BuildStepAnnotationDetailComponent implements OnInit, CanComponentD
         height: '',
         text: '',
         placedBrickId: null,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -417,6 +423,7 @@ export class BuildStepAnnotationDetailComponent implements OnInit, CanComponentD
         height: buildStepAnnotationData.height?.toString() ?? '',
         text: buildStepAnnotationData.text ?? '',
         placedBrickId: buildStepAnnotationData.placedBrickId,
+        versionNumber: buildStepAnnotationData.versionNumber?.toString() ?? '',
         active: buildStepAnnotationData.active ?? true,
         deleted: buildStepAnnotationData.deleted ?? false,
       }, { emitEvent: false});
@@ -486,6 +493,7 @@ export class BuildStepAnnotationDetailComponent implements OnInit, CanComponentD
         height: formValue.height ? Number(formValue.height) : null,
         text: formValue.text?.trim() || null,
         placedBrickId: formValue.placedBrickId ? Number(formValue.placedBrickId) : null,
+        versionNumber: this.buildStepAnnotationData?.versionNumber ?? 0,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

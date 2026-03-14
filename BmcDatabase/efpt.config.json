@@ -136,11 +136,23 @@
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[BuildManualPageChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[BuildManualStep]",
          "ObjectType": 0
       },
       {
+         "Name": "[BMC].[BuildManualStepChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[BMC].[BuildStepAnnotation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildStepAnnotationChangeHistory]",
          "ObjectType": 0
       },
       {
@@ -149,6 +161,10 @@
       },
       {
          "Name": "[BMC].[BuildStepPart]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[BMC].[BuildStepPartChangeHistory]",
          "ObjectType": 0
       },
       {

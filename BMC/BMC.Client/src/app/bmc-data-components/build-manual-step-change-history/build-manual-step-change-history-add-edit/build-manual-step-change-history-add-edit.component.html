@@ -1,0 +1,73 @@
+<div class="add-build-manual-step-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-build-manual-step-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Build Manual Step Change History" 
+        *ngIf="userIsBMCBuildManualStepChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #buildManualStepChangeHistoryModal let-modal>
+   <div class="modal-header build-manual-step-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="buildManualStepChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Build Manual Step Change History' : 'Add Build Manual Step Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body build-manual-step-change-history-modal-body">
+      <form [formGroup]="buildManualStepChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('buildManualStepId')">
+                <label for="BuildManualStepChangeHistory-buildManualStepId" id="label-BuildManualStepChangeHistory-buildManualStepId"><span class="text-danger">*</span>Build Manual Step</label>
+                <select id="BuildManualStepChangeHistory-buildManualStepId" formControlName="buildManualStepId" class="form-select build-manual-step-change-history-select" [disabled]="!userIsBMCBuildManualStepChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Build Manual Step</option>
+                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.renderImagePath}}</option>
+                </select>
+                <div *ngIf="buildManualStepChangeHistoryForm.get('buildManualStepId')?.invalid && buildManualStepChangeHistoryForm.get('buildManualStepId')?.touched" class="text-danger">
+                    Build Manual Step is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="BuildManualStepChangeHistory-versionNumber" id="label-BuildManualStepChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="BuildManualStepChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-manual-step-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="BuildManualStepChangeHistory-timeStamp" id="label-BuildManualStepChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="BuildManualStepChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control build-manual-step-change-history-input" [disabled]="!userIsBMCBuildManualStepChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="buildManualStepChangeHistoryForm.get('timeStamp')?.invalid && buildManualStepChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="BuildManualStepChangeHistory-userId" id="label-BuildManualStepChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="BuildManualStepChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control build-manual-step-change-history-input" [disabled]="!userIsBMCBuildManualStepChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="buildManualStepChangeHistoryForm.get('userId')?.invalid && buildManualStepChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="BuildManualStepChangeHistory-data" id="label-BuildManualStepChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="BuildManualStepChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control build-manual-step-change-history-input" [disabled]="!userIsBMCBuildManualStepChangeHistoryWriter()"></textarea>
+                <div *ngIf="buildManualStepChangeHistoryForm.get('data')?.invalid && buildManualStepChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer build-manual-step-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Build Manual Step Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !buildManualStepChangeHistoryForm.valid || buildManualStepChangeHistoryForm.pristine  || userIsBMCBuildManualStepChangeHistoryWriter() == false " ngbTooltip="Save the Build Manual Step Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Build Manual Step Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

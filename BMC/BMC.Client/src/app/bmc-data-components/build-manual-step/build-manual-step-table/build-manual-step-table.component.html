@@ -71,6 +71,30 @@
                 Exploded  Distance
                 <span *ngIf="sortColumn === 'explodedDistance'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('renderImagePath')">
+                Render  Image  Path
+                <span *ngIf="sortColumn === 'renderImagePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('pliImagePath')">
+                Pli  Image  Path
+                <span *ngIf="sortColumn === 'pliImagePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fadeStepEnabled')">
+                Fade  Step  Enabled
+                <span *ngIf="sortColumn === 'fadeStepEnabled'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isCallout')">
+                Is  Callout
+                <span *ngIf="sortColumn === 'isCallout'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('calloutModelName')">
+                Callout  Model  Name
+                <span *ngIf="sortColumn === 'calloutModelName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('showPartsListImage')">
+                Show  Parts  List  Image
+                <span *ngIf="sortColumn === 'showPartsListImage'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -167,6 +191,12 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{buildManualStep.cameraZoom | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate"><boolean-icon [value]="buildManualStep.showExplodedView"/></td>
             <td class="text-truncate">{{buildManualStep.explodedDistance | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{buildManualStep.renderImagePath}}</td>
+            <td class="text-truncate">{{buildManualStep.pliImagePath}}</td>
+            <td class="text-truncate"><boolean-icon [value]="buildManualStep.fadeStepEnabled"/></td>
+            <td class="text-truncate"><boolean-icon [value]="buildManualStep.isCallout"/></td>
+            <td class="text-truncate">{{buildManualStep.calloutModelName}}</td>
+            <td class="text-truncate"><boolean-icon [value]="buildManualStep.showPartsListImage"/></td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -357,6 +387,30 @@ End of commented block for alternate definition option -->
             <p class="build-manual-step-info" *ngIf="buildManualStep.explodedDistance != null">
               <strong>Exploded Distance: </strong>
               {{buildManualStep.explodedDistance | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.renderImagePath != null">
+              <strong>Render Image Path: </strong>
+              {{buildManualStep.renderImagePath}}
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.pliImagePath != null">
+              <strong>Pli Image Path: </strong>
+              {{buildManualStep.pliImagePath}}
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.fadeStepEnabled != null">
+              <strong>Fade Step Enabled: </strong>
+              <boolean-icon [value]="buildManualStep.fadeStepEnabled"/>
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.isCallout != null">
+              <strong>Is Callout: </strong>
+              <boolean-icon [value]="buildManualStep.isCallout"/>
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.calloutModelName != null">
+              <strong>Callout Model Name: </strong>
+              {{buildManualStep.calloutModelName}}
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.showPartsListImage != null">
+              <strong>Show Parts List Image: </strong>
+              <boolean-icon [value]="buildManualStep.showPartsListImage"/>
             </p>
             </div>
          </div>

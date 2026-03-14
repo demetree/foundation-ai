@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { BuildManualPageData } from './build-manual-page.service';
+import { BuildManualStepChangeHistoryService, BuildManualStepChangeHistoryData } from './build-manual-step-change-history.service';
 import { BuildStepPartService, BuildStepPartData } from './build-step-part.service';
 import { BuildStepAnnotationService, BuildStepAnnotationData } from './build-step-annotation.service';
 
@@ -41,6 +42,13 @@ export class BuildManualStepQueryParameters {
     cameraZoom: number | null | undefined = null;
     showExplodedView: boolean | null | undefined = null;
     explodedDistance: number | null | undefined = null;
+    renderImagePath: string | null | undefined = null;
+    pliImagePath: string | null | undefined = null;
+    fadeStepEnabled: boolean | null | undefined = null;
+    isCallout: boolean | null | undefined = null;
+    calloutModelName: string | null | undefined = null;
+    showPartsListImage: boolean | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -67,10 +75,37 @@ export class BuildManualStepSubmitData {
     cameraZoom: number | null = null;
     showExplodedView!: boolean;
     explodedDistance: number | null = null;
+    renderImagePath: string | null = null;
+    pliImagePath: string | null = null;
+    fadeStepEnabled!: boolean;
+    isCallout!: boolean;
+    calloutModelName: string | null = null;
+    showPartsListImage!: boolean;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class BuildManualStepBasicListData {
   id!: bigint | number;
@@ -127,6 +162,13 @@ export class BuildManualStepData {
     cameraZoom!: number | null;
     showExplodedView!: boolean;
     explodedDistance!: number | null;
+    renderImagePath!: string | null;
+    pliImagePath!: string | null;
+    fadeStepEnabled!: boolean;
+    isCallout!: boolean;
+    calloutModelName!: string | null;
+    showPartsListImage!: boolean;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -135,6 +177,11 @@ export class BuildManualStepData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _buildManualStepChangeHistories: BuildManualStepChangeHistoryData[] | null = null;
+    private _buildManualStepChangeHistoriesPromise: Promise<BuildManualStepChangeHistoryData[]> | null  = null;
+    private _buildManualStepChangeHistoriesSubject = new BehaviorSubject<BuildManualStepChangeHistoryData[] | null>(null);
+
+                
     private _buildStepParts: BuildStepPartData[] | null = null;
     private _buildStepPartsPromise: Promise<BuildStepPartData[]> | null  = null;
     private _buildStepPartsSubject = new BehaviorSubject<BuildStepPartData[] | null>(null);
@@ -146,12 +193,46 @@ export class BuildManualStepData {
 
                 
 
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<BuildManualStepData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<BuildManualStepData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildManualStepData> | null>(null);
+
+
     //
     // Public observables — use with | async in templates
     // Subscription triggers lazy load if not already cached
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public BuildManualStepChangeHistories$ = this._buildManualStepChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._buildManualStepChangeHistories === null && this._buildManualStepChangeHistoriesPromise === null) {
+            this.loadBuildManualStepChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _buildManualStepChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get BuildManualStepChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._buildManualStepChangeHistoriesCount$ === null) {
+            this._buildManualStepChangeHistoriesCount$ = BuildManualStepChangeHistoryService.Instance.GetBuildManualStepChangeHistoriesRowCount({buildManualStepId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildManualStepChangeHistoriesCount$;
+    }
+
+
+
     public BuildStepParts$ = this._buildStepPartsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -240,6 +321,11 @@ export class BuildManualStepData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._buildManualStepChangeHistories = null;
+     this._buildManualStepChangeHistoriesPromise = null;
+     this._buildManualStepChangeHistoriesSubject.next(null);
+     this._buildManualStepChangeHistoriesCount$ = null;
+
      this._buildStepParts = null;
      this._buildStepPartsPromise = null;
      this._buildStepPartsSubject.next(null);
@@ -250,12 +336,80 @@ export class BuildManualStepData {
      this._buildStepAnnotationsSubject.next(null);
      this._buildStepAnnotationsCount$ = null;
 
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the BuildManualStepChangeHistories for this BuildManualStep.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.buildManualStep.BuildManualStepChangeHistories.then(buildManualSteps => { ... })
+     *   or
+     *   await this.buildManualStep.buildManualSteps
+     *
+    */
+    public get BuildManualStepChangeHistories(): Promise<BuildManualStepChangeHistoryData[]> {
+        if (this._buildManualStepChangeHistories !== null) {
+            return Promise.resolve(this._buildManualStepChangeHistories);
+        }
+
+        if (this._buildManualStepChangeHistoriesPromise !== null) {
+            return this._buildManualStepChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadBuildManualStepChangeHistories();
+
+        return this._buildManualStepChangeHistoriesPromise!;
+    }
+
+
+
+    private loadBuildManualStepChangeHistories(): void {
+
+        this._buildManualStepChangeHistoriesPromise = lastValueFrom(
+            BuildManualStepService.Instance.GetBuildManualStepChangeHistoriesForBuildManualStep(this.id)
+        )
+        .then(BuildManualStepChangeHistories => {
+            this._buildManualStepChangeHistories = BuildManualStepChangeHistories ?? [];
+            this._buildManualStepChangeHistoriesSubject.next(this._buildManualStepChangeHistories);
+            return this._buildManualStepChangeHistories;
+         })
+        .catch(err => {
+            this._buildManualStepChangeHistories = [];
+            this._buildManualStepChangeHistoriesSubject.next(this._buildManualStepChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._buildManualStepChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BuildManualStepChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearBuildManualStepChangeHistoriesCache(): void {
+        this._buildManualStepChangeHistories = null;
+        this._buildManualStepChangeHistoriesPromise = null;
+        this._buildManualStepChangeHistoriesSubject.next(this._buildManualStepChangeHistories);      // Emit to observable
+    }
+
+    public get HasBuildManualStepChangeHistories(): Promise<boolean> {
+        return this.BuildManualStepChangeHistories.then(buildManualStepChangeHistories => buildManualStepChangeHistories.length > 0);
+    }
+
+
     /**
      *
      * Gets the BuildStepParts for this BuildManualStep.
@@ -388,6 +542,49 @@ export class BuildManualStepData {
 
 
 
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (buildManualStep.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await buildManualStep.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<BuildManualStepData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<BuildManualStepData>> {
+        const info = await lastValueFrom(
+            BuildManualStepService.Instance.GetBuildManualStepChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
+
+
     /**
      * Updates the state of this BuildManualStepData object using values from another object that has some or all of the fields needed.
      */
@@ -421,6 +618,7 @@ export class BuildManualStepService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private buildManualStepChangeHistoryService: BuildManualStepChangeHistoryService,
         private buildStepPartService: BuildStepPartService,
         private buildStepAnnotationService: BuildStepAnnotationService,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -491,6 +689,13 @@ export class BuildManualStepService extends SecureEndpointBase {
         output.cameraZoom = data.cameraZoom;
         output.showExplodedView = data.showExplodedView;
         output.explodedDistance = data.explodedDistance;
+        output.renderImagePath = data.renderImagePath;
+        output.pliImagePath = data.pliImagePath;
+        output.fadeStepEnabled = data.fadeStepEnabled;
+        output.isCallout = data.isCallout;
+        output.calloutModelName = data.calloutModelName;
+        output.showPartsListImage = data.showPartsListImage;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -718,6 +923,108 @@ export class BuildManualStepService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackBuildManualStep(id: bigint | number, versionNumber: bigint | number) : Observable<BuildManualStepData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<BuildManualStepData>(this.baseUrl + 'api/BuildManualStep/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveBuildManualStep(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackBuildManualStep(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a BuildManualStep.
+     */
+    public GetBuildManualStepChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<BuildManualStepData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildManualStepData>>(this.baseUrl + 'api/BuildManualStep/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualStepChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a BuildManualStep.
+     */
+    public GetBuildManualStepAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<BuildManualStepData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildManualStepData>[]>(this.baseUrl + 'api/BuildManualStep/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualStepAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a BuildManualStep.
+     */
+    public GetBuildManualStepVersion(id: bigint | number, version: number): Observable<BuildManualStepData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildManualStepData>(this.baseUrl + 'api/BuildManualStep/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildManualStep(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualStepVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a BuildManualStep at a specific point in time.
+     */
+    public GetBuildManualStepStateAtTime(id: bigint | number, time: string): Observable<BuildManualStepData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildManualStepData>(this.baseUrl + 'api/BuildManualStep/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildManualStep(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildManualStepStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: BuildManualStepQueryParameters | any): string {
 
@@ -789,6 +1096,16 @@ export class BuildManualStepService extends SecureEndpointBase {
         return userIsBMCBuildManualStepWriter;
     }
 
+    public GetBuildManualStepChangeHistoriesForBuildManualStep(buildManualStepId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildManualStepChangeHistoryData[]> {
+        return this.buildManualStepChangeHistoryService.GetBuildManualStepChangeHistoryList({
+            buildManualStepId: buildManualStepId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetBuildStepPartsForBuildManualStep(buildManualStepId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildStepPartData[]> {
         return this.buildStepPartService.GetBuildStepPartList({
             buildManualStepId: buildManualStepId,
@@ -844,6 +1161,10 @@ export class BuildManualStepService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._buildManualStepChangeHistories = null;
+    (revived as any)._buildManualStepChangeHistoriesPromise = null;
+    (revived as any)._buildManualStepChangeHistoriesSubject = new BehaviorSubject<BuildManualStepChangeHistoryData[] | null>(null);
+
     (revived as any)._buildStepParts = null;
     (revived as any)._buildStepPartsPromise = null;
     (revived as any)._buildStepPartsSubject = new BehaviorSubject<BuildStepPartData[] | null>(null);
@@ -864,6 +1185,18 @@ export class BuildManualStepService extends SecureEndpointBase {
     // 2. But private methods (loadBuildManualStepXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).BuildManualStepChangeHistories$ = (revived as any)._buildManualStepChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._buildManualStepChangeHistories === null && (revived as any)._buildManualStepChangeHistoriesPromise === null) {
+                (revived as any).loadBuildManualStepChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._buildManualStepChangeHistoriesCount$ = null;
+
+
     (revived as any).BuildStepParts$ = (revived as any)._buildStepPartsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._buildStepParts === null && (revived as any)._buildStepPartsPromise === null) {
@@ -887,6 +1220,23 @@ export class BuildManualStepService extends SecureEndpointBase {
 
     (revived as any)._buildStepAnnotationsCount$ = null;
 
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildManualStepData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
 
 
     return revived;

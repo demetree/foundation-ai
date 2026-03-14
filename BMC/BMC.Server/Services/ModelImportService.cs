@@ -762,7 +762,473 @@ namespace Foundation.BMC.Services
             await _context.SaveChangesAsync(cancellationToken);
 
             //
-            // Step 8: Build and return the result
+            // Step 8: Auto-populate the Build Manual from parsed model steps
+            //
+            // Creates a full BuildManual → BuildManualPage → BuildManualStep → BuildStepPart
+            // hierarchy so the user can open the Manual Editor immediately after import.
+            //
+            // Only the main model's steps are used — submodel steps are internal details
+            // of sub-assemblies and don't belong in the top-level instruction manual.
+            //
+            // For each step we compute:
+            //   a) Camera target — centroid of all parts placed so far (cumulative)
+            //   b) Camera position — isometric offset from the centroid, scaled by bounding extent
+            //   c) BuildStepPart links — junction records connecting manual steps to PlacedBricks
+            //
+            const int STEPS_PER_PAGE = 3;
+            const float ISO_ANGLE_FACTOR = 0.7071f;  // cos(45°) — isometric offset ratio
+            const float CAMERA_DISTANCE_PADDING = 1.5f; // multiplier to keep model in frame
+            const float MIN_CAMERA_DISTANCE = 100f;
+
+            int mainModelStepCount = mainModel.Steps.Count;
+
+            //
+            // Collect submodel filenames so we can exclude them from camera calculations.
+            // Submodel references are sub-assemblies, not real part placements.
+            //
+            HashSet<string> submodelFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            for (int i = 1; i < models.Count; i++)
+            {
+                if (models[i].Name != null)
+                {
+                    submodelFileNames.Add(models[i].Name);
+                }
+            }
+
+            //
+            // Pre-compute cumulative camera data from the parsed LDraw parts.
+            // We accumulate positions across steps so each step's camera sees the
+            // full model built to that point, not just the newly added parts.
+            //
+            List<float> cumulativeCentroidX = new List<float>();
+            List<float> cumulativeCentroidY = new List<float>();
+            List<float> cumulativeCentroidZ = new List<float>();
+            List<float> cumulativeExtent = new List<float>();
+
+            float sumX = 0f, sumY = 0f, sumZ = 0f;
+            int cumulativePartCount = 0;
+            float minX = float.MaxValue, minY = float.MaxValue, minZ = float.MaxValue;
+            float maxX = float.MinValue, maxY = float.MinValue, maxZ = float.MinValue;
+
+            for (int stepIdx = 0; stepIdx < mainModelStepCount; stepIdx++)
+            {
+                LDrawStep step = mainModel.Steps[stepIdx];
+
+                foreach (LDrawSubfileReference partRef in step.Parts)
+                {
+                    //
+                    // Skip submodel references — they're not real parts
+                    //
+                    if (submodelFileNames.Contains(partRef.FileName))
+                    {
+                        continue;
+                    }
+
+                    sumX += partRef.X;
+                    sumY += partRef.Y;
+                    sumZ += partRef.Z;
+                    cumulativePartCount++;
+
+                    if (partRef.X < minX) minX = partRef.X;
+                    if (partRef.Y < minY) minY = partRef.Y;
+                    if (partRef.Z < minZ) minZ = partRef.Z;
+                    if (partRef.X > maxX) maxX = partRef.X;
+                    if (partRef.Y > maxY) maxY = partRef.Y;
+                    if (partRef.Z > maxZ) maxZ = partRef.Z;
+                }
+
+                if (cumulativePartCount > 0)
+                {
+                    cumulativeCentroidX.Add(sumX / cumulativePartCount);
+                    cumulativeCentroidY.Add(sumY / cumulativePartCount);
+                    cumulativeCentroidZ.Add(sumZ / cumulativePartCount);
+
+                    //
+                    // Extent = the diagonal of the bounding box so far
+                    //
+                    float dx = maxX - minX;
+                    float dy = maxY - minY;
+                    float dz = maxZ - minZ;
+                    float extent = (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                    cumulativeExtent.Add(Math.Max(extent, MIN_CAMERA_DISTANCE));
+                }
+                else
+                {
+                    cumulativeCentroidX.Add(0f);
+                    cumulativeCentroidY.Add(0f);
+                    cumulativeCentroidZ.Add(0f);
+                    cumulativeExtent.Add(MIN_CAMERA_DISTANCE);
+                }
+            }
+
+            //
+            // Create the BuildManual
+            //
+            BuildManual initialManual = new BuildManual
+            {
+                projectId = project.id,
+                tenantGuid = tenantGuid,
+                name = (projectName.Length > 78 ? projectName.Substring(0, 78) : projectName) + " — Instructions",
+                description = $"Auto-generated manual from {fileName} — {mainModelStepCount} build steps.",
+                pageWidthMm = mainModel.PageWidthMm ?? 210,  // LPub3D PAGE SIZE or A4 default
+                pageHeightMm = mainModel.PageHeightMm ?? 297,
+                isPublished = false,
+                objectGuid = Guid.NewGuid(),
+                versionNumber = 1,
+                active = true,
+                deleted = false
+            };
+
+            _context.BuildManuals.Add(initialManual);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            //
+            // Compute page boundaries.
+            // If the file contains "!LPUB INSERT PAGE" markers, use those to define pages.
+            // Otherwise, fall back to grouping at STEPS_PER_PAGE steps per page.
+            //
+            List<(int first, int last)> pageBoundaries = new List<(int, int)>();
+            bool hasExplicitPageBreaks = mainModel.Steps.Any(s => s.IsPageBreak);
+
+            if (hasExplicitPageBreaks)
+            {
+                int pageStart = 1; // 1-based step number
+
+                for (int s = 0; s < mainModelStepCount; s++)
+                {
+                    int stepNum = s + 1;
+                    LDrawStep step = (s < mainModel.Steps.Count) ? mainModel.Steps[s] : null;
+
+                    //
+                    // IsPageBreak means "start a new page BEFORE this step"
+                    //
+                    if (step?.IsPageBreak == true && stepNum > pageStart)
+                    {
+                        pageBoundaries.Add((pageStart, stepNum - 1));
+                        pageStart = stepNum;
+                    }
+                }
+
+                // Add the final page
+                if (pageStart <= mainModelStepCount)
+                {
+                    pageBoundaries.Add((pageStart, mainModelStepCount));
+                }
+            }
+            else
+            {
+                // Default: fixed STEPS_PER_PAGE grouping
+                int subTotalPages = Math.Max(1, (int)Math.Ceiling((double)mainModelStepCount / STEPS_PER_PAGE));
+
+                for (int p = 0; p < subTotalPages; p++)
+                {
+                    int first = (p * STEPS_PER_PAGE) + 1;
+                    int last = Math.Min(first + STEPS_PER_PAGE - 1, mainModelStepCount);
+                    pageBoundaries.Add((first, last));
+                }
+            }
+
+
+            //
+            // Track created BuildManualStep IDs so we can link them to PlacedBricks afterwards
+            //
+            Dictionary<int, int> stepNumToManualStepId = new Dictionary<int, int>();
+            int totalPages = pageBoundaries.Count;
+
+            for (int pageIndex = 0; pageIndex < totalPages; pageIndex++)
+            {
+                int firstStepOnPage = pageBoundaries[pageIndex].first;
+                int lastStepOnPage = pageBoundaries[pageIndex].last;
+                int stepsOnThisPage = lastStepOnPage - firstStepOnPage + 1;
+
+                string pageTitle;
+
+                if (pageIndex == 0 && totalPages == 1)
+                {
+                    pageTitle = "Build Instructions";
+                }
+                else if (firstStepOnPage == lastStepOnPage)
+                {
+                    pageTitle = $"Step {firstStepOnPage}";
+                }
+                else
+                {
+                    pageTitle = $"Steps {firstStepOnPage}–{lastStepOnPage}";
+                }
+
+                BuildManualPage page = new BuildManualPage
+                {
+                    buildManualId = initialManual.id,
+                    tenantGuid = tenantGuid,
+                    pageNum = pageIndex + 1,
+                    title = pageTitle,
+                    backgroundTheme = "Default",
+                    layoutPreset = stepsOnThisPage <= 1 ? "SingleStep" : "Grid",
+                    backgroundColorHex = mainModel.PageBackgroundColorHex,
+                    objectGuid = Guid.NewGuid(),
+                    versionNumber = 1,
+                    active = true,
+                    deleted = false
+                };
+
+                _context.BuildManualPages.Add(page);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                //
+                // Create BuildManualStep records with step-specific camera
+                //
+                for (int stepNum = firstStepOnPage; stepNum <= lastStepOnPage; stepNum++)
+                {
+                    int stepIdx = stepNum - 1; // 0-based index into the pre-computed arrays
+
+                    //
+                    // Camera target = centroid of all parts placed up to this step
+                    //
+                    float targetX = cumulativeCentroidX[stepIdx];
+                    float targetY = cumulativeCentroidY[stepIdx];
+                    float targetZ = cumulativeCentroidZ[stepIdx];
+
+                    //
+                    // Camera position = isometric offset from centroid, scaled by model extent.
+                    // If the parsed step has a ROTSTEP rotation, use that to derive the camera
+                    // offset instead of the fixed isometric angle.
+                    //
+                    float distance = cumulativeExtent[stepIdx] * CAMERA_DISTANCE_PADDING;
+
+                    LDrawStep parsedStep = (stepIdx < mainModel.Steps.Count) ? mainModel.Steps[stepIdx] : null;
+                    float camX, camY, camZ;
+
+                    if (parsedStep?.RotStepX != null)
+                    {
+                        //
+                        // ROTSTEP provides elevation (X) and azimuth (Y) in degrees.
+                        // Convert to a camera offset from the centroid.
+                        //
+                        float elevRad = parsedStep.RotStepX.Value * (float)(Math.PI / 180.0);
+                        float azimRad = parsedStep.RotStepY.Value * (float)(Math.PI / 180.0);
+
+                        camX = targetX + distance * (float)Math.Cos(elevRad) * (float)Math.Sin(azimRad);
+                        camY = targetY - distance * (float)Math.Sin(elevRad);
+                        camZ = targetZ + distance * (float)Math.Cos(elevRad) * (float)Math.Cos(azimRad);
+                    }
+                    else
+                    {
+                        // Default isometric camera
+                        camX = targetX + (distance * ISO_ANGLE_FACTOR);
+                        camY = targetY - distance;
+                        camZ = targetZ + (distance * ISO_ANGLE_FACTOR);
+                    }
+
+                    BuildManualStep manualStep = new BuildManualStep
+                    {
+                        buildManualPageId = page.id,
+                        tenantGuid = tenantGuid,
+                        stepNumber = stepNum,
+                        cameraPositionX = camX,
+                        cameraPositionY = camY,
+                        cameraPositionZ = camZ,
+                        cameraTargetX = targetX,
+                        cameraTargetY = targetY,
+                        cameraTargetZ = targetZ,
+                        cameraZoom = 1.0f,
+                        showExplodedView = false,
+                        explodedDistance = null,
+                        fadeStepEnabled = parsedStep?.FadePrevStep ?? true,
+                        isCallout = parsedStep?.IsCallout ?? false,
+                        calloutModelName = parsedStep?.CalloutModelName,
+                        showPartsListImage = parsedStep?.ShowPartsListImage ?? true,
+                        renderImagePath = null,
+                        pliImagePath = null,
+                        versionNumber = 1,
+                        objectGuid = Guid.NewGuid(),
+                        active = true,
+                        deleted = false
+                    };
+
+                    _context.BuildManualSteps.Add(manualStep);
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            //
+            // Step 8b: Create BuildStepPart junction records
+            //
+            // Link each BuildManualStep to its PlacedBrick entities.
+            // PlacedBricks have buildStepNumber set during import (Step 6),
+            // and BuildManualSteps have stepNumber matching the same values.
+            //
+            // Query the just-created steps and the placed bricks for this project,
+            // then join them on step number.
+            //
+            List<BuildManualStep> createdSteps = await _context.BuildManualSteps
+                .Where(s => s.buildManualPage.buildManual.projectId == project.id
+                         && s.tenantGuid == tenantGuid
+                         && s.active == true
+                         && s.deleted == false)
+                .ToListAsync(cancellationToken);
+
+            List<PlacedBrick> projectBricks = await _context.PlacedBricks
+                .Where(pb => pb.projectId == project.id
+                          && pb.tenantGuid == tenantGuid
+                          && pb.active == true
+                          && pb.deleted == false)
+                .ToListAsync(cancellationToken);
+
+            //
+            // Group placed bricks by their build step number
+            //
+            Dictionary<int, List<PlacedBrick>> bricksByStep = new Dictionary<int, List<PlacedBrick>>();
+
+            foreach (PlacedBrick brick in projectBricks)
+            {
+                if (brick.buildStepNumber.HasValue == false)
+                {
+                    continue;
+                }
+
+                int bsn = brick.buildStepNumber.Value;
+
+                if (bricksByStep.ContainsKey(bsn) == false)
+                {
+                    bricksByStep[bsn] = new List<PlacedBrick>();
+                }
+
+                bricksByStep[bsn].Add(brick);
+            }
+
+            //
+            // Create the junction records
+            //
+            int totalStepParts = 0;
+
+            foreach (BuildManualStep manualStep in createdSteps)
+            {
+                if (manualStep.stepNumber.HasValue == false)
+                {
+                    continue;
+                }
+
+                if (bricksByStep.TryGetValue(manualStep.stepNumber.Value, out List<PlacedBrick> stepBricks) == false)
+                {
+                    continue;
+                }
+
+                foreach (PlacedBrick brick in stepBricks)
+                {
+                    BuildStepPart stepPart = new BuildStepPart
+                    {
+                        buildManualStepId = manualStep.id,
+                        placedBrickId = brick.id,
+                        tenantGuid = tenantGuid,
+                        versionNumber = 1,
+                        objectGuid = Guid.NewGuid(),
+                        active = true,
+                        deleted = false
+                    };
+
+                    _context.BuildStepParts.Add(stepPart);
+                    totalStepParts++;
+                }
+            }
+
+            await _context.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation(
+                "Auto-populated manual for Project '{Name}' — {Pages} pages, {Steps} steps, {StepParts} step-part links",
+                projectName,
+                totalPages,
+                mainModelStepCount,
+                totalStepParts);
+
+            //
+            // Step 8c: Render step preview images
+            //
+            // Generate a small preview PNG for each build step using the software renderer.
+            // Images are stored as base64 data URIs in renderImagePath so the client can
+            // display them directly in <img> tags without a separate file-serving endpoint.
+            //
+            // This uses the same RenderService.RenderStep() method that ManualGeneratorHub uses,
+            // which renders all parts cumulatively up to the given step with auto-framed camera.
+            //
+            // Rendering is non-critical — failures are logged but don't break the import.
+            //
+            try
+            {
+                string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+
+                if (string.IsNullOrEmpty(dataPath) == false)
+                {
+                    RenderService renderService = new RenderService(dataPath);
+
+                    _logger.LogInformation(
+                        "Rendering {Count} step preview images for Project '{Name}'",
+                        mainModelStepCount, projectName);
+
+                    for (int stepIdx = 0; stepIdx < mainModelStepCount; stepIdx++)
+                    {
+                        try
+                        {
+                            byte[] stepPng = renderService.RenderStep(
+                                lines: lDrawLines,
+                                fileName: fileName,
+                                stepIndex: stepIdx,
+                                width: 256,
+                                height: 256,
+                                colourCode: -1,
+                                elevation: 30f,
+                                azimuth: -45f,
+                                renderEdges: true,
+                                smoothShading: true,
+                                antiAliasMode: AntiAliasMode.SSAA2x);
+
+                            if (stepPng != null && stepPng.Length > 0)
+                            {
+                                //
+                                // Find the matching BuildManualStep and set renderImagePath
+                                // to a base64 data URI for direct use in <img src="...">
+                                //
+                                BuildManualStep matchingStep = createdSteps
+                                    .FirstOrDefault(s => s.stepNumber.HasValue && s.stepNumber.Value == stepIdx + 1);
+
+                                if (matchingStep != null)
+                                {
+                                    matchingStep.renderImagePath =
+                                        "data:image/png;base64," + Convert.ToBase64String(stepPng);
+                                }
+                            }
+                        }
+                        catch (Exception stepEx)
+                        {
+                            _logger.LogWarning(stepEx,
+                                "Failed to render step {StepIndex} for Project '{Name}' — skipping this step image",
+                                stepIdx, projectName);
+                        }
+                    }
+
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "Step preview images rendered for Project '{Name}'",
+                        projectName);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "LDraw:DataPath is not configured — skipping step image rendering for Project '{Name}'",
+                        projectName);
+                }
+            }
+            catch (Exception renderEx)
+            {
+                _logger.LogWarning(renderEx,
+                    "Failed to render step images for Project '{Name}' — import will continue without step previews",
+                    projectName);
+            }
+
+            //
+            // Step 9: Build and return the result
             //
             ImportResult result = new ImportResult
             {

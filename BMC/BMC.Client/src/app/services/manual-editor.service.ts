@@ -38,6 +38,9 @@ export interface BuildManualPageDto {
     pageNum: number | null;
     title: string;
     notes: string;
+    backgroundTheme: string | null;
+    layoutPreset: string | null;
+    backgroundColorHex: string | null;
     objectGuid: string;
     active: boolean;
     deleted: boolean;
@@ -56,6 +59,12 @@ export interface BuildManualStepDto {
     cameraZoom: number | null;
     showExplodedView: boolean;
     explodedDistance: number | null;
+    renderImagePath: string | null;
+    pliImagePath: string | null;
+    fadeStepEnabled: boolean;
+    isCallout: boolean;
+    calloutModelName: string | null;
+    showPartsListImage: boolean;
     objectGuid: string;
     active: boolean;
     deleted: boolean;

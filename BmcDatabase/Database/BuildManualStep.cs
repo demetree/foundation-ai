@@ -33,11 +33,27 @@ public partial class BuildManualStep
 
     public float? explodedDistance { get; set; }
 
+    public string renderImagePath { get; set; }
+
+    public string pliImagePath { get; set; }
+
+    public bool fadeStepEnabled { get; set; }
+
+    public bool isCallout { get; set; }
+
+    public string calloutModelName { get; set; }
+
+    public bool showPartsListImage { get; set; }
+
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<BuildManualStepChangeHistory> BuildManualStepChangeHistories { get; set; } = new List<BuildManualStepChangeHistory>();
 
     public virtual ICollection<BuildStepAnnotation> BuildStepAnnotations { get; set; } = new List<BuildStepAnnotation>();
 

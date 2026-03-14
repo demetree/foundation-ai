@@ -20,6 +20,13 @@ export class UploadModelModalComponent {
     result: UploadResult | null = null;
     errorMessage = '';
 
+    //
+    // Track whether any upload succeeded during this modal session.
+    // This ensures the parent refreshes the project list even if the user
+    // clicks "Upload Another" and then dismisses instead of clicking "Done".
+    //
+    hasSuccessfulUpload = false;
+
     // Drag state
     isDragOver = false;
 
@@ -103,6 +110,7 @@ export class UploadModelModalComponent {
                 } else if (event.type === HttpEventType.Response) {
                     this.result = event.body as UploadResult;
                     this.state = 'success';
+                    this.hasSuccessfulUpload = true;
                 }
             },
             error: (err) => {
@@ -128,7 +136,15 @@ export class UploadModelModalComponent {
     }
 
     dismiss(): void {
-        this.activeModal.dismiss();
+        //
+        // If the user had at least one successful upload, close with the result
+        // so the parent component refreshes the project list.
+        //
+        if (this.hasSuccessfulUpload == true) {
+            this.activeModal.close(this.result);
+        } else {
+            this.activeModal.dismiss();
+        }
     }
 
 

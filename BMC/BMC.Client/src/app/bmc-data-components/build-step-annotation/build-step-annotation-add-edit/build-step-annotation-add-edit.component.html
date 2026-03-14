@@ -24,7 +24,7 @@
                 <label for="BuildStepAnnotation-buildManualStepId" id="label-BuildStepAnnotation-buildManualStepId"><span class="text-danger">*</span>Build Manual Step</label>
                 <select id="BuildStepAnnotation-buildManualStepId" formControlName="buildManualStepId" class="form-select build-step-annotation-select" [disabled]="!userIsBMCBuildStepAnnotationWriter()">
                     <option [ngValue]="null">Select Build Manual Step</option>
-                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.id}}</option>
+                    <option *ngFor="let buildManualStep of buildManualSteps$ | async" [ngValue]="buildManualStep.id">{{buildManualStep.renderImagePath}}</option>
                 </select>
                 <div *ngIf="buildStepAnnotationForm.get('buildManualStepId')?.invalid && buildStepAnnotationForm.get('buildManualStepId')?.touched" class="text-danger">
                     Build Manual Step is required
@@ -66,6 +66,10 @@
                     <option [ngValue]="null">Select Placed Brick</option>
                     <option *ngFor="let placedBrick of placedBricks$ | async" [ngValue]="placedBrick.id">{{placedBrick.id}}</option>
                 </select>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="BuildStepAnnotation-versionNumber" id="label-BuildStepAnnotation-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="BuildStepAnnotation-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-step-annotation-input" />
             </div>
             <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <input type="checkbox" id="BuildStepAnnotation-active" formControlName="active" class="form-check-input" [disabled]="!userIsBMCBuildStepAnnotationWriter()" />

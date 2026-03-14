@@ -39,10 +39,14 @@ import {BuildChallengeEntryService} from  './build-challenge-entry.service';
 import {BuildManualService} from  './build-manual.service';
 import {BuildManualChangeHistoryService} from  './build-manual-change-history.service';
 import {BuildManualPageService} from  './build-manual-page.service';
+import {BuildManualPageChangeHistoryService} from  './build-manual-page-change-history.service';
 import {BuildManualStepService} from  './build-manual-step.service';
+import {BuildManualStepChangeHistoryService} from  './build-manual-step-change-history.service';
 import {BuildStepAnnotationService} from  './build-step-annotation.service';
+import {BuildStepAnnotationChangeHistoryService} from  './build-step-annotation-change-history.service';
 import {BuildStepAnnotationTypeService} from  './build-step-annotation-type.service';
 import {BuildStepPartService} from  './build-step-part.service';
+import {BuildStepPartChangeHistoryService} from  './build-step-part-change-history.service';
 import {ColourFinishService} from  './colour-finish.service';
 import {CompiledGlbService} from  './compiled-glb.service';
 import {ConnectorTypeService} from  './connector-type.service';
@@ -158,10 +162,14 @@ export class BMCDataServiceManagerService  {
               , public buildManualService: BuildManualService
               , public buildManualChangeHistoryService: BuildManualChangeHistoryService
               , public buildManualPageService: BuildManualPageService
+              , public buildManualPageChangeHistoryService: BuildManualPageChangeHistoryService
               , public buildManualStepService: BuildManualStepService
+              , public buildManualStepChangeHistoryService: BuildManualStepChangeHistoryService
               , public buildStepAnnotationService: BuildStepAnnotationService
+              , public buildStepAnnotationChangeHistoryService: BuildStepAnnotationChangeHistoryService
               , public buildStepAnnotationTypeService: BuildStepAnnotationTypeService
               , public buildStepPartService: BuildStepPartService
+              , public buildStepPartChangeHistoryService: BuildStepPartChangeHistoryService
               , public colourFinishService: ColourFinishService
               , public compiledGlbService: CompiledGlbService
               , public connectorTypeService: ConnectorTypeService
@@ -275,10 +283,14 @@ export class BMCDataServiceManagerService  {
         this.buildManualService.ClearAllCaches();
         this.buildManualChangeHistoryService.ClearAllCaches();
         this.buildManualPageService.ClearAllCaches();
+        this.buildManualPageChangeHistoryService.ClearAllCaches();
         this.buildManualStepService.ClearAllCaches();
+        this.buildManualStepChangeHistoryService.ClearAllCaches();
         this.buildStepAnnotationService.ClearAllCaches();
+        this.buildStepAnnotationChangeHistoryService.ClearAllCaches();
         this.buildStepAnnotationTypeService.ClearAllCaches();
         this.buildStepPartService.ClearAllCaches();
+        this.buildStepPartChangeHistoryService.ClearAllCaches();
         this.colourFinishService.ClearAllCaches();
         this.compiledGlbService.ClearAllCaches();
         this.connectorTypeService.ClearAllCaches();

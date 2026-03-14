@@ -116,6 +116,20 @@ namespace BMC.LDraw.Parsers
             LDrawStep currentStep = new LDrawStep();
             bool nameParsed = false;
 
+            // Pending ROTSTEP state — carries rotation forward until ROTSTEP END
+            float? pendingRotX = null;
+            float? pendingRotY = null;
+            float? pendingRotZ = null;
+            string pendingRotType = null;
+
+            // Callout tracking state
+            bool insideCallout = false;
+            string pendingCalloutModelName = null;
+
+            // LDCad state tracking
+            List<int> pendingGroupIds = null;   // GROUP_NXT ids to apply to the next sub-file ref
+            bool insideGenerated = false;        // Skip auto-generated fallback geometry
+
             for (int i = startLine; i < endLine && i < lines.Length; i++)
             {
                 string line = lines[i].TrimEnd();
@@ -123,6 +137,23 @@ namespace BMC.LDraw.Parsers
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     continue;
+                }
+
+                //
+                // If inside a GENERATED fallback section, skip lines until we hit
+                // another "0 !LDCAD" meta (which ends the generated block) or end of file/subfile.
+                //
+                if (insideGenerated)
+                {
+                    if (line.StartsWith("0") && line.Contains("!LDCAD"))
+                    {
+                        insideGenerated = false;
+                        // Fall through to process this meta line normally
+                    }
+                    else
+                    {
+                        continue; // Skip generated fallback geometry
+                    }
                 }
 
                 // Type 0 — Comment or meta-command
@@ -135,7 +166,7 @@ namespace BMC.LDraw.Parsers
                         && !content.StartsWith("//") && !content.StartsWith("Name:")
                         && !content.StartsWith("Author:") && content != "STEP"
                         && !content.StartsWith("BFC") && !content.StartsWith("FILE")
-                        && !content.StartsWith("NOFILE"))
+                        && !content.StartsWith("NOFILE") && !content.StartsWith("ROTSTEP"))
                     {
                         if (model.Name == null)
                         {
@@ -152,8 +183,262 @@ namespace BMC.LDraw.Parsers
                         // Commit current step and start a new one
                         if (currentStep.Parts.Count > 0)
                         {
+                            // Apply any pending rotation from a previous ROTSTEP
+                            if (pendingRotX.HasValue)
+                            {
+                                currentStep.RotStepX = pendingRotX;
+                                currentStep.RotStepY = pendingRotY;
+                                currentStep.RotStepZ = pendingRotZ;
+                                currentStep.RotStepType = pendingRotType;
+                            }
+
+                            // Apply callout state
+                            if (insideCallout)
+                            {
+                                currentStep.IsCallout = true;
+                                currentStep.CalloutModelName = pendingCalloutModelName;
+                            }
+
                             model.Steps.Add(currentStep);
                             currentStep = new LDrawStep();
+                        }
+                    }
+                    //
+                    // ROTSTEP — camera rotation override per step
+                    //
+                    // "0 ROTSTEP x y z TYPE" — acts as both a STEP break and a
+                    // camera rotation for the current step.
+                    // "0 ROTSTEP END" — clears rotation for subsequent steps.
+                    //
+                    else if (content.StartsWith("ROTSTEP"))
+                    {
+                        string rotContent = content.Substring(7).Trim();
+
+                        if (rotContent.Equals("END", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Clear pending rotation
+                            pendingRotX = null;
+                            pendingRotY = null;
+                            pendingRotZ = null;
+                            pendingRotType = null;
+                        }
+                        else
+                        {
+                            // Parse: ROTSTEP x y z ABS|REL|ADD
+                            string[] rotTokens = rotContent.Split(
+                                new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (rotTokens.Length >= 4)
+                            {
+                                if (float.TryParse(rotTokens[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float rx)
+                                    && float.TryParse(rotTokens[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float ry)
+                                    && float.TryParse(rotTokens[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float rz))
+                                {
+                                    // ROTSTEP acts as an implicit step break
+                                    if (currentStep.Parts.Count > 0)
+                                    {
+                                        currentStep.RotStepX = rx;
+                                        currentStep.RotStepY = ry;
+                                        currentStep.RotStepZ = rz;
+                                        currentStep.RotStepType = rotTokens[3].ToUpperInvariant();
+
+                                        // Apply callout state
+                                        if (insideCallout)
+                                        {
+                                            currentStep.IsCallout = true;
+                                            currentStep.CalloutModelName = pendingCalloutModelName;
+                                        }
+
+                                        model.Steps.Add(currentStep);
+                                        currentStep = new LDrawStep();
+                                    }
+
+                                    // Store as pending rotation for the next step
+                                    pendingRotX = rx;
+                                    pendingRotY = ry;
+                                    pendingRotZ = rz;
+                                    pendingRotType = rotTokens[3].ToUpperInvariant();
+                                }
+                            }
+                        }
+                    }
+                    //
+                    // !LPUB — LPub3D meta-commands
+                    //
+                    else if (content.StartsWith("!LPUB "))
+                    {
+                        string lpubContent = content.Substring(6).TrimStart();
+
+                        //
+                        // PAGE SIZE <width> <height>
+                        //
+                        if (lpubContent.StartsWith("PAGE SIZE ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string sizeStr = lpubContent.Substring(10).Trim();
+                            string[] sizeParts = sizeStr.Split(
+                                new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            if (sizeParts.Length >= 2
+                                && float.TryParse(sizeParts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float pw)
+                                && float.TryParse(sizeParts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float ph))
+                            {
+                                model.PageWidthMm = pw;
+                                model.PageHeightMm = ph;
+                            }
+                        }
+                        //
+                        // PAGE ORIENTATION LANDSCAPE|PORTRAIT
+                        //
+                        else if (lpubContent.StartsWith("PAGE ORIENTATION ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string orient = lpubContent.Substring(17).Trim();
+                            model.Landscape = orient.Equals("LANDSCAPE", StringComparison.OrdinalIgnoreCase);
+                        }
+                        //
+                        // INSERT COVER_PAGE
+                        //
+                        else if (lpubContent.StartsWith("INSERT COVER_PAGE", StringComparison.OrdinalIgnoreCase))
+                        {
+                            model.HasCoverPage = true;
+                        }
+                        //
+                        // INSERT PAGE — force page break before this step
+                        //
+                        else if (lpubContent.Equals("INSERT PAGE", StringComparison.OrdinalIgnoreCase))
+                        {
+                            currentStep.IsPageBreak = true;
+                        }
+                        //
+                        // INSERT BOM — bill of materials page requested
+                        //
+                        else if (lpubContent.StartsWith("INSERT BOM", StringComparison.OrdinalIgnoreCase))
+                        {
+                            model.HasBillOfMaterials = true;
+                        }
+                        //
+                        // END_OF_FILE — stop parsing immediately
+                        //
+                        else if (lpubContent.Equals("END_OF_FILE", StringComparison.OrdinalIgnoreCase))
+                        {
+                            break; // Exit the for loop — stops parsing this model
+                        }
+                        //
+                        // FADE_PREV_STEP ON|OFF
+                        //
+                        else if (lpubContent.StartsWith("FADE_PREV_STEP ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string fadeValue = lpubContent.Substring(15).Trim();
+                            currentStep.FadePrevStep = fadeValue.Equals("ON", StringComparison.OrdinalIgnoreCase);
+                        }
+                        //
+                        // PAGE BACKGROUND COLOR <hex>
+                        //
+                        else if (lpubContent.StartsWith("PAGE BACKGROUND COLOR ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string colorHex = lpubContent.Substring(22).Trim();
+                            if (!string.IsNullOrWhiteSpace(colorHex))
+                            {
+                                model.PageBackgroundColorHex = colorHex;
+                            }
+                        }
+                        //
+                        // CALLOUT BEGIN — marks subsequent steps as callout steps
+                        //
+                        else if (lpubContent.StartsWith("CALLOUT BEGIN", StringComparison.OrdinalIgnoreCase))
+                        {
+                            insideCallout = true;
+                            pendingCalloutModelName = null;
+                        }
+                        //
+                        // CALLOUT END — clears callout state
+                        //
+                        else if (lpubContent.StartsWith("CALLOUT END", StringComparison.OrdinalIgnoreCase))
+                        {
+                            insideCallout = false;
+                            pendingCalloutModelName = null;
+                        }
+                        //
+                        // PLI PER_STEP ON|OFF — show/hide Parts List Image per step
+                        //
+                        else if (lpubContent.StartsWith("PLI PER_STEP ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            string pliValue = lpubContent.Substring(13).Trim();
+                            currentStep.ShowPartsListImage = pliValue.Equals("ON", StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+                    //
+                    // !LDCAD — LDCad meta-commands (grouping + generated fallback)
+                    //
+                    else if (content.StartsWith("!LDCAD "))
+                    {
+                        string ldcadContent = content.Substring(7).TrimStart();
+
+                        //
+                        // GROUP_DEF — defines a group in this file
+                        // Syntax: GROUP_DEF [topLevel=true] [LID=0] [GID=EjSe9B4luQa] [name=Group 1] [center=0 12 0]
+                        //
+                        if (ldcadContent.StartsWith("GROUP_DEF "))
+                        {
+                            var group = new LDCadGroup();
+                            string propsStr = ldcadContent.Substring(10);
+
+                            group.GID = ExtractLDCadParam(propsStr, "GID");
+                            group.Name = ExtractLDCadParam(propsStr, "name");
+
+                            string topLevelStr = ExtractLDCadParam(propsStr, "topLevel");
+                            group.TopLevel = topLevelStr != null && topLevelStr.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+                            string lidStr = ExtractLDCadParam(propsStr, "LID");
+                            if (lidStr != null && int.TryParse(lidStr, out int lid))
+                            {
+                                group.LocalId = lid;
+                            }
+
+                            string centerStr = ExtractLDCadParam(propsStr, "center");
+                            if (centerStr != null)
+                            {
+                                string[] cParts = centerStr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                                if (cParts.Length >= 3
+                                    && float.TryParse(cParts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out float cx)
+                                    && float.TryParse(cParts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out float cy)
+                                    && float.TryParse(cParts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out float cz))
+                                {
+                                    group.Center = new[] { cx, cy, cz };
+                                }
+                            }
+
+                            if (!string.IsNullOrEmpty(group.GID))
+                            {
+                                model.Groups[group.GID] = group;
+                            }
+                        }
+                        //
+                        // GROUP_NXT — tag the next line (sub-file reference) with group membership
+                        // Syntax: GROUP_NXT [ids=0] [nrs=2]
+                        //
+                        else if (ldcadContent.StartsWith("GROUP_NXT "))
+                        {
+                            string idsStr = ExtractLDCadParam(ldcadContent.Substring(10), "ids");
+                            if (idsStr != null)
+                            {
+                                pendingGroupIds = new List<int>();
+                                foreach (string idPart in idsStr.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                                {
+                                    if (int.TryParse(idPart, out int gid))
+                                    {
+                                        pendingGroupIds.Add(gid);
+                                    }
+                                }
+                            }
+                        }
+                        //
+                        // GENERATED — marks start of auto-generated fallback geometry
+                        // Skip everything until the next "0 !LDCAD" or end of range
+                        //
+                        else if (ldcadContent.StartsWith("GENERATED "))
+                        {
+                            model.HasGeneratedFallback = true;
+                            insideGenerated = true;
                         }
                     }
 
@@ -166,7 +451,20 @@ namespace BMC.LDraw.Parsers
                     LDrawSubfileReference subRef = ParseType1Line(line);
                     if (subRef != null)
                     {
+                        // Apply pending LDCad group IDs from a preceding GROUP_NXT meta
+                        if (pendingGroupIds != null && pendingGroupIds.Count > 0)
+                        {
+                            subRef.GroupLocalIds = pendingGroupIds;
+                            pendingGroupIds = null;
+                        }
+
                         currentStep.Parts.Add(subRef);
+
+                        // Capture the first sub-file reference inside a callout as the callout model name
+                        if (insideCallout && pendingCalloutModelName == null && subRef.FileName != null)
+                        {
+                            pendingCalloutModelName = subRef.FileName;
+                        }
                     }
                 }
 
@@ -176,6 +474,22 @@ namespace BMC.LDraw.Parsers
             // Add the last step if it has any parts
             if (currentStep.Parts.Count > 0)
             {
+                // Apply any pending rotation from a previous ROTSTEP
+                if (pendingRotX.HasValue)
+                {
+                    currentStep.RotStepX = pendingRotX;
+                    currentStep.RotStepY = pendingRotY;
+                    currentStep.RotStepZ = pendingRotZ;
+                    currentStep.RotStepType = pendingRotType;
+                }
+
+                // Apply callout state
+                if (insideCallout)
+                {
+                    currentStep.IsCallout = true;
+                    currentStep.CalloutModelName = pendingCalloutModelName;
+                }
+
                 model.Steps.Add(currentStep);
             }
 
@@ -232,6 +546,25 @@ namespace BMC.LDraw.Parsers
             }
 
             return subRef;
+        }
+
+
+        /// <summary>
+        /// Extract a parameter value from LDCad's [key=value] format.
+        /// Returns null if the key is not found.
+        /// </summary>
+        private static string ExtractLDCadParam(string propsStr, string key)
+        {
+            // Look for [key=value] pattern
+            string searchKey = "[" + key + "=";
+            int startIdx = propsStr.IndexOf(searchKey, StringComparison.OrdinalIgnoreCase);
+            if (startIdx < 0) return null;
+
+            int valueStart = startIdx + searchKey.Length;
+            int endIdx = propsStr.IndexOf(']', valueStart);
+            if (endIdx < 0) return null;
+
+            return propsStr.Substring(valueStart, endIdx - valueStart);
         }
     }
 }

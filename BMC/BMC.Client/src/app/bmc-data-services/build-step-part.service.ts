@@ -18,6 +18,7 @@ import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { BuildManualStepData } from './build-manual-step.service';
 import { PlacedBrickData } from './placed-brick.service';
+import { BuildStepPartChangeHistoryService, BuildStepPartChangeHistoryData } from './build-step-part-change-history.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -31,6 +32,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class BuildStepPartQueryParameters {
     buildManualStepId: bigint | number | null | undefined = null;
     placedBrickId: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -48,10 +50,31 @@ export class BuildStepPartSubmitData {
     id!: bigint | number;
     buildManualStepId!: bigint | number;
     placedBrickId!: bigint | number;
+    versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
 }
 
+
+
+//
+// Version history information returned from version history API endpoints.
+// Matches server-side VersionInformation<T> structure.
+//
+export interface VersionInformationUser {
+    id: bigint | number;
+    userName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
+}
+
+export interface VersionInformation<T> {
+    timeStamp: string;           // ISO 8601
+    user: VersionInformationUser;
+    versionNumber: number;
+    data: T | null;
+}
 
 export class BuildStepPartBasicListData {
   id!: bigint | number;
@@ -99,6 +122,7 @@ export class BuildStepPartData {
     id!: bigint | number;
     buildManualStepId!: bigint | number;
     placedBrickId!: bigint | number;
+    versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -108,6 +132,20 @@ export class BuildStepPartData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _buildStepPartChangeHistories: BuildStepPartChangeHistoryData[] | null = null;
+    private _buildStepPartChangeHistoriesPromise: Promise<BuildStepPartChangeHistoryData[]> | null  = null;
+    private _buildStepPartChangeHistoriesSubject = new BehaviorSubject<BuildStepPartChangeHistoryData[] | null>(null);
+
+                
+
+
+    //
+    // Version history lazy-loading cache for current version metadata
+    //
+    private _currentVersionInfo: VersionInformation<BuildStepPartData> | null = null;
+    private _currentVersionInfoPromise: Promise<VersionInformation<BuildStepPartData>> | null = null;
+    private _currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildStepPartData> | null>(null);
+
 
     //
     // Public observables — use with | async in templates
@@ -115,6 +153,31 @@ export class BuildStepPartData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public BuildStepPartChangeHistories$ = this._buildStepPartChangeHistoriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._buildStepPartChangeHistories === null && this._buildStepPartChangeHistoriesPromise === null) {
+            this.loadBuildStepPartChangeHistories(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _buildStepPartChangeHistoriesCount$: Observable<bigint | number> | null = null;
+    public get BuildStepPartChangeHistoriesCount$(): Observable<bigint | number> {
+        if (this._buildStepPartChangeHistoriesCount$ === null) {
+            this._buildStepPartChangeHistoriesCount$ = BuildStepPartChangeHistoryService.Instance.GetBuildStepPartChangeHistoriesRowCount({buildStepPartId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._buildStepPartChangeHistoriesCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -153,12 +216,128 @@ export class BuildStepPartData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._buildStepPartChangeHistories = null;
+     this._buildStepPartChangeHistoriesPromise = null;
+     this._buildStepPartChangeHistoriesSubject.next(null);
+     this._buildStepPartChangeHistoriesCount$ = null;
+
+     this._currentVersionInfo = null;
+     this._currentVersionInfoPromise = null;
+     this._currentVersionInfoSubject.next(null);
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the BuildStepPartChangeHistories for this BuildStepPart.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.buildStepPart.BuildStepPartChangeHistories.then(buildStepParts => { ... })
+     *   or
+     *   await this.buildStepPart.buildStepParts
+     *
+    */
+    public get BuildStepPartChangeHistories(): Promise<BuildStepPartChangeHistoryData[]> {
+        if (this._buildStepPartChangeHistories !== null) {
+            return Promise.resolve(this._buildStepPartChangeHistories);
+        }
+
+        if (this._buildStepPartChangeHistoriesPromise !== null) {
+            return this._buildStepPartChangeHistoriesPromise;
+        }
+
+        // Start the load
+        this.loadBuildStepPartChangeHistories();
+
+        return this._buildStepPartChangeHistoriesPromise!;
+    }
+
+
+
+    private loadBuildStepPartChangeHistories(): void {
+
+        this._buildStepPartChangeHistoriesPromise = lastValueFrom(
+            BuildStepPartService.Instance.GetBuildStepPartChangeHistoriesForBuildStepPart(this.id)
+        )
+        .then(BuildStepPartChangeHistories => {
+            this._buildStepPartChangeHistories = BuildStepPartChangeHistories ?? [];
+            this._buildStepPartChangeHistoriesSubject.next(this._buildStepPartChangeHistories);
+            return this._buildStepPartChangeHistories;
+         })
+        .catch(err => {
+            this._buildStepPartChangeHistories = [];
+            this._buildStepPartChangeHistoriesSubject.next(this._buildStepPartChangeHistories);
+            throw err;
+        })
+        .finally(() => {
+            this._buildStepPartChangeHistoriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached BuildStepPartChangeHistory. Call after mutations to force refresh.
+     */
+    public ClearBuildStepPartChangeHistoriesCache(): void {
+        this._buildStepPartChangeHistories = null;
+        this._buildStepPartChangeHistoriesPromise = null;
+        this._buildStepPartChangeHistoriesSubject.next(this._buildStepPartChangeHistories);      // Emit to observable
+    }
+
+    public get HasBuildStepPartChangeHistories(): Promise<boolean> {
+        return this.BuildStepPartChangeHistories.then(buildStepPartChangeHistories => buildStepPartChangeHistories.length > 0);
+    }
+
+
+
+
+    //
+    // Version History — Lazy-loading observable for current version metadata
+    //
+    // Usage examples:
+    //   Template: {{ (buildStepPart.CurrentVersionInfo$ | async)?.userName }}
+    //   Code:     const info = await buildStepPart.CurrentVersionInfo;
+    //
+    public CurrentVersionInfo$ = this._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if (this._currentVersionInfo === null && this._currentVersionInfoPromise === null) {
+                this.loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
+
+    public get CurrentVersionInfo(): Promise<VersionInformation<BuildStepPartData>> {
+        if (this._currentVersionInfoPromise === null) {
+            this._currentVersionInfoPromise = this.loadCurrentVersionInfo();
+        }
+        return this._currentVersionInfoPromise;
+    }
+
+
+    private async loadCurrentVersionInfo(): Promise<VersionInformation<BuildStepPartData>> {
+        const info = await lastValueFrom(
+            BuildStepPartService.Instance.GetBuildStepPartChangeMetadata(this.id, this.versionNumber as number)
+        );
+        this._currentVersionInfo = info;
+        this._currentVersionInfoSubject.next(info);
+        return info;
+    }
+
+
+    public ClearCurrentVersionInfoCache(): void {
+        this._currentVersionInfo = null;
+        this._currentVersionInfoPromise = null;
+        this._currentVersionInfoSubject.next(null);
+    }
+
 
 
     /**
@@ -194,6 +373,7 @@ export class BuildStepPartService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private buildStepPartChangeHistoryService: BuildStepPartChangeHistoryService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -253,6 +433,7 @@ export class BuildStepPartService extends SecureEndpointBase {
         output.id = data.id;
         output.buildManualStepId = data.buildManualStepId;
         output.placedBrickId = data.placedBrickId;
+        output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -480,6 +661,108 @@ export class BuildStepPartService extends SecureEndpointBase {
             }));
     }
 
+    public RollbackBuildStepPart(id: bigint | number, versionNumber: bigint | number) : Observable<BuildStepPartData>{
+
+        let queryParams = new HttpParams();
+
+        queryParams = queryParams.append("id", id.toString());
+        queryParams = queryParams.append("versionNumber", versionNumber.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.put<BuildStepPartData>(this.baseUrl + 'api/BuildStepPart/Rollback/' + id.toString(), null, { params: queryParams, headers: authenticationHeaders }).pipe(
+            tap(() => this.ClearAllCaches()),
+            map(raw => this.ReviveBuildStepPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.RollbackBuildStepPart(id, versionNumber));
+        }));
+    }
+
+
+    /**
+     * Gets version metadata for a specific version of a BuildStepPart.
+     */
+    public GetBuildStepPartChangeMetadata(id: bigint | number, versionNumber?: number): Observable<VersionInformation<BuildStepPartData>> {
+
+        let queryParams = new HttpParams();
+
+        if (versionNumber !== undefined && versionNumber !== null) {
+            queryParams = queryParams.append('versionNumber', versionNumber.toString());
+        }
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildStepPartData>>(this.baseUrl + 'api/BuildStepPart/' + id.toString() + '/ChangeMetadata', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepPartChangeMetadata(id, versionNumber));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the full audit history of a BuildStepPart.
+     */
+    public GetBuildStepPartAuditHistory(id: bigint | number, includeData: boolean = false): Observable<VersionInformation<BuildStepPartData>[]> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('includeData', includeData.toString());
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<VersionInformation<BuildStepPartData>[]>(this.baseUrl + 'api/BuildStepPart/' + id.toString() + '/AuditHistory', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepPartAuditHistory(id, includeData));
+            })
+        );
+    }
+
+
+    /**
+     * Gets a specific historical version of a BuildStepPart.
+     */
+    public GetBuildStepPartVersion(id: bigint | number, version: number): Observable<BuildStepPartData> {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildStepPartData>(this.baseUrl + 'api/BuildStepPart/' + id.toString() + '/Version/' + version.toString(), {
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildStepPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepPartVersion(id, version));
+            })
+        );
+    }
+
+
+    /**
+     * Gets the state of a BuildStepPart at a specific point in time.
+     */
+    public GetBuildStepPartStateAtTime(id: bigint | number, time: string): Observable<BuildStepPartData> {
+
+        let queryParams = new HttpParams();
+        queryParams = queryParams.append('time', time);
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+        return this.http.get<BuildStepPartData>(this.baseUrl + 'api/BuildStepPart/' + id.toString() + '/StateAtTime', {
+            params: queryParams,
+            headers: authenticationHeaders
+        }).pipe(
+            map(raw => this.ReviveBuildStepPart(raw)),
+            catchError(error => {
+                return this.handleError(error, () => this.GetBuildStepPartStateAtTime(id, time));
+            })
+        );
+    }
+
 
     private getConfigHash(config: BuildStepPartQueryParameters | any): string {
 
@@ -551,6 +834,16 @@ export class BuildStepPartService extends SecureEndpointBase {
         return userIsBMCBuildStepPartWriter;
     }
 
+    public GetBuildStepPartChangeHistoriesForBuildStepPart(buildStepPartId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<BuildStepPartChangeHistoryData[]> {
+        return this.buildStepPartChangeHistoryService.GetBuildStepPartChangeHistoryList({
+            buildStepPartId: buildStepPartId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full BuildStepPartData instance.
@@ -586,6 +879,10 @@ export class BuildStepPartService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._buildStepPartChangeHistories = null;
+    (revived as any)._buildStepPartChangeHistoriesPromise = null;
+    (revived as any)._buildStepPartChangeHistoriesSubject = new BehaviorSubject<BuildStepPartChangeHistoryData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -598,6 +895,35 @@ export class BuildStepPartService extends SecureEndpointBase {
     // 2. But private methods (loadBuildStepPartXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).BuildStepPartChangeHistories$ = (revived as any)._buildStepPartChangeHistoriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._buildStepPartChangeHistories === null && (revived as any)._buildStepPartChangeHistoriesPromise === null) {
+                (revived as any).loadBuildStepPartChangeHistories();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._buildStepPartChangeHistoriesCount$ = null;
+
+
+
+    //
+    // Version history metadata cache and observable
+    //
+    (revived as any)._currentVersionInfo = null;
+    (revived as any)._currentVersionInfoPromise = null;
+    (revived as any)._currentVersionInfoSubject = new BehaviorSubject<VersionInformation<BuildStepPartData> | null>(null);
+
+    (revived as any).CurrentVersionInfo$ = (revived as any)._currentVersionInfoSubject.asObservable().pipe(
+        tap(() => {
+            if ((revived as any)._currentVersionInfo === null && (revived as any)._currentVersionInfoPromise === null) {
+                (revived as any).loadCurrentVersionInfo();
+            }
+        }),
+        shareReplay(1)
+    );
+
 
     return revived;
   }

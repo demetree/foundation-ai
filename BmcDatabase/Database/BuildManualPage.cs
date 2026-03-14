@@ -19,11 +19,21 @@ public partial class BuildManualPage
 
     public string notes { get; set; }
 
+    public string backgroundTheme { get; set; }
+
+    public string layoutPreset { get; set; }
+
+    public string backgroundColorHex { get; set; }
+
+    public int versionNumber { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<BuildManualPageChangeHistory> BuildManualPageChangeHistories { get; set; } = new List<BuildManualPageChangeHistory>();
 
     public virtual ICollection<BuildManualStep> BuildManualSteps { get; set; } = new List<BuildManualStep>();
 

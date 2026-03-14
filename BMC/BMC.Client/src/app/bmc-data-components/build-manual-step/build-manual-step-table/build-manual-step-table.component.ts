@@ -186,6 +186,12 @@ export class BuildManualStepTableComponent implements OnInit, OnChanges, AfterVi
     { key: 'cameraZoom', label: 'Camera Zoom', width: undefined },
     { key: 'showExplodedView', label: 'Show Exploded View', width: '120px', template: 'boolean' },
     { key: 'explodedDistance', label: 'Exploded Distance', width: undefined },
+    { key: 'renderImagePath', label: 'Render Image Path', width: undefined },
+    { key: 'pliImagePath', label: 'Pli Image Path', width: undefined },
+    { key: 'fadeStepEnabled', label: 'Fade Step Enabled', width: '120px', template: 'boolean' },
+    { key: 'isCallout', label: 'Is Callout', width: '120px', template: 'boolean' },
+    { key: 'calloutModelName', label: 'Callout Model Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/buildmanualstep', 'id']  },
+    { key: 'showPartsListImage', label: 'Show Parts List Image', width: '120px', template: 'boolean' },
 
     ];
 
@@ -197,11 +203,13 @@ export class BuildManualStepTableComponent implements OnInit, OnChanges, AfterVi
     const isAdmin = this.authService.isBMCAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
      defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
      defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -342,6 +350,12 @@ export class BuildManualStepTableComponent implements OnInit, OnChanges, AfterVi
                       'cameraZoom',
                       'showExplodedView',
                       'explodedDistance',
+                      'renderImagePath',
+                      'pliImagePath',
+                      'fadeStepEnabled',
+                      'isCallout',
+                      'calloutModelName',
+                      'showPartsListImage',
         ];
 
         result = result.filter((buildManualStep) =>

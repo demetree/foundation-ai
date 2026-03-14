@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { LoginComponent } from './components/login/login.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NotFoundComponent } from './components/not-found/not-found.component';
 import { PartsCatalogComponent } from './components/parts-catalog/parts-catalog.component';
 import { ColourLibraryComponent } from './components/colour-library/colour-library.component';
@@ -96,14 +95,22 @@ import { BuildManualChangeHistoryListingComponent } from './bmc-data-components/
 import { BuildManualChangeHistoryDetailComponent } from './bmc-data-components/build-manual-change-history/build-manual-change-history-detail/build-manual-change-history-detail.component';
 import { BuildManualPageListingComponent } from './bmc-data-components/build-manual-page/build-manual-page-listing/build-manual-page-listing.component';
 import { BuildManualPageDetailComponent } from './bmc-data-components/build-manual-page/build-manual-page-detail/build-manual-page-detail.component';
+import { BuildManualPageChangeHistoryListingComponent } from './bmc-data-components/build-manual-page-change-history/build-manual-page-change-history-listing/build-manual-page-change-history-listing.component';
+import { BuildManualPageChangeHistoryDetailComponent } from './bmc-data-components/build-manual-page-change-history/build-manual-page-change-history-detail/build-manual-page-change-history-detail.component';
 import { BuildManualStepListingComponent } from './bmc-data-components/build-manual-step/build-manual-step-listing/build-manual-step-listing.component';
 import { BuildManualStepDetailComponent } from './bmc-data-components/build-manual-step/build-manual-step-detail/build-manual-step-detail.component';
+import { BuildManualStepChangeHistoryListingComponent } from './bmc-data-components/build-manual-step-change-history/build-manual-step-change-history-listing/build-manual-step-change-history-listing.component';
+import { BuildManualStepChangeHistoryDetailComponent } from './bmc-data-components/build-manual-step-change-history/build-manual-step-change-history-detail/build-manual-step-change-history-detail.component';
 import { BuildStepAnnotationListingComponent } from './bmc-data-components/build-step-annotation/build-step-annotation-listing/build-step-annotation-listing.component';
 import { BuildStepAnnotationDetailComponent } from './bmc-data-components/build-step-annotation/build-step-annotation-detail/build-step-annotation-detail.component';
+import { BuildStepAnnotationChangeHistoryListingComponent } from './bmc-data-components/build-step-annotation-change-history/build-step-annotation-change-history-listing/build-step-annotation-change-history-listing.component';
+import { BuildStepAnnotationChangeHistoryDetailComponent } from './bmc-data-components/build-step-annotation-change-history/build-step-annotation-change-history-detail/build-step-annotation-change-history-detail.component';
 import { BuildStepAnnotationTypeListingComponent } from './bmc-data-components/build-step-annotation-type/build-step-annotation-type-listing/build-step-annotation-type-listing.component';
 import { BuildStepAnnotationTypeDetailComponent } from './bmc-data-components/build-step-annotation-type/build-step-annotation-type-detail/build-step-annotation-type-detail.component';
 import { BuildStepPartListingComponent } from './bmc-data-components/build-step-part/build-step-part-listing/build-step-part-listing.component';
 import { BuildStepPartDetailComponent } from './bmc-data-components/build-step-part/build-step-part-detail/build-step-part-detail.component';
+import { BuildStepPartChangeHistoryListingComponent } from './bmc-data-components/build-step-part-change-history/build-step-part-change-history-listing/build-step-part-change-history-listing.component';
+import { BuildStepPartChangeHistoryDetailComponent } from './bmc-data-components/build-step-part-change-history/build-step-part-change-history-detail/build-step-part-change-history-detail.component';
 import { ColourFinishListingComponent } from './bmc-data-components/colour-finish/colour-finish-listing/colour-finish-listing.component';
 import { ColourFinishDetailComponent } from './bmc-data-components/colour-finish/colour-finish-detail/colour-finish-detail.component';
 import { CompiledGlbListingComponent } from './bmc-data-components/compiled-glb/compiled-glb-listing/compiled-glb-listing.component';
@@ -284,7 +291,6 @@ const routes: Routes = [
     { path: '', component: PublicLandingComponent, canActivate: [PublicOrRedirectGuard], title: 'BMC — Brick Machine Construction' },
     { path: 'login', component: LoginComponent, canActivate: [LoginRedirectGuard], title: 'Login' },
     { path: 'welcome', component: WelcomeComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Welcome' },
-    { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard], title: 'Dashboard' },
 
     // Public browse routes — accessible to both anonymous and logged-in users
     { path: 'parts', component: PartsCatalogComponent, canActivate: [PublicAccessGuard], data: { publicRoute: true }, title: 'Parts Catalog' },
@@ -315,8 +321,6 @@ const routes: Routes = [
 
     // Authenticated-only tools
     { path: 'part-renderer', component: PartRendererComponent, canActivate: [AuthGuard], title: 'Part Renderer' },
-    { path: 'manual-generator', component: ManualGeneratorComponent, canActivate: [AuthGuard], title: 'Manual Generator' },
-    { path: 'manual-editor/:id', component: ManualEditorComponent, canActivate: [AuthGuard], title: 'Manual Editor' },
     { path: 'brickberg', component: BrickbergDashboardComponent, canActivate: [AuthGuard], title: 'Brickberg Terminal' },
     { path: 'my-projects', component: MyProjectsComponent, canActivate: [AuthGuard], title: 'My Projects' },
     { path: 'my-projects/:projectId/viewer', component: MocViewerComponent, canActivate: [AuthGuard], title: 'MOC Viewer' },
@@ -475,16 +479,31 @@ const routes: Routes = [
   {path: 'buildmanualpages/:buildManualPageId', component: BuildManualPageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Page' },
   {path: 'buildmanualpage/:buildManualPageId', component: BuildManualPageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Page' },
   {path: 'buildmanualpage',  redirectTo: 'buildmanualpages'},
+  {path: 'buildmanualpagechangehistories', component: BuildManualPageChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Manual Page Change Histories' },
+  {path: 'buildmanualpagechangehistories/new', component: BuildManualPageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Manual Page Change History' },
+  {path: 'buildmanualpagechangehistories/:buildManualPageChangeHistoryId', component: BuildManualPageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Page Change History' },
+  {path: 'buildmanualpagechangehistory/:buildManualPageChangeHistoryId', component: BuildManualPageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Page Change History' },
+  {path: 'buildmanualpagechangehistory',  redirectTo: 'buildmanualpagechangehistories'},
   {path: 'buildmanualsteps', component: BuildManualStepListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Manual Steps' },
   {path: 'buildmanualsteps/new', component: BuildManualStepDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Manual Step' },
   {path: 'buildmanualsteps/:buildManualStepId', component: BuildManualStepDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Step' },
   {path: 'buildmanualstep/:buildManualStepId', component: BuildManualStepDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Step' },
   {path: 'buildmanualstep',  redirectTo: 'buildmanualsteps'},
+  {path: 'buildmanualstepchangehistories', component: BuildManualStepChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Manual Step Change Histories' },
+  {path: 'buildmanualstepchangehistories/new', component: BuildManualStepChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Manual Step Change History' },
+  {path: 'buildmanualstepchangehistories/:buildManualStepChangeHistoryId', component: BuildManualStepChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Step Change History' },
+  {path: 'buildmanualstepchangehistory/:buildManualStepChangeHistoryId', component: BuildManualStepChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Manual Step Change History' },
+  {path: 'buildmanualstepchangehistory',  redirectTo: 'buildmanualstepchangehistories'},
   {path: 'buildstepannotations', component: BuildStepAnnotationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Step Annotations' },
   {path: 'buildstepannotations/new', component: BuildStepAnnotationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Step Annotation' },
   {path: 'buildstepannotations/:buildStepAnnotationId', component: BuildStepAnnotationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Annotation' },
   {path: 'buildstepannotation/:buildStepAnnotationId', component: BuildStepAnnotationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Annotation' },
   {path: 'buildstepannotation',  redirectTo: 'buildstepannotations'},
+  {path: 'buildstepannotationchangehistories', component: BuildStepAnnotationChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Step Annotation Change Histories' },
+  {path: 'buildstepannotationchangehistories/new', component: BuildStepAnnotationChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Step Annotation Change History' },
+  {path: 'buildstepannotationchangehistories/:buildStepAnnotationChangeHistoryId', component: BuildStepAnnotationChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Annotation Change History' },
+  {path: 'buildstepannotationchangehistory/:buildStepAnnotationChangeHistoryId', component: BuildStepAnnotationChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Annotation Change History' },
+  {path: 'buildstepannotationchangehistory',  redirectTo: 'buildstepannotationchangehistories'},
   {path: 'buildstepannotationtypes', component: BuildStepAnnotationTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Step Annotation Types' },
   {path: 'buildstepannotationtypes/new', component: BuildStepAnnotationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Step Annotation Type' },
   {path: 'buildstepannotationtypes/:buildStepAnnotationTypeId', component: BuildStepAnnotationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Annotation Type' },
@@ -495,6 +514,11 @@ const routes: Routes = [
   {path: 'buildstepparts/:buildStepPartId', component: BuildStepPartDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Part' },
   {path: 'buildsteppart/:buildStepPartId', component: BuildStepPartDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Part' },
   {path: 'buildsteppart',  redirectTo: 'buildstepparts'},
+  {path: 'buildsteppartchangehistories', component: BuildStepPartChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Build Step Part Change Histories' },
+  {path: 'buildsteppartchangehistories/new', component: BuildStepPartChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Build Step Part Change History' },
+  {path: 'buildsteppartchangehistories/:buildStepPartChangeHistoryId', component: BuildStepPartChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Part Change History' },
+  {path: 'buildsteppartchangehistory/:buildStepPartChangeHistoryId', component: BuildStepPartChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Build Step Part Change History' },
+  {path: 'buildsteppartchangehistory',  redirectTo: 'buildsteppartchangehistories'},
   {path: 'colourfinishes', component: ColourFinishListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Colour Finishes' },
   {path: 'colourfinishes/new', component: ColourFinishDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Colour Finish' },
   {path: 'colourfinishes/:colourFinishId', component: ColourFinishDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Colour Finish' },

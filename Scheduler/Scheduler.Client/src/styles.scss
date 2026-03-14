@@ -7,6 +7,9 @@
 
 @import 'bootstrap/scss/bootstrap';
 
+/* Theme system — CSS custom property definitions for all themes */
+@import 'app/assets/styles/themes';
+
 @import 'app/assets/styles/vertical-tabs';
 @import 'app/assets/styles/ngx-datatable';
 
@@ -29,23 +32,17 @@
 .pre-login-background {
   // Multi-stop gradient to reduce color banding
   background:
-    linear-gradient(135deg,
-      rgba(15, 23, 42, 0.90) 0%,
-      rgba(20, 30, 50, 0.85) 20%,
-      rgba(30, 41, 59, 0.80) 40%,
-      rgba(25, 35, 55, 0.82) 60%,
-      rgba(20, 28, 45, 0.86) 80%,
-      rgba(15, 23, 42, 0.90) 100%),
+    var(--sch-login-bg-gradient),
     url(assets/images/backgrounds/background.jpg) no-repeat center center fixed;
   background-size: cover;
-  background-color: #0f172a;
+  background-color: var(--sch-login-bg-color);
 
   // Full viewport height for proper centering
   min-height: 100vh;
 }
 
 .post-login-background {
-  background-color: #f9f9f9; // a light grey
+  background-color: var(--sch-bg-deep);
 }
 
 
