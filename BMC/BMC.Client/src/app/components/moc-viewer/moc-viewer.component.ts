@@ -24,6 +24,7 @@ import { ProjectService, ProjectViewerSummary } from '../../services/project.ser
 import { AuthService } from '../../services/auth.service';
 import { LDrawFileCacheService } from '../../services/ldraw-file-cache.service';
 import { ManualGeneratorSignalrService, StepProgressEvent, GenerationCompleteEvent, ManualOptionsDto } from '../../services/manual-generator-signalr.service';
+import { ManualEditorService } from '../../services/manual-editor.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DomSanitizer, SafeUrl, SafeHtml } from '@angular/platform-browser';
 
@@ -211,6 +212,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         public authService: AuthService,
         private fileCacheService: LDrawFileCacheService,
         private signalr: ManualGeneratorSignalrService,
+        private manualEditorService: ManualEditorService,
         private sanitizer: DomSanitizer,
         @Inject('BASE_URL') baseUrl: string
     ) {
@@ -247,6 +249,31 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
 
     goBack(): void {
         this.location.back();
+    }
+
+
+    /** Create a new BuildManual for this project and navigate to the editor */
+    createManual(): void {
+        if (this.projectId == null) return;
+
+        this.manualEditorService.createManual({
+            projectId: this.projectId,
+            name: `${this.summary?.name || 'Untitled'} — Instructions`,
+            description: `Build instructions for ${this.summary?.name || 'project'}`,
+            pageWidthMm: 210,
+            pageHeightMm: 297,
+            isPublished: false,
+            active: true,
+            deleted: false
+        }).subscribe({
+            next: (manual) => {
+                this.router.navigate(['/manual-editor', manual.id]);
+            },
+            error: (err) => {
+                console.error('[MocViewer] Failed to create manual:', err);
+                this.generationError = 'Failed to create manual. Please try again.';
+            }
+        });
     }
 
 
@@ -1265,13 +1292,13 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         const elevation = Math.round(Math.asin(position.y / distance) * (180 / Math.PI));
 
         //
-        // GLB path pre-flips Y during export (no rotation.x = PI),
-        // which reverses the Z-axis relative to the LDraw path.
-        // Negate azimuth for GLB to match the server-side render convention.
+        // GLB path: the exporter flips Y (LDraw Y-down → glTF Y-up) but not Z,
+        // so the model's left/right is mirrored relative to the server's LDraw
+        // convention. Negate X in the atan2 to correct for this left-right flip.
         //
         let azimuth: number;
         if (this.modelLoadedViaGlb) {
-            azimuth = Math.round(Math.atan2(position.x, position.z) * (180 / Math.PI));
+            azimuth = Math.round(Math.atan2(-position.x, position.z) * (180 / Math.PI));
         } else {
             azimuth = Math.round(Math.atan2(position.x, -position.z) * (180 / Math.PI));
         }
