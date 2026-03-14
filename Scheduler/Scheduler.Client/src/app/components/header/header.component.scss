@@ -1,18 +1,13 @@
 // ============================================================================
-// Header - Premium Glassmorphic Theme
+// Header - Theme-Aware Premium Styling
 // ============================================================================
 //
 // AI-ASSISTED: Enhanced with premium glassmorphic styling to match
 // the Command Center theme across the Scheduler system (Feb 2026).
 //
-
-/* Premium color palette */
-$header-gradient-start: #0f172a;
-$header-gradient-end: #1e293b;
-$accent-blue: #3b82f6;
-$accent-blue-light: #60a5fa;
-$accent-cyan: #22d3ee;
-$accent-blue-glow: rgba(59, 130, 246, 0.4);
+// AI-DEVELOPED: Migrated from hardcoded colors to CSS custom properties
+// (--sch-*) for full theme support (Mar 2026).
+//
 
 :host {
   header.navbar {
@@ -27,10 +22,10 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     //
     // Premium gradient background with subtle blur
     //
-    background: linear-gradient(135deg, $header-gradient-start 0%, $header-gradient-end 100%) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--sch-header-bg) !important;
+    border-bottom: 1px solid var(--sch-header-border);
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--sch-shadow-md);
   }
 
   .navbar {
@@ -55,7 +50,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     }
 
     .fs-4 {
-      background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 100%);
+      background: linear-gradient(135deg, var(--sch-text-primary) 0%, var(--sch-text-secondary) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -70,19 +65,20 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     padding: 4px 12px 4px 4px;
     line-height: 1;
     position: relative;
-    background: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: var(--sch-surface-subtle) !important;
+    border: 1px solid var(--sch-border) !important;
     transition: all 0.2s ease;
+    color: var(--sch-text-primary);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(255, 255, 255, 0.2) !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      background: var(--sch-surface-hover) !important;
+      border-color: var(--sch-border-strong) !important;
+      box-shadow: var(--sch-shadow-sm);
     }
   }
 
   //
-  // User avatar with premium blue gradient
+  // User avatar with premium accent gradient
   //
   .avatar {
     width: 28px;
@@ -94,14 +90,14 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     font-weight: 700;
     font-size: 0.7rem;
     text-transform: uppercase;
-    background: linear-gradient(135deg, $accent-blue 0%, $accent-cyan 100%);
+    background: var(--sch-gradient-primary);
     color: white;
-    box-shadow: 0 2px 8px $accent-blue-glow;
+    box-shadow: var(--sch-btn-shadow);
     transition: all 0.2s ease;
   }
 
   .profile-btn:hover .avatar {
-    box-shadow: 0 4px 16px $accent-blue-glow;
+    box-shadow: var(--sch-btn-shadow-hover);
     transform: scale(1.05);
   }
 
@@ -115,25 +111,22 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   }
 
   //
-  // Premium dropdown menu with glassmorphism
+  // Premium dropdown menu
   //
   .header-profile-menu {
     border-radius: 16px;
     overflow: hidden;
     z-index: 1060 !important;
     min-width: 240px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-      0 0 40px rgba(59, 130, 246, 0.1) !important;
+    border: 1px solid var(--sch-border);
+    box-shadow: var(--sch-shadow-lg) !important;
     position: absolute !important;
     top: 100% !important;
     right: 0 !important;
     left: auto !important;
     transform: none !important;
     margin-top: 8px;
-    background: linear-gradient(135deg,
-        rgba(30, 41, 59, 0.98) 0%,
-        rgba(15, 23, 42, 0.98) 100%);
+    background: var(--sch-bg-card);
     backdrop-filter: blur(20px);
   }
 
@@ -155,17 +148,17 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   // User info section in dropdown
   //
   .header-profile-menu .px-3.py-2 {
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: var(--sch-surface-subtle);
+    border-bottom: 1px solid var(--sch-border) !important;
     padding: 1rem !important;
 
     .fw-semibold {
-      color: white;
+      color: var(--sch-text-primary);
       font-size: 0.95rem;
     }
 
     .text-muted {
-      color: rgba(255, 255, 255, 0.5) !important;
+      color: var(--sch-text-muted) !important;
       font-size: 0.8rem;
     }
   }
@@ -177,23 +170,21 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--sch-text-secondary);
     transition: all 0.2s ease;
 
     i {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--sch-text-muted);
       transition: color 0.2s ease;
     }
   }
 
   .header-profile-menu .dropdown-item:hover {
-    background: linear-gradient(90deg,
-        rgba(59, 130, 246, 0.15) 0%,
-        rgba(59, 130, 246, 0.05) 100%);
-    color: white;
+    background: var(--sch-surface-hover);
+    color: var(--sch-text-primary);
 
     i {
-      color: $accent-blue-light;
+      color: var(--sch-primary-light);
     }
   }
 
@@ -201,14 +192,14 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   // Theme picker section in profile dropdown
   //
   .theme-picker-section {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--sch-surface-subtle);
 
     .theme-picker-label {
       font-weight: 600;
       font-size: 0.7rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: rgba(255, 255, 255, 0.45) !important;
+      color: var(--sch-text-muted) !important;
     }
   }
 
@@ -231,16 +222,16 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.12);
+      background: var(--sch-surface-hover);
+      border-color: var(--sch-border);
     }
 
     &.active {
-      background: rgba(59, 130, 246, 0.12);
-      border-color: rgba(59, 130, 246, 0.35);
+      background: var(--sch-accent-glow-soft);
+      border-color: var(--sch-primary);
 
       .theme-name {
-        color: $accent-blue-light;
+        color: var(--sch-primary-light);
       }
     }
   }
@@ -251,7 +242,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     height: 18px;
     border-radius: 4px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--sch-shadow-sm);
 
     .swatch-color {
       flex: 1;
@@ -260,37 +251,37 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 
   .theme-name {
     font-size: 0.6rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--sch-text-muted);
     white-space: nowrap;
     transition: color 0.2s ease;
   }
 
   /* Mobile accordion link colors */
   .text-grey {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: var(--sch-text-muted) !important;
   }
 
   .custom-accordion-content .nav-link {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--sch-text-secondary) !important;
     text-decoration: none;
   }
 
   .custom-accordion-content .nav-link:hover {
-    color: white !important;
+    color: var(--sch-text-primary) !important;
   }
 
   //
   // Mobile menu toggle button
   //
   .btn-outline-light {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.8);
+    border-color: var(--sch-border);
+    color: var(--sch-text-secondary);
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
-      color: white;
+      background: var(--sch-surface-hover);
+      border-color: var(--sch-border-strong);
+      color: var(--sch-text-primary);
     }
   }
 }
@@ -301,11 +292,11 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   top: 56px;
   width: 100%;
   z-index: 1050;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--sch-border);
 }
 
 //
-// Mobile sidebar overlay with premium blur
+// Mobile sidebar overlay with blur
 //
 .mobile-sidebar-overlay {
   position: fixed;
@@ -313,7 +304,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--sch-modal-backdrop);
   backdrop-filter: blur(4px);
   z-index: 1050;
   display: flex;
@@ -334,18 +325,18 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 }
 
 //
-// Mobile sidebar with premium glassmorphic styling
+// Mobile sidebar with theme-aware styling
 //
 .mobile-sidebar {
   width: 300px;
   height: 100%;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  background: var(--sch-sidebar-bg) !important;
   display: flex;
   flex-direction: column;
   z-index: 1051;
   animation: slideInFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  border-left: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+  border-left: 1px solid var(--sch-border);
+  box-shadow: var(--sch-shadow-lg);
 
   //
   // Close button
@@ -353,6 +344,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   .btn-close-white {
     opacity: 0.7;
     transition: opacity 0.2s ease, transform 0.2s ease;
+    filter: var(--sch-close-btn-filter);
 
     &:hover {
       opacity: 1;
@@ -364,7 +356,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   // Section dividers
   //
   hr {
-    border-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--sch-border) !important;
     margin: 0.5rem 1rem;
   }
 
@@ -388,12 +380,12 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 }
 
 //
-// Mobile nav links with premium active state
+// Mobile nav links with theme-aware active state
 //
 .mobile-sidebar .nav-link {
   display: block;
   padding: 0.75rem 1rem;
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: var(--sch-text-secondary) !important;
   border-radius: 10px;
   margin: 2px 0;
   transition: all 0.2s ease;
@@ -404,23 +396,21 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   }
 
   &:hover {
-    background: rgba(59, 130, 246, 0.08);
-    color: white !important;
+    background: var(--sch-surface-hover);
+    color: var(--sch-text-primary) !important;
 
     i {
-      color: #60a5fa;
+      color: var(--sch-primary-light);
     }
   }
 }
 
 .mobile-sidebar .nav-link.active {
-  background: linear-gradient(90deg,
-      rgba(59, 130, 246, 0.2) 0%,
-      rgba(59, 130, 246, 0.08) 100%);
-  color: white !important;
+  background: var(--sch-sidebar-active-bg);
+  color: var(--sch-text-primary) !important;
 
   //
-  // Blue accent bar on the left
+  // Accent bar on the left
   //
   &::before {
     content: '';
@@ -429,13 +419,13 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     top: 8px;
     bottom: 8px;
     width: 3px;
-    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    background: var(--sch-gradient-primary);
     border-radius: 0 2px 2px 0;
-    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+    box-shadow: 0 0 8px var(--sch-accent-glow);
   }
 
   i {
-    color: #60a5fa;
+    color: var(--sch-primary-light);
   }
 }
 
@@ -448,7 +438,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--sch-text-muted);
   list-style: none;
 }
 
@@ -458,12 +448,12 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 .mobile-sidebar .mt-auto {
   margin-top: auto;
   padding: 1rem !important;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--sch-surface-subtle);
+  border-top: 1px solid var(--sch-border) !important;
 
   .btn-outline-light {
-    border-color: rgba(255, 255, 255, 0.15);
-    color: rgba(255, 255, 255, 0.8);
+    border-color: var(--sch-border);
+    color: var(--sch-text-secondary);
     border-radius: 10px;
     padding: 0.75rem;
     font-weight: 500;

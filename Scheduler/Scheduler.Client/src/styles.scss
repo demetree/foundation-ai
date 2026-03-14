@@ -46,6 +46,243 @@
 }
 
 
+// ============================================================================
+// Bootstrap & Global Theme Overrides
+// ============================================================================
+// Bridge --sch-* tokens into Bootstrap's --bs-* system so that Bootstrap
+// components (cards, tables, modals, dropdowns, forms) respect the theme.
+//
+
+body {
+  color: var(--sch-text-primary);
+  background-color: var(--sch-bg-deep);
+}
+
+
+//
+// Cards
+//
+.card {
+  background-color: var(--sch-bg-card);
+  border-color: var(--sch-border);
+  color: var(--sch-text-primary);
+  box-shadow: var(--sch-shadow-sm);
+}
+
+
+//
+// Tables
+//
+.table {
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+
+  thead th {
+    background-color: var(--sch-table-header-bg);
+    color: var(--sch-text-secondary);
+    border-bottom-color: var(--sch-border-strong);
+  }
+
+  td, th {
+    border-color: var(--sch-border);
+  }
+
+  tbody tr:hover {
+    background-color: var(--sch-bg-hover);
+    color: var(--sch-text-primary);
+  }
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: var(--sch-table-striped-bg);
+  color: var(--sch-text-primary);
+}
+
+
+//
+// Modals
+//
+.modal-content {
+  background-color: var(--sch-modal-bg);
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+}
+
+.modal-header {
+  border-bottom-color: var(--sch-border);
+  color: var(--sch-text-primary);
+
+  .btn-close {
+    filter: var(--sch-close-btn-filter);
+  }
+}
+
+.modal-footer {
+  border-top-color: var(--sch-border);
+}
+
+.modal-backdrop.show {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+
+//
+// Form Controls
+//
+.form-control, .form-select {
+  background-color: var(--sch-input-bg);
+  border-color: var(--sch-input-border);
+  color: var(--sch-text-primary);
+
+  &:focus {
+    border-color: var(--sch-input-focus-border);
+    box-shadow: var(--sch-input-focus-shadow);
+    background-color: var(--sch-input-bg);
+    color: var(--sch-text-primary);
+  }
+
+  &::placeholder {
+    color: var(--sch-text-muted);
+  }
+
+  &:disabled, &[readonly] {
+    background-color: var(--sch-bg-elevated);
+    color: var(--sch-text-muted);
+  }
+}
+
+.form-label {
+  color: var(--sch-text-secondary);
+}
+
+.input-group-text {
+  background-color: var(--sch-bg-elevated);
+  border-color: var(--sch-input-border);
+  color: var(--sch-text-secondary);
+}
+
+
+//
+// Dropdowns
+//
+.dropdown-menu {
+  background-color: var(--sch-bg-card);
+  border-color: var(--sch-border);
+  box-shadow: var(--sch-shadow-lg);
+
+  .dropdown-item {
+    color: var(--sch-text-secondary);
+
+    &:hover, &:focus {
+      background-color: var(--sch-bg-hover);
+      color: var(--sch-text-primary);
+    }
+
+    &.active, &:active {
+      background-color: var(--sch-primary);
+      color: #fff;
+    }
+  }
+
+  .dropdown-divider {
+    border-color: var(--sch-border);
+  }
+}
+
+
+//
+// Nav Pills / Tabs
+//
+.nav-pills .nav-link {
+  color: var(--sch-text-secondary);
+
+  &:hover {
+    color: var(--sch-text-primary);
+  }
+
+  &.active {
+    background-color: var(--sch-primary);
+    color: #fff;
+  }
+}
+
+
+//
+// Buttons — primary button uses theme accent
+//
+.btn-primary {
+  background-color: var(--sch-primary);
+  border-color: var(--sch-primary);
+  box-shadow: var(--sch-btn-shadow);
+
+  &:hover {
+    background-color: var(--sch-primary-dark);
+    border-color: var(--sch-primary-dark);
+    box-shadow: var(--sch-btn-shadow-hover);
+  }
+}
+
+
+//
+// Alert text helpers (ensure they use theme status colors)
+//
+.text-success { color: var(--sch-success) !important; }
+.text-warning { color: var(--sch-warning) !important; }
+.text-info    { color: var(--sch-info) !important; }
+.text-muted   { color: var(--sch-text-muted) !important; }
+
+
+//
+// Breadcrumbs
+//
+.breadcrumb {
+  background-color: transparent;
+
+  .breadcrumb-item a {
+    color: var(--sch-primary);
+  }
+
+  .breadcrumb-item.active {
+    color: var(--sch-text-muted);
+  }
+}
+
+
+//
+// List Groups
+//
+.list-group-item {
+  background-color: var(--sch-bg-card);
+  border-color: var(--sch-border);
+  color: var(--sch-text-primary);
+
+  &:hover {
+    background-color: var(--sch-bg-hover);
+  }
+}
+
+
+//
+// Scrollbar (Webkit)
+//
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--sch-scrollbar-thumb);
+  border-radius: 4px;
+
+  &:hover {
+    background: var(--sch-scrollbar-thumb-hover);
+  }
+}
+
 /*// From the K2 style guidelines.  This font, and Calibri, but Calibri is usually already on computers so we're not distributing it.
 @font-face {
   font-family: 'k2';

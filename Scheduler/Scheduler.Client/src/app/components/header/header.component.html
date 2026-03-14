@@ -2,7 +2,7 @@
   <!-- Logo (left) -->
   <div class="logo-container d-flex align-items-center">
     <a routerLink="/" class="d-flex align-items-center text-white text-decoration-none mb-1">
-      <img src="assets/images/k2_logo_white.png" alt="logo" style="height:32px;width:32px;margin-right:15px">
+      <img [src]="themeService.isDarkTheme ? 'assets/images/k2_logo_white.png' : 'assets/images/k2_logo_black.png'" alt="logo" style="height:32px;width:32px;margin-right:15px">
       <span class="fs-4"><strong>Scheduler</strong></span>
     </a>
   </div>

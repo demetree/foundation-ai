@@ -1228,6 +1228,77 @@ namespace Foundation.BMC.Services
             }
 
             //
+            // Step 8d: Generate PLI (Parts List Indicator) images
+            //
+            // For each step, render a grid of the individual parts added in that step
+            // with quantity labels. Uses the same RenderService with thumbnail caching
+            // so repeated parts across steps are only rendered once.
+            //
+            try
+            {
+                string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+
+                if (string.IsNullOrEmpty(dataPath) == false && mainModel.Steps.Count > 0)
+                {
+                    // Reuse the same RenderService instance so the thumbnail cache persists
+                    RenderService pliRenderService = new RenderService(dataPath);
+
+                    _logger.LogInformation(
+                        "Generating {Count} PLI images for Project '{Name}'",
+                        mainModelStepCount, projectName);
+
+                    for (int stepIdx = 0; stepIdx < mainModelStepCount && stepIdx < mainModel.Steps.Count; stepIdx++)
+                    {
+                        try
+                        {
+                            LDrawStep parsedStep = mainModel.Steps[stepIdx];
+                            if (parsedStep.Parts == null || parsedStep.Parts.Count == 0) continue;
+
+                            //
+                            // Group parts by (FileName, ColourCode) to get unique combos with quantities
+                            //
+                            var partGroups = parsedStep.Parts
+                                .GroupBy(p => (p.FileName, p.ColourCode))
+                                .Select(g => (FileName: g.Key.FileName, ColourCode: g.Key.ColourCode, Quantity: g.Count()))
+                                .ToList();
+
+                            byte[] pliPng = pliRenderService.RenderPliGrid(partGroups, cellSize: 64);
+
+                            if (pliPng != null && pliPng.Length > 0)
+                            {
+                                BuildManualStep matchingStep = createdSteps
+                                    .FirstOrDefault(s => s.stepNumber.HasValue && s.stepNumber.Value == stepIdx + 1);
+
+                                if (matchingStep != null)
+                                {
+                                    matchingStep.pliImagePath =
+                                        "data:image/png;base64," + Convert.ToBase64String(pliPng);
+                                }
+                            }
+                        }
+                        catch (Exception pliEx)
+                        {
+                            _logger.LogWarning(pliEx,
+                                "Failed to generate PLI image for step {StepIndex} of Project '{Name}' — skipping",
+                                stepIdx, projectName);
+                        }
+                    }
+
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "PLI images generated for Project '{Name}'",
+                        projectName);
+                }
+            }
+            catch (Exception pliEx)
+            {
+                _logger.LogWarning(pliEx,
+                    "Failed to generate PLI images for Project '{Name}' — import will continue without PLI",
+                    projectName);
+            }
+
+            //
             // Step 9: Build and return the result
             //
             ImportResult result = new ImportResult

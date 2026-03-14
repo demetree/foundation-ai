@@ -80,3 +80,34 @@ Fixed the broken Manual Editor ↔ MOC Viewer integration, enhanced the file imp
 - User tested import of `test-step.ldr` and confirmed camera values are computed per-step
 - LPub3D meta parsing is ready for testing with community LPub3D-authored files
 - Tier 2 DB schema changes scaffolded by user via EF Core Power Tools
+
+### Session 4 — LDCad Stubs, Quick-Win Metas, DB Fix, Phase 1 UI
+
+#### DB Fix
+- **`BmcDatabaseGenerator.cs`** — Changed `renderImagePath` and `pliImagePath` from `AddString250Field` to `AddTextField` (nvarchar(MAX)) to accommodate base64 data URIs
+
+#### Quick-Win LPub3D Metas
+- **`LDrawModel.cs`** — Added `HasBillOfMaterials` flag
+- **`ModelParser.cs`** — `INSERT BOM` sets flag; `END_OF_FILE` breaks parse loop
+
+#### LDCad Meta-Command Stubs (future CAD editor)
+- **`LDrawModel.cs`** — Added `LDCadGroup` class (GID, Name, TopLevel, LocalId, Center), `Groups` dictionary, `HasGeneratedFallback`
+- **`LDrawSubfileReference.cs`** — Added `GroupLocalIds` for GROUP_NXT membership tagging
+- **`ModelParser.cs`** — GROUP_DEF, GROUP_NXT, GENERATED parsing + `ExtractLDCadParam()` helper
+
+#### Phase 1 UI Wins (expose existing data in manual editor)
+- **`manual-editor.component.html`** — Callout badge (blue), PLI-off badge (amber), page background colour, fade/PLI toggles, callout info section
+- **`manual-editor.component.scss`** — `.callout`, `.pli-off` badge styles, `.callout-info` panel styles
+
+### Session 5 — Phase 2: PLI Image Generation
+
+#### RenderService.cs
+- **`RenderPartThumbnail(fileName, colourCode, size)`** — renders single LDraw part files with dual PNG/RGBA per-instance cache
+- **`RenderPliGrid(partEntries, cellSize)`** — composes part thumbnails into a grid with "×N" quantity labels via built-in 5×7 pixel font (DrawMiniText)
+
+#### ModelImportService.cs
+- **Step 8d** — groups each step's parts by `(FileName, ColourCode)`, renders PLI grid, stores as base64 data URI in `pliImagePath`
+
+#### Manual Editor UI
+- **`manual-editor.component.html`** — PLI image area below step render, gated by `pliImagePath && showPartsListImage`
+- **`manual-editor.component.scss`** — `.step-pli-area`, `.pli-label`, `.pli-image` styles

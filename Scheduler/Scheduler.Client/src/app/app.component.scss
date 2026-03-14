@@ -1,16 +1,23 @@
+//
+// App Component - Theme-Aware Styles
+//
+// AI-DEVELOPED: Migrated from hardcoded colors to CSS custom properties
+// (--sch-*) for full theme support (Mar 2026).
+//
+
 .foundation-title {
   font-family: sans-serif, serif;
-  color: white;
+  color: var(--sch-text-primary);
 }
 
 .foundation-navbar {
-  background-color: black;
-  color: white;
+  background-color: var(--sch-bg-dark);
+  color: var(--sch-text-primary);
 }
 
 .custom-modal-header {
-  background-color: #343a40;
-  color: #fff;
+  background-color: var(--sch-bg-elevated);
+  color: var(--sch-text-primary);
 }
 
 .custom-modal-body {
@@ -21,7 +28,7 @@
   font-weight: bold;
   margin-top: 10px;
   margin-bottom: 10px;
-  color: black;
+  color: var(--sch-text-primary);
 }
 
 .custom-input, .custom-select {
@@ -30,18 +37,18 @@
 }
 
 .custom-input::placeholder, .custom-select::placeholder {
-  color: #6c757d;
+  color: var(--sch-text-muted);
 }
 
 .custom-modal-footer {
   display: flex;
   justify-content: flex-end;
   padding-top: 10px;
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--sch-border);
 }
 
 .text-danger {
-  color: #dc3545 !important;
+  color: var(--sch-danger) !important;
 }
 
 
@@ -76,16 +83,16 @@ footer {
   width: 100%;
   height: 30px;
   line-height: 30px;
-  background-color: #212529;
-  color: white;
+  background-color: var(--sch-bg-dark);
+  color: var(--sch-text-secondary);
   text-align: center;
 }
 
 footer.footer a {
     text-decoration:none;
-  color: white;
+  color: var(--sch-text-secondary);
 }
 
 footer.footer a:hover {
-  color: #ccc;
+  color: var(--sch-text-primary);
 }

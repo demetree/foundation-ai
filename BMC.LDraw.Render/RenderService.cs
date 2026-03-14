@@ -397,6 +397,242 @@ namespace BMC.LDraw.Render
         }
 
 
+        // ─── Thumbnail Cache ────────────────────────────────────────────────
+        //
+        // Caches rendered part thumbnails (keyed by "fileName|colourCode|size") so
+        // repeated parts across steps don't trigger redundant renders.
+        //
+        private Dictionary<string, byte[]> _thumbnailCache = new Dictionary<string, byte[]>();
+        private Dictionary<string, byte[]> _thumbnailRgbaCache = new Dictionary<string, byte[]>();
+
+
+        /// <summary>
+        /// Render a single LDraw part file as a small thumbnail PNG.
+        /// Results are cached per (fileName, colourCode, size) tuple for the lifetime
+        /// of this RenderService instance.
+        /// </summary>
+        /// <param name="partFileName">Part file name, e.g. "3001.dat". Resolved against the LDraw library.</param>
+        /// <param name="colourCode">LDraw colour code for the part.</param>
+        /// <param name="size">Width and height of the square thumbnail in pixels.</param>
+        /// <returns>PNG bytes, or empty array if the part file cannot be found/rendered.</returns>
+        public byte[] RenderPartThumbnail(string partFileName, int colourCode, int size = 64)
+        {
+            string cacheKey = $"{partFileName}|{colourCode}|{size}";
+
+            if (_thumbnailCache.TryGetValue(cacheKey, out byte[] cached))
+            {
+                return cached;
+            }
+
+            try
+            {
+                // Try common library locations for the part file
+                string partPath = null;
+                string[] searchPaths = new[]
+                {
+                    System.IO.Path.Combine(_libraryPath, "parts", partFileName),
+                    System.IO.Path.Combine(_libraryPath, "p", partFileName),
+                    System.IO.Path.Combine(_libraryPath, partFileName)
+                };
+
+                foreach (string candidate in searchPaths)
+                {
+                    if (System.IO.File.Exists(candidate))
+                    {
+                        partPath = candidate;
+                        break;
+                    }
+                }
+
+                if (partPath == null)
+                {
+                    _thumbnailCache[cacheKey] = System.Array.Empty<byte>();
+                    _thumbnailRgbaCache[cacheKey] = System.Array.Empty<byte>();
+                    return System.Array.Empty<byte>();
+                }
+
+                // Get raw RGBA pixels first (for PLI grid composition)
+                byte[] rgbaPixels = RenderToPixels(
+                    inputPath: partPath,
+                    width: size,
+                    height: size,
+                    colourCode: colourCode,
+                    elevation: 30f,
+                    azimuth: -45f,
+                    renderEdges: true,
+                    smoothShading: true,
+                    antiAliasMode: AntiAliasMode.SSAA2x);
+
+                _thumbnailRgbaCache[cacheKey] = rgbaPixels;
+
+                // Encode to PNG for external callers
+                byte[] png = ImageExporter.ToPngBytes(rgbaPixels, size, size);
+                _thumbnailCache[cacheKey] = png;
+                return png;
+            }
+            catch
+            {
+                _thumbnailCache[cacheKey] = System.Array.Empty<byte>();
+                _thumbnailRgbaCache[cacheKey] = System.Array.Empty<byte>();
+                return System.Array.Empty<byte>();
+            }
+        }
+
+
+        /// <summary>
+        /// Render a Parts List Image (PLI) grid showing each unique part in a step
+        /// with quantity labels.
+        /// </summary>
+        /// <param name="partEntries">List of (FileName, ColourCode, Quantity) tuples.</param>
+        /// <param name="cellSize">Size of each part thumbnail cell in the grid.</param>
+        /// <returns>PNG bytes of the composed PLI grid, or empty if no parts.</returns>
+        public byte[] RenderPliGrid(List<(string FileName, int ColourCode, int Quantity)> partEntries, int cellSize = 64)
+        {
+            if (partEntries == null || partEntries.Count == 0)
+                return System.Array.Empty<byte>();
+
+            //
+            // Render each part thumbnail
+            //
+            List<(byte[] Rgba, int Quantity)> rendered = new List<(byte[], int)>();
+
+            foreach (var entry in partEntries)
+            {
+                // Ensure thumbnail is rendered and cached
+                RenderPartThumbnail(entry.FileName, entry.ColourCode, cellSize);
+
+                string cacheKey = $"{entry.FileName}|{entry.ColourCode}|{cellSize}";
+                if (_thumbnailRgbaCache.TryGetValue(cacheKey, out byte[] rgbaPixels)
+                    && rgbaPixels != null && rgbaPixels.Length > 0)
+                {
+                    rendered.Add((rgbaPixels, entry.Quantity));
+                }
+            }
+
+            if (rendered.Count == 0)
+                return System.Array.Empty<byte>();
+
+            //
+            // Calculate grid layout
+            //
+            int cols = (int)Math.Ceiling(Math.Sqrt(rendered.Count));
+            int rows = (int)Math.Ceiling((double)rendered.Count / cols);
+            int gridW = cols * cellSize;
+            int gridH = rows * cellSize;
+
+            //
+            // Blit RGBA thumbnails into grid
+            //
+            byte[] gridPixels = new byte[gridW * gridH * 4];
+
+            for (int i = 0; i < rendered.Count; i++)
+            {
+                int col = i % cols;
+                int row = i / cols;
+                int offsetX = col * cellSize;
+                int offsetY = row * cellSize;
+
+                byte[] thumbPixels = rendered[i].Rgba;
+                if (thumbPixels == null || thumbPixels.Length < cellSize * cellSize * 4) continue;
+
+                // Blit thumbnail into grid position
+                for (int y = 0; y < cellSize; y++)
+                {
+                    for (int x = 0; x < cellSize; x++)
+                    {
+                        int srcIdx = (y * cellSize + x) * 4;
+                        int dstIdx = ((offsetY + y) * gridW + (offsetX + x)) * 4;
+
+                        byte srcA = thumbPixels[srcIdx + 3];
+                        if (srcA == 0) continue;
+
+                        gridPixels[dstIdx] = thumbPixels[srcIdx];
+                        gridPixels[dstIdx + 1] = thumbPixels[srcIdx + 1];
+                        gridPixels[dstIdx + 2] = thumbPixels[srcIdx + 2];
+                        gridPixels[dstIdx + 3] = srcA;
+                    }
+                }
+
+                //
+                // Draw quantity label ("×N") in the bottom-right of the cell if N > 1
+                //
+                if (rendered[i].Quantity > 1)
+                {
+                    string label = $"×{rendered[i].Quantity}";
+                    DrawMiniText(gridPixels, gridW, gridH,
+                        offsetX + cellSize - (label.Length * 6) - 2,
+                        offsetY + cellSize - 9,
+                        label);
+                }
+            }
+
+            return ImageExporter.ToPngBytes(gridPixels, gridW, gridH);
+        }
+
+
+        /// <summary>
+        /// Draw tiny text onto an RGBA pixel buffer using a hardcoded 5×7 pixel font.
+        /// White text with 1px dark shadow for readability on any background.
+        /// </summary>
+        private static void DrawMiniText(byte[] pixels, int imgW, int imgH, int startX, int startY, string text)
+        {
+            // Minimal 5×7 glyph data for digits 0-9 and ×
+            // Each glyph is 5 columns × 7 rows, packed as 7 bytes (one per row, 5 bits used)
+            Dictionary<char, byte[]> glyphs = new Dictionary<char, byte[]>
+            {
+                ['0'] = new byte[] { 0x0E, 0x11, 0x13, 0x15, 0x19, 0x11, 0x0E },
+                ['1'] = new byte[] { 0x04, 0x0C, 0x04, 0x04, 0x04, 0x04, 0x0E },
+                ['2'] = new byte[] { 0x0E, 0x11, 0x01, 0x06, 0x08, 0x10, 0x1F },
+                ['3'] = new byte[] { 0x0E, 0x11, 0x01, 0x06, 0x01, 0x11, 0x0E },
+                ['4'] = new byte[] { 0x02, 0x06, 0x0A, 0x12, 0x1F, 0x02, 0x02 },
+                ['5'] = new byte[] { 0x1F, 0x10, 0x1E, 0x01, 0x01, 0x11, 0x0E },
+                ['6'] = new byte[] { 0x06, 0x08, 0x10, 0x1E, 0x11, 0x11, 0x0E },
+                ['7'] = new byte[] { 0x1F, 0x01, 0x02, 0x04, 0x08, 0x08, 0x08 },
+                ['8'] = new byte[] { 0x0E, 0x11, 0x11, 0x0E, 0x11, 0x11, 0x0E },
+                ['9'] = new byte[] { 0x0E, 0x11, 0x11, 0x0F, 0x01, 0x02, 0x0C },
+                ['×'] = new byte[] { 0x00, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x00 },
+            };
+
+            int cursorX = startX;
+
+            foreach (char c in text)
+            {
+                if (!glyphs.TryGetValue(c, out byte[] glyph))
+                    continue;
+
+                for (int row = 0; row < 7; row++)
+                {
+                    for (int col = 0; col < 5; col++)
+                    {
+                        bool on = ((glyph[row] >> (4 - col)) & 1) == 1;
+                        if (!on) continue;
+
+                        int px = cursorX + col;
+                        int py = startY + row;
+
+                        // Draw shadow (1px offset, dark)
+                        SetPixel(pixels, imgW, imgH, px + 1, py + 1, 0, 0, 0, 200);
+
+                        // Draw white foreground
+                        SetPixel(pixels, imgW, imgH, px, py, 255, 255, 255, 255);
+                    }
+                }
+
+                cursorX += 6; // 5px glyph + 1px spacing
+            }
+        }
+
+        private static void SetPixel(byte[] pixels, int w, int h, int x, int y, byte r, byte g, byte b, byte a)
+        {
+            if (x < 0 || x >= w || y < 0 || y >= h) return;
+            int idx = (y * w + x) * 4;
+            pixels[idx] = r;
+            pixels[idx + 1] = g;
+            pixels[idx + 2] = b;
+            pixels[idx + 3] = a;
+        }
+
+
         /// <summary>
         /// Get the number of build steps in an LDraw file.
         /// </summary>

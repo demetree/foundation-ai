@@ -97,6 +97,7 @@
     <main class="page-canvas">
         <div class="canvas-page-frame"
              [style.aspect-ratio]="pageAspectRatio"
+             [style.background-color]="selectedPage?.backgroundColorHex || null"
              *ngIf="selectedPage">
 
             <!-- Page Title -->
@@ -130,7 +131,25 @@
                             <span>Step {{ step.stepNumber }}</span>
                         </div>
                     </div>
+                    <div class="step-pli-area"
+                         *ngIf="step.pliImagePath && step.showPartsListImage">
+                        <div class="pli-label">
+                            <i class="fas fa-list"></i> Parts
+                        </div>
+                        <img [src]="step.pliImagePath"
+                             class="pli-image"
+                             alt="Parts for Step {{ step.stepNumber }}" />
+                    </div>
                     <div class="step-meta">
+                        <span *ngIf="step.isCallout"
+                              class="meta-badge callout"
+                              [title]="'Callout: ' + (step.calloutModelName || 'submodel')">
+                            <i class="fas fa-layer-group"></i> Callout
+                        </span>
+                        <span *ngIf="!step.showPartsListImage"
+                              class="meta-badge pli-off">
+                            <i class="fas fa-list"></i> PLI off
+                        </span>
                         <span *ngIf="step.showExplodedView"
                               class="meta-badge exploded">
                             <i class="fas fa-expand-arrows-alt"></i> Exploded
@@ -265,6 +284,37 @@
                        [(ngModel)]="selectedStep.explodedDistance"
                        step="5"
                        (blur)="saveStep()" />
+            </div>
+
+            <!-- Fade Step -->
+            <div class="prop-section-title">
+                <i class="fas fa-ghost"></i> Step Rendering
+            </div>
+            <div class="prop-group">
+                <label class="toggle-label">
+                    <input type="checkbox"
+                           [(ngModel)]="selectedStep.fadeStepEnabled"
+                           (change)="saveStep()" />
+                    <span class="toggle-slider"></span>
+                    Fade Previous Steps
+                </label>
+            </div>
+            <div class="prop-group">
+                <label class="toggle-label">
+                    <input type="checkbox"
+                           [(ngModel)]="selectedStep.showPartsListImage"
+                           (change)="saveStep()" />
+                    <span class="toggle-slider"></span>
+                    Show Parts List (PLI)
+                </label>
+            </div>
+
+            <!-- Callout Info (read-only) -->
+            <div *ngIf="selectedStep.isCallout" class="prop-section-title">
+                <i class="fas fa-layer-group"></i> Callout
+            </div>
+            <div *ngIf="selectedStep.isCallout" class="prop-group callout-info">
+                <span class="callout-model-name">{{ selectedStep.calloutModelName || 'Submodel' }}</span>
             </div>
 
         </div>
