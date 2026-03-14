@@ -131,30 +131,71 @@ namespace Foundation.BMC.Services
 
             //
             // Tier 2: Database
+            // Read using raw ADO.NET with SequentialAccess to prevent EF Core from
+            // choking on the massive varbinary(max) LOB allocation overhead.
             //
-            CompiledGlb dbEntry = await _context.CompiledGlbs
-                .AsNoTracking()
-                .Where(g => g.projectId == projectId
-                    && g.tenantGuid == tenantGuid
-                    && g.includesEdgeLines == includeEdgeLines
-                    && g.projectVersionNumber == currentVersion
-                    && g.active == true
-                    && g.deleted == false)
-                .FirstOrDefaultAsync(cancellationToken);
+            byte[] dbGlbData = null;
 
-            if (dbEntry != null && dbEntry.glbData != null && dbEntry.glbData.Length > 0)
+            using (var command = _context.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = @"
+                    SELECT TOP 1 glbData 
+                    FROM BMC.CompiledGlb 
+                    WHERE projectId = @projectId 
+                      AND tenantGuid = @tenantGuid 
+                      AND includesEdgeLines = @edgeLines 
+                      AND projectVersionNumber = @version 
+                      AND active = 1 
+                      AND deleted = 0";
+                
+                var pId = command.CreateParameter();
+                pId.ParameterName = "@projectId";
+                pId.Value = projectId;
+                command.Parameters.Add(pId);
+
+                var pTenant = command.CreateParameter();
+                pTenant.ParameterName = "@tenantGuid";
+                pTenant.Value = tenantGuid;
+                command.Parameters.Add(pTenant);
+
+                var pEdge = command.CreateParameter();
+                pEdge.ParameterName = "@edgeLines";
+                pEdge.Value = includeEdgeLines;
+                command.Parameters.Add(pEdge);
+
+                var pVer = command.CreateParameter();
+                pVer.ParameterName = "@version";
+                pVer.Value = currentVersion;
+                command.Parameters.Add(pVer);
+
+                await _context.Database.OpenConnectionAsync(cancellationToken);
+                using (var reader = await command.ExecuteReaderAsync(System.Data.CommandBehavior.SequentialAccess, cancellationToken))
+                {
+                    if (await reader.ReadAsync(cancellationToken))
+                    {
+                        if (!reader.IsDBNull(0))
+                        {
+                            using var ms = new System.IO.MemoryStream();
+                            using var dbStream = reader.GetStream(0);
+                            await dbStream.CopyToAsync(ms, cancellationToken);
+                            dbGlbData = ms.ToArray();
+                        }
+                    }
+                }
+            }
+
+            if (dbGlbData != null && dbGlbData.Length > 0)
             {
                 _logger.LogInformation("GLB cache HIT (DB) — Project {Id}, version {V}, edgeLines={E}, size={S} bytes",
-                    projectId, currentVersion, includeEdgeLines, dbEntry.glbData.Length);
+                    projectId, currentVersion, includeEdgeLines, dbGlbData.Length);
 
                 //
                 // Promote to RAM cache
                 //
-                StoreInRamCache(cacheKey, dbEntry.glbData, currentVersion);
+                StoreInRamCache(cacheKey, dbGlbData, currentVersion);
 
-                return dbEntry.glbData;
+                return dbGlbData;
             }
-
             //
             // Full miss — build the GLB under a per-project semaphore to prevent duplicates
             //
