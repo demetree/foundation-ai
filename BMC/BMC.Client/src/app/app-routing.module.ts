@@ -26,6 +26,7 @@ import { ThemeDetailComponent } from './components/theme-detail/theme-detail.com
 import { SetComparisonComponent } from './components/set-comparison/set-comparison.component';
 import { PartRendererComponent } from './components/part-renderer/part-renderer.component';
 import { ManualGeneratorComponent } from './components/manual-generator/manual-generator.component';
+import { ManualEditorComponent } from './components/manual-editor/manual-editor.component';
 import { WelcomeComponent } from './components/welcome/welcome.component';
 import { BrickbergDashboardComponent } from './components/brickberg-dashboard/brickberg-dashboard.component';
 
@@ -315,6 +316,7 @@ const routes: Routes = [
     // Authenticated-only tools
     { path: 'part-renderer', component: PartRendererComponent, canActivate: [AuthGuard], title: 'Part Renderer' },
     { path: 'manual-generator', component: ManualGeneratorComponent, canActivate: [AuthGuard], title: 'Manual Generator' },
+    { path: 'manual-editor/:id', component: ManualEditorComponent, canActivate: [AuthGuard], title: 'Manual Editor' },
     { path: 'brickberg', component: BrickbergDashboardComponent, canActivate: [AuthGuard], title: 'Brickberg Terminal' },
     { path: 'my-projects', component: MyProjectsComponent, canActivate: [AuthGuard], title: 'My Projects' },
     { path: 'my-projects/:projectId/viewer', component: MocViewerComponent, canActivate: [AuthGuard], title: 'MOC Viewer' },

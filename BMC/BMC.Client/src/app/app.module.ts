@@ -650,6 +650,7 @@ import { PartsUniverseComponent } from './components/parts-universe/parts-univer
 import { SetComparisonComponent } from './components/set-comparison/set-comparison.component';
 import { PartRendererComponent } from './components/part-renderer/part-renderer.component';
 import { ManualGeneratorComponent } from './components/manual-generator/manual-generator.component';
+import { ManualEditorComponent } from './components/manual-editor/manual-editor.component';
 import { CollectionService } from './services/collection.service';
 import { PublicLandingComponent } from './components/public-landing/public-landing.component';
 import { RebrickableStatusBubbleComponent } from './components/rebrickable-status-bubble/rebrickable-status-bubble.component';
@@ -713,6 +714,7 @@ import { MochubPublishModalComponent } from './components/mochub-publish-modal/m
         SetComparisonComponent,
         PartRendererComponent,
         ManualGeneratorComponent,
+        ManualEditorComponent,
         PublicLandingComponent,
         RebrickableStatusBubbleComponent,
         RebrickableActivityPanelComponent,

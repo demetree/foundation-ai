@@ -9,6 +9,7 @@ import { AuthService } from '../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 import { UploadModelModalComponent } from '../upload-model-modal/upload-model-modal.component';
+import { ManualEditorService } from '../../services/manual-editor.service';
 
 
 @Component({
@@ -44,7 +45,8 @@ export class MyProjectsComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private alertService: AlertService,
         private confirmationService: ConfirmationService,
-        private modalService: NgbModal
+        private modalService: NgbModal,
+        private manualEditorService: ManualEditorService
     ) { }
 
 
@@ -254,6 +256,34 @@ export class MyProjectsComponent implements OnInit, OnDestroy {
             },
             error: () => {
                 this.alertService.showMessage('Error', 'Failed to delete project', MessageSeverity.error);
+            }
+        });
+    }
+
+
+    createManual(project: ProjectSummary, event: Event): void {
+        event.stopPropagation();
+
+        this.manualEditorService.createManual({
+            projectId: project.id,
+            name: `${project.name || 'Untitled'} — Instructions`,
+            description: `Build instructions for ${project.name}`,
+            pageWidthMm: 210,
+            pageHeightMm: 297,
+            isPublished: false,
+            active: true,
+            deleted: false
+        }).subscribe({
+            next: (manual) => {
+                this.alertService.showMessage(
+                    'Manual Created',
+                    `Created instruction manual for "${project.name}"`,
+                    MessageSeverity.success
+                );
+                this.router.navigate(['/manual-editor', manual.id]);
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Failed to create manual', MessageSeverity.error);
             }
         });
     }

@@ -252,9 +252,14 @@
             <div class="render-empty" *ngIf="!isGenerating && manualPages.length === 0 && !generationError">
                 <i class="fas fa-book fa-3x"></i>
                 <p>Generate a printable build manual with step-by-step instructions</p>
-                <button class="btn-generate" (click)="generateManual()" id="generate-manual-btn">
-                    <i class="fas fa-magic"></i> Generate Manual
-                </button>
+                <div class="manual-action-buttons">
+                    <button class="btn-generate" (click)="generateManual()" id="generate-manual-btn">
+                        <i class="fas fa-magic"></i> Quick Generate
+                    </button>
+                    <button class="btn-generate btn-editor" (click)="createManual()" id="open-manual-editor-btn">
+                        <i class="fas fa-edit"></i> Open Manual Editor
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -531,6 +536,9 @@
                     <button class="btn-analyse" [disabled]="isAnalysing || isGenerating" (click)="analyseProject()" id="analyse-project-btn">
                         <i class="fas" [ngClass]="isAnalysing ? 'fa-circle-notch fa-spin' : 'fa-search'"></i>
                         {{ isAnalysing ? 'Analysing…' : 'Analyse Steps' }}
+                    </button>
+                    <button class="btn-analyse btn-editor-sidebar" (click)="createManual()" id="sidebar-manual-editor-btn">
+                        <i class="fas fa-edit"></i> Open Manual Editor
                     </button>
                 </div>
 

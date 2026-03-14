@@ -59,7 +59,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
             items: [
                 { icon: 'fas fa-puzzle-piece', label: 'My Projects', route: '/my-projects' },
                 { icon: 'fas fa-camera', label: 'Renderer', route: '/part-renderer' },
-                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' }
+                { icon: 'fas fa-book', label: 'Manual Generator', route: '/manual-generator' },
+                { icon: 'fas fa-edit', label: 'Manual Editor', route: '/manual-editor' }
                 //, { icon: 'fas fa-project-diagram', label: 'Projects', route: '/projects' },
             ]
         },

@@ -138,6 +138,10 @@
                         <i class="fas fa-clock"></i> {{ getRelativeDate(project.lastBuildDate) }}
                     </span>
                 </div>
+                <button class="btn-icon manual" (click)="createManual(project, $event)" title="Create instruction manual"
+                    id="create-manual-btn">
+                    <i class="fas fa-book"></i>
+                </button>
                 <button class="btn-icon danger" (click)="deleteProject(project, $event)" title="Delete project">
                     <i class="fas fa-trash-alt"></i>
                 </button>
@@ -174,6 +178,9 @@
                         <span class="version-badge">v{{ project.versionNumber }}</span>
                     </td>
                     <td>
+                        <button class="btn-icon manual" (click)="createManual(project, $event)" title="Create manual">
+                            <i class="fas fa-book"></i>
+                        </button>
                         <button class="btn-icon danger" (click)="deleteProject(project, $event)" title="Delete">
                             <i class="fas fa-trash-alt"></i>
                         </button>
