@@ -156,77 +156,25 @@
                 0 0 40px var(--pbl-glow);
         }
 
-        /* ─── Single Isometric Brick Loader ──────────────────────────── */
+        /* ─── Animated SVG Brick Loader ─────────────────────────────── */
         .bmc-loader {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             position: relative;
-            animation: cycle 2.5s infinite;
         }
 
-        /* Single brick body — isometric diamond top + side faces */
-        .brick-body {
-            position: absolute;
-            width: 60px;
-            height: 50px;
-            left: 50%;
-            margin-left: -30px;
-            top: 14px;
-            opacity: 0;
-            animation: brickDrop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-        }
-
-        /* Top diamond face */
-        .brick-body::before {
-            content: '';
-            position: absolute;
+        .bmc-loader svg {
             width: 100%;
-            height: 50%;
-            top: 0;
-            background: var(--pbl-brick-face);
-            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            height: 100%;
+            overflow: visible;
         }
 
-        /* Left side face */
-        .brick-body::after {
-            content: '';
-            position: absolute;
-            width: 50%;
-            height: 56%;
-            top: 50%;
-            left: 0;
-            background: var(--pbl-brick-shadow);
-            clip-path: polygon(0% 0%, 100% -7%, 100% 100%, 0% 64%);
-            transform: translateY(-3px);
-        }
+        /* SVG face fills — driven by the theme palette */
+        .svg-brick-top    { fill: var(--pbl-brick-face); }
+        .svg-brick-left   { fill: var(--pbl-brick-shadow); }
+        .svg-brick-right  { fill: var(--pbl-brick-light); }
 
-        /* Right side face via the stud-host element */
-        .brick-right-face {
-            position: absolute;
-            width: 50%;
-            height: 56%;
-            top: 50%;
-            right: 0;
-            background: var(--pbl-brick-light);
-            clip-path: polygon(0% -7%, 100% 0%, 100% 64%, 0% 100%);
-            transform: translateY(-3px);
-            opacity: 0;
-            animation: brickDrop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-        }
-
-        /* Accent stud — pops on after brick lands */
-        .brick-stud {
-            position: absolute;
-            width: 16px;
-            height: 10px;
-            background: var(--pbl-stud);
-            border-radius: 50%;
-            left: 50%;
-            margin-left: -8px;
-            top: 16px;
-            opacity: 0;
-            animation: studPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s forwards;
-        }
+        .svg-brick-stroke { fill: var(--pbl-brick-stroke); }
 
         /* Spinning ring around the loader */
         .bmc-loader-ring {
@@ -253,93 +201,24 @@
         }
 
         /* ─── Keyframes ──────────────────────────────────────────────── */
-        @keyframes brickDrop {
-            0% {
-                transform: translateY(-40px) scale(0.8);
-                opacity: 0;
-            }
-
-            100% {
-                transform: translateY(0) scale(1);
-                opacity: 1;
-            }
-        }
-
-        @keyframes studPop {
-            0% {
-                transform: scale(0);
-                opacity: 0;
-            }
-
-            100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes dots {
-
-            0%,
-            20% {
-                content: '';
-            }
-
-            40% {
-                content: '.';
-            }
-
-            60% {
-                content: '..';
-            }
-
-            80%,
-            100% {
-                content: '...';
-            }
-        }
-
-        @keyframes cycle {
-
-            0%,
-            60% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            70%,
-            85% {
-                opacity: 0;
-                transform: scale(0.9);
-            }
-
-            90%,
-            100% {
-                opacity: 0;
-                transform: scale(1);
-            }
+            0%, 20%  { content: ''; }
+            40%      { content: '.'; }
+            60%      { content: '..'; }
+            80%, 100% { content: '...'; }
         }
 
         /* ─── Accessibility ──────────────────────────────────────────── */
         @media (prefers-reduced-motion: reduce) {
 
-            .bmc-loader,
-            .bmc-loader-ring,
-            .brick-body,
-            .brick-right-face,
-            .brick-stud {
+            .bmc-loader svg *,
+            .bmc-loader-ring {
                 animation: none !important;
-                opacity: 1 !important;
-                transform: none !important;
             }
 
             .cs-loading-text::after {
@@ -484,10 +363,80 @@
             </div>
             <div class="messaging">
                 <div class="cs-loader-container">
+                    <!-- Animated Isometric Brick Loader (SVG + SMIL) -->
                     <div class="bmc-loader" role="status" aria-label="Loading BMC">
-                        <div class="brick-body"></div>
-                        <div class="brick-right-face"></div>
-                        <div class="brick-stud"></div>
+
+                        <!--
+                            Isometric 2×4 LEGO brick built from three faces + two studs.
+                            Coordinate system: viewBox centres the brick; each face
+                            slides in from its natural direction and the whole group
+                            fades out at the end of the 3 s cycle then repeats.
+
+                            dur=3s  |  0-0.5 s  left face slides in
+                                    |  0.2-0.7  right face slides in
+                                    |  0.3-0.8  top face drops down
+                                    |  0.8-1.2  studs pop
+                                    |  1.2-2.2  hold assembled
+                                    |  2.2-3.0  fade out + slight shrink
+                        -->
+                        <svg viewBox="-10 -10 120 120" xmlns="http://www.w3.org/2000/svg">
+                            <!-- ── Whole-brick group (used for the end-of-cycle fade) ── -->
+                            <g>
+                                <animate attributeName="opacity"
+                                         values="1;1;1;0;0;1"
+                                         keyTimes="0;0.40;0.73;0.87;0.93;1"
+                                         dur="3s" repeatCount="indefinite" />
+
+                                <!-- Left face — slides in from left -->
+                                <polygon class="svg-brick-left"
+                                         points="0,40 50,70 50,100 0,70">
+                                    <animate attributeName="opacity"
+                                             values="0;1;1" keyTimes="0;0.17;1"
+                                             dur="3s" repeatCount="indefinite" />
+                                    <animateTransform attributeName="transform" type="translate"
+                                                      values="-30,0;0,0;0,0" keyTimes="0;0.17;1"
+                                                      dur="3s" repeatCount="indefinite"
+                                                      calcMode="spline"
+                                                      keySplines="0.25 0.46 0.45 0.94;0 0 1 1" />
+                                </polygon>
+
+                                <!-- Right face — slides in from right -->
+                                <polygon class="svg-brick-right"
+                                         points="50,70 100,40 100,70 50,100">
+                                    <animate attributeName="opacity"
+                                             values="0;0;1;1" keyTimes="0;0.07;0.23;1"
+                                             dur="3s" repeatCount="indefinite" />
+                                    <animateTransform attributeName="transform" type="translate"
+                                                      values="30,0;30,0;0,0;0,0" keyTimes="0;0.07;0.23;1"
+                                                      dur="3s" repeatCount="indefinite"
+                                                      calcMode="spline"
+                                                      keySplines="0 0 1 1;0.25 0.46 0.45 0.94;0 0 1 1" />
+                                </polygon>
+
+                                <!-- Top face (diamond) — drops down from above -->
+                                <polygon class="svg-brick-top"
+                                         points="50,10 100,40 50,70 0,40">
+                                    <animate attributeName="opacity"
+                                             values="0;0;1;1" keyTimes="0;0.10;0.27;1"
+                                             dur="3s" repeatCount="indefinite" />
+                                    <animateTransform attributeName="transform" type="translate"
+                                                      values="0,-35;0,-35;0,0;0,0" keyTimes="0;0.10;0.27;1"
+                                                      dur="3s" repeatCount="indefinite"
+                                                      calcMode="spline"
+                                                      keySplines="0 0 1 1;0.25 0.46 0.45 0.94;0 0 1 1" />
+                                </polygon>
+
+                                <!-- Edge highlights (thin strokes for depth) -->
+                                <line x1="50" y1="70" x2="50" y2="100"
+                                      stroke="var(--pbl-brick-stroke)" stroke-width="1" opacity="0">
+                                    <animate attributeName="opacity"
+                                             values="0;0;0.6;0.6" keyTimes="0;0.23;0.30;1"
+                                             dur="3s" repeatCount="indefinite" />
+                                </line>
+
+                            </g>
+                        </svg>
+
                         <div class="bmc-loader-ring"></div>
                     </div>
                     <span class="cs-loading-text">Constructing</span>

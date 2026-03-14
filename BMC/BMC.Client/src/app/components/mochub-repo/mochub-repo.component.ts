@@ -43,6 +43,10 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
     forks: any[] = [];
     loading = true;
     versionsLoading = true;
+    versionsLoadingMore = false;
+    versionsPage = 1;
+    versionsTotalCount = 0;
+    private readonly versionsPageSize = 50;
 
     //
     // UI state
@@ -144,11 +148,14 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
 
     loadVersions(): void {
         this.versionsLoading = true;
-        this.http.get<any>(`/api/mochub/moc/${this.mocId}/versions`).pipe(
+        this.versionsPage = 1;
+        this.versions = [];
+        this.http.get<any>(`/api/mochub/moc/${this.mocId}/versions?pageSize=${this.versionsPageSize}&pageNumber=1`).pipe(
             takeUntil(this.destroy$)
         ).subscribe({
             next: (response) => {
                 this.versions = response?.items || response || [];
+                this.versionsTotalCount = response?.totalCount || this.versions.length;
                 this.versionsLoading = false;
             },
             error: () => {
@@ -156,6 +163,30 @@ export class MochubRepoComponent implements OnInit, OnDestroy {
                 this.versionsLoading = false;
             }
         });
+    }
+
+    loadMoreVersions(): void {
+        if (this.versionsLoadingMore || !this.hasMoreVersions) {
+            return;
+        }
+        this.versionsLoadingMore = true;
+        this.versionsPage++;
+        this.http.get<any>(`/api/mochub/moc/${this.mocId}/versions?pageSize=${this.versionsPageSize}&pageNumber=${this.versionsPage}`).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (response) => {
+                const newItems = response?.items || response || [];
+                this.versions = [...this.versions, ...newItems];
+                this.versionsLoadingMore = false;
+            },
+            error: () => {
+                this.versionsLoadingMore = false;
+            }
+        });
+    }
+
+    get hasMoreVersions(): boolean {
+        return this.versions.length < this.versionsTotalCount;
     }
 
     loadForks(): void {

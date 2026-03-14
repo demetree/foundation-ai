@@ -1,5 +1,23 @@
 <!-- AI-Developed: Brickberg Terminal — Bloomberg-inspired LEGO financial dashboard -->
-<div class="brickberg-page" @fadeInUp>
+
+<!-- Soft landing when Brickberg is not enabled -->
+<div class="brickberg-disabled-page" *ngIf="!brickbergEnabled">
+    <div class="disabled-card">
+        <i class="fas fa-chart-line disabled-icon"></i>
+        <h2>Brickberg Terminal</h2>
+        <p>
+            The Brickberg Terminal is a powerful LEGO financial intelligence tool —
+            portfolio tracking, real-time market data, investment analytics, and more.
+        </p>
+        <p class="disabled-hint">
+            To enable the Brickberg Terminal, go to your
+            <a routerLink="/profile/settings">Profile Settings</a>
+            and turn on the <strong>Brickberg Terminal</strong> toggle under <strong>Features</strong>.
+        </p>
+    </div>
+</div>
+
+<div class="brickberg-page" *ngIf="brickbergEnabled" @fadeInUp>
 
     <!-- ══════════ Terminal Header ══════════ -->
     <header class="bb-header">

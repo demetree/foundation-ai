@@ -23,6 +23,11 @@
             [class.no-sidebar]="!(isUserLoggedIn || isOnPublicBrowsePage) || isOnLoginPage"
             [class.on-login-page]="isOnLoginPage">
             <router-outlet></router-outlet>
+
+            <footer class="bmc-legal-footer">
+                <p>©2026 K2 Research. All rights reserved.</p>
+                <p class="legal-lego">LEGO®, the LEGO logo, the Minifigure, and the Brick and Knob configurations are trademarks of the LEGO Group of Companies which does not sponsor, authorize, or endorse this site.</p>
+            </footer>
         </main>
     </div>
     <app-rebrickable-status-bubble *ngIf="isUserLoggedIn && !isOnLoginPage"></app-rebrickable-status-bubble>
@@ -34,5 +39,10 @@
         (invokeLogout)="logout()"></app-header>
     <main class="app-main-mobile">
         <router-outlet></router-outlet>
+
+        <footer class="bmc-legal-footer">
+            <p>©2026 K2 Research. All rights reserved.</p>
+            <p class="legal-lego">LEGO®, the LEGO logo, the Minifigure, and the Brick and Knob configurations are trademarks of the LEGO Group of Companies which does not sponsor, authorize, or endorse this site.</p>
+        </footer>
     </main>
 </div>

@@ -10,7 +10,7 @@
             <!-- Divider between groups (skip the first group) -->
             <div class="nav-group-divider" *ngIf="gi > 0"></div>
 
-            <a *ngFor="let item of group.items; let i = index" class="nav-item" [routerLink]="item.route"
+            <a *ngFor="let item of getVisibleItems(group); let i = index" class="nav-item" [routerLink]="item.route"
                 [class.active]="isActive(item.route)" [title]="item.label"
                 [style.animation-delay]="(gi * 50 + i * 30) + 'ms'">
 

@@ -1,0 +1,717 @@
+/*
+ * Manual Editor — Premium instruction editing interface
+ *
+ * Three-panel layout: page sidebar, canvas, properties panel.
+ * Dark theme with accent highlights matching BMC design system.
+ *
+ * AI-assisted development — reviewed and adapted to project conventions.
+ */
+
+// ─── Design Tokens ──────────────────────────────────────────────────────
+
+$bg-dark: #0d1117;
+$bg-surface: #161b22;
+$bg-elevated: #1c2333;
+$bg-card: #21262d;
+$border-color: #30363d;
+$border-focus: #58a6ff;
+$text-primary: #e6edf3;
+$text-secondary: #8b949e;
+$text-muted: #6e7681;
+$accent: #58a6ff;
+$accent-green: #3fb950;
+$accent-orange: #d29922;
+$accent-red: #f85149;
+$selected-bg: rgba(88, 166, 255, 0.12);
+$selected-border: $accent;
+
+
+// ─── Host ───────────────────────────────────────────────────────────────
+
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    background: $bg-dark;
+    color: $text-primary;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+
+// ═══ Top Toolbar ════════════════════════════════════════════════════════
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    padding: 0 16px;
+    background: $bg-surface;
+    border-bottom: 1px solid $border-color;
+    flex-shrink: 0;
+    gap: 12px;
+
+    .toolbar-left,
+    .toolbar-center,
+    .toolbar-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .toolbar-left {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .toolbar-right {
+        flex-shrink: 0;
+    }
+
+    .toolbar-divider {
+        width: 1px;
+        height: 24px;
+        background: $border-color;
+    }
+
+    .manual-title-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .manual-name-input {
+        background: transparent;
+        border: 1px solid transparent;
+        color: $text-primary;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+        min-width: 200px;
+        transition: border-color 0.2s, background 0.2s;
+
+        &:hover {
+            border-color: $border-color;
+        }
+
+        &:focus {
+            border-color: $border-focus;
+            background: $bg-elevated;
+            outline: none;
+        }
+    }
+
+    .page-count-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: $text-secondary;
+        background: $bg-elevated;
+        padding: 3px 10px;
+        border-radius: 12px;
+        white-space: nowrap;
+
+        i { font-size: 11px; }
+    }
+
+    .page-size-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        label {
+            font-size: 12px;
+            color: $text-secondary;
+            white-space: nowrap;
+        }
+    }
+
+    .page-size-select {
+        background: $bg-elevated;
+        border: 1px solid $border-color;
+        color: $text-primary;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+
+        &:focus {
+            border-color: $border-focus;
+            outline: none;
+        }
+    }
+
+    .btn-save {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        background: $accent;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s, opacity 0.2s;
+
+        &:hover:not(:disabled) { background: lighten($accent, 8%); }
+        &:disabled { opacity: 0.5; cursor: not-allowed; }
+    }
+}
+
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: $text-secondary;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+
+    &:hover {
+        background: $bg-elevated;
+        color: $text-primary;
+    }
+
+    &.active {
+        background: $selected-bg;
+        color: $accent;
+        border-color: rgba($accent, 0.3);
+    }
+}
+
+
+// ═══ Main Editor Body ═══════════════════════════════════════════════════
+
+.editor-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+
+// ─── Page Sidebar ────────────────────────────────────────────────────────
+
+.page-sidebar {
+    width: 180px;
+    flex-shrink: 0;
+    background: $bg-surface;
+    border-right: 1px solid $border-color;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: $text-muted;
+    }
+
+    .btn-icon-sm {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: $text-secondary;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+
+        &:hover {
+            background: $bg-elevated;
+            color: $accent;
+        }
+    }
+
+    .page-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 4px 10px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .page-thumbnail {
+        position: relative;
+        cursor: pointer;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.2s;
+        border: 2px solid transparent;
+
+        &:hover {
+            border-color: $border-color;
+        }
+
+        &.selected {
+            border-color: $accent;
+            box-shadow: 0 0 0 1px rgba($accent, 0.3);
+        }
+
+        .page-thumb-preview {
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 100px;
+        }
+
+        .page-num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ccc;
+        }
+
+        .step-indicators {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+
+        .step-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: $accent;
+        }
+
+        .page-label {
+            display: block;
+            text-align: center;
+            font-size: 11px;
+            color: $text-secondary;
+            padding: 4px 0;
+            background: $bg-surface;
+        }
+
+        .btn-delete-page {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            color: $text-muted;
+            border-radius: 50%;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover { color: $accent-red; }
+        }
+
+        &:hover .btn-delete-page {
+            opacity: 1;
+        }
+    }
+}
+
+
+// ─── Center Canvas ──────────────────────────────────────────────────────
+
+.page-canvas {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    background: $bg-dark;
+    overflow: auto;
+
+    .canvas-page-frame {
+        background: #fff;
+        border-radius: 4px;
+        box-shadow:
+            0 4px 24px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.06);
+        width: 100%;
+        max-width: 640px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .page-header-bar {
+        padding: 16px 20px 8px;
+        border-bottom: 1px solid #e5e7eb;
+
+        .page-title-input {
+            width: 100%;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            background: transparent;
+            padding: 4px 0;
+
+            &:focus { outline: none; }
+            &::placeholder { color: #d1d5db; }
+        }
+    }
+
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 12px;
+        padding: 16px 20px;
+        flex: 1;
+    }
+
+    .step-card {
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        min-height: 120px;
+
+        &:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+        }
+
+        &.selected {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            background: #eff6ff;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .step-number {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1;
+        }
+
+        .btn-icon-xs {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: #d1d5db;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            opacity: 0;
+            transition: all 0.2s;
+
+            &:hover { color: #ef4444; }
+        }
+
+        &:hover .btn-icon-xs { opacity: 1; }
+
+        .step-render-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+        }
+
+        .render-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #d1d5db;
+
+            i { font-size: 28px; }
+            span { font-size: 11px; }
+        }
+
+        .step-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .meta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+
+            &.camera {
+                background: #f3f4f6;
+                color: #6b7280;
+            }
+
+            &.exploded {
+                background: #fef3c7;
+                color: #92400e;
+            }
+        }
+    }
+
+    .add-step-card {
+        border-style: dashed;
+        border-color: #d1d5db;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: #9ca3af;
+        font-size: 13px;
+        min-height: 120px;
+
+        i { font-size: 24px; }
+
+        &:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+            background: #f0f7ff;
+        }
+    }
+
+    .page-notes-bar {
+        padding: 8px 20px 16px;
+        border-top: 1px solid #e5e7eb;
+
+        .page-notes-input {
+            width: 100%;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: #6b7280;
+            background: #f9fafb;
+            resize: vertical;
+
+            &:focus {
+                outline: none;
+                border-color: #3b82f6;
+            }
+
+            &::placeholder { color: #d1d5db; }
+        }
+    }
+
+    .empty-canvas {
+        text-align: center;
+        color: $text-muted;
+
+        i { font-size: 48px; margin-bottom: 16px; }
+        h3 { font-size: 20px; color: $text-secondary; margin-bottom: 8px; }
+        p { font-size: 14px; margin-bottom: 20px; }
+    }
+}
+
+
+// ─── Properties Panel ───────────────────────────────────────────────────
+
+.properties-panel {
+    width: 280px;
+    flex-shrink: 0;
+    background: $bg-surface;
+    border-left: 1px solid $border-color;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+
+    .properties-header {
+        padding: 12px 16px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: $text-muted;
+        border-bottom: 1px solid $border-color;
+    }
+
+    .properties-content {
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .prop-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: $text-secondary;
+        margin-top: 12px;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        i { color: $accent; font-size: 12px; }
+    }
+
+    .prop-group {
+        margin-bottom: 8px;
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: $text-muted;
+            margin-bottom: 4px;
+        }
+    }
+
+    .prop-grid-3col {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 8px;
+
+        .prop-field label {
+            display: block;
+            font-size: 10px;
+            color: $text-muted;
+            margin-bottom: 2px;
+        }
+    }
+
+    .prop-input {
+        width: 100%;
+        background: $bg-elevated;
+        border: 1px solid $border-color;
+        color: $text-primary;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+
+        &:focus {
+            border-color: $border-focus;
+            outline: none;
+        }
+    }
+
+    .toggle-label {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 13px !important;
+        color: $text-primary !important;
+
+        input[type="checkbox"] {
+            accent-color: $accent;
+            width: 16px;
+            height: 16px;
+        }
+    }
+
+    .no-selection-message {
+        padding: 32px 16px;
+        text-align: center;
+        color: $text-muted;
+
+        i { font-size: 24px; margin-bottom: 10px; display: block; }
+        p { font-size: 13px; }
+    }
+}
+
+
+// ─── Buttons ────────────────────────────────────────────────────────────
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 20px;
+    background: $accent;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover { background: lighten($accent, 10%); }
+}
+
+
+// ─── Loading / Error States ─────────────────────────────────────────────
+
+.editor-loading,
+.editor-error {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner {
+    text-align: center;
+    color: $text-secondary;
+
+    p { margin-top: 16px; font-size: 14px; }
+}
+
+.error-content {
+    text-align: center;
+    color: $text-secondary;
+
+    i { color: $accent-orange; margin-bottom: 16px; }
+    h3 { font-size: 18px; color: $text-primary; margin-bottom: 8px; }
+    p { font-size: 14px; margin-bottom: 20px; }
+}
+
+
+// ─── Scrollbar Styling ──────────────────────────────────────────────────
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: 3px;
+
+    &:hover { background: $text-muted; }
+}

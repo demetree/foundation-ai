@@ -178,7 +178,7 @@
         <!-- ═══════════════════════════════════════════════════════════════ -->
         <!--  BRICKBERG TERMINAL                                           -->
         <!-- ═══════════════════════════════════════════════════════════════ -->
-        <section class="brickberg-terminal" *ngIf="!brickbergLoading || brickbergData">
+        <section class="brickberg-terminal" *ngIf="brickbergEnabled && (!brickbergLoading || brickbergData)">
 
             <!-- Terminal Header -->
             <div class="terminal-header">

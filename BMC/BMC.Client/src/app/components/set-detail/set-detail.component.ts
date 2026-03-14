@@ -16,6 +16,7 @@ import { BrickSetSyncService } from '../../services/brickset-sync.service';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { AuthService } from '../../services/auth.service';
 import { BrickbergApiService } from '../../services/brickberg-api.service';
+import { BrickbergPreferenceService } from '../../services/brickberg-preference.service';
 
 @Component({
     selector: 'app-set-detail',
@@ -50,6 +51,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
     brickbergLoading = false;
     brickbergHelpOpen = false;
     priceMatrixTab: 'sold' | 'stock' = 'sold';
+    brickbergEnabled = false;
 
     get isInComparison(): boolean {
         return this.set ? this.comparisonService.isInComparison(Number(this.set.id)) : false;
@@ -92,6 +94,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         private alertService: AlertService,
         private authService: AuthService,
         private brickbergApi: BrickbergApiService,
+        private brickbergPref: BrickbergPreferenceService,
     ) {
         if (this.authService.isLoggedIn) {
             this.ownershipCache.ensureLoaded();
@@ -110,6 +113,9 @@ export class SetDetailComponent implements OnInit, OnDestroy {
         ).subscribe(result => {
             this.thumbnails.set(result.cacheKey, result.dataUrl);
         });
+
+        // Subscribe to Brickberg preference
+        this.brickbergPref.isEnabled$.pipe(takeUntil(this.destroy$)).subscribe(v => this.brickbergEnabled = v);
     }
 
     ngOnDestroy(): void {
@@ -697,6 +703,7 @@ export class SetDetailComponent implements OnInit, OnDestroy {
 
     private loadBrickbergData(): void {
         if (!this.set?.setNumber) return;
+        if (!this.brickbergEnabled) return;
         this.brickbergLoading = true;
         this.brickbergData = null;
 

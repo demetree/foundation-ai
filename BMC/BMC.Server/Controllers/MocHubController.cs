@@ -419,7 +419,7 @@ namespace Foundation.BMC.Controllers.WebAPI
             int pageNumber = 1,
             CancellationToken cancellationToken = default)
         {
-            pageSize = Math.Clamp(pageSize, 1, 50);
+            pageSize = Math.Clamp(pageSize, 1, 1000);
             pageNumber = Math.Max(1, pageNumber);
 
             // Verify the MOC exists and is publicly accessible
@@ -1351,8 +1351,13 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return NotFound("No main model sub-file found.");
             }
             var globalSteps = allStepParts
-                .Select(p => new { p.modelSubFileId, p.StepNumber, p.IsMainModel })
-                .Distinct()
+                .GroupBy(p => new { p.modelSubFileId, p.StepNumber })
+                .Select(g => new
+                {
+                    g.Key.modelSubFileId,
+                    g.Key.StepNumber,
+                    IsMainModel = g.First().IsMainModel
+                })
                 .OrderByDescending(x => x.IsMainModel)  // main model first
                 .ThenBy(x => x.modelSubFileId)
                 .ThenBy(x => x.StepNumber)

@@ -729,6 +729,43 @@
     }
 }
 
+
+// ── Load More Button ──
+.version-load-more {
+    text-align: center;
+    padding: 16px 0 8px;
+}
+
+.btn-load-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    border: 1px solid var(--bmc-border);
+    border-radius: 6px;
+    background: var(--bmc-bg);
+    color: var(--bmc-accent);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+        background: var(--bmc-card);
+        border-color: var(--bmc-accent);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: wait;
+    }
+
+    .load-more-count {
+        color: var(--bmc-text-muted);
+        font-weight: 400;
+    }
+}
+
 .fork-lineage {
     margin-bottom: 16px;
     padding: 10px 14px;

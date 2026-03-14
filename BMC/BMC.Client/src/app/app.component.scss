@@ -82,3 +82,30 @@
         padding: 20px;
     }
 }
+
+
+/* ── Legal Footer ── */
+.bmc-legal-footer {
+    margin-top: auto;
+    padding: 32px 24px 20px;
+    text-align: center;
+    opacity: 0.35;
+    transition: opacity 0.3s;
+
+    &:hover {
+        opacity: 0.6;
+    }
+
+    p {
+        margin: 0 0 4px;
+        font-size: 0.68rem;
+        color: var(--bmc-text-secondary);
+        line-height: 1.5;
+    }
+
+    .legal-lego {
+        font-size: 0.6rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+}

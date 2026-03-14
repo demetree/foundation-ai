@@ -18,6 +18,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
 import { BrickbergApiService } from '../../services/brickberg-api.service';
 import { SetExplorerApiService, SetExplorerItem } from '../../services/set-explorer-api.service';
+import { BrickbergPreferenceService } from '../../services/brickberg-preference.service';
 
 
 //
@@ -101,20 +102,28 @@ export class BrickbergDashboardComponent implements OnInit, OnDestroy {
     moversLoading = true;
     statusLoading = true;
     cacheLoading = true;
+    brickbergEnabled = false;
 
     constructor(
         private http: HttpClient,
         private router: Router,
         private brickbergApi: BrickbergApiService,
-        private explorerApi: SetExplorerApiService
+        private explorerApi: SetExplorerApiService,
+        private brickbergPref: BrickbergPreferenceService
     ) { }
 
 
     ngOnInit(): void {
         document.title = 'Brickberg Terminal';
-        this.loadAllPanels();
-        this.loadSetExplorerData();
-        this.loadRecentLookups();
+
+        this.brickbergPref.isEnabled$.pipe(takeUntil(this.destroy$)).subscribe(enabled => {
+            this.brickbergEnabled = enabled;
+            if (enabled) {
+                this.loadAllPanels();
+                this.loadSetExplorerData();
+                this.loadRecentLookups();
+            }
+        });
     }
 
 

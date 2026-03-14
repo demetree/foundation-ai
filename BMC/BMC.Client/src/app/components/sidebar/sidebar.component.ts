@@ -1,11 +1,15 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+
+import { BrickbergPreferenceService } from '../../services/brickberg-preference.service';
 
 interface NavItem {
     icon: string;
     label: string;
     route: string;
     badge?: string;
+    requiresBrickberg?: boolean;
 }
 
 interface NavGroup {
@@ -18,9 +22,12 @@ interface NavGroup {
     templateUrl: './sidebar.component.html',
     styleUrl: './sidebar.component.scss'
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit, OnDestroy {
     @Input() isCollapsed = false;
     @Output() toggleCollapse = new EventEmitter<boolean>();
+
+    brickbergEnabled = false;
+    private brickbergSub?: Subscription;
 
 
     //
@@ -70,7 +77,7 @@ export class SidebarComponent {
         {
             label: 'TOOLS',
             items: [
-                { icon: 'fas fa-chart-line', label: 'Brickberg', route: '/brickberg' },
+                { icon: 'fas fa-chart-line', label: 'Brickberg', route: '/brickberg', requiresBrickberg: true },
                 { icon: 'fas fa-th-large', label: 'Dashboard', route: '/dashboard' },
                 { icon: 'fas fa-plug', label: 'Integrations', route: '/integrations' },
                 { icon: 'fas fa-robot', label: 'AI Assistant', route: '/ai' },
@@ -80,7 +87,23 @@ export class SidebarComponent {
     ];
 
 
-    constructor(public router: Router) { }
+    constructor(
+        public router: Router,
+        private brickbergPref: BrickbergPreferenceService
+    ) { }
+
+    ngOnInit(): void {
+        this.brickbergSub = this.brickbergPref.isEnabled$.subscribe(v => this.brickbergEnabled = v);
+    }
+
+    ngOnDestroy(): void {
+        this.brickbergSub?.unsubscribe();
+    }
+
+    /** Returns items for a group, filtering out Brickberg if disabled */
+    getVisibleItems(group: NavGroup): NavItem[] {
+        return group.items.filter(item => !item.requiresBrickberg || this.brickbergEnabled);
+    }
 
     toggle() {
         this.isCollapsed = !this.isCollapsed;

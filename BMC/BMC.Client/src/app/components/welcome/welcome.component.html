@@ -67,7 +67,7 @@
         </div>
 
         <!-- Brickberg Terminal — full-width featured card -->
-        <div class="brickberg-featured" *ngIf="pathways[2] as bb" (click)="selectPathway(bb)">
+        <div class="brickberg-featured" *ngIf="brickbergEnabled && pathways[2] as bb" (click)="selectPathway(bb)">
             <div class="pathway-icon-wrapper">
                 <i [class]="bb.icon" class="pathway-icon"></i>
             </div>
@@ -92,8 +92,9 @@
         <h2 class="section-label"><i class="fas fa-bolt me-2"></i>Everything at a Glance</h2>
 
         <div class="feature-strip">
-            <a class="feature-card" *ngFor="let f of featureLinks; let i = index"
-                [style.animation-delay]="(i * 40) + 'ms'" (click)="goToFeature(f)">
+            <ng-container *ngFor="let f of featureLinks; let i = index">
+                <a class="feature-card" *ngIf="f.route !== '/brickberg' || brickbergEnabled"
+                    [style.animation-delay]="(i * 40) + 'ms'" (click)="goToFeature(f)">
 
                 <div class="feature-icon" [ngClass]="f.gradient">
                     <i [class]="f.icon"></i>
@@ -104,6 +105,7 @@
                 </div>
                 <i class="fas fa-chevron-right feature-arrow"></i>
             </a>
+            </ng-container>
         </div>
     </section>
 

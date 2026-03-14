@@ -9,6 +9,65 @@ $bl-accent: #2196F3;
 $be-accent: #00B894;
 $bo-accent: #6C5CE7;
 
+
+/* ── Disabled / Soft Landing ── */
+.brickberg-disabled-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    padding: 40px 20px;
+}
+
+.disabled-card {
+    @include glass.glass-effect-lg;
+    max-width: 520px;
+    text-align: center;
+    padding: 48px 40px;
+    border-radius: var(--radius-lg, 16px);
+}
+
+.disabled-icon {
+    font-size: 3rem;
+    color: $be-accent;
+    opacity: 0.4;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.disabled-card h2 {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--bmc-text-primary);
+    margin: 0 0 12px;
+}
+
+.disabled-card p {
+    font-size: 0.88rem;
+    color: var(--bmc-text-secondary);
+    line-height: 1.6;
+    margin: 0 0 8px;
+}
+
+.disabled-hint {
+    margin-top: 16px !important;
+    font-size: 0.82rem !important;
+
+    a {
+        color: var(--bmc-accent, $be-accent);
+        text-decoration: none;
+        font-weight: 600;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+
 .brickberg-page {
     max-width: 1200px;
     margin: 0 auto;

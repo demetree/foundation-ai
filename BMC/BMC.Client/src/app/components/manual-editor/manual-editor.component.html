@@ -1,0 +1,297 @@
+<!--
+    Manual Editor — Multi-panel instruction editor
+
+    Layout:
+      Top toolbar: manual name, page size, save, back
+      Left sidebar: page thumbnails
+      Center canvas: page layout with steps
+      Right panel: step properties (camera, exploded view)
+
+    AI-assisted development — reviewed and adapted to project conventions.
+-->
+
+<!-- ═══ Top Toolbar ═══════════════════════════════════════════════════ -->
+<div class="editor-toolbar" *ngIf="manual">
+    <div class="toolbar-left">
+        <button class="btn-icon" (click)="goBack()" title="Back to Manual Generator">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <span class="toolbar-divider"></span>
+        <div class="manual-title-group">
+            <input class="manual-name-input"
+                   [(ngModel)]="manual.name"
+                   placeholder="Manual Name"
+                   (blur)="saveManual()" />
+            <span class="page-count-badge">
+                <i class="fas fa-file-alt"></i>
+                {{ pages.length }} page{{ pages.length !== 1 ? 's' : '' }}
+            </span>
+        </div>
+    </div>
+    <div class="toolbar-center">
+        <div class="page-size-selector">
+            <label>Page Size:</label>
+            <select (change)="setPageSize(pageSizePresets[$any($event.target).selectedIndex])"
+                    class="page-size-select">
+                <option *ngFor="let preset of pageSizePresets"
+                        [selected]="manual.pageWidthMm === preset.widthMm && manual.pageHeightMm === preset.heightMm">
+                    {{ preset.name }} ({{ preset.widthMm }}×{{ preset.heightMm }}mm)
+                </option>
+            </select>
+        </div>
+    </div>
+    <div class="toolbar-right">
+        <button class="btn-icon" (click)="togglePropertiesPanel()"
+                [class.active]="showPropertiesPanel"
+                title="Toggle Properties Panel">
+            <i class="fas fa-sliders-h"></i>
+        </button>
+        <span class="toolbar-divider"></span>
+        <button class="btn-save" (click)="saveManual()" [disabled]="isSaving">
+            <i class="fas" [class.fa-save]="!isSaving" [class.fa-spinner]="isSaving" [class.fa-spin]="isSaving"></i>
+            {{ isSaving ? 'Saving...' : 'Save' }}
+        </button>
+    </div>
+</div>
+
+
+<!-- ═══ Main Editor Layout ═════════════════════════════════════════════ -->
+<div class="editor-body" *ngIf="!isLoading && !loadError">
+
+    <!-- ─── Left Sidebar: Page Thumbnails ─────────────────────────────── -->
+    <aside class="page-sidebar">
+        <div class="sidebar-header">
+            <span>PAGES</span>
+            <button class="btn-icon-sm" (click)="addPage()" title="Add Page">
+                <i class="fas fa-plus"></i>
+            </button>
+        </div>
+        <div class="page-list">
+            <div *ngFor="let page of pages; let i = index"
+                 class="page-thumbnail"
+                 [class.selected]="i === selectedPageIndex"
+                 (click)="selectPage(i)">
+                <div class="page-thumb-preview"
+                     [style.aspect-ratio]="pageAspectRatio">
+                    <span class="page-num">{{ page.pageNum ?? (i + 1) }}</span>
+                    <div class="step-indicators">
+                        <span *ngFor="let step of (stepsMap.get(page.id) || [])"
+                              class="step-dot"
+                              [title]="'Step ' + step.stepNumber">
+                        </span>
+                    </div>
+                </div>
+                <span class="page-label">{{ page.title || 'Page ' + (i + 1) }}</span>
+                <button class="btn-delete-page"
+                        *ngIf="pages.length > 1"
+                        (click)="deletePage(i); $event.stopPropagation()"
+                        title="Delete Page">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+
+    <!-- ─── Center Canvas: Page Content ────────────────────────────── -->
+    <main class="page-canvas">
+        <div class="canvas-page-frame"
+             [style.aspect-ratio]="pageAspectRatio"
+             *ngIf="selectedPage">
+
+            <!-- Page Title -->
+            <div class="page-header-bar">
+                <input class="page-title-input"
+                       [(ngModel)]="selectedPage.title"
+                       placeholder="Page Title" />
+            </div>
+
+            <!-- Steps Grid -->
+            <div class="steps-grid">
+                <div *ngFor="let step of selectedPageSteps"
+                     class="step-card"
+                     [class.selected]="selectedStep?.id === step.id"
+                     (click)="selectStep(step)">
+                    <div class="step-header">
+                        <span class="step-number">{{ step.stepNumber }}</span>
+                        <button class="btn-icon-xs"
+                                (click)="deleteStep(step); $event.stopPropagation()"
+                                title="Delete Step">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                    <div class="step-render-area">
+                        <div class="render-placeholder">
+                            <i class="fas fa-cube"></i>
+                            <span>Step {{ step.stepNumber }}</span>
+                        </div>
+                    </div>
+                    <div class="step-meta">
+                        <span *ngIf="step.showExplodedView"
+                              class="meta-badge exploded">
+                            <i class="fas fa-expand-arrows-alt"></i> Exploded
+                        </span>
+                        <span class="meta-badge camera">
+                            <i class="fas fa-video"></i>
+                            {{ (step.cameraPositionX ?? 0) | number:'1.0-0' }},
+                            {{ (step.cameraPositionY ?? 0) | number:'1.0-0' }},
+                            {{ (step.cameraPositionZ ?? 0) | number:'1.0-0' }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Add Step Card -->
+                <div class="step-card add-step-card" (click)="addStep()">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Step</span>
+                </div>
+            </div>
+
+            <!-- Page Notes -->
+            <div class="page-notes-bar" *ngIf="selectedPage">
+                <textarea class="page-notes-input"
+                          [(ngModel)]="selectedPage.notes"
+                          placeholder="Page notes (optional)"
+                          rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="empty-canvas" *ngIf="!selectedPage">
+            <i class="fas fa-book-open"></i>
+            <h3>No Pages</h3>
+            <p>Click "Add Page" to begin creating your instruction manual.</p>
+            <button class="btn-primary" (click)="addPage()">
+                <i class="fas fa-plus"></i> Add First Page
+            </button>
+        </div>
+    </main>
+
+
+    <!-- ─── Right Panel: Step Properties ──────────────────────────── -->
+    <aside class="properties-panel" *ngIf="showPropertiesPanel">
+        <div class="properties-header">
+            STEP PROPERTIES
+        </div>
+
+        <div class="properties-content" *ngIf="selectedStep; else noStepSelected">
+
+            <!-- Step Number -->
+            <div class="prop-group">
+                <label>Step Number</label>
+                <input type="number" class="prop-input"
+                       [(ngModel)]="selectedStep.stepNumber"
+                       (blur)="saveStep()" />
+            </div>
+
+            <!-- Camera Position -->
+            <div class="prop-section-title">
+                <i class="fas fa-video"></i> Camera Position
+            </div>
+            <div class="prop-grid-3col">
+                <div class="prop-field">
+                    <label>X</label>
+                    <input type="number" class="prop-input"
+                           [(ngModel)]="selectedStep.cameraPositionX"
+                           (blur)="saveStep()" />
+                </div>
+                <div class="prop-field">
+                    <label>Y</label>
+                    <input type="number" class="prop-input"
+                           [(ngModel)]="selectedStep.cameraPositionY"
+                           (blur)="saveStep()" />
+                </div>
+                <div class="prop-field">
+                    <label>Z</label>
+                    <input type="number" class="prop-input"
+                           [(ngModel)]="selectedStep.cameraPositionZ"
+                           (blur)="saveStep()" />
+                </div>
+            </div>
+
+            <!-- Camera Target -->
+            <div class="prop-section-title">
+                <i class="fas fa-crosshairs"></i> Camera Target
+            </div>
+            <div class="prop-grid-3col">
+                <div class="prop-field">
+                    <label>X</label>
+                    <input type="number" class="prop-input"
+                           [(ngModel)]="selectedStep.cameraTargetX"
+                           (blur)="saveStep()" />
+                </div>
+                <div class="prop-field">
+                    <label>Y</label>
+                    <input type="number" class="prop-input"
+                           [(ngModel)]="selectedStep.cameraTargetY"
+                           (blur)="saveStep()" />
+                </div>
+                <div class="prop-field">
+                    <label>Z</label>
+                    <input type="number" class="prop-input"
+                           [(ngModel)]="selectedStep.cameraTargetZ"
+                           (blur)="saveStep()" />
+                </div>
+            </div>
+
+            <!-- Camera Zoom -->
+            <div class="prop-group">
+                <label><i class="fas fa-search-plus"></i> Zoom</label>
+                <input type="number" class="prop-input"
+                       [(ngModel)]="selectedStep.cameraZoom"
+                       step="0.1"
+                       (blur)="saveStep()" />
+            </div>
+
+            <!-- Exploded View -->
+            <div class="prop-section-title">
+                <i class="fas fa-expand-arrows-alt"></i> Exploded View
+            </div>
+            <div class="prop-group">
+                <label class="toggle-label">
+                    <input type="checkbox"
+                           [(ngModel)]="selectedStep.showExplodedView"
+                           (change)="saveStep()" />
+                    <span class="toggle-slider"></span>
+                    Show Exploded View
+                </label>
+            </div>
+            <div class="prop-group" *ngIf="selectedStep.showExplodedView">
+                <label>Exploded Distance</label>
+                <input type="number" class="prop-input"
+                       [(ngModel)]="selectedStep.explodedDistance"
+                       step="5"
+                       (blur)="saveStep()" />
+            </div>
+
+        </div>
+
+        <ng-template #noStepSelected>
+            <div class="no-selection-message">
+                <i class="fas fa-mouse-pointer"></i>
+                <p>Select a step to edit its properties.</p>
+            </div>
+        </ng-template>
+    </aside>
+</div>
+
+
+<!-- ═══ Loading State ══════════════════════════════════════════════════ -->
+<div class="editor-loading" *ngIf="isLoading">
+    <div class="loading-spinner">
+        <i class="fas fa-cog fa-spin fa-3x"></i>
+        <p>Loading Manual...</p>
+    </div>
+</div>
+
+
+<!-- ═══ Error State ════════════════════════════════════════════════════ -->
+<div class="editor-error" *ngIf="loadError">
+    <div class="error-content">
+        <i class="fas fa-exclamation-triangle fa-3x"></i>
+        <h3>Failed to Load Manual</h3>
+        <p>{{ loadError }}</p>
+        <button class="btn-primary" (click)="goBack()">
+            <i class="fas fa-arrow-left"></i> Back to Manual Generator
+        </button>
+    </div>
+</div>

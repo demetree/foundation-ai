@@ -17,6 +17,7 @@ import { trigger, transition, style, animate } from '@angular/animations';
 
 import { AuthService } from '../../services/auth.service';
 import { AuthNudgeService } from '../../services/auth-nudge.service';
+import { BrickbergPreferenceService } from '../../services/brickberg-preference.service';
 
 
 //
@@ -75,6 +76,8 @@ interface LiveStat {
 export class WelcomeComponent implements OnInit, OnDestroy {
 
     private destroy$ = new Subject<void>();
+
+    brickbergEnabled = false;
 
     //
     // Personalized greeting
@@ -192,7 +195,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
         private router: Router,
         private http: HttpClient,
         public authService: AuthService,
-        private authNudgeService: AuthNudgeService
+        private authNudgeService: AuthNudgeService,
+        private brickbergPref: BrickbergPreferenceService
     ) { }
 
 
@@ -224,6 +228,8 @@ export class WelcomeComponent implements OnInit, OnDestroy {
 
         this.startTaglineRotation();
         this.loadStats();
+
+        this.brickbergPref.isEnabled$.pipe(takeUntil(this.destroy$)).subscribe(v => this.brickbergEnabled = v);
     }
 
 

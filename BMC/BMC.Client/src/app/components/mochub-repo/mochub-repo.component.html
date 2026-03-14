@@ -118,7 +118,7 @@
                     </button>
                     <button class="tab-btn" [class.active]="activeTab === 'versions'" (click)="setTab('versions')">
                         <i class="fas fa-history"></i> Versions
-                        <span class="tab-count">{{ versions.length }}</span>
+                        <span class="tab-count">{{ versionsTotalCount || versions.length }}</span>
                     </button>
                     <button class="tab-btn" [class.active]="activeTab === 'forks'" (click)="setTab('forks')">
                         <i class="fas fa-code-branch"></i> Forks
@@ -302,6 +302,19 @@
                                 </div>
 
                             </ng-container>
+                        </div>
+
+                        <!-- Load More Button -->
+                        <div class="version-load-more" *ngIf="hasMoreVersions && !versionsLoading">
+                            <button class="btn-load-more" (click)="loadMoreVersions()" [disabled]="versionsLoadingMore">
+                                <i class="fas" [class.fa-chevron-down]="!versionsLoadingMore"
+                                    [class.fa-spinner]="versionsLoadingMore"
+                                    [class.fa-spin]="versionsLoadingMore"></i>
+                                {{ versionsLoadingMore ? 'Loading...' : 'Load More Versions' }}
+                                <span class="load-more-count" *ngIf="!versionsLoadingMore">
+                                    ({{ versionsTotalCount - versions.length }} remaining)
+                                </span>
+                            </button>
                         </div>
                     </div>
 

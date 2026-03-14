@@ -44,6 +44,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
     isLoadingModel = false;
     modelLoadError: string | null = null;
     modelLoadProgress = 0;
+    private modelLoadedViaGlb = false;
 
     // Build step state
     totalSteps = 0;
@@ -511,6 +512,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         // Discover build steps from GLB node names / extras
         //
         this.discoverBuildSteps(group);
+        this.modelLoadedViaGlb = true;
 
         return true;
     }
@@ -598,6 +600,7 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
             // LDraw coordinate system uses Y-up with Y pointing downward
             //
             group.rotation.x = Math.PI;
+            this.modelLoadedViaGlb = false;
 
             this.modelGroup = group;
             this.scene.add(group);
@@ -689,8 +692,20 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         const glbSteps: { index: number, node: THREE.Group }[] = [];
 
         group.traverse(child => {
-            if (child.name && child.name.startsWith('step_') && child.userData?.['extras']?.['stepIndex'] !== undefined) {
-                glbSteps.push({ index: child.userData['extras']['stepIndex'], node: child as THREE.Group });
+            if (child.name && child.name.startsWith('step_')) {
+                //
+                // Three.js GLTFLoader flattens glTF "extras" directly into userData
+                // (i.e. userData.stepIndex, NOT userData.extras.stepIndex).
+                // Also fall back to parsing the node name for robustness.
+                //
+                const stepIndex =
+                    child.userData?.['stepIndex'] ??
+                    child.userData?.['extras']?.['stepIndex'] ??
+                    parseInt(child.name.replace('step_', ''), 10);
+
+                if (typeof stepIndex === 'number' && !isNaN(stepIndex)) {
+                    glbSteps.push({ index: stepIndex, node: child as THREE.Group });
+                }
             }
         });
 
@@ -1248,7 +1263,18 @@ export class MocViewerComponent implements OnInit, OnDestroy, AfterViewInit {
         if (distance === 0) return { elevation: 0, azimuth: 0 };
 
         const elevation = Math.round(Math.asin(position.y / distance) * (180 / Math.PI));
-        const azimuth = Math.round(Math.atan2(position.x, -position.z) * (180 / Math.PI));
+
+        //
+        // GLB path pre-flips Y during export (no rotation.x = PI),
+        // which reverses the Z-axis relative to the LDraw path.
+        // Negate azimuth for GLB to match the server-side render convention.
+        //
+        let azimuth: number;
+        if (this.modelLoadedViaGlb) {
+            azimuth = Math.round(Math.atan2(position.x, position.z) * (180 / Math.PI));
+        } else {
+            azimuth = Math.round(Math.atan2(position.x, -position.z) * (180 / Math.PI));
+        }
         return { elevation, azimuth };
     }
 

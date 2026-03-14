@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { BrickbergPreferenceService } from '../../services/brickberg-preference.service';
 
 interface LinkType {
     id: number;
@@ -40,6 +41,7 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     location = '';
     websiteUrl = '';
     isPublic = true;
+    brickbergEnabled = false;
 
     // Image state
     hasAvatar = false;
@@ -68,11 +70,13 @@ export class ProfileSettingsComponent implements OnInit, OnDestroy {
     constructor(
         private http: HttpClient,
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        public brickbergPref: BrickbergPreferenceService
     ) { }
 
     ngOnInit(): void {
         this.loadData();
+        this.brickbergEnabled = this.brickbergPref.isEnabled;
     }
 
     ngOnDestroy(): void {
