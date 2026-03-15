@@ -30,7 +30,7 @@ $accent-secondary: #764ba2;
 .scheduler-calendar-container {
     background-color: var(--sch-bg-deep);
     min-height: 100%;
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 
@@ -44,7 +44,7 @@ $accent-secondary: #764ba2;
     margin-bottom: 1.5rem;
 
     .card-header {
-        padding: 1.25rem 2rem;
+        padding: 1.5rem 2rem;
         display: flex;
         justify-content: space-between;
         align-items: center;

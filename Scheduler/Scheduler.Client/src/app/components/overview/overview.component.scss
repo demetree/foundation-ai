@@ -13,7 +13,7 @@
 // Main Container
 //
 .overview-container {
-  padding: 24px;
+  padding: 1.5rem;
   width: 100%;
   background-color: var(--sch-bg-deep);
   min-height: calc(100vh - 60px);
@@ -28,7 +28,7 @@
   border-radius: 16px;
 
   .card-body {
-    padding: 32px 40px;
+    padding: 1.5rem 2rem;
   }
 
   .avatar-wrapper {

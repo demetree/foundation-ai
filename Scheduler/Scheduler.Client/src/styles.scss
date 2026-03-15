@@ -118,6 +118,41 @@ body {
   color: var(--sch-text-primary);
 }
 
+// Ensure table cells inherit theme bg (prevent Bootstrap default white)
+.table > :not(caption) > * > * {
+  background-color: var(--sch-bg-card);
+  color: var(--sch-text-primary);
+  border-bottom-color: var(--sch-border);
+}
+
+// Override Bootstrap .table-light (used on thead in many components)
+.table-light {
+  --bs-table-bg: var(--sch-bg-elevated) !important;
+  --bs-table-color: var(--sch-text-secondary) !important;
+  --bs-table-border-color: var(--sch-border) !important;
+}
+
+// ============================================
+// Bootstrap Utility Class Overrides — make theme-aware
+// ============================================
+.bg-white {
+  background-color: var(--sch-bg-card) !important;
+}
+
+.bg-light {
+  background-color: var(--sch-bg-elevated) !important;
+}
+
+.text-dark {
+  color: var(--sch-text-primary) !important;
+}
+
+.card-header.bg-light {
+  background-color: var(--sch-bg-elevated) !important;
+  color: var(--sch-text-primary);
+  border-bottom-color: var(--sch-border);
+}
+
 
 //
 // Modals

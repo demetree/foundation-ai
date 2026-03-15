@@ -1,7 +1,7 @@
 .page-container {
     background-color: var(--sch-bg-deep);
     min-height: 100%;
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 //
@@ -384,7 +384,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     }
 
     .premium-header .card-header {
-        padding: 1rem;
+        padding: 1.5rem;
         flex-direction: column;
         align-items: flex-start;
     }

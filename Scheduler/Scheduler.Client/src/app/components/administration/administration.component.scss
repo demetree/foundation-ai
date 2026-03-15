@@ -10,7 +10,7 @@ $gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%);
   .card-header {
     background: transparent;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
   }
 
   .d-flex {
@@ -67,7 +67,7 @@ $gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%);
 
 /* Page Container padding */
 .container-fluid {
-  padding-top: 1.5rem !important;
+  padding: 1.5rem !important;
 }
 
 /* Nav Tabs Customization */
