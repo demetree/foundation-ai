@@ -83,6 +83,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? isCallout = null,
 			string calloutModelName = null,
 			bool? showPartsListImage = null,
+			int? calloutNestingDepth = null,
+			int? calloutInstanceCount = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -204,6 +206,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (showPartsListImage.HasValue == true)
 			{
 				query = query.Where(bms => bms.showPartsListImage == showPartsListImage.Value);
+			}
+			if (calloutNestingDepth.HasValue == true)
+			{
+				query = query.Where(bms => bms.calloutNestingDepth == calloutNestingDepth.Value);
+			}
+			if (calloutInstanceCount.HasValue == true)
+			{
+				query = query.Where(bms => bms.calloutInstanceCount == calloutInstanceCount.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -328,6 +338,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? isCallout = null,
 			string calloutModelName = null,
 			bool? showPartsListImage = null,
+			int? calloutNestingDepth = null,
+			int? calloutInstanceCount = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -429,6 +441,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (showPartsListImage.HasValue == true)
 			{
 				query = query.Where(bms => bms.showPartsListImage == showPartsListImage.Value);
+			}
+			if (calloutNestingDepth.HasValue == true)
+			{
+				query = query.Where(bms => bms.calloutNestingDepth == calloutNestingDepth.Value);
+			}
+			if (calloutInstanceCount.HasValue == true)
+			{
+				query = query.Where(bms => bms.calloutInstanceCount == calloutInstanceCount.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{
@@ -1020,6 +1040,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 				    buildManualStep.isCallout = oldBuildManualStep.isCallout;
 				    buildManualStep.calloutModelName = oldBuildManualStep.calloutModelName;
 				    buildManualStep.showPartsListImage = oldBuildManualStep.showPartsListImage;
+				    buildManualStep.calloutNestingDepth = oldBuildManualStep.calloutNestingDepth;
+				    buildManualStep.calloutInstanceCount = oldBuildManualStep.calloutInstanceCount;
 				    buildManualStep.objectGuid = oldBuildManualStep.objectGuid;
 				    buildManualStep.active = oldBuildManualStep.active;
 				    buildManualStep.deleted = oldBuildManualStep.deleted;
@@ -1479,6 +1501,8 @@ namespace Foundation.BMC.Controllers.WebAPI
 			bool? isCallout = null,
 			string calloutModelName = null,
 			bool? showPartsListImage = null,
+			int? calloutNestingDepth = null,
+			int? calloutInstanceCount = null,
 			int? versionNumber = null,
 			Guid? objectGuid = null,
 			bool? active = null,
@@ -1599,6 +1623,14 @@ namespace Foundation.BMC.Controllers.WebAPI
 			if (showPartsListImage.HasValue == true)
 			{
 				query = query.Where(bms => bms.showPartsListImage == showPartsListImage.Value);
+			}
+			if (calloutNestingDepth.HasValue == true)
+			{
+				query = query.Where(bms => bms.calloutNestingDepth == calloutNestingDepth.Value);
+			}
+			if (calloutInstanceCount.HasValue == true)
+			{
+				query = query.Where(bms => bms.calloutInstanceCount == calloutInstanceCount.Value);
 			}
 			if (versionNumber.HasValue == true)
 			{

@@ -42,6 +42,6 @@
 
 .modal-footer {
     padding: 1rem 1.25rem;
-    background: #f8f9fa;
-    border-top: 1px solid #e9ecef;
+    background: var(--fnd-bg-elevated);
+    border-top: 1px solid var(--fnd-border);
 }

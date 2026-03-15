@@ -192,6 +192,8 @@ export class BuildManualStepTableComponent implements OnInit, OnChanges, AfterVi
     { key: 'isCallout', label: 'Is Callout', width: '120px', template: 'boolean' },
     { key: 'calloutModelName', label: 'Callout Model Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/buildmanualstep', 'id']  },
     { key: 'showPartsListImage', label: 'Show Parts List Image', width: '120px', template: 'boolean' },
+    { key: 'calloutNestingDepth', label: 'Callout Nesting Depth', width: undefined },
+    { key: 'calloutInstanceCount', label: 'Callout Instance Count', width: undefined },
 
     ];
 
@@ -356,6 +358,8 @@ export class BuildManualStepTableComponent implements OnInit, OnChanges, AfterVi
                       'isCallout',
                       'calloutModelName',
                       'showPartsListImage',
+                      'calloutNestingDepth',
+                      'calloutInstanceCount',
         ];
 
         result = result.filter((buildManualStep) =>

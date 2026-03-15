@@ -1,19 +1,19 @@
 .virtual-table-container {
   height: calc(100vh - 220px);
-  border-radius: 12px; // More rounded
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); // More subtle shadow
-  background: white;
+  box-shadow: var(--sch-shadow-sm);
+  background: var(--sch-bg-card);
   display: flex;
   flex-direction: column;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--sch-border);
 }
 
 /* Fixed header (outside viewport) */
 .table-header-fixed {
-  background: #f8fafc; // Light gray header
+  background: var(--sch-table-header-bg);
   z-index: 30;
-  border-bottom: 1px solid #e2e8f0; // Subtle border
+  border-bottom: 1px solid var(--sch-border);
 }
 
 /* Viewport — the only thing that scrolls */
@@ -24,7 +24,7 @@
   scrollbar-gutter: stable;
 
   /* Hack for consistent column sizing */
-  padding-right: 14px; // Adjusted for thinner scrollbar
+  padding-right: 14px;
   margin-right: -14px;
 }
 
@@ -57,7 +57,7 @@ tr.row-deleted,
 .card.row-deleted {
   text-decoration: line-through;
   opacity: 0.6;
-  color: #94a3b8;
+  color: var(--sch-text-muted);
 }
 
 tr.row-deleted.row-inactive {
@@ -71,24 +71,24 @@ tr.row-deleted.row-inactive {
 }
 
 .viewport .custom-table tbody tr {
-  background-color: white;
+  background-color: var(--sch-bg-card);
   transition: background-color 0.15s ease;
-  border-bottom: 1px solid #f1f5f9; // Very subtle separator
+  border-bottom: 1px solid var(--sch-border);
 }
 
 // Remove odd striping for a cleaner look, or make it very subtle
 .viewport .custom-table tbody tr:nth-child(odd) {
-  background-color: #ffffff;
+  background-color: var(--sch-bg-card);
 }
 
 .viewport .custom-table tbody tr:hover {
-  background-color: #f1f5f9 !important; // Soft blue-grey hover
+  background-color: var(--sch-bg-hover) !important;
 }
 
 /* Identical alignment */
 .custom-table th,
 .custom-table td {
-  padding: 1rem 1rem !important; // More breathing room
+  padding: 1rem 1rem !important;
   border: none !important;
   box-sizing: border-box;
   white-space: nowrap;
@@ -96,10 +96,10 @@ tr.row-deleted.row-inactive {
   vertical-align: middle;
 }
 
-/* Header Styling - Premium */
+/* Header Styling */
 .custom-table th {
   font-weight: 600;
-  color: #475569;
+  color: var(--sch-text-secondary);
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
@@ -108,14 +108,14 @@ tr.row-deleted.row-inactive {
 }
 
 .custom-table td {
-  color: #334155;
+  color: var(--sch-text-primary);
   font-size: 0.9rem;
-  border-bottom: 1px solid #f1f5f9 !important;
+  border-bottom: 1px solid var(--sch-border) !important;
 }
 
 
 .header-action-button {
-  width: 48px !important; // Slightly wider
+  width: 48px !important;
   min-width: 48px !important;
   max-width: 48px !important;
   text-align: center;
@@ -129,8 +129,8 @@ tr.row-deleted.row-inactive {
 }
 
 .sortable:hover {
-  background-color: #e2e8f0; // Slightly darker hover for headers
-  color: #1e293b;
+  background-color: var(--sch-bg-hover);
+  color: var(--sch-text-primary);
 }
 
 /* Sort arrows */
@@ -146,11 +146,11 @@ tr.row-deleted.row-inactive {
 }
 
 .arrow-up::after {
-  border-bottom: 4px solid #64748b;
+  border-bottom: 4px solid var(--sch-text-muted);
 }
 
 .arrow-down::after {
-  border-top: 4px solid #64748b;
+  border-top: 4px solid var(--sch-text-muted);
 }
 
 .cdk-virtual-scroll-content-wrapper {
@@ -158,7 +158,7 @@ tr.row-deleted.row-inactive {
 }
 
 
-/* Premium Thinner Scrollbar */
+/* Scrollbar */
 .viewport::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -169,14 +169,14 @@ tr.row-deleted.row-inactive {
 }
 
 .viewport::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.5);
+  background: var(--sch-scrollbar-thumb);
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 .viewport::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.8);
+  background: var(--sch-scrollbar-thumb-hover);
   background-clip: content-box;
 }
 
@@ -184,10 +184,10 @@ tr.row-deleted.row-inactive {
   display: inline-block;
   width: 22px;
   height: 22px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px; // Softer rounding
+  border: 1px solid var(--sch-border);
+  border-radius: 6px;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--sch-shadow-sm);
 }
 
 @media (min-width: 768px) {

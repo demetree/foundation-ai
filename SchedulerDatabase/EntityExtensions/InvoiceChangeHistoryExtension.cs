@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = invoiceChangeHistory.timeStamp,
 				userId = invoiceChangeHistory.userId,
 				data = invoiceChangeHistory.data,
-				invoice = Invoice.CreateMinimalAnonymous(invoiceChangeHistory.invoice)
+				invoice = Invoice.CreateMinimalAnonymous(invoiceChangeHistory.invoice),
 			 };
 		}
 

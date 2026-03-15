@@ -1,7 +1,11 @@
+:host {
+  color: var(--sch-text-primary);
+}
+
 .header-card {
-  background-color: #fff;
+  background-color: var(--sch-panel-bg);
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--sch-shadow-sm);
 
   .card-header {
     background-color: transparent;
@@ -57,7 +61,7 @@
   padding-left: 10px;
   padding-right: 10px;
   padding-bottom: 3px;
-  background-color: #f4f6f9;
+  background-color: transparent;
 }
 
 /* Body section that allows for scrolling */
@@ -92,7 +96,7 @@
 }
 
 .household-change-history-input::placeholder, .household-change-history-select::placeholder {
-  color: #6c757d;
+  color: var(--sch-text-muted);
 }
 
 .text-danger {
@@ -110,4 +114,212 @@
 
 .hidden {
   display: none;
+}
+
+/* Glassmorphism header card */
+.header-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--sch-panel-border);
+}
+
+.header-card .page-title {
+  color: var(--sch-text-primary);
+}
+
+.header-card .text-muted {
+  color: var(--sch-text-muted) !important;
+}
+
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
+.btn-light {
+  --bs-btn-bg: var(--sch-panel-bg);
+  --bs-btn-color: var(--sch-text-primary);
+  --bs-btn-border-color: var(--sch-border);
+  --bs-btn-hover-bg: var(--sch-bg-hover);
+  --bs-btn-hover-color: var(--sch-text-primary);
+  --bs-btn-hover-border-color: var(--sch-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--sch-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--sch-primary);
+  --bs-btn-hover-bg: var(--sch-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--sch-primary);
+  --bs-btn-active-bg: var(--sch-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--sch-primary);
+  --bs-btn-disabled-color: #fff;
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+
+.btn-secondary {
+  --bs-btn-bg: var(--sch-bg-elevated);
+  --bs-btn-color: var(--sch-text-primary);
+  --bs-btn-border-color: var(--sch-border);
+  --bs-btn-hover-bg: var(--sch-bg-hover);
+  --bs-btn-hover-color: var(--sch-text-primary);
+  --bs-btn-hover-border-color: var(--sch-border);
+  --bs-btn-active-bg: var(--sch-bg-hover);
+  --bs-btn-active-color: var(--sch-text-primary);
+}
+
+/* Form labels */
+label {
+  color: var(--sch-text-primary);
+}
+
+/* Theme-aware form controls */
+.form-control, .form-select {
+  background-color: var(--sch-bg-elevated);
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--sch-bg-elevated);
+  color: var(--sch-text-primary);
+  border-color: var(--sch-primary);
+  box-shadow: 0 0 0 0.2rem var(--sch-accent-glow-soft);
+}
+
+.form-control::placeholder {
+  color: var(--sch-text-muted);
+}
+
+/* Premium checkbox styling */
+.form-check {
+  padding-left: 2rem;
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.form-check-input {
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: 0;
+  margin-left: -2rem;
+  background-color: var(--sch-bg-elevated);
+  border: 2px solid var(--sch-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+}
+
+.form-check-input:checked {
+  background-color: var(--sch-primary);
+  border-color: var(--sch-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+  background-size: 0.75em;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.form-check-input:focus {
+  border-color: var(--sch-primary);
+  box-shadow: 0 0 0 0.2rem var(--sch-accent-glow-soft);
+  outline: none;
+}
+
+.form-check-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-check-label {
+  color: var(--sch-text-primary);
+  cursor: pointer;
+  padding-left: 0.5rem;
+  font-weight: 500;
+}
+
+/* Theme-aware child table tabs — premium underline style */
+.nav-tabs {
+  border-bottom: 2px solid var(--sch-border);
+  padding: 0 1rem;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--sch-text-secondary);
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--sch-primary);
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  color: var(--sch-primary);
+  background: transparent;
+  border-bottom-color: var(--sch-primary);
+}
+
+.nav-tabs .nav-link i {
+  opacity: 0.7;
+}
+
+/* Tab badges */
+.nav-link .badge {
+  background-color: var(--sch-primary) !important;
+}
+
+/* Tab content panel */
+.tab-content {
+  background-color: transparent;
+  color: var(--sch-text-primary);
+}
+
+.tab-pane {
+  background-color: transparent;
+}
+
+/* Child table inside tabs */
+.tab-pane .card {
+  background-color: var(--sch-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--sch-panel-border);
+  color: var(--sch-text-primary);
+}
+
+.tab-pane table {
+  color: var(--sch-text-primary);
+}
+
+.tab-pane th {
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+}
+
+.tab-pane td {
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+}
+
+.tab-pane a {
+  color: var(--sch-primary);
 }

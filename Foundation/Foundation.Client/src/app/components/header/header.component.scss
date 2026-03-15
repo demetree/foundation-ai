@@ -1,18 +1,10 @@
 // ============================================================================
-// Header - Premium Glassmorphic Theme
+// Header - Theme-Aware Premium Styling
 // ============================================================================
 //
-// AI-ASSISTED: Enhanced with premium glassmorphic styling to match
-// the Command Center theme across the Foundation system (Feb 2026).
+// AI-ASSISTED: Enhanced with theme-aware CSS custom properties.
+// Supports light and dark themes via --fnd-* tokens from _themes.scss.
 //
-
-/* Premium color palette */
-$header-gradient-start: #0f172a;
-$header-gradient-end: #1e293b;
-$accent-blue: #3b82f6;
-$accent-blue-light: #60a5fa;
-$accent-cyan: #22d3ee;
-$accent-blue-glow: rgba(59, 130, 246, 0.4);
 
 :host {
   header.navbar {
@@ -25,12 +17,12 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     z-index: 1050; // above content
 
     //
-    // Premium gradient background with subtle blur
+    // Theme-aware header background
     //
-    background: linear-gradient(135deg, $header-gradient-start 0%, $header-gradient-end 100%) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: var(--fnd-header-bg) !important;
+    border-bottom: 1px solid var(--fnd-header-border);
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--fnd-shadow-md);
   }
 
   .navbar {
@@ -55,34 +47,32 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     }
 
     .fs-4 {
-      background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.85) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--fnd-header-text);
     }
   }
 
   //
-  // Profile button with premium styling
+  // Profile button with theme-aware styling
   //
   .profile-btn {
     border-radius: 999px;
     padding: 4px 12px 4px 4px;
     line-height: 1;
     position: relative;
-    background: rgba(255, 255, 255, 0.06) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    background: var(--fnd-surface-subtle) !important;
+    border: 1px solid var(--fnd-border) !important;
+    color: var(--fnd-text-primary) !important;
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1) !important;
-      border-color: rgba(255, 255, 255, 0.2) !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      background: var(--fnd-surface-hover) !important;
+      border-color: var(--fnd-border-strong) !important;
+      box-shadow: var(--fnd-shadow-sm);
     }
   }
 
   //
-  // User avatar with premium blue gradient
+  // User avatar with primary gradient
   //
   .avatar {
     width: 28px;
@@ -94,14 +84,14 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     font-weight: 700;
     font-size: 0.7rem;
     text-transform: uppercase;
-    background: linear-gradient(135deg, $accent-blue 0%, $accent-cyan 100%);
+    background: var(--fnd-gradient-primary);
     color: white;
-    box-shadow: 0 2px 8px $accent-blue-glow;
+    box-shadow: var(--fnd-btn-shadow);
     transition: all 0.2s ease;
   }
 
   .profile-btn:hover .avatar {
-    box-shadow: 0 4px 16px $accent-blue-glow;
+    box-shadow: var(--fnd-btn-shadow-hover);
     transform: scale(1.05);
   }
 
@@ -115,25 +105,22 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   }
 
   //
-  // Premium dropdown menu with glassmorphism
+  // Premium dropdown menu with theme-aware styling
   //
   .header-profile-menu {
     border-radius: 16px;
     overflow: hidden;
     z-index: 1060 !important;
     min-width: 240px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-      0 0 40px rgba(59, 130, 246, 0.1) !important;
+    border: 1px solid var(--fnd-border);
+    box-shadow: var(--fnd-shadow-lg) !important;
     position: absolute !important;
     top: 100% !important;
     right: 0 !important;
     left: auto !important;
     transform: none !important;
     margin-top: 8px;
-    background: linear-gradient(135deg,
-        rgba(30, 41, 59, 0.98) 0%,
-        rgba(15, 23, 42, 0.98) 100%);
+    background: var(--fnd-bg-card);
     backdrop-filter: blur(20px);
   }
 
@@ -155,21 +142,88 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   // User info section in dropdown
   //
   .header-profile-menu .px-3.py-2 {
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    background: var(--fnd-surface-subtle);
+    border-bottom: 1px solid var(--fnd-border) !important;
     padding: 1rem !important;
 
     .fw-semibold {
-      color: white;
+      color: var(--fnd-text-primary);
       font-size: 0.95rem;
     }
 
     .text-muted {
-      color: rgba(255, 255, 255, 0.5) !important;
+      color: var(--fnd-text-muted) !important;
       font-size: 0.8rem;
     }
   }
 
+  //
+  // Theme picker section in profile dropdown
+  //
+  .theme-picker-section {
+    background: var(--fnd-surface-subtle);
+
+    .theme-picker-label {
+      font-weight: 600;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--fnd-text-muted) !important;
+    }
+  }
+
+  .theme-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+
+  .theme-swatch-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 4px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--fnd-surface-hover);
+      border-color: var(--fnd-border);
+    }
+
+    &.active {
+      background: var(--fnd-accent-glow-soft);
+      border-color: var(--fnd-primary);
+
+      .theme-name {
+        color: var(--fnd-primary-light);
+      }
+    }
+  }
+
+  .theme-swatch {
+    display: flex;
+    width: 28px;
+    height: 18px;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: var(--fnd-shadow-sm);
+
+    .swatch-color {
+      flex: 1;
+    }
+  }
+
+  .theme-name {
+    font-size: 0.6rem;
+    color: var(--fnd-text-muted);
+    white-space: nowrap;
+    transition: color 0.2s ease;
+  }
   //
   // Dropdown items with hover effects
   //
@@ -177,77 +231,75 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--fnd-text-secondary);
     transition: all 0.2s ease;
 
     i {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--fnd-text-muted);
       transition: color 0.2s ease;
     }
   }
 
   .header-profile-menu .dropdown-item:hover {
-    background: linear-gradient(90deg,
-        rgba(59, 130, 246, 0.15) 0%,
-        rgba(59, 130, 246, 0.05) 100%);
-    color: white;
+    background: var(--fnd-surface-hover);
+    color: var(--fnd-text-primary);
 
     i {
-      color: $accent-blue-light;
+      color: var(--fnd-primary);
     }
   }
 
   /* Mobile accordion link colors */
   .text-grey {
-    color: rgba(255, 255, 255, 0.7) !important;
+    color: var(--fnd-text-muted) !important;
   }
 
   .custom-accordion-content .nav-link {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--fnd-text-secondary) !important;
     text-decoration: none;
   }
 
   .custom-accordion-content .nav-link:hover {
-    color: white !important;
+    color: var(--fnd-text-primary) !important;
   }
 
   //
   // Mobile menu toggle button
   //
   .btn-outline-light {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.8);
+    border-color: var(--fnd-border);
+    color: var(--fnd-text-secondary);
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
-      color: white;
+      background: var(--fnd-surface-hover);
+      border-color: var(--fnd-border-strong);
+      color: var(--fnd-text-primary);
     }
   }
 }
 
 //
-// Mobile menu panel with premium slide-down animation
+// Mobile menu panel with theme-aware styling
 //
 .mobile-menu {
   position: absolute;
   top: 56px;
   width: 100%;
   z-index: 1050;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%) !important;
+  border-top: 1px solid var(--fnd-border);
+  background: var(--fnd-bg-card) !important;
   max-height: calc(100vh - 56px);
   overflow-y: auto;
   animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--fnd-shadow-lg);
 
   //
   // Main navigation links
   //
   .mobile-nav-main {
     .nav-item {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--fnd-border);
 
       &:last-child {
         border-bottom: none;
@@ -257,26 +309,24 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     .nav-link {
       padding: 0.875rem 1rem;
       font-weight: 500;
-      color: rgba(255, 255, 255, 0.75) !important;
+      color: var(--fnd-text-secondary) !important;
       transition: all 0.2s ease;
       position: relative;
       border-radius: 8px;
       margin: 2px 0.5rem;
 
       &:hover {
-        background: rgba(59, 130, 246, 0.08);
-        color: white !important;
+        background: var(--fnd-surface-hover);
+        color: var(--fnd-text-primary) !important;
 
         i {
-          color: #60a5fa;
+          color: var(--fnd-primary);
         }
       }
 
       &.active {
-        background: linear-gradient(90deg,
-            rgba(59, 130, 246, 0.2) 0%,
-            rgba(59, 130, 246, 0.08) 100%);
-        color: white !important;
+        background: var(--fnd-sidebar-active-bg);
+        color: var(--fnd-text-primary) !important;
 
         &::before {
           content: '';
@@ -285,13 +335,13 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
           top: 8px;
           bottom: 8px;
           width: 3px;
-          background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+          background: var(--fnd-gradient-primary);
           border-radius: 0 2px 2px 0;
-          box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+          box-shadow: 0 0 8px var(--fnd-accent-glow);
         }
 
         i {
-          color: #60a5fa;
+          color: var(--fnd-primary);
         }
       }
 
@@ -304,12 +354,12 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   }
 
   hr {
-    border-color: rgba(255, 255, 255, 0.08) !important;
+    border-color: var(--fnd-border) !important;
     margin: 0.75rem 1rem !important;
   }
 
   //
-  // Administration accordion - Premium styling
+  // Administration accordion - Theme-aware styling
   //
   .custom-accordion {
     background-color: transparent !important;
@@ -325,9 +375,9 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 
     .accordion-button,
     button.accordion-button {
-      background: rgba(255, 255, 255, 0.03) !important;
+      background: var(--fnd-surface-subtle) !important;
       background-image: none !important;
-      color: rgba(255, 255, 255, 0.85) !important;
+      color: var(--fnd-text-primary) !important;
       padding: 0.875rem 1rem;
       box-shadow: none !important;
       font-weight: 500;
@@ -342,8 +392,8 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
       }
 
       &:hover {
-        background: rgba(59, 130, 246, 0.08) !important;
-        color: white !important;
+        background: var(--fnd-surface-hover) !important;
+        color: var(--fnd-text-primary) !important;
       }
 
       &:focus {
@@ -354,15 +404,15 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
         margin-left: auto;
         font-size: 0.75rem;
         transition: transform 0.3s ease;
-        color: rgba(255, 255, 255, 0.5);
+        color: var(--fnd-text-muted);
       }
 
       &:not(.collapsed) {
-        background: rgba(59, 130, 246, 0.1) !important;
+        background: var(--fnd-sidebar-active-bg) !important;
 
         .expand-icon {
           transform: rotate(180deg);
-          color: #60a5fa;
+          color: var(--fnd-primary);
         }
       }
     }
@@ -377,7 +427,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     }
 
     .custom-accordion-content {
-      background: rgba(0, 0, 0, 0.15);
+      background: var(--fnd-surface-subtle);
       border-radius: 8px;
       padding: 0.5rem 0;
       margin: 0.25rem 0.5rem;
@@ -385,26 +435,24 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
       .nav-link {
         padding: 0.625rem 1rem;
         font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.7) !important;
+        color: var(--fnd-text-secondary) !important;
         transition: all 0.2s ease;
         border-radius: 6px;
         margin: 2px 0.5rem;
         position: relative;
 
         &:hover {
-          background: rgba(59, 130, 246, 0.1);
-          color: #fff !important;
+          background: var(--fnd-surface-hover);
+          color: var(--fnd-text-primary) !important;
 
           i {
-            color: #60a5fa;
+            color: var(--fnd-primary);
           }
         }
 
         &.active {
-          background: linear-gradient(90deg,
-              rgba(59, 130, 246, 0.2) 0%,
-              rgba(59, 130, 246, 0.08) 100%);
-          color: white !important;
+          background: var(--fnd-sidebar-active-bg);
+          color: var(--fnd-text-primary) !important;
 
           &::before {
             content: '';
@@ -413,13 +461,13 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
             top: 6px;
             bottom: 6px;
             width: 3px;
-            background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+            background: var(--fnd-gradient-primary);
             border-radius: 0 2px 2px 0;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 8px var(--fnd-accent-glow);
           }
 
           i {
-            color: #60a5fa;
+            color: var(--fnd-primary);
           }
         }
 
@@ -434,33 +482,33 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   }
 
   //
-  // User section at bottom - Premium styling
+  // User section at bottom
   //
   .mobile-user-section {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--fnd-surface-subtle);
     padding: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid var(--fnd-border);
     margin-top: 0.5rem;
 
     .avatar {
       width: 40px;
       height: 40px;
       font-size: 0.85rem;
-      background: linear-gradient(135deg, #3b82f6 0%, #22d3ee 100%);
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+      background: var(--fnd-gradient-primary);
+      box-shadow: var(--fnd-btn-shadow);
     }
 
     .fw-semibold {
-      color: white;
+      color: var(--fnd-text-primary);
     }
 
     .text-muted {
-      color: rgba(255, 255, 255, 0.5) !important;
+      color: var(--fnd-text-muted) !important;
     }
 
     .btn-outline-light {
-      border-color: rgba(255, 255, 255, 0.15);
-      color: rgba(255, 255, 255, 0.8);
+      border-color: var(--fnd-border);
+      color: var(--fnd-text-secondary);
       border-radius: 10px;
       padding: 0.625rem;
       font-weight: 500;

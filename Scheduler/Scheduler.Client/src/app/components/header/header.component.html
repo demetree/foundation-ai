@@ -1,14 +1,14 @@
 <header class="navbar navbar-dark fixed-top bg-dark p-2 shadow no-select justify-content-between">
   <!-- Logo (left) -->
   <div class="logo-container d-flex align-items-center">
-    <a routerLink="/" class="d-flex align-items-center text-white text-decoration-none mb-1">
+    <a routerLink="/" class="d-flex align-items-center text-decoration-none mb-1" style="color: var(--sch-header-text)">
       <img [src]="themeService.isDarkTheme ? 'assets/images/k2_logo_white.png' : 'assets/images/k2_logo_black.png'" alt="logo" style="height:32px;width:32px;margin-right:15px">
       <span class="fs-4"><strong>Scheduler</strong></span>
     </a>
   </div>
 
   <!-- Centered Tenant Name -->
-  <div class="text-white text-center flex-grow-1 d-sm-block">
+  <div class="text-center flex-grow-1 d-sm-block" style="color: var(--sch-header-text)">
     <span class="fw-bold">{{ tenantName }}</span>
   </div>
 

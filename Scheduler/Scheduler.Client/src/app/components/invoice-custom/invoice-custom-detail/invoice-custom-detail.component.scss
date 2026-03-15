@@ -1,4 +1,5 @@
 /* AI-Developed — This file was significantly developed with AI assistance. */
+/* AI-DEVELOPED: Migrated structural colors to --sch-* theme tokens (Mar 2026). */
 
 //
 // Invoice Detail — Premium Styles
@@ -12,7 +13,7 @@
 
 
 // ──────────────────────────────────────
-// Header
+// Header (entity gradient — stays)
 // ──────────────────────────────────────
 .detail-header {
     background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #3949ab 100%);
@@ -104,7 +105,7 @@
 
 
 // ──────────────────────────────────────
-// Status badges
+// Status badges (functional — stay)
 // ──────────────────────────────────────
 .status-badge {
     padding: 0.25rem 0.75rem;
@@ -162,8 +163,8 @@
 }
 
 .summary-card {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--sch-surface-subtle);
+    border: 1px solid var(--sch-border);
     backdrop-filter: blur(12px);
     border-radius: 12px;
     padding: 1rem 1.25rem;
@@ -183,7 +184,7 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #90a4ae;
+    color: var(--sch-text-muted);
     margin-bottom: 0.25rem;
 }
 
@@ -202,11 +203,11 @@
 // Tabs
 // ──────────────────────────────────────
 .custom-tabs {
-    border-bottom: 2px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 2px solid var(--sch-border);
     margin-bottom: 0;
 
     .nav-link {
-        color: #90a4ae;
+        color: var(--sch-text-muted);
         border: none;
         padding: 0.7rem 1.2rem;
         font-weight: 600;
@@ -233,7 +234,7 @@
         }
 
         &:hover:not(.active) {
-            color: #e3f2fd;
+            color: var(--sch-text-secondary);
         }
     }
 }
@@ -268,15 +269,15 @@
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #90a4ae;
+        color: var(--sch-text-muted);
         padding: 0.6rem 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--sch-border);
         font-weight: 600;
     }
 
     td {
         padding: 0.6rem 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid var(--sch-border);
         font-size: 0.9rem;
     }
 
@@ -284,7 +285,7 @@
         transition: background 0.15s;
 
         &:hover {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--sch-bg-hover);
         }
     }
 
@@ -295,7 +296,7 @@
         }
 
         .subtotal-row td {
-            border-top: 2px solid rgba(255, 255, 255, 0.08);
+            border-top: 2px solid var(--sch-border);
         }
 
         .total-row td {
@@ -320,9 +321,9 @@
 
 .info-item {
     padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--sch-bg-elevated);
     border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--sch-border);
 
     &.full-width {
         grid-column: 1 / -1;
@@ -333,7 +334,7 @@
     display: block;
     font-size: 0.75rem;
     text-transform: uppercase;
-    color: #90a4ae;
+    color: var(--sch-text-muted);
     margin-bottom: 0.3rem;
 }
 
@@ -354,7 +355,7 @@
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    color: #78909c;
+    color: var(--sch-text-muted);
 
     i {
         font-size: 3rem;
@@ -374,7 +375,7 @@
     align-items: center;
     justify-content: center;
     min-height: 400px;
-    color: #78909c;
+    color: var(--sch-text-muted);
 }
 
 

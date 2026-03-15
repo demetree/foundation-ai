@@ -20,6 +20,8 @@ import { Component, OnInit, OnDestroy, Input, SimpleChanges, OnChanges } from '@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CameraState } from '../step-camera-editor/step-camera-editor.component';
 import {
     ManualEditorService,
     BuildManualDto,
@@ -57,6 +59,9 @@ export class ManualEditorComponent implements OnInit, OnDestroy, OnChanges {
     // ─── UI State ───────────────────────────────────────────────────────
     isLoading = true;
     isSaving = false;
+    isExporting = false;
+    isReRendering = false;
+    exportError: string | null = null;
     loadError: string | null = null;
     showPropertiesPanel = true;
 
@@ -209,38 +214,50 @@ export class ManualEditorComponent implements OnInit, OnDestroy, OnChanges {
             next: (pages) => {
                 this.pages = pages.sort((a, b) => (a.pageNum ?? 0) - (b.pageNum ?? 0));
 
-                // Load steps for each page
-                let loadedCount = 0;
                 if (this.pages.length === 0) {
                     this.isLoading = false;
                     return;
                 }
 
-                this.pages.forEach(page => {
-                    this.editorService.getSteps(page.id).subscribe({
-                        next: (steps) => {
-                            this.stepsMap.set(page.id, steps.sort((a, b) =>
-                                (a.stepNumber ?? 0) - (b.stepNumber ?? 0)
-                            ));
-                            loadedCount++;
-                            if (loadedCount === this.pages.length) {
-                                this.isLoading = false;
-                                // Auto-select first step on first page
-                                if (this.pages.length > 0) {
-                                    const firstPageSteps = this.stepsMap.get(this.pages[0].id);
-                                    if (firstPageSteps && firstPageSteps.length > 0) {
-                                        this.selectedStep = firstPageSteps[0];
-                                    }
-                                }
-                            }
-                        },
-                        error: () => {
-                            loadedCount++;
-                            if (loadedCount === this.pages.length) {
-                                this.isLoading = false;
+                //
+                // Batch load ALL steps for the entire manual in a single request.
+                // Group them by pageId into the stepsMap for the UI.
+                //
+                this.editorService.getAllSteps(manualId).subscribe({
+                    next: (allSteps) => {
+                        this.stepsMap.clear();
+
+                        // Initialize empty arrays for all pages
+                        for (const page of this.pages) {
+                            this.stepsMap.set(page.id, []);
+                        }
+
+                        // Group steps by pageId
+                        for (const step of allSteps) {
+                            const pageSteps = this.stepsMap.get(step.buildManualPageId);
+                            if (pageSteps) {
+                                pageSteps.push(step);
                             }
                         }
-                    });
+
+                        // Sort steps within each page
+                        for (const [, steps] of this.stepsMap) {
+                            steps.sort((a, b) => (a.stepNumber ?? 0) - (b.stepNumber ?? 0));
+                        }
+
+                        this.isLoading = false;
+
+                        // Auto-select first step on first page
+                        if (this.pages.length > 0) {
+                            const firstPageSteps = this.stepsMap.get(this.pages[0].id);
+                            if (firstPageSteps && firstPageSteps.length > 0) {
+                                this.selectedStep = firstPageSteps[0];
+                            }
+                        }
+                    },
+                    error: () => {
+                        this.isLoading = false;
+                    }
                 });
             },
             error: (err) => {
@@ -480,5 +497,119 @@ export class ManualEditorComponent implements OnInit, OnDestroy, OnChanges {
         } else {
             this.router.navigate(['/my-projects']);
         }
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Export
+    // ═══════════════════════════════════════════════════════════════════
+
+    exportManual(format: 'html' | 'pdf'): void {
+        if (!this.manual || this.manual.id === 0) return;
+
+        this.isExporting = true;
+        this.exportError = null;
+
+        this.editorService.exportManual(this.manual.id, format).subscribe({
+            next: (res) => {
+                // Download with auth headers instead of bare window.open
+                this.editorService.downloadFile(res.downloadUrl).subscribe({
+                    next: (blob) => {
+                        this.isExporting = false;
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `manual.${format === 'pdf' ? 'pdf' : 'html'}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.URL.revokeObjectURL(url);
+                    },
+                    error: (err) => {
+                        this.isExporting = false;
+                        this.exportError = 'Download failed: ' + (err?.message || 'Unknown error');
+                    }
+                });
+            },
+            error: (err) => {
+                this.isExporting = false;
+                this.exportError = 'Export failed: ' + (err?.error || err?.message || 'Unknown error');
+            }
+        });
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Drag & Drop Reordering
+    // ═══════════════════════════════════════════════════════════════════
+
+    onStepDrop(event: CdkDragDrop<any[]>): void {
+        if (event.previousIndex === event.currentIndex) return;
+        if (!this.selectedPage) return;
+
+        // Reorder locally
+        moveItemInArray(this.selectedPageSteps, event.previousIndex, event.currentIndex);
+
+        // Update step numbers
+        this.selectedPageSteps.forEach((step, idx) => {
+            step.stepNumber = idx + 1;
+        });
+
+        // Persist to server
+        const stepIds = this.selectedPageSteps.map(s => s.id);
+        this.editorService.reorderSteps(this.selectedPage.id, stepIds).subscribe({
+            error: (err) => {
+                console.error('Failed to persist step reorder:', err);
+            }
+        });
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Re-render Step
+    // ═══════════════════════════════════════════════════════════════════
+
+    reRenderStep(): void {
+        if (!this.selectedStep || !this.selectedStep.id) return;
+
+        this.isReRendering = true;
+
+        // Save the step first (to persist camera changes), then re-render
+        this.editorService.updateStep(this.selectedStep.id, this.selectedStep).subscribe({
+            next: () => {
+                this.editorService.reRenderStep(this.selectedStep!.id).subscribe({
+                    next: (res) => {
+                        this.isReRendering = false;
+                        if (this.selectedStep) {
+                            this.selectedStep.renderImagePath = res.renderImagePath;
+                        }
+                    },
+                    error: (err) => {
+                        this.isReRendering = false;
+                        console.error('Re-render failed:', err);
+                    }
+                });
+            },
+            error: (err) => {
+                this.isReRendering = false;
+                console.error('Save before re-render failed:', err);
+            }
+        });
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  3D Camera Editor Integration
+    // ═══════════════════════════════════════════════════════════════════
+
+    onCameraEditorChange(state: CameraState): void {
+        if (!this.selectedStep) return;
+
+        this.selectedStep.cameraPositionX = state.positionX;
+        this.selectedStep.cameraPositionY = state.positionY;
+        this.selectedStep.cameraPositionZ = state.positionZ;
+        this.selectedStep.cameraTargetX = state.targetX;
+        this.selectedStep.cameraTargetY = state.targetY;
+        this.selectedStep.cameraTargetZ = state.targetZ;
     }
 }

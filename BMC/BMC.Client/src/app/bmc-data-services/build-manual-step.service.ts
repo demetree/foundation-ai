@@ -48,6 +48,8 @@ export class BuildManualStepQueryParameters {
     isCallout: boolean | null | undefined = null;
     calloutModelName: string | null | undefined = null;
     showPartsListImage: boolean | null | undefined = null;
+    calloutNestingDepth: bigint | number | null | undefined = null;
+    calloutInstanceCount: bigint | number | null | undefined = null;
     versionNumber: bigint | number | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
@@ -81,6 +83,8 @@ export class BuildManualStepSubmitData {
     isCallout!: boolean;
     calloutModelName: string | null = null;
     showPartsListImage!: boolean;
+    calloutNestingDepth: bigint | number | null = null;
+    calloutInstanceCount: bigint | number | null = null;
     versionNumber!: bigint | number;
     active!: boolean;
     deleted!: boolean;
@@ -168,6 +172,8 @@ export class BuildManualStepData {
     isCallout!: boolean;
     calloutModelName!: string | null;
     showPartsListImage!: boolean;
+    calloutNestingDepth!: bigint | number;
+    calloutInstanceCount!: bigint | number;
     versionNumber!: bigint | number;
     objectGuid!: string;
     active!: boolean;
@@ -695,6 +701,8 @@ export class BuildManualStepService extends SecureEndpointBase {
         output.isCallout = data.isCallout;
         output.calloutModelName = data.calloutModelName;
         output.showPartsListImage = data.showPartsListImage;
+        output.calloutNestingDepth = data.calloutNestingDepth;
+        output.calloutInstanceCount = data.calloutInstanceCount;
         output.versionNumber = data.versionNumber;
         output.active = data.active;
         output.deleted = data.deleted;

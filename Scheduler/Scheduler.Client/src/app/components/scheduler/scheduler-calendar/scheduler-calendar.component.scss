@@ -1,20 +1,22 @@
 // =============================================================================
-// Scheduler Calendar — Premium Theme
+// Scheduler Calendar — Theme-Aware Premium Design
 // =============================================================================
 // Matches the glassmorphic / gradient design language used across
 // contact-custom, calendar-custom, office-custom, etc.
 //
 // AI-Developed — This file was significantly developed with AI assistance.
+// AI-DEVELOPED: Migrated structural colors to --sch-* theme tokens (Mar 2026).
+//     Accent/functional colors (entity gradients, conflict red, warning amber)
+//     are intentionally preserved as hardcoded to maintain their meaning.
 // =============================================================================
 
 // ---------------------------------------------------------------------------
-// Design Tokens
+// Design Tokens — accent/functional colors stay hardcoded
 // ---------------------------------------------------------------------------
 $gradient-scheduler: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 $glass-bg: rgba(255, 255, 255, 0.15);
 $glass-border: rgba(255, 255, 255, 0.2);
 $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-$page-bg: #f4f6f9;
 $card-radius: 16px;
 $btn-radius: 8px;
 $transition-base: all 0.2s ease;
@@ -26,14 +28,14 @@ $accent-secondary: #764ba2;
 // Page Container
 // ---------------------------------------------------------------------------
 .scheduler-calendar-container {
-    background-color: $page-bg;
+    background-color: var(--sch-bg-deep);
     min-height: 100%;
     padding: 1rem;
 }
 
 
 // ---------------------------------------------------------------------------
-// Premium Header
+// Premium Header (gradient stays — entity identity color)
 // ---------------------------------------------------------------------------
 .premium-header {
     background: $gradient-scheduler;
@@ -145,9 +147,9 @@ $accent-secondary: #764ba2;
 // Calendar Card Wrapper
 // ---------------------------------------------------------------------------
 .calendar-card {
-    background: white;
+    background: var(--sch-bg-card);
     border-radius: $card-radius;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--sch-shadow-sm);
     overflow: hidden;
     padding: 0.5rem;
 }
@@ -174,13 +176,13 @@ $accent-secondary: #764ba2;
     // Table cell borders — softer
     td,
     th {
-        border-color: #edf0f5 !important;
+        border-color: var(--sch-border) !important;
     }
 
     // Column header (day names)
     .fc-col-header-cell {
-        background: #fafbfd;
-        border-bottom: 2px solid #edf0f5 !important;
+        background: var(--sch-table-header-bg);
+        border-bottom: 2px solid var(--sch-border) !important;
         padding: 0.6rem 0;
 
         .fc-col-header-cell-cushion {
@@ -188,7 +190,7 @@ $accent-secondary: #764ba2;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            color: #6c757d;
+            color: var(--sch-text-muted);
             text-decoration: none;
         }
     }
@@ -210,22 +212,22 @@ $accent-secondary: #764ba2;
     // Time slot axis labels
     .fc-timegrid-slot-label-cushion {
         font-size: 0.7rem;
-        color: #94a3b8;
+        color: var(--sch-text-muted);
         font-weight: 500;
     }
 
     // Time grid lines
     .fc-timegrid-slot {
         height: 3rem; // Slightly taller for breathing room
-        border-color: #f1f3f7 !important;
+        border-color: var(--sch-border) !important;
     }
 
     .fc-timegrid-slot-minor {
         border-top-style: dotted !important;
-        border-color: #f5f6f9 !important;
+        border-color: var(--sch-border) !important;
     }
 
-    // Now indicator line
+    // Now indicator line (functional red — stays hardcoded)
     .fc-timegrid-now-indicator-line {
         border-color: #ef4444;
         border-width: 2px;
@@ -309,7 +311,7 @@ $accent-secondary: #764ba2;
     .fc-daygrid-day-number {
         font-size: 0.85rem;
         font-weight: 500;
-        color: #495057;
+        color: var(--sch-text-secondary);
         padding: 6px 10px;
         text-decoration: none;
     }
@@ -339,7 +341,7 @@ $accent-secondary: #764ba2;
         border-radius: 4px;
     }
 
-    // Remove scrollbar track background
+    // Scrollbar
     .fc-scroller {
         &::-webkit-scrollbar {
             width: 6px;
@@ -350,7 +352,7 @@ $accent-secondary: #764ba2;
         }
 
         &::-webkit-scrollbar-thumb {
-            background: #d1d5db;
+            background: var(--sch-scrollbar-thumb);
             border-radius: 3px;
         }
     }
@@ -436,7 +438,7 @@ $accent-secondary: #764ba2;
 
 
 // ---------------------------------------------------------------------------
-// Conflict Header Button
+// Conflict Header Button (functional red — stays hardcoded)
 // ---------------------------------------------------------------------------
 .btn-conflict {
     background: rgba(239, 68, 68, 0.25) !important;
@@ -475,7 +477,7 @@ $accent-secondary: #764ba2;
 // Conflict Panel
 // ---------------------------------------------------------------------------
 .conflict-panel {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--sch-bg-card);
     backdrop-filter: blur(16px);
     border-radius: $card-radius;
     border: 1px solid rgba(239, 68, 68, 0.2);
@@ -514,7 +516,7 @@ $accent-secondary: #764ba2;
     >span {
         font-weight: 700;
         font-size: 0.85rem;
-        color: #1e293b;
+        color: var(--sch-text-primary);
         flex: 1;
     }
 }
@@ -524,7 +526,7 @@ $accent-secondary: #764ba2;
     border: none;
     padding: 0.25rem;
     cursor: pointer;
-    color: #94a3b8;
+    color: var(--sch-text-muted);
     transition: color 0.15s;
 
     &:hover {
@@ -548,7 +550,7 @@ $accent-secondary: #764ba2;
     padding: 0.6rem 1rem;
     cursor: pointer;
     transition: background 0.15s;
-    border-bottom: 1px solid #f1f3f7;
+    border-bottom: 1px solid var(--sch-border);
 
     &:last-child {
         border-bottom: none;
@@ -565,7 +567,7 @@ $accent-secondary: #764ba2;
     gap: 0.4rem;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--sch-text-primary);
 }
 
 .conflict-event-name {
@@ -586,7 +588,7 @@ $accent-secondary: #764ba2;
     align-items: center;
     gap: 0.75rem;
     font-size: 0.7rem;
-    color: #64748b;
+    color: var(--sch-text-muted);
 }
 
 .conflict-entity {
@@ -596,7 +598,7 @@ $accent-secondary: #764ba2;
 
     i {
         font-size: 0.7rem;
-        color: #94a3b8;
+        color: var(--sch-text-muted);
     }
 }
 
@@ -605,14 +607,14 @@ $accent-secondary: #764ba2;
     font-weight: 600;
 }
 
-// Shift conflict row — amber accent to differentiate from red (resource/availability) and green (crew)
+// Shift conflict row — amber accent to differentiate
 .conflict-entity .bi-clock-history {
     color: #f59e0b !important;
 }
 
 
 // ---------------------------------------------------------------------------
-// Availability Overlay — Background Events
+// Availability Overlay — Background Events (functional colors — stay)
 // ---------------------------------------------------------------------------
 
 :host ::ng-deep {
@@ -640,12 +642,10 @@ $accent-secondary: #764ba2;
     position: fixed;
     z-index: 9999;
     width: 300px;
-    background: white;
+    background: var(--sch-bg-card);
     border-radius: 12px;
-    box-shadow:
-        0 4px 6px rgba(0, 0, 0, 0.05),
-        0 10px 30px rgba(0, 0, 0, 0.12);
-    border: 1px solid #edf0f5;
+    box-shadow: var(--sch-shadow-lg);
+    border: 1px solid var(--sch-border);
     overflow: hidden;
     pointer-events: auto;
     opacity: 0;
@@ -670,7 +670,7 @@ $accent-secondary: #764ba2;
     .popover-title {
         font-weight: 700;
         font-size: 0.95rem;
-        color: #1e293b;
+        color: var(--sch-text-primary);
         line-height: 1.3;
         margin-bottom: 0.5rem;
     }
@@ -681,7 +681,7 @@ $accent-secondary: #764ba2;
         gap: 0.5rem;
         margin-bottom: 0.35rem;
         font-size: 0.8rem;
-        color: #475569;
+        color: var(--sch-text-secondary);
         line-height: 1.4;
 
         i {
@@ -689,15 +689,15 @@ $accent-secondary: #764ba2;
             width: 16px;
             text-align: center;
             margin-top: 2px;
-            color: #94a3b8;
+            color: var(--sch-text-muted);
             font-size: 0.85rem;
         }
     }
 
     .popover-notes {
         font-size: 0.75rem;
-        color: #64748b;
-        border-top: 1px solid #f1f3f7;
+        color: var(--sch-text-muted);
+        border-top: 1px solid var(--sch-border);
         margin-top: 0.5rem;
         padding-top: 0.5rem;
         line-height: 1.5;
@@ -745,13 +745,13 @@ $accent-secondary: #764ba2;
 
     .popover-assignments {
         margin-top: 0.5rem;
-        border-top: 1px solid #f1f3f7;
+        border-top: 1px solid var(--sch-border);
         padding-top: 0.45rem;
 
         .popover-assignments-label {
             font-size: 0.7rem;
             font-weight: 600;
-            color: #94a3b8;
+            color: var(--sch-text-muted);
             text-transform: uppercase;
             letter-spacing: 0.03em;
             margin-bottom: 0.3rem;
@@ -768,7 +768,7 @@ $accent-secondary: #764ba2;
             gap: 0.4rem;
             padding: 0.15rem 0;
             font-size: 0.78rem;
-            color: #334155;
+            color: var(--sch-text-primary);
 
             >i {
                 flex-shrink: 0;
@@ -800,7 +800,7 @@ $accent-secondary: #764ba2;
 
         .popover-assignment-more {
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: var(--sch-text-muted);
             font-weight: 500;
             padding-top: 0.15rem;
             padding-left: 18px;
@@ -817,14 +817,14 @@ $accent-secondary: #764ba2;
     }
 
     .popover-footer {
-        background: #fafbfd;
+        background: var(--sch-table-header-bg);
         padding: 0.5rem 1rem;
-        border-top: 1px solid #f1f3f7;
+        border-top: 1px solid var(--sch-border);
         text-align: center;
 
         .popover-hint {
             font-size: 0.7rem;
-            color: #94a3b8;
+            color: var(--sch-text-muted);
             font-weight: 500;
         }
     }
@@ -835,11 +835,11 @@ $accent-secondary: #764ba2;
 // Calendar Sidebar
 // ---------------------------------------------------------------------------
 .calendar-sidebar {
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--sch-bg-card);
     backdrop-filter: blur(16px);
     border-radius: $card-radius;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--sch-border);
+    box-shadow: var(--sch-shadow-sm);
     margin-bottom: 1rem;
     overflow: hidden;
     animation: slideDown 0.2s ease;
@@ -850,8 +850,8 @@ $accent-secondary: #764ba2;
     align-items: center;
     gap: 0.5rem;
     padding: 0.7rem 1rem;
-    border-bottom: 1px solid #f1f3f7;
-    background: #fafbfd;
+    border-bottom: 1px solid var(--sch-border);
+    background: var(--sch-table-header-bg);
 
     >i {
         color: $accent-primary;
@@ -861,7 +861,7 @@ $accent-secondary: #764ba2;
     >span {
         font-weight: 700;
         font-size: 0.85rem;
-        color: #1e293b;
+        color: var(--sch-text-primary);
         flex: 1;
     }
 }
@@ -873,12 +873,12 @@ $accent-secondary: #764ba2;
 
 .btn-sidebar-action {
     background: none;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--sch-border);
     border-radius: 6px;
     padding: 0.2rem 0.5rem;
     font-size: 0.7rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--sch-text-muted);
     cursor: pointer;
     transition: $transition-base;
 
@@ -904,10 +904,10 @@ $accent-secondary: #764ba2;
     transition: background 0.15s;
     margin: 0;
     font-size: 0.82rem;
-    color: #334155;
+    color: var(--sch-text-primary);
 
     &:hover {
-        background: rgba($accent-primary, 0.04);
+        background: var(--sch-bg-hover);
     }
 
     &.selected {

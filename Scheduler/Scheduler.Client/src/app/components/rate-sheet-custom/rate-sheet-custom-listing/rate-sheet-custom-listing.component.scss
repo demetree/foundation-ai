@@ -6,7 +6,7 @@ $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
 /* Page Container */
 .page-container {
-  background-color: #f4f6f9; // Light grey-blue background
+  background-color: var(--sch-bg); // Light grey-blue background
   min-height: 100%;
   padding: 1.5rem;
 }

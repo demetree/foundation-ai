@@ -1,76 +1,39 @@
 .virtual-table-container {
-  height: calc(100vh - 240px); // Adjusted for improved header height
-  border-radius: 12px; // Softer corners
+  height: calc(100vh - 220px);
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); // Soft shadow
-  background: white;
+  box-shadow: var(--sch-shadow-sm);
+  background: var(--sch-bg-card);
   display: flex;
   flex-direction: column;
-  border: 1px solid #f1f5f9; // Subtle border
+  border: 1px solid var(--sch-border);
 }
 
 /* Fixed header (outside viewport) */
 .table-header-fixed {
-  background: #f8fafc; // Light background for header
+  background: var(--sch-table-header-bg);
   z-index: 30;
-  border-bottom: 2px solid #e2e8f0; // Softer border
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); // Tiny shadow
+  border-bottom: 1px solid var(--sch-border);
 }
-
-/* Inactive (deactivated) rows */
-tr.row-inactive,
-.card.row-inactive {
-  font-style: italic;
-  opacity: 0.75; // Slightly faded for extra clarity
-}
-
-/* Deleted rows */
-tr.row-deleted,
-.card.row-deleted {
-  text-decoration: line-through;
-  opacity: 0.6;
-  color: #999; // Muted color
-}
-
-/* Combine both if deleted takes precedence */
-tr.row-deleted.row-inactive,
-.card.row-deleted.row-inactive {
-  font-style: normal; // Strikethrough wins over italic
-}
-
-.card.row-inactive {
-  font-style: italic;
-  opacity: 0.75;
-}
-
-.card.row-deleted {
-  text-decoration: line-through;
-  opacity: 0.6;
-  background-color: #f8f9fa; // Light gray background
-}
-
 
 /* Viewport — the only thing that scrolls */
 .viewport {
   flex: 1;
   overflow-y: auto;
   overflow-x: auto;
-  /* to allow scrolling if the content exceeds width.  Note headers won't move with content, but will accept that compromise for not making data unreachable. */
   scrollbar-gutter: stable;
-  /* eliminates scrollbar jump */
 
-  /* Hack for consistnent column sizing between header and body tables*/
-  padding-right: 17px;
-  margin-right: -17px;
+  /* Hack for consistent column sizing */
+  padding-right: 14px;
+  margin-right: -14px;
 }
 
 .mobile-viewport {
   height: calc(100vh - 180px);
-  /* or whatever fits your layout */
   display: block;
 }
 
-/* Base table — shared by header and body */
+/* Base table */
 .custom-table {
   table-layout: fixed;
   width: 100%;
@@ -79,16 +42,53 @@ tr.row-deleted.row-inactive,
   margin: 0;
 }
 
-
-/* Header table */
 .table-header-fixed .custom-table {
   border-collapse: collapse;
 }
 
-/* Base Header and Body Styles for Consistency */
+/* Inactive/Deleted styling */
+tr.row-inactive,
+.card.row-inactive {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+tr.row-deleted,
+.card.row-deleted {
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: var(--sch-text-muted);
+}
+
+tr.row-deleted.row-inactive {
+  font-style: normal;
+}
+
+
+/* Body table */
+.viewport .custom-table {
+  background: transparent;
+}
+
+.viewport .custom-table tbody tr {
+  background-color: var(--sch-bg-card);
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid var(--sch-border);
+}
+
+// Remove odd striping for a cleaner look, or make it very subtle
+.viewport .custom-table tbody tr:nth-child(odd) {
+  background-color: var(--sch-bg-card);
+}
+
+.viewport .custom-table tbody tr:hover {
+  background-color: var(--sch-bg-hover) !important;
+}
+
+/* Identical alignment */
 .custom-table th,
 .custom-table td {
-  padding: 1.25rem 0.75rem !important; // Increased vertical padding
+  padding: 1rem 1rem !important;
   border: none !important;
   box-sizing: border-box;
   white-space: nowrap;
@@ -96,53 +96,41 @@ tr.row-deleted.row-inactive,
   vertical-align: middle;
 }
 
-/* Header Specifics */
+/* Header Styling */
 .custom-table th {
   font-weight: 600;
-  color: #64748b; // Muted slate text
+  color: var(--sch-text-secondary);
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.05em;
-  border: none !important;
+  padding-top: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
 }
 
-/* Body Specifics */
 .custom-table td {
-  color: #334155; // Darker slate for readability
-  font-size: 0.875rem;
-  border-bottom: 1px solid #f1f5f9 !important; // Very subtle separator
+  color: var(--sch-text-primary);
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--sch-border) !important;
 }
 
-/* Row Hover & Striping replacement */
-.viewport .custom-table tbody tr {
-  background-color: white;
-  transition: background-color 0.15s ease;
-}
 
-.viewport .custom-table tbody tr:hover {
-  background-color: #f8fafc !important; // Soft hover
-}
-
-/* Action button columns — identical in header and body */
 .header-action-button {
-  width: 45px !important;
-  min-width: 45px !important;
-  max-width: 45px !important;
-  padding: 0.5rem 0.25rem !important;
-  align: center;
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  text-align: center;
 }
 
-/* Sortable header styling */
+/* Sortable header */
 .sortable {
   cursor: pointer;
   position: relative;
   padding-right: 1.5rem;
-  white-space: nowrap;
 }
 
 .sortable:hover {
-  background-color: #f1f5f9; // Match header bg hover
-  color: #334155;
+  background-color: var(--sch-bg-hover);
+  color: var(--sch-text-primary);
 }
 
 /* Sort arrows */
@@ -150,34 +138,29 @@ tr.row-deleted.row-inactive,
 .arrow-down::after {
   content: '';
   display: inline-block;
-  margin-left: 5px;
+  margin-left: 6px;
   width: 0;
   height: 0;
-  vertical-align: middle;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
 }
 
 .arrow-up::after {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 5px solid #64748b;
+  border-bottom: 4px solid var(--sch-text-muted);
 }
 
 .arrow-down::after {
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #64748b;
+  border-top: 4px solid var(--sch-text-muted);
 }
 
-/* CDK wrapper — never adds unwanted padding */
 .cdk-virtual-scroll-content-wrapper {
   width: 100% !important;
 }
 
 
-/* Nicer custom scrollbar */
+/* Scrollbar */
 .viewport::-webkit-scrollbar {
   width: 8px;
-  /* Thinner */
   height: 8px;
 }
 
@@ -186,93 +169,35 @@ tr.row-deleted.row-inactive,
 }
 
 .viewport::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  /* Lighter grey */
+  background: var(--sch-scrollbar-thumb);
   border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .viewport::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-  /* Darker on hover */
+  background: var(--sch-scrollbar-thumb-hover);
+  background-clip: content-box;
 }
 
 .color-swatch {
   display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 1px solid #cbd5e1;
-  /* Soft border */
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--sch-border);
   border-radius: 6px;
-  /* Soft rounding */
   flex-shrink: 0;
-  /* Prevents shrinking in flex layouts */
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  /* Subtle shadow */
+  box-shadow: var(--sch-shadow-sm);
 }
 
-/* Slightly larger swatch on desktop for better visibility */
 @media (min-width: 768px) {
   .color-swatch {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
 }
 
-/* Ensure the text doesn't get truncated awkwardly when next to the swatch */
 td .color-swatch,
 .col-7 .color-swatch {
   vertical-align: middle;
-}
-
-
-
-// -----------------------------------------------------------------
-// Rate Sheet Table - Hierarchy Indentation & Cell Styling
-// -----------------------------------------------------------------
-
-// Action cells (Edit/Delete buttons) — always flush left, no indentation
-.action-cell {
-  // Fixed width to keep buttons aligned across rows
-  width: 60px;
-  padding: 0.5rem !important; // Override Bootstrap defaults
-  text-align: center;
-  vertical-align: middle;
-  // Ensure buttons stay visible even with deep indentation
-  position: sticky;
-  left: 0;
-  background: inherit; // Match row background
-  z-index: 2; // Above content cells
-  border-bottom: 1px solid #f1f5f9 !important; // Maintain border on sticky cell
-}
-
-// Content cells — where we apply dynamic indentation
-.content-cell {
-  padding: 0.75rem 0.5rem !important;
-  vertical-align: middle;
-  position: relative; // For connector pseudo-elements
-  // Optional: subtle border on left for tree feel
-  // border-left: 1px solid #e9ecef;
-}
-
-// Visual connector (tree line) before indented content
-.content-cell::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 12px;
-  height: 1px;
-  background: #e2e8f0; // Softer line
-  transform: translateY(-50%);
-}
-
-// Vertical line for deeper nesting (optional polish)
-.content-cell.indent-level-1::before,
-.content-cell.indent-level-2::before {
-  // Add vertical connector if desired
-}
-
-// Highlight row on hover (but keep action buttons sticky)
-tr:hover .action-cell {
-  background: #f8fafc !important; // Match hover color
 }

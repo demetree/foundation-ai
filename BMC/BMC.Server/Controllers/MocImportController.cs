@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -208,8 +209,18 @@ namespace Foundation.BMC.Controllers.WebAPI
             }
 
             //
-            // Step 3: Run the import
+            // Step 3: Set up SSE streaming and run the import
             //
+            // We stream progress events to the client as text/event-stream so the
+            // upload modal can show real-time status updates during processing.
+            //
+            Response.ContentType = "text/event-stream";
+            Response.Headers["Cache-Control"] = "no-cache";
+            Response.Headers["Connection"] = "keep-alive";
+            Response.Headers["X-Accel-Buffering"] = "no"; // Disable nginx buffering
+
+            StreamWriter writer = new StreamWriter(Response.Body, System.Text.Encoding.UTF8, leaveOpen: true);
+
             try
             {
                 _logger.LogInformation(
@@ -218,19 +229,36 @@ namespace Foundation.BMC.Controllers.WebAPI
                     file.Length,
                     extension);
 
+                //
+                // Create a progress reporter that writes SSE events on each report.
+                //
+                // IMPORTANT: We use a custom IProgress<T> instead of Progress<T>.
+                // Progress<T> captures the SynchronizationContext and posts callbacks
+                // to it, which can deadlock in ASP.NET Core when the callback is async.
+                //
+                IProgress<ModelImportService.ImportProgressEvent> progress =
+                    new SseProgressReporter(writer);
+
                 ModelImportService.ImportResult result = null;
 
                 using (Stream fileStream = file.OpenReadStream())
                 {
+                    //
+                    // Use CancellationToken.None for the import work.
+                    // The request's cancellationToken is tied to the SSE connection,
+                    // and any client timeout/disconnect would cancel DB operations
+                    // mid-query — causing TaskCanceledException crashes.
+                    //
                     result = await _importService.ImportFromFileAsync(
                         fileStream,
                         file.FileName,
                         userTenantGuid,
-                        cancellationToken);
+                        progress,
+                        CancellationToken.None);
                 }
 
                 //
-                // Step 4: Build the response
+                // Step 4: Build the response and send as the final SSE event
                 //
                 UploadResultDto response = new UploadResultDto
                 {
@@ -258,31 +286,68 @@ namespace Foundation.BMC.Controllers.WebAPI
                     result.ResolvedPartCount,
                     result.UnresolvedPartCount);
 
-                return Ok(response);
+                // Send the final "complete" event with the full result
+                string completeJson = JsonSerializer.Serialize(new { step = "Import complete!", percent = 100, result = response });
+                await writer.WriteAsync($"event: complete\ndata: {completeJson}\n\n");
+                await writer.FlushAsync();
             }
             catch (InvalidOperationException ex)
             {
-                //
-                // Validation or parsing errors — return as bad request
-                //
                 _logger.LogWarning(ex, "MOC import validation error for file '{FileName}'", file.FileName);
-                return BadRequest(ex.Message);
+                string errorJson = JsonSerializer.Serialize(new { error = ex.Message });
+                await writer.WriteAsync($"event: error\ndata: {errorJson}\n\n");
+                await writer.FlushAsync();
             }
             catch (InvalidDataException ex)
             {
-                //
-                // File format errors — return as bad request
-                //
                 _logger.LogWarning(ex, "MOC import file format error for file '{FileName}'", file.FileName);
-                return BadRequest(ex.Message);
+                string errorJson = JsonSerializer.Serialize(new { error = ex.Message });
+                await writer.WriteAsync($"event: error\ndata: {errorJson}\n\n");
+                await writer.FlushAsync();
             }
             catch (Exception ex)
             {
-                //
-                // Unexpected errors — log and return generic error
-                //
                 _logger.LogError(ex, "MOC import failed for file '{FileName}'", file.FileName);
-                return Problem("An error occurred while importing the model file. Please try again or contact support.");
+                string errorJson = JsonSerializer.Serialize(new { error = "An error occurred while importing the model file. Please try again or contact support." });
+                await writer.WriteAsync($"event: error\ndata: {errorJson}\n\n");
+                await writer.FlushAsync();
+            }
+            finally
+            {
+                await writer.DisposeAsync();
+            }
+
+            // Response has already been written via SSE — return empty result
+            return new EmptyResult();
+        }
+    }
+
+
+    /// <summary>
+    /// Simple IProgress implementation that writes SSE events directly.
+    /// Unlike Progress&lt;T&gt;, this does NOT capture the SynchronizationContext,
+    /// so it cannot deadlock in ASP.NET Core async pipelines.
+    /// </summary>
+    internal class SseProgressReporter : IProgress<ModelImportService.ImportProgressEvent>
+    {
+        private readonly StreamWriter _writer;
+
+        public SseProgressReporter(StreamWriter writer)
+        {
+            _writer = writer;
+        }
+
+        public void Report(ModelImportService.ImportProgressEvent evt)
+        {
+            try
+            {
+                string json = JsonSerializer.Serialize(new { step = evt.Step, percent = evt.PercentComplete });
+                _writer.Write($"data: {json}\n\n");
+                _writer.Flush();
+            }
+            catch
+            {
+                // Client may have disconnected — ignore write errors
             }
         }
     }

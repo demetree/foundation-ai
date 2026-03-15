@@ -45,6 +45,10 @@ public partial class BuildManualStep
 
     public bool showPartsListImage { get; set; }
 
+    public int? calloutNestingDepth { get; set; }
+
+    public int? calloutInstanceCount { get; set; }
+
     public int versionNumber { get; set; }
 
     public Guid objectGuid { get; set; }

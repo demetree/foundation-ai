@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { HttpEventType } from '@angular/common/http';
 import { ProjectService, UploadResult } from '../../services/project.service';
 
 
@@ -17,6 +16,7 @@ export class UploadModelModalComponent {
     state: ModalState = 'select';
     selectedFile: File | null = null;
     uploadProgress = 0;
+    statusMessage = '';
     result: UploadResult | null = null;
     errorMessage = '';
 
@@ -34,9 +34,11 @@ export class UploadModelModalComponent {
     readonly maxFileSize = 50 * 1024 * 1024; // 50MB
     readonly acceptedExtensions = ['.ldr', '.mpd', '.io', '.lxf'];
 
+
     constructor(
         public activeModal: NgbActiveModal,
-        private projectService: ProjectService
+        private projectService: ProjectService,
+        private ngZone: NgZone
     ) { }
 
 
@@ -95,28 +97,106 @@ export class UploadModelModalComponent {
     }
 
 
-    // ───────────────────── Upload ─────────────────────
+    // ───────────────────── Upload with SSE ─────────────────────
 
     startUpload(): void {
         if (!this.selectedFile) return;
 
         this.state = 'uploading';
         this.uploadProgress = 0;
+        this.statusMessage = `Uploading ${this.selectedFile.name}…`;
 
-        this.projectService.uploadModel(this.selectedFile).subscribe({
-            next: (event) => {
-                if (event.type === HttpEventType.UploadProgress && event.total) {
-                    this.uploadProgress = Math.round(100 * event.loaded / event.total);
-                } else if (event.type === HttpEventType.Response) {
-                    this.result = event.body as UploadResult;
-                    this.state = 'success';
-                    this.hasSuccessfulUpload = true;
-                }
-            },
-            error: (err) => {
-                this.errorMessage = err?.error?.detail || err?.error?.title || 'Upload failed. Please try again.';
-                this.state = 'error';
+        const formData = new FormData();
+        formData.append('file', this.selectedFile, this.selectedFile.name);
+
+        const url = this.projectService.getUploadUrl();
+        const authHeaders = this.projectService.getAuthHeadersRecord();
+
+        //
+        // Use fetch() instead of HttpClient so we can stream SSE events
+        // from the server during processing. The server responds with
+        // Content-Type: text/event-stream and sends real-time progress.
+        //
+        fetch(url, {
+            method: 'POST',
+            headers: authHeaders,
+            body: formData
+        }).then(response => {
+            if (!response.ok && !response.body) {
+                throw new Error(`Upload failed with status ${response.status}`);
             }
+
+            const reader = response.body!.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+
+            const processStream = (): Promise<void> => {
+                return reader.read().then(({ done, value }): Promise<void> | void => {
+                    if (done) return;
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    //
+                    // Parse SSE events from the buffer.
+                    // Events are separated by double newlines.
+                    //
+                    const events = buffer.split('\n\n');
+                    buffer = events.pop() || ''; // Keep incomplete last chunk
+
+                    for (const eventBlock of events) {
+                        if (!eventBlock.trim()) continue;
+
+                        const lines = eventBlock.split('\n');
+                        let eventType = 'message';
+                        let data = '';
+
+                        for (const line of lines) {
+                            if (line.startsWith('event: ')) {
+                                eventType = line.substring(7).trim();
+                            } else if (line.startsWith('data: ')) {
+                                data = line.substring(6);
+                            }
+                        }
+
+                        if (!data) continue;
+
+                        try {
+                            const parsed = JSON.parse(data);
+
+                            //
+                            // Run inside NgZone so Angular detects the changes
+                            //
+                            this.ngZone.run(() => {
+                                if (eventType === 'complete') {
+                                    this.uploadProgress = 100;
+                                    this.statusMessage = 'Import complete!';
+                                    this.result = parsed.result as UploadResult;
+                                    this.state = 'success';
+                                    this.hasSuccessfulUpload = true;
+                                } else if (eventType === 'error') {
+                                    this.errorMessage = parsed.error || 'Import failed.';
+                                    this.state = 'error';
+                                } else {
+                                    // Progress event
+                                    this.uploadProgress = parsed.percent || 0;
+                                    this.statusMessage = parsed.step || 'Processing…';
+                                }
+                            });
+                        } catch {
+                            // Skip malformed JSON
+                        }
+                    }
+
+                    return processStream();
+                });
+            };
+
+            return processStream();
+        }).catch(err => {
+            this.ngZone.run(() => {
+                this.errorMessage = err?.message || 'Upload failed. Please try again.';
+                this.state = 'error';
+            });
         });
     }
 
@@ -127,6 +207,7 @@ export class UploadModelModalComponent {
         this.state = 'select';
         this.selectedFile = null;
         this.uploadProgress = 0;
+        this.statusMessage = '';
         this.result = null;
         this.errorMessage = '';
     }

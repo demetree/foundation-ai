@@ -2652,6 +2652,8 @@ CREATE TABLE "BMC"."BuildManualStep"
 	"isCallout" BOOLEAN NOT NULL DEFAULT false,		-- Whether this step is a callout (submodel assembly shown in-line)
 	"calloutModelName" VARCHAR(250) NULL,		-- Name of the submodel this callout refers to (from LPub3D CALLOUT meta)
 	"showPartsListImage" BOOLEAN NOT NULL DEFAULT true,		-- Whether to show the Parts List Indicator (PLI) image for this step
+	"calloutNestingDepth" INT NULL,		-- Nesting depth in the submodel tree (0=top-level, 1=first sub-assembly, 2=sub-sub-assembly, null=top-level)
+	"calloutInstanceCount" INT NULL,		-- How many times this callout submodel is placed in the parent step (null or 1 = single instance)
 	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.

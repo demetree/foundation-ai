@@ -1,5 +1,5 @@
-// Variables
-$gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%); // Professional Slate/Graphite
+// Variables — entity gradient stays
+$gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%);
 
 /* Premium Header Styling */
 .premium-header {
@@ -14,7 +14,6 @@ $gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%); // Profession
   }
 
   .d-flex {
-    // Flexbox fix for header content alignment
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
@@ -59,7 +58,6 @@ $gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%); // Profession
     border: none;
     color: white;
     border-radius: 8px;
-    /* Softer square */
 
     &:hover {
       background: rgba(255, 255, 255, 0.35);
@@ -74,10 +72,10 @@ $gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%); // Profession
 
 /* Nav Tabs Customization */
 .nav-tabs {
-  border-bottom: 2px solid #e9ecef;
+  border-bottom: 2px solid var(--sch-border);
 
   .nav-link {
-    color: #495057;
+    color: var(--sch-text-muted);
     border: none;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
@@ -86,14 +84,14 @@ $gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%); // Profession
 
     &:hover {
       border-color: transparent;
-      color: #343a40;
-      background: rgba(0, 0, 0, 0.02);
+      color: var(--sch-text-secondary);
+      background: var(--sch-bg-hover);
     }
 
     &.active {
-      color: #343a40; // Dark text for active
+      color: var(--sch-text-primary);
       background: transparent;
-      border-bottom: 2px solid #343a40; // Dark underline
+      border-bottom: 2px solid var(--sch-primary);
       font-weight: 700 !important;
     }
   }
@@ -102,5 +100,5 @@ $gradient-dark: linear-gradient(135deg, #343a40 0%, #505c6c 100%); // Profession
 /* Inner Cards (Tab Content) */
 .card.shadow-sm {
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: var(--sch-shadow-sm) !important;
 }

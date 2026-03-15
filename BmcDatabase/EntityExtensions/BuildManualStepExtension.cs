@@ -303,6 +303,8 @@ namespace Foundation.BMC.Database
 			public String calloutModelName { get; set; }
 			[Required]
 			public Boolean showPartsListImage { get; set; }
+			public Int32? calloutNestingDepth { get; set; }
+			public Int32? calloutInstanceCount { get; set; }
 			public Int32 versionNumber { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
@@ -351,6 +353,8 @@ namespace Foundation.BMC.Database
 				isCallout = this.isCallout,
 				calloutModelName = this.calloutModelName,
 				showPartsListImage = this.showPartsListImage,
+				calloutNestingDepth = this.calloutNestingDepth,
+				calloutInstanceCount = this.calloutInstanceCount,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -411,6 +415,8 @@ namespace Foundation.BMC.Database
 				isCallout = this.isCallout,
 				calloutModelName = this.calloutModelName,
 				showPartsListImage = this.showPartsListImage,
+				calloutNestingDepth = this.calloutNestingDepth,
+				calloutInstanceCount = this.calloutInstanceCount,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -472,6 +478,8 @@ namespace Foundation.BMC.Database
 				isCallout = dto.isCallout,
 				calloutModelName = dto.calloutModelName,
 				showPartsListImage = dto.showPartsListImage,
+				calloutNestingDepth = dto.calloutNestingDepth,
+				calloutInstanceCount = dto.calloutInstanceCount,
 				versionNumber = dto.versionNumber,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
@@ -509,6 +517,8 @@ namespace Foundation.BMC.Database
 			this.isCallout = dto.isCallout;
 			this.calloutModelName = dto.calloutModelName;
 			this.showPartsListImage = dto.showPartsListImage;
+			this.calloutNestingDepth = dto.calloutNestingDepth;
+			this.calloutInstanceCount = dto.calloutInstanceCount;
 			this.versionNumber = dto.versionNumber;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
@@ -552,6 +562,8 @@ namespace Foundation.BMC.Database
 				isCallout = this.isCallout,
 				calloutModelName = this.calloutModelName,
 				showPartsListImage = this.showPartsListImage,
+				calloutNestingDepth = this.calloutNestingDepth,
+				calloutInstanceCount = this.calloutInstanceCount,
 				versionNumber = this.versionNumber,
 				objectGuid = this.objectGuid,
 				active = this.active,
@@ -626,6 +638,8 @@ namespace Foundation.BMC.Database
 				isCallout = buildManualStep.isCallout,
 				calloutModelName = buildManualStep.calloutModelName,
 				showPartsListImage = buildManualStep.showPartsListImage,
+				calloutNestingDepth = buildManualStep.calloutNestingDepth,
+				calloutInstanceCount = buildManualStep.calloutInstanceCount,
 				versionNumber = buildManualStep.versionNumber,
 				objectGuid = buildManualStep.objectGuid,
 				active = buildManualStep.active,
@@ -667,6 +681,8 @@ namespace Foundation.BMC.Database
 				isCallout = buildManualStep.isCallout,
 				calloutModelName = buildManualStep.calloutModelName,
 				showPartsListImage = buildManualStep.showPartsListImage,
+				calloutNestingDepth = buildManualStep.calloutNestingDepth,
+				calloutInstanceCount = buildManualStep.calloutInstanceCount,
 				versionNumber = buildManualStep.versionNumber,
 				objectGuid = buildManualStep.objectGuid,
 				active = buildManualStep.active,

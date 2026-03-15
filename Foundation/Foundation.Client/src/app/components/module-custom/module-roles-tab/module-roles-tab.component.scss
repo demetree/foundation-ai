@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: center;
     padding: 3rem 2rem;
-    color: #6c757d;
+    color: var(--fnd-text-muted);
 
     i {
         font-size: 2rem;
@@ -38,29 +38,29 @@
 .premium-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--fnd-panel-bg);
     border-radius: 12px;
     overflow: hidden;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--fnd-border);
 
     thead {
         th {
             padding: 0.875rem 1rem;
             text-align: left;
             font-weight: 600;
-            color: #6c757d;
+            color: var(--fnd-text-muted);
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border-bottom: 2px solid #dee2e6;
-            background: #f8f9fa;
+            background: var(--fnd-bg-elevated);
         }
     }
 
     tbody {
         .role-row {
             &:not(:last-child) td {
-                border-bottom: 1px solid #dee2e6;
+                border-bottom: 1px solid var(--fnd-border);
             }
 
             &:hover {
@@ -73,17 +73,17 @@
 
             td {
                 padding: 0.875rem 1rem;
-                color: #495057;
+                color: var(--fnd-text-secondary);
                 vertical-align: middle;
             }
         }
 
         .users-row {
-            background: #f8f9fa;
+            background: var(--fnd-bg-elevated);
 
             td {
                 padding: 0;
-                border-bottom: 1px solid #dee2e6;
+                border-bottom: 1px solid var(--fnd-border);
             }
         }
     }
@@ -105,18 +105,18 @@
 
         .role-name {
             font-weight: 500;
-            color: #212529;
+            color: var(--fnd-text-primary);
         }
 
         .role-id {
             font-size: 0.75rem;
-            color: #6c757d;
+            color: var(--fnd-text-muted);
         }
     }
 }
 
 .comments-text {
-    color: #6c757d;
+    color: var(--fnd-text-muted);
     font-size: 0.9rem;
 }
 
@@ -127,9 +127,9 @@
     justify-content: center;
     padding: 0.4rem 0.75rem;
     border-radius: 20px;
-    border: 1px solid #dee2e6;
-    background: #f8f9fa;
-    color: #6c757d;
+    border: 1px solid var(--fnd-border);
+    background: var(--fnd-bg-elevated);
+    color: var(--fnd-text-muted);
     font-size: 0.85rem;
     font-weight: 500;
     cursor: default;
@@ -203,7 +203,7 @@
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    color: #6c757d;
+    color: var(--fnd-text-muted);
 }
 
 .users-list {
@@ -217,9 +217,9 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    background: white;
+    background: var(--fnd-panel-bg);
     border-radius: 10px;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--fnd-border);
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -257,7 +257,7 @@
 
     .user-name {
         font-weight: 500;
-        color: #212529;
+        color: var(--fnd-text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -265,7 +265,7 @@
 
     .user-email {
         font-size: 0.8rem;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -273,7 +273,7 @@
 }
 
 .navigate-icon {
-    color: #adb5bd;
+    color: var(--fnd-text-muted);
     opacity: 0.5;
     transition: all 0.2s ease;
 }
@@ -281,6 +281,6 @@
 .no-users {
     padding: 1rem;
     text-align: center;
-    color: #6c757d;
+    color: var(--fnd-text-muted);
     font-style: italic;
 }

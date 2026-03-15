@@ -94,6 +94,14 @@
                 <input type="checkbox" id="BuildManualStep-showPartsListImage" formControlName="showPartsListImage" class="form-check-input" [disabled]="!userIsBMCBuildManualStepWriter()" />
                 <label for="BuildManualStep-showPartsListImage" class="form-check-label" id="label-BuildManualStep-showPartsListImage"><span class="text-danger">*</span>Show Parts List Image</label>
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('calloutNestingDepth')">
+                <label for="BuildManualStep-calloutNestingDepth" id="label-BuildManualStep-calloutNestingDepth">Callout Nesting Depth</label>
+                <input type="number" id="BuildManualStep-calloutNestingDepth" formControlName="calloutNestingDepth" placeholder="Enter Callout Nesting Depth" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-calloutNestingDepth" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('calloutInstanceCount')">
+                <label for="BuildManualStep-calloutInstanceCount" id="label-BuildManualStep-calloutInstanceCount">Callout Instance Count</label>
+                <input type="number" id="BuildManualStep-calloutInstanceCount" formControlName="calloutInstanceCount" placeholder="Enter Callout Instance Count" class="form-control build-manual-step-input" [disabled]="!userIsBMCBuildManualStepWriter()" aria-labelledby="label-calloutInstanceCount" />
+            </div>
             <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
                 <label for="BuildManualStep-versionNumber" id="label-BuildManualStep-versionNumber"><span class="text-danger">*</span>Version Number</label>
                 <input type="number" id="BuildManualStep-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control build-manual-step-input" />

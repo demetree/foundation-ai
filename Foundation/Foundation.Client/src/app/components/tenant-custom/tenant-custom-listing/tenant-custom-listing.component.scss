@@ -5,12 +5,12 @@
 //
 
 .tenant-listing-container {
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 .listing-header {
     background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
-    padding: 2rem;
+    padding: 1.5rem 2rem;
     border-radius: 16px;
     box-shadow: 0 10px 40px rgba(44, 82, 130, 0.3);
 }
@@ -19,7 +19,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .header-left {
@@ -178,7 +178,7 @@
 }
 
 .table-section {
-    padding: 1.5rem;
+    padding: 0.75rem 0;
 }
 
 // Responsive adjustments

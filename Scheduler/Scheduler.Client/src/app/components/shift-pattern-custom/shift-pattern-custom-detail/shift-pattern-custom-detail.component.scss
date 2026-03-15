@@ -4,7 +4,7 @@
     padding: 0 1rem;
 }
 
-/* ── Header ── */
+/* ── Header (entity gradient — stays) ── */
 
 .detail-header {
     background: linear-gradient(135deg, #312e81 0%, #4338ca 50%, #6366f1 100%);
@@ -94,11 +94,11 @@
 /* ── Tabs ── */
 
 .pattern-tabs {
-    border-bottom: 2px solid #e5e7eb;
+    border-bottom: 2px solid var(--sch-border);
     margin-bottom: 0;
 
     .nav-link {
-        color: #6b7280;
+        color: var(--sch-text-muted);
         border: none;
         padding: 0.75rem 1.25rem;
         font-weight: 500;
@@ -120,9 +120,9 @@
 }
 
 .tab-content-wrapper {
-    background: #fff;
+    background: var(--sch-bg-card);
     border-radius: 0 0 12px 12px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--sch-shadow-sm);
 }
 
 .tab-pane-content {
@@ -132,7 +132,7 @@
 /* ── Info Cards ── */
 
 .info-card {
-    background: #f9fafb;
+    background: var(--sch-bg-elevated);
     border-radius: 10px;
     padding: 1rem;
 }
@@ -141,14 +141,14 @@
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #9ca3af;
+    color: var(--sch-text-muted);
     font-weight: 600;
     margin-bottom: 0.25rem;
 }
 
 .info-value {
     font-size: 0.95rem;
-    color: #1f2937;
+    color: var(--sch-text-primary);
 }
 
 .color-swatch {
@@ -156,7 +156,7 @@
     width: 16px;
     height: 16px;
     border-radius: 4px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--sch-border);
 }
 
 /* ── Weekly Preview ── */
@@ -177,12 +177,12 @@
     font-size: 0.8rem;
     padding-bottom: 0.5rem;
     margin-bottom: 0.5rem;
-    border-bottom: 3px solid #e5e7eb;
-    color: #374151;
+    border-bottom: 3px solid var(--sch-border);
+    color: var(--sch-text-primary);
 }
 
 .day-slot {
-    background: #f0f0ff;
+    background: rgba(99, 102, 241, 0.06);
     border-left: 3px solid #6366f1;
     border-radius: 6px;
     padding: 0.5rem;
@@ -196,12 +196,12 @@
 }
 
 .slot-hours {
-    color: #6b7280;
+    color: var(--sch-text-muted);
     font-size: 0.75rem;
 }
 
 .slot-label {
-    color: #9ca3af;
+    color: var(--sch-text-muted);
     font-size: 0.7rem;
     margin-top: 0.125rem;
 }
@@ -247,7 +247,7 @@
         top: 0;
         bottom: 0;
         width: 2px;
-        background: #e5e7eb;
+        background: var(--sch-border);
     }
 }
 
@@ -264,12 +264,12 @@
     height: 14px;
     border-radius: 50%;
     background: #6366f1;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px #e5e7eb;
+    border: 2px solid var(--sch-bg-card);
+    box-shadow: 0 0 0 2px var(--sch-border);
 }
 
 .timeline-content {
-    background: #f9fafb;
+    background: var(--sch-bg-elevated);
     border-radius: 8px;
     padding: 0.75rem 1rem;
 }

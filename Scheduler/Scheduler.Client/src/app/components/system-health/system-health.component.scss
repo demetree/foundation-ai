@@ -2,6 +2,7 @@
 // System Health Component Styles
 //
 // Premium styling for the system health dashboard.
+// AI-DEVELOPED: Migrated structural colors to --sch-* theme tokens (Mar 2026).
 //
 
 .system-health-container {
@@ -9,7 +10,7 @@
 }
 
 //
-// Premium Header
+// Premium Header (gradient stays — entity identity color)
 //
 .premium-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -33,6 +34,7 @@
     font-weight: 500;
   }
 
+  // Status badges — functional colors stay
   .badge-success {
     background: rgba(40, 167, 69, 0.8) !important;
   }
@@ -57,7 +59,7 @@
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: var(--sch-shadow-md) !important;
   }
 
   .card-header {
@@ -76,7 +78,7 @@
 
 
 //
-// Stat circles (icons)
+// Stat circles (icons) — keep functional semantic colors
 //
 .stat-circle {
   width: 48px;
@@ -120,21 +122,21 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--sch-border);
 
   &:last-child {
     border-bottom: none;
   }
 
   .metric-label {
-    color: #6c757d;
+    color: var(--sch-text-muted);
     font-size: 0.875rem;
   }
 
   .metric-value {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #212529;
+    color: var(--sch-text-primary);
   }
 }
 
@@ -143,8 +145,8 @@
 // Drive cards
 //
 .drive-card {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--sch-bg-elevated);
+  border: 1px solid var(--sch-border);
 
   &.app-drive {
     background: rgba(102, 126, 234, 0.05);
@@ -154,7 +156,7 @@
 
 
 //
-// Status colors
+// Status text colors — functional, stay hardcoded
 //
 .text-success {
   color: #28a745 !important;
@@ -189,7 +191,7 @@
 }
 
 .app-tabs {
-  border-bottom: 2px solid #e9ecef;
+  border-bottom: 2px solid var(--sch-border);
 
   .nav-item {
     margin-bottom: -2px;
@@ -202,13 +204,13 @@
     border: none;
     border-bottom: 2px solid transparent;
     background: transparent;
-    color: #6c757d;
+    color: var(--sch-text-muted);
     font-weight: 500;
     transition: all 0.2s ease;
 
     &:hover {
-      color: #495057;
-      border-bottom-color: #dee2e6;
+      color: var(--sch-text-secondary);
+      border-bottom-color: var(--sch-border);
     }
 
     &.active {
@@ -233,7 +235,7 @@
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: var(--sch-bg-hover);
   }
 
   i.fa-sort,
@@ -252,11 +254,11 @@
 .modal-content {
   border-radius: 12px;
   border: none;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--sch-shadow-lg);
 }
 
 .modal-header {
-  border-bottom-color: #e9ecef;
+  border-bottom-color: var(--sch-border);
   padding: 1rem 1.5rem;
 
   .modal-title {
@@ -270,7 +272,7 @@
 }
 
 .table code {
-  background: #f8f9fa;
+  background: var(--sch-bg-elevated);
   padding: 0.125rem 0.375rem;
   border-radius: 4px;
   font-size: 0.8125rem;
@@ -278,21 +280,21 @@
 
 
 //
-// Metric State Cards
+// Metric State Cards — functional status colors stay hardcoded
 //
 .metric-card {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--sch-bg-elevated);
+  border: 1px solid var(--sch-border);
   transition: all 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--sch-shadow-sm);
   }
 
   .metric-value {
     font-size: 1.25rem;
-    color: #333;
+    color: var(--sch-text-primary);
   }
 }
 
@@ -324,10 +326,10 @@
 }
 
 .metric-unknown {
-  background: #e9ecef;
-  border-color: #6c757d;
+  background: var(--sch-bg-elevated);
+  border-color: var(--sch-text-muted);
 
   .metric-value {
-    color: #495057;
+    color: var(--sch-text-secondary);
   }
 }

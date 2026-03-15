@@ -5,15 +5,15 @@
 //
 
 .page-container {
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 // Hero Section
 .incidents-hero {
     background: linear-gradient(135deg, #dc3545 0%, #fd7e14 50%, #ffc107 100%);
     border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 1rem;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
     position: relative;
     overflow: hidden;
 
@@ -157,9 +157,9 @@
     gap: 1rem;
     margin-bottom: 1rem;
     padding: 1rem;
-    background: var(--bs-body-bg);
+    background: var(--fnd-panel-bg);
     border-radius: 8px;
-    border: 1px solid var(--bs-border-color);
+    border: 1px solid var(--fnd-border);
 
     .filter-group {
         display: flex;
@@ -169,7 +169,7 @@
         .filter-label {
             font-size: 0.75rem;
             font-weight: 500;
-            color: var(--bs-secondary);
+            color: var(--fnd-text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -200,15 +200,15 @@
 
     .loading-text {
         margin-top: 1rem;
-        color: var(--bs-secondary);
+        color: var(--fnd-text-muted);
     }
 }
 
 // Incidents Table
 .incidents-table-container {
-    background: var(--bs-body-bg);
+    background: var(--fnd-panel-bg);
     border-radius: 8px;
-    border: 1px solid var(--bs-border-color);
+    border: 1px solid var(--fnd-border);
     overflow: hidden;
 }
 
@@ -216,29 +216,29 @@
     margin: 0;
 
     thead {
-        background: var(--bs-tertiary-bg);
+        background: var(--fnd-bg-elevated);
 
         th {
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: var(--bs-secondary);
+            color: var(--fnd-text-muted);
             padding: 0.75rem 1rem;
-            border-bottom: 2px solid var(--bs-border-color);
+            border-bottom: 2px solid var(--fnd-border);
         }
     }
 
     tbody {
         .incident-row {
             &:hover {
-                background: var(--bs-tertiary-bg);
+                background: var(--fnd-bg-hover);
             }
 
             td {
                 padding: 0.75rem 1rem;
                 vertical-align: middle;
-                border-bottom: 1px solid var(--bs-border-color);
+                border-bottom: 1px solid var(--fnd-border);
             }
         }
     }
@@ -262,7 +262,7 @@
     font-family: 'SF Mono', 'Monaco', monospace;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--bs-primary);
+    color: var(--fnd-primary);
 }
 
 // Severity Badges
@@ -301,7 +301,7 @@
 
     &.severity-info {
         background: rgba(108, 117, 125, 0.15);
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         border: 1px solid rgba(108, 117, 125, 0.3);
     }
 }
@@ -332,7 +332,7 @@
 
 .time-ago {
     font-size: 0.875rem;
-    color: var(--bs-secondary);
+    color: var(--fnd-text-muted);
 }
 
 // Empty State
@@ -351,12 +351,12 @@
     }
 
     h3 {
-        color: var(--bs-body-color);
+        color: var(--fnd-text-primary);
         margin-bottom: 0.5rem;
     }
 
     p {
-        color: var(--bs-secondary);
+        color: var(--fnd-text-muted);
     }
 }
 

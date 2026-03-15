@@ -179,6 +179,17 @@ export class ManualEditorService {
         );
     }
 
+    /**
+     * Batch load ALL steps for an entire manual in a single request.
+     * Returns steps across all pages, each with buildManualPageId for grouping.
+     */
+    getAllSteps(manualId: number): Observable<BuildManualStepDto[]> {
+        return this.http.get<BuildManualStepDto[]>(
+            `/api/manual-generator/manual/${manualId}/all-steps`,
+            { headers: this.headers }
+        );
+    }
+
     getStep(id: number): Observable<BuildManualStepDto> {
         return this.http.get<BuildManualStepDto>(`/api/BuildManualStep/${id}`, { headers: this.headers });
     }
@@ -193,6 +204,59 @@ export class ManualEditorService {
 
     deleteStep(id: number): Observable<any> {
         return this.http.delete(`/api/BuildManualStep/${id}`, { headers: this.headers });
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════
+    //  Export
+    // ═══════════════════════════════════════════════════════════════════
+
+    /**
+     * Export a manual as HTML or PDF.
+     * Returns a download URL that can be opened in a new window.
+     */
+    exportManual(manualId: number, format: 'html' | 'pdf'): Observable<{ downloadUrl: string; format: string; totalSteps: number; totalParts: number }> {
+        return this.http.post<{ downloadUrl: string; format: string; totalSteps: number; totalParts: number }>(
+            `/api/manual-generator/manual/${manualId}/export?format=${format}`,
+            {},
+            { headers: this.headers }
+        );
+    }
+
+    /**
+     * Download a file with auth headers, returning the blob.
+     */
+    downloadFile(url: string): Observable<Blob> {
+        return this.http.get(url, {
+            headers: new HttpHeaders({
+                'Authorization': `Bearer ${this.authService.accessToken}`
+            }),
+            responseType: 'blob'
+        });
+    }
+
+    /**
+     * Reorder steps within a page.
+     * Supports optional targetPageId for cross-page moves.
+     */
+    reorderSteps(pageId: number, stepIds: number[], targetPageId?: number): Observable<void> {
+        return this.http.put<void>(
+            `/api/manual-generator/page/${pageId}/reorder-steps`,
+            { stepIds, targetPageId },
+            { headers: this.headers }
+        );
+    }
+
+    /**
+     * Re-render a step with its current camera coordinates.
+     * Returns the new base64 image.
+     */
+    reRenderStep(stepId: number): Observable<{ renderImagePath: string }> {
+        return this.http.post<{ renderImagePath: string }>(
+            `/api/manual-generator/step/${stepId}/re-render`,
+            {},
+            { headers: this.headers }
+        );
     }
 
 

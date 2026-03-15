@@ -105,6 +105,23 @@ namespace Foundation.BMC.Services
         #endregion
 
 
+        #region Progress Reporting
+
+        /// <summary>
+        /// Progress event sent during import processing.
+        /// </summary>
+        public class ImportProgressEvent
+        {
+            /// <summary>Human-readable description of the current step.</summary>
+            public string Step { get; set; }
+
+            /// <summary>Estimated percentage complete (0-100).</summary>
+            public int PercentComplete { get; set; }
+        }
+
+        #endregion
+
+
         /// <summary>
         ///
         /// Import a model file into the BMC database.
@@ -116,12 +133,14 @@ namespace Foundation.BMC.Services
         /// <param name="fileStream">Stream containing the file data</param>
         /// <param name="fileName">Original filename (used to detect format)</param>
         /// <param name="tenantGuid">The tenant that owns the imported project</param>
+        /// <param name="progress">Optional progress reporter for SSE streaming</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>Import result with project details and resolution statistics</returns>
         public async Task<ImportResult> ImportFromFileAsync(
             Stream fileStream,
             string fileName,
             Guid tenantGuid,
+            IProgress<ImportProgressEvent> progress = null,
             CancellationToken cancellationToken = default)
         {
             if (fileStream == null)
@@ -137,6 +156,8 @@ namespace Foundation.BMC.Services
             //
             // Step 1: Read the file into a byte array
             //
+            progress?.Report(new ImportProgressEvent { Step = "Reading file…", PercentComplete = 2 });
+
             byte[] fileData = null;
 
             using (MemoryStream memoryStream = new MemoryStream())
@@ -216,6 +237,8 @@ namespace Foundation.BMC.Services
             //
             // Step 3: Parse the LDraw content into model structures
             //
+            progress?.Report(new ImportProgressEvent { Step = "Parsing model structure…", PercentComplete = 5 });
+
             List<LDrawModel> models = ModelParser.ParseLines(lDrawLines);
 
             if (models == null || models.Count == 0)
@@ -228,6 +251,7 @@ namespace Foundation.BMC.Services
             //
             // Step 4: Initialize the lookup caches from the database
             //
+            progress?.Report(new ImportProgressEvent { Step = "Loading part catalog…", PercentComplete = 10 });
             await InitializeLookupCachesAsync(cancellationToken);
 
             //
@@ -242,6 +266,7 @@ namespace Foundation.BMC.Services
                 ioResult,
                 lxfResult?.ThumbnailData,
                 tenantGuid,
+                progress,
                 cancellationToken);
 
             //
@@ -324,13 +349,72 @@ namespace Foundation.BMC.Services
             StudioIoResult ioResult,
             byte[] lxfThumbnailData,
             Guid tenantGuid,
+            IProgress<ImportProgressEvent> progress,
             CancellationToken cancellationToken)
         {
             //
             // The main model is always the first in the list
             //
             LDrawModel mainModel = models[0];
-            string projectName = mainModel.Name ?? Path.GetFileNameWithoutExtension(fileName);
+
+            //
+            // Detect "wrapper" main models — common in MPD files where the root model
+            // is a thin container (e.g. "42096 - main.ldr") that just references a single
+            // submodel containing all the real build steps.
+            //
+            // If the main model has ≤ 1 step and all its parts are submodel references
+            // (not actual .dat parts), follow through to the submodel with the most steps.
+            //
+            if (models.Count > 1 && mainModel.Steps.Count <= 1)
+            {
+                // Build a set of submodel filenames in this MPD
+                HashSet<string> wrapperSubmodelNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                for (int i = 1; i < models.Count; i++)
+                {
+                    if (models[i].Name != null)
+                        wrapperSubmodelNames.Add(models[i].Name);
+                }
+
+                // Check if all parts in the main model's steps are submodel references
+                bool allPartsAreSubmodels = true;
+                foreach (LDrawStep step in mainModel.Steps)
+                {
+                    foreach (LDrawSubfileReference part in step.Parts)
+                    {
+                        if (!wrapperSubmodelNames.Contains(part.FileName))
+                        {
+                            allPartsAreSubmodels = false;
+                            break;
+                        }
+                    }
+                    if (!allPartsAreSubmodels) break;
+                }
+
+                if (allPartsAreSubmodels)
+                {
+                    // Find the submodel with the most steps — that's the real build model
+                    LDrawModel richestSubmodel = models
+                        .Skip(1)
+                        .OrderByDescending(m => m.Steps.Count)
+                        .First();
+
+                    if (richestSubmodel.Steps.Count > mainModel.Steps.Count)
+                    {
+                        _logger.LogInformation(
+                            "Main model '{MainName}' is a wrapper with {MainSteps} step(s). " +
+                            "Using submodel '{SubName}' with {SubSteps} steps as the effective build model.",
+                            mainModel.Name, mainModel.Steps.Count,
+                            richestSubmodel.Name, richestSubmodel.Steps.Count);
+
+                        mainModel = richestSubmodel;
+                    }
+                }
+            }
+
+            // Track the effective filename for rendering — normally the root file,
+            // but the submodel name when we detect a wrapper redirect.
+            string effectiveBuildFileName = mainModel == models[0] ? fileName : mainModel.Name;
+            string projectName = models[0].Name ?? Path.GetFileNameWithoutExtension(fileName);
 
             //
             // Ensure the project name is unique within this tenant.
@@ -341,6 +425,8 @@ namespace Foundation.BMC.Services
             //
             // Step 1: Create the Project entity
             //
+            progress?.Report(new ImportProgressEvent { Step = "Creating project…", PercentComplete = 15 });
+
             Project project = new Project
             {
                 tenantGuid = tenantGuid,
@@ -381,6 +467,7 @@ namespace Foundation.BMC.Services
             //
             // Step 2: Store the raw file in ModelDocument for round-trip fidelity
             //
+            progress?.Report(new ImportProgressEvent { Step = "Storing model data…", PercentComplete = 20 });
             int totalPartCount = 0;
             int totalStepCount = 0;
 
@@ -758,29 +845,55 @@ namespace Foundation.BMC.Services
             //
             // Step 7: Update the project part count
             //
+            progress?.Report(new ImportProgressEvent { Step = "Storing placed bricks…", PercentComplete = 30 });
             project.partCount = totalPlacedBricks;
             await _context.SaveChangesAsync(cancellationToken);
 
             //
             // Step 8: Auto-populate the Build Manual from parsed model steps
             //
+            progress?.Report(new ImportProgressEvent { Step = "Building instruction manual…", PercentComplete = 40 });
             // Creates a full BuildManual → BuildManualPage → BuildManualStep → BuildStepPart
             // hierarchy so the user can open the Manual Editor immediately after import.
             //
-            // Only the main model's steps are used — submodel steps are internal details
-            // of sub-assemblies and don't belong in the top-level instruction manual.
-            //
-            // For each step we compute:
-            //   a) Camera target — centroid of all parts placed so far (cumulative)
-            //   b) Camera position — isometric offset from the centroid, scaled by bounding extent
-            //   c) BuildStepPart links — junction records connecting manual steps to PlacedBricks
+            // Uses recursive model traversal to inline submodel steps as callouts:
+            //   - Submodel steps appear before the assembly step that references them
+            //   - Duplicate submodels are shown once with an instance count multiplier
+            //   - Nesting depth is tracked for visual indentation
             //
             const int STEPS_PER_PAGE = 3;
             const float ISO_ANGLE_FACTOR = 0.7071f;  // cos(45°) — isometric offset ratio
             const float CAMERA_DISTANCE_PADDING = 1.5f; // multiplier to keep model in frame
             const float MIN_CAMERA_DISTANCE = 100f;
 
-            int mainModelStepCount = mainModel.Steps.Count;
+            //
+            // Build a dictionary of all models by name for recursive lookup
+            //
+            Dictionary<string, LDrawModel> modelsByName = new Dictionary<string, LDrawModel>(StringComparer.OrdinalIgnoreCase);
+            foreach (LDrawModel m in models)
+            {
+                if (m.Name != null && !modelsByName.ContainsKey(m.Name))
+                {
+                    modelsByName[m.Name] = m;
+                }
+            }
+
+            //
+            // Recursively flatten the model tree into a single ordered step list
+            //
+            HashSet<string> visitedModels = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (mainModel.Name != null) visitedModels.Add(mainModel.Name);
+
+            List<FlattenedStep> flatSteps = FlattenModelSteps(
+                mainModel, modelsByName, visitedModels,
+                effectiveBuildFileName, depth: 0);
+
+            int mainModelStepCount = flatSteps.Count;
+
+            _logger.LogInformation(
+                "Flattened model tree for '{Name}': {FlatCount} steps ({OriginalCount} in main model, {SubmodelCount} submodels)",
+                projectName, mainModelStepCount,
+                mainModel.Steps.Count, modelsByName.Count);
 
             //
             // Collect submodel filenames so we can exclude them from camera calculations.
@@ -797,7 +910,7 @@ namespace Foundation.BMC.Services
             }
 
             //
-            // Pre-compute cumulative camera data from the parsed LDraw parts.
+            // Pre-compute cumulative camera data from the flattened steps.
             // We accumulate positions across steps so each step's camera sees the
             // full model built to that point, not just the newly added parts.
             //
@@ -813,7 +926,7 @@ namespace Foundation.BMC.Services
 
             for (int stepIdx = 0; stepIdx < mainModelStepCount; stepIdx++)
             {
-                LDrawStep step = mainModel.Steps[stepIdx];
+                LDrawStep step = flatSteps[stepIdx].Step;
 
                 foreach (LDrawSubfileReference partRef in step.Parts)
                 {
@@ -889,7 +1002,7 @@ namespace Foundation.BMC.Services
             // Otherwise, fall back to grouping at STEPS_PER_PAGE steps per page.
             //
             List<(int first, int last)> pageBoundaries = new List<(int, int)>();
-            bool hasExplicitPageBreaks = mainModel.Steps.Any(s => s.IsPageBreak);
+            bool hasExplicitPageBreaks = flatSteps.Any(fs => fs.Step.IsPageBreak);
 
             if (hasExplicitPageBreaks)
             {
@@ -898,7 +1011,7 @@ namespace Foundation.BMC.Services
                 for (int s = 0; s < mainModelStepCount; s++)
                 {
                     int stepNum = s + 1;
-                    LDrawStep step = (s < mainModel.Steps.Count) ? mainModel.Steps[s] : null;
+                    LDrawStep step = flatSteps[s].Step;
 
                     //
                     // IsPageBreak means "start a new page BEFORE this step"
@@ -980,7 +1093,7 @@ namespace Foundation.BMC.Services
                 //
                 for (int stepNum = firstStepOnPage; stepNum <= lastStepOnPage; stepNum++)
                 {
-                    int stepIdx = stepNum - 1; // 0-based index into the pre-computed arrays
+                    int stepIdx = stepNum - 1; // 0-based index into the flattened step list
 
                     //
                     // Camera target = centroid of all parts placed up to this step
@@ -996,7 +1109,8 @@ namespace Foundation.BMC.Services
                     //
                     float distance = cumulativeExtent[stepIdx] * CAMERA_DISTANCE_PADDING;
 
-                    LDrawStep parsedStep = (stepIdx < mainModel.Steps.Count) ? mainModel.Steps[stepIdx] : null;
+                    FlattenedStep flat = flatSteps[stepIdx];
+                    LDrawStep parsedStep = flat.Step;
                     float camX, camY, camZ;
 
                     if (parsedStep?.RotStepX != null)
@@ -1035,9 +1149,11 @@ namespace Foundation.BMC.Services
                         showExplodedView = false,
                         explodedDistance = null,
                         fadeStepEnabled = parsedStep?.FadePrevStep ?? true,
-                        isCallout = parsedStep?.IsCallout ?? false,
-                        calloutModelName = parsedStep?.CalloutModelName,
+                        isCallout = flat.IsCallout,
+                        calloutModelName = flat.CalloutModelName,
                         showPartsListImage = parsedStep?.ShowPartsListImage ?? true,
+                        calloutNestingDepth = flat.IsCallout ? flat.Depth : (int?)null,
+                        calloutInstanceCount = flat.InstanceCount > 1 ? flat.InstanceCount : (int?)null,
                         renderImagePath = null,
                         pliImagePath = null,
                         versionNumber = 1,
@@ -1145,6 +1261,7 @@ namespace Foundation.BMC.Services
             //
             // Step 8c: Render step preview images
             //
+            progress?.Report(new ImportProgressEvent { Step = "Rendering step images…", PercentComplete = 55 });
             // Generate a small preview PNG for each build step using the software renderer.
             // Images are stored as base64 data URIs in renderImagePath so the client can
             // display them directly in <img> tags without a separate file-serving endpoint.
@@ -1166,14 +1283,43 @@ namespace Foundation.BMC.Services
                         "Rendering {Count} step preview images for Project '{Name}'",
                         mainModelStepCount, projectName);
 
+                    //
+                    // Pre-resolve the full model mesh for each unique model filename.
+                    // This avoids re-resolving the complete geometry on every step call
+                    // (was the #1 performance bottleneck for multi-step models).
+                    //
+                    Dictionary<string, LDrawMesh> fullMeshCache = new Dictionary<string, LDrawMesh>(StringComparer.OrdinalIgnoreCase);
+                    foreach (FlattenedStep fs in flatSteps)
+                    {
+                        if (!fullMeshCache.ContainsKey(fs.ModelFileName))
+                        {
+                            fullMeshCache[fs.ModelFileName] = renderService.ResolveFullModelMesh(lDrawLines, fs.ModelFileName);
+                        }
+                    }
+
                     for (int stepIdx = 0; stepIdx < mainModelStepCount; stepIdx++)
                     {
+                        // Report per-step progress (55% → 80% range)
+                        if (stepIdx % 5 == 0)
+                        {
+                            int renderPct = 55 + (int)(25.0 * stepIdx / mainModelStepCount);
+                            progress?.Report(new ImportProgressEvent
+                            {
+                                Step = $"Rendering step images\u2026 ({stepIdx + 1}/{mainModelStepCount})",
+                                PercentComplete = renderPct
+                            });
+                        }
+
                         try
                         {
+                            FlattenedStep flatStep = flatSteps[stepIdx];
+                            LDrawMesh cachedFullMesh = fullMeshCache.GetValueOrDefault(flatStep.ModelFileName);
+
                             byte[] stepPng = renderService.RenderStep(
                                 lines: lDrawLines,
-                                fileName: fileName,
-                                stepIndex: stepIdx,
+                                fileName: flatStep.ModelFileName,
+                                stepIndex: flatStep.StepIndexInModel,
+                                fullMesh: cachedFullMesh,
                                 width: 256,
                                 height: 256,
                                 colourCode: -1,
@@ -1181,7 +1327,7 @@ namespace Foundation.BMC.Services
                                 azimuth: -45f,
                                 renderEdges: true,
                                 smoothShading: true,
-                                antiAliasMode: AntiAliasMode.SSAA2x);
+                                antiAliasMode: AntiAliasMode.None);
 
                             if (stepPng != null && stepPng.Length > 0)
                             {
@@ -1230,6 +1376,8 @@ namespace Foundation.BMC.Services
             //
             // Step 8d: Generate PLI (Parts List Indicator) images
             //
+            progress?.Report(new ImportProgressEvent { Step = "Generating parts list images…", PercentComplete = 80 });
+            //
             // For each step, render a grid of the individual parts added in that step
             // with quantity labels. Uses the same RenderService with thumbnail caching
             // so repeated parts across steps are only rendered once.
@@ -1238,7 +1386,7 @@ namespace Foundation.BMC.Services
             {
                 string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
 
-                if (string.IsNullOrEmpty(dataPath) == false && mainModel.Steps.Count > 0)
+                if (string.IsNullOrEmpty(dataPath) == false && flatSteps.Count > 0)
                 {
                     // Reuse the same RenderService instance so the thumbnail cache persists
                     RenderService pliRenderService = new RenderService(dataPath);
@@ -1247,11 +1395,22 @@ namespace Foundation.BMC.Services
                         "Generating {Count} PLI images for Project '{Name}'",
                         mainModelStepCount, projectName);
 
-                    for (int stepIdx = 0; stepIdx < mainModelStepCount && stepIdx < mainModel.Steps.Count; stepIdx++)
+                    for (int stepIdx = 0; stepIdx < mainModelStepCount; stepIdx++)
                     {
+                        // Report per-step progress (80% → 95% range)
+                        if (stepIdx % 10 == 0)
+                        {
+                            int pliPct = 80 + (int)(15.0 * stepIdx / mainModelStepCount);
+                            progress?.Report(new ImportProgressEvent
+                            {
+                                Step = $"Generating parts list images\u2026 ({stepIdx + 1}/{mainModelStepCount})",
+                                PercentComplete = pliPct
+                            });
+                        }
+
                         try
                         {
-                            LDrawStep parsedStep = mainModel.Steps[stepIdx];
+                            LDrawStep parsedStep = flatSteps[stepIdx].Step;
                             if (parsedStep.Parts == null || parsedStep.Parts.Count == 0) continue;
 
                             //
@@ -1301,13 +1460,14 @@ namespace Foundation.BMC.Services
             //
             // Step 9: Build and return the result
             //
+            progress?.Report(new ImportProgressEvent { Step = "Finalizing import…", PercentComplete = 95 });
             ImportResult result = new ImportResult
             {
                 ProjectId = project.id,
                 ProjectName = project.name,
                 TotalPartCount = totalPartCount,
                 SubmodelCount = submodelByName.Count,
-                StepCount = totalStepCount,
+                StepCount = mainModelStepCount,
                 ResolvedPartCount = resolvedParts,
                 UnresolvedPartCount = _unresolvedPartsList.Distinct().Count(),
                 UnresolvedParts = _unresolvedPartsList.Distinct().ToList(),
@@ -1711,6 +1871,136 @@ namespace Foundation.BMC.Services
                 _logger.LogWarning(ex, "Failed to generate thumbnail for '{FileName}' — import will continue without a thumbnail", fileName);
                 return null;
             }
+        }
+
+
+        // ─── Recursive Model Traversal ─────────────────────────────────────
+
+        /// <summary>
+        /// A single step in the flattened build sequence, with metadata from the
+        /// recursive model traversal.
+        /// </summary>
+        private class FlattenedStep
+        {
+            /// <summary>The parsed LDraw step data (parts, ROTSTEP, etc).</summary>
+            public LDrawStep Step;
+
+            /// <summary>Nesting depth (0 = top-level, 1 = first sub-assembly, etc).</summary>
+            public int Depth;
+
+            /// <summary>True if this step is from a submodel (callout).</summary>
+            public bool IsCallout;
+
+            /// <summary>Name of the submodel this callout belongs to.</summary>
+            public string CalloutModelName;
+
+            /// <summary>How many times this submodel is placed (>1 = "×N" multiplier).</summary>
+            public int InstanceCount;
+
+            /// <summary>
+            /// The model filename this step belongs to (for rendering).
+            /// Top-level steps use the effective build filename, submodel steps use the submodel name.
+            /// </summary>
+            public string ModelFileName;
+
+            /// <summary>
+            /// The 0-based step index within the step's own model (for RenderStep).
+            /// </summary>
+            public int StepIndexInModel;
+        }
+
+
+        /// <summary>
+        /// Recursively walk the model tree depth-first and produce a flat list of
+        /// all build steps in instruction order.
+        ///
+        /// When a step references a submodel, that submodel's steps are inlined
+        /// BEFORE the assembly step (the step that attaches the sub-assembly).
+        /// Duplicate submodels are shown once with instanceCount > 1.
+        /// </summary>
+        private List<FlattenedStep> FlattenModelSteps(
+            LDrawModel model,
+            Dictionary<string, LDrawModel> modelsByName,
+            HashSet<string> visitedModels,
+            string modelFileName,
+            int depth = 0)
+        {
+            List<FlattenedStep> result = new List<FlattenedStep>();
+
+            for (int stepIdx = 0; stepIdx < model.Steps.Count; stepIdx++)
+            {
+                LDrawStep step = model.Steps[stepIdx];
+
+                //
+                // Check if this step references any submodels
+                //
+                Dictionary<string, int> submodelRefCounts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (LDrawSubfileReference partRef in step.Parts)
+                {
+                    if (modelsByName.ContainsKey(partRef.FileName))
+                    {
+                        if (submodelRefCounts.ContainsKey(partRef.FileName))
+                            submodelRefCounts[partRef.FileName]++;
+                        else
+                            submodelRefCounts[partRef.FileName] = 1;
+                    }
+                }
+
+                //
+                // Inline submodel steps BEFORE the assembly step
+                //
+                foreach (var kvp in submodelRefCounts)
+                {
+                    string submodelName = kvp.Key;
+                    int instanceCount = kvp.Value;
+
+                    if (visitedModels.Contains(submodelName))
+                    {
+                        // Already inlined — skip (prevents infinite recursion and repeats)
+                        continue;
+                    }
+
+                    visitedModels.Add(submodelName);
+
+                    LDrawModel submodel = modelsByName[submodelName];
+
+                    // Recursively flatten the submodel
+                    List<FlattenedStep> subSteps = FlattenModelSteps(
+                        submodel, modelsByName, visitedModels,
+                        submodelName, depth + 1);
+
+                    // Mark all sub-steps with callout info
+                    foreach (FlattenedStep subStep in subSteps)
+                    {
+                        // Only set callout info on direct children, not already-set deeper ones
+                        if (!subStep.IsCallout)
+                        {
+                            subStep.IsCallout = true;
+                            subStep.CalloutModelName = submodelName;
+                            subStep.InstanceCount = instanceCount;
+                        }
+                    }
+
+                    result.AddRange(subSteps);
+                }
+
+                //
+                // Add the step itself (the assembly step with its direct .dat parts)
+                //
+                result.Add(new FlattenedStep
+                {
+                    Step = step,
+                    Depth = depth,
+                    IsCallout = depth > 0,
+                    CalloutModelName = depth > 0 ? modelFileName : null,
+                    InstanceCount = 1,
+                    ModelFileName = modelFileName,
+                    StepIndexInModel = stepIdx
+                });
+            }
+
+            return result;
         }
     }
 }

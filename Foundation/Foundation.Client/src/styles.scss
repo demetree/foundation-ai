@@ -9,6 +9,115 @@
 
 @import 'app/assets/styles/vertical-tabs';
 @import 'app/assets/styles/ngx-datatable';
+@import 'app/assets/styles/themes';
+
+
+// ============================================
+// Global Bootstrap Modal Overrides
+// ============================================
+
+// Login re-authentication modal — make the Bootstrap modal-content transparent
+// so the login card's own glassmorphic styling shows through
+.login-control .modal-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+// All other modals — theme-aware background
+.modal-content {
+  background-color: var(--fnd-modal-bg);
+  color: var(--fnd-text-primary);
+  border: 1px solid var(--fnd-border);
+}
+
+// ============================================
+// Global Bootstrap Card Overrides
+// ============================================
+// Bootstrap .card defaults to white — override for theme support
+.card {
+  background-color: var(--fnd-panel-bg);
+  color: var(--fnd-text-primary);
+  border-color: var(--fnd-border);
+}
+
+.card-header {
+  background-color: var(--fnd-panel-bg);
+  border-bottom-color: var(--fnd-border);
+}
+
+.card-footer {
+  background-color: var(--fnd-panel-bg);
+  border-top-color: var(--fnd-border);
+}
+
+// ============================================
+// Global Bootstrap Form Overrides
+// ============================================
+.form-control, .form-select {
+  background-color: var(--fnd-input-bg, var(--fnd-panel-bg));
+  color: var(--fnd-text-primary);
+  border-color: var(--fnd-border);
+
+  &:focus {
+    background-color: var(--fnd-input-bg, var(--fnd-panel-bg));
+    color: var(--fnd-text-primary);
+  }
+}
+
+// ============================================
+// Global Bootstrap Table Override
+// ============================================
+.table {
+  --bs-table-bg: var(--fnd-panel-bg);
+  --bs-table-color: var(--fnd-text-primary);
+  --bs-table-border-color: var(--fnd-border);
+  --bs-table-striped-bg: var(--fnd-bg-elevated);
+  --bs-table-hover-bg: var(--fnd-bg-hover);
+  --bs-table-hover-color: var(--fnd-text-primary);
+  color: var(--fnd-text-primary);
+  background-color: var(--fnd-panel-bg);
+  border-color: var(--fnd-border);
+}
+
+.table > :not(caption) > * > * {
+  background-color: var(--bs-table-bg);
+  color: var(--fnd-text-primary);
+  border-bottom-color: var(--fnd-border);
+}
+
+// Override Bootstrap .table-light (used on thead in many custom components)
+.table-light {
+  --bs-table-bg: var(--fnd-bg-elevated) !important;
+  --bs-table-color: var(--fnd-text-muted) !important;
+  --bs-table-border-color: var(--fnd-border) !important;
+}
+
+// ============================================
+// Bootstrap Utility Class Overrides — make theme-aware
+// ============================================
+.bg-white {
+  background-color: var(--fnd-panel-bg) !important;
+}
+
+.bg-light {
+  background-color: var(--fnd-bg-elevated) !important;
+}
+
+.text-dark {
+  color: var(--fnd-text-primary) !important;
+}
+
+.list-group-item {
+  background-color: var(--fnd-panel-bg);
+  color: var(--fnd-text-primary);
+  border-color: var(--fnd-border);
+}
+
+.table-hover > tbody > tr:hover {
+  color: var(--fnd-text-primary);
+  background-color: var(--fnd-bg-hover);
+}
 
 
 
@@ -45,7 +154,8 @@
 }
 
 .post-login-background {
-  background-color: #f9f9f9; // a light grey
+  background-color: var(--fnd-bg);
+  color: var(--fnd-text-primary);
 }
 
 
@@ -77,23 +187,24 @@ td {
 .health-card {
   border-radius: 12px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background: var(--bs-card-bg, #fff);
-  border: 1px solid var(--bs-border-color, #dee2e6);
+  background: var(--fnd-bg-card);
+  border: 1px solid var(--fnd-border);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+    box-shadow: var(--fnd-shadow-lg) !important;
   }
 
   .card-header {
     padding: 1rem 1.25rem;
     background: transparent;
-    border-bottom: 1px solid var(--bs-border-color, #eee);
+    border-bottom: 1px solid var(--fnd-border);
 
     h5 {
       font-size: 1rem;
       font-weight: 600;
       margin: 0;
+      color: var(--fnd-text-primary);
     }
   }
 
@@ -141,31 +252,31 @@ td {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--fnd-border);
 
   &:last-child {
     border-bottom: none;
   }
 
   .metric-label {
-    color: #6c757d;
+    color: var(--fnd-text-muted);
     font-size: 0.875rem;
   }
 
   .metric-value {
     font-size: 0.875rem;
     font-weight: 500;
-    color: #212529;
+    color: var(--fnd-text-primary);
   }
 }
 
 .drive-card {
-  background: #f8f9fa;
-  border: 1px solid #e9ecef;
+  background: var(--fnd-bg-elevated);
+  border: 1px solid var(--fnd-border);
 
   &.app-drive {
-    background: rgba(102, 126, 234, 0.05);
-    border-color: rgba(102, 126, 234, 0.2);
+    background: var(--fnd-accent-glow-soft);
+    border-color: var(--fnd-accent-glow);
   }
 }
 

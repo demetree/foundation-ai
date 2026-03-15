@@ -1,5 +1,9 @@
+:host {
+  color: var(--fnd-text-primary);
+}
+
 .page-container {
-  background-color: #f4f6f9;
+  background-color: transparent;
   min-height: 100%;
   padding: 1rem;
 }
@@ -7,9 +11,9 @@
 
 /* Header Card */
 .header-card {
-  background-color: #fff;
+  background-color: var(--fnd-panel-bg);
   border-radius: 16px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--fnd-shadow-sm);
 
   .card-header {
     background-color: transparent;
@@ -53,20 +57,20 @@
       top: 50%;
       left: 15px;
       transform: translateY(-50%);
-      color: #6c757d;
+      color: var(--fnd-text-muted);
     }
 
 
     .search-input {
-      border: 1px solid #ced4da;
+      border: 1px solid var(--fnd-border);
       border-radius: 50px;
       padding-left: 40px;
       width: 100%;
       height: 38px;
 
       &:focus {
-        border-color: #0176d3;
-        box-shadow: 0 0 0 0.2rem rgba(1, 118, 211, 0.25);
+        border-color: var(--fnd-primary);
+        box-shadow: 0 0 0 0.2rem var(--fnd-accent-glow-soft);
       }
     }
 
@@ -77,9 +81,84 @@
       transform: translateY(-50%);
       background: none;
       border: none;
-      color: #6c757d;
+      color: var(--fnd-text-muted);
       padding: 0;
     }
   }
 }
 
+
+/* Glassmorphism header card */
+.header-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--fnd-panel-border);
+}
+
+.header-card .page-title {
+  color: var(--fnd-text-primary);
+}
+
+.header-card .text-muted {
+  color: var(--fnd-text-muted) !important;
+}
+
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
+.btn-light {
+  --bs-btn-bg: var(--fnd-panel-bg);
+  --bs-btn-color: var(--fnd-text-primary);
+  --bs-btn-border-color: var(--fnd-border);
+  --bs-btn-hover-bg: var(--fnd-bg-hover);
+  --bs-btn-hover-color: var(--fnd-text-primary);
+  --bs-btn-hover-border-color: var(--fnd-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--fnd-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--fnd-primary);
+  --bs-btn-hover-bg: var(--fnd-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--fnd-primary);
+  --bs-btn-active-bg: var(--fnd-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--fnd-primary);
+  --bs-btn-disabled-color: #fff;
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+
+.btn-secondary {
+  --bs-btn-bg: var(--fnd-bg-elevated);
+  --bs-btn-color: var(--fnd-text-primary);
+  --bs-btn-border-color: var(--fnd-border);
+  --bs-btn-hover-bg: var(--fnd-bg-hover);
+  --bs-btn-hover-color: var(--fnd-text-primary);
+  --bs-btn-hover-border-color: var(--fnd-border);
+  --bs-btn-active-bg: var(--fnd-bg-hover);
+  --bs-btn-active-color: var(--fnd-text-primary);
+}
+
+/* Theme-aware form controls */
+.form-control, .form-select {
+  background-color: var(--fnd-bg-elevated);
+  color: var(--fnd-text-primary);
+  border-color: var(--fnd-border);
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--fnd-bg-elevated);
+  color: var(--fnd-text-primary);
+  border-color: var(--fnd-primary);
+  box-shadow: 0 0 0 0.2rem var(--fnd-accent-glow-soft);
+}
+
+.form-control::placeholder {
+  color: var(--fnd-text-muted);
+}

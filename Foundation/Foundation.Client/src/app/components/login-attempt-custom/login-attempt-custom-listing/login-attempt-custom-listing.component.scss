@@ -5,7 +5,7 @@
 
 .page-container {
     padding: 1.5rem;
-    background-color: #f8fafc;
+    background-color: var(--fnd-bg-elevated);
     min-height: calc(100vh - 60px);
     width: 100%;
 }
@@ -68,10 +68,10 @@
 //
 .stats-row {
     .stat-card {
-        background: white;
+        background: var(--fnd-panel-bg);
         border-radius: 12px;
         padding: 1.25rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        box-shadow: var(--fnd-shadow-sm);
         border-left: 4px solid #7b1fa2;
         transition: all 0.2s ease;
         display: flex;
@@ -93,14 +93,14 @@
             font-size: 1.75rem;
             font-weight: 700;
             line-height: 1.2;
-            color: #212529;
+            color: var(--fnd-text-primary);
         }
 
         .stat-label {
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            color: #6c757d;
+            color: var(--fnd-text-muted);
             margin-top: 0.25rem;
         }
 
@@ -199,7 +199,7 @@
 //
 .filter-card {
     border-radius: 12px;
-    background: white;
+    background: var(--fnd-panel-bg);
 
     .card-body {
         padding: 1.25rem;
@@ -213,7 +213,7 @@
     .form-select,
     .form-control {
         border-radius: 8px;
-        border: 1px solid #dee2e6;
+        border: 1px solid var(--fnd-border);
         transition: all 0.2s ease;
 
         &:focus {
@@ -231,11 +231,11 @@
     width: 100%;
 
     thead {
-        background: #f8f9fa;
+        background: var(--fnd-bg-elevated);
 
         th {
             font-weight: 600;
-            color: #495057;
+            color: var(--fnd-text-secondary);
             border-bottom: 2px solid #dee2e6;
             padding: 0.875rem 0.75rem;
             font-size: 0.8rem;
@@ -267,7 +267,7 @@
         td {
             padding: 0.75rem;
             vertical-align: middle;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--fnd-border);
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -299,19 +299,19 @@
     }
 
     .expand-icon {
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         transition: color 0.2s ease;
     }
 
     .user-name {
         font-weight: 500;
-        color: #212529;
+        color: var(--fnd-text-primary);
     }
 
     .ip-address {
         font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
         font-size: 0.85rem;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
     }
 
     .badge {
@@ -346,20 +346,20 @@
         font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         font-weight: 600;
     }
 
     .detail-value {
         font-size: 0.9rem;
-        color: #212529;
+        color: var(--fnd-text-primary);
         word-break: break-word;
 
         &.user-agent-full {
-            background: white;
+            background: var(--fnd-panel-bg);
             padding: 0.75rem;
             border-radius: 8px;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--fnd-border);
             font-family: monospace;
             font-size: 0.8rem;
             max-height: 100px;
@@ -375,8 +375,8 @@
     .page-link {
         border-radius: 6px;
         margin: 0 2px;
-        border: 1px solid #dee2e6;
-        color: #495057;
+        border: 1px solid var(--fnd-border);
+        color: var(--fnd-text-secondary);
 
         &:hover {
             background-color: #e9ecef;
@@ -389,7 +389,7 @@
     }
 
     .page-item.disabled .page-link {
-        color: #adb5bd;
+        color: var(--fnd-text-muted);
     }
 }
 

@@ -107,6 +107,23 @@ export class ProjectService {
         return this.http.request<UploadResult>(req);
     }
 
+    /** Get the upload endpoint URL for direct fetch() calls */
+    getUploadUrl(): string {
+        return `${this.importUrl}/upload`;
+    }
+
+    /** Get auth headers as a plain Record for use with fetch() */
+    getAuthHeadersRecord(): Record<string, string> {
+        const httpHeaders = this.headers;
+        const result: Record<string, string> = {};
+        for (const key of httpHeaders.keys()) {
+            if (key.toLowerCase() !== 'content-type') {
+                result[key] = httpHeaders.get(key)!;
+            }
+        }
+        return result;
+    }
+
 
     /** GET /api/moc/import/formats — supported import formats */
     getSupportedFormats(): Observable<ImportFormat[]> {

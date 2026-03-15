@@ -51,6 +51,20 @@
             <i class="fas" [class.fa-save]="!isSaving" [class.fa-spinner]="isSaving" [class.fa-spin]="isSaving"></i>
             {{ isSaving ? 'Saving...' : 'Save' }}
         </button>
+        <span class="toolbar-divider"></span>
+        <button class="btn-export" (click)="exportManual('html')"
+                [disabled]="isExporting || !manual || manual.id === 0"
+                title="Export as HTML">
+            <i class="fas" [class.fa-file-code]="!isExporting" [class.fa-spinner]="isExporting" [class.fa-spin]="isExporting"></i>
+            HTML
+        </button>
+        <button class="btn-export" (click)="exportManual('pdf')"
+                [disabled]="isExporting || !manual || manual.id === 0"
+                title="Export as PDF">
+            <i class="fas" [class.fa-file-pdf]="!isExporting" [class.fa-spinner]="isExporting" [class.fa-spin]="isExporting"></i>
+            PDF
+        </button>
+        <span class="export-error" *ngIf="exportError">{{ exportError }}</span>
     </div>
 </div>
 
@@ -71,8 +85,7 @@
                  class="page-thumbnail"
                  [class.selected]="i === selectedPageIndex"
                  (click)="selectPage(i)">
-                <div class="page-thumb-preview"
-                     [style.aspect-ratio]="pageAspectRatio">
+                <div class="page-thumb-preview">
                     <span class="page-num">{{ page.pageNum ?? (i + 1) }}</span>
                     <div class="step-indicators">
                         <span *ngFor="let step of (stepsMap.get(page.id) || [])"
@@ -108,10 +121,13 @@
             </div>
 
             <!-- Steps Grid -->
-            <div class="steps-grid">
+            <div class="steps-grid" cdkDropList (cdkDropListDropped)="onStepDrop($event)">
                 <div *ngFor="let step of selectedPageSteps"
                      class="step-card"
+                     cdkDrag
                      [class.selected]="selectedStep?.id === step.id"
+                     [class.callout-step]="step.isCallout"
+                     [style.margin-left.px]="(step.calloutNestingDepth || 0) * 12"
                      (click)="selectStep(step)">
                     <div class="step-header">
                         <span class="step-number">{{ step.stepNumber }}</span>
@@ -145,6 +161,11 @@
                               class="meta-badge callout"
                               [title]="'Callout: ' + (step.calloutModelName || 'submodel')">
                             <i class="fas fa-layer-group"></i> Callout
+                        </span>
+                        <span *ngIf="step.calloutInstanceCount > 1"
+                              class="meta-badge multiplier"
+                              title="This sub-assembly is used multiple times">
+                            ×{{ step.calloutInstanceCount }}
                         </span>
                         <span *ngIf="!step.showPartsListImage"
                               class="meta-badge pli-off">
@@ -206,6 +227,19 @@
                        (blur)="saveStep()" />
             </div>
 
+            <!-- 3D Camera Preview -->
+            <div class="prop-group">
+                <app-step-camera-editor
+                    [positionX]="selectedStep.cameraPositionX || 100"
+                    [positionY]="selectedStep.cameraPositionY || 100"
+                    [positionZ]="selectedStep.cameraPositionZ || -100"
+                    [targetX]="selectedStep.cameraTargetX || 0"
+                    [targetY]="selectedStep.cameraTargetY || 0"
+                    [targetZ]="selectedStep.cameraTargetZ || 0"
+                    (cameraChange)="onCameraEditorChange($event)">
+                </app-step-camera-editor>
+            </div>
+
             <!-- Camera Position -->
             <div class="prop-section-title">
                 <i class="fas fa-video"></i> Camera Position
@@ -263,6 +297,17 @@
                        [(ngModel)]="selectedStep.cameraZoom"
                        step="0.1"
                        (blur)="saveStep()" />
+            </div>
+
+            <!-- Re-render Button -->
+            <div class="prop-group">
+                <button class="btn-rerender"
+                        (click)="reRenderStep()"
+                        [disabled]="isReRendering"
+                        title="Re-render step with current camera settings">
+                    <i class="fas" [class.fa-sync-alt]="!isReRendering" [class.fa-spinner]="isReRendering" [class.fa-spin]="isReRendering"></i>
+                    {{ isReRendering ? 'Rendering...' : 'Re-render Step' }}
+                </button>
             </div>
 
             <!-- Exploded View -->

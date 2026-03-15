@@ -94,7 +94,7 @@
 
         &.bg-warning {
             background: var(--bs-warning, #ffc107);
-            color: #212529;
+            color: var(--fnd-text-primary);
         }
     }
 

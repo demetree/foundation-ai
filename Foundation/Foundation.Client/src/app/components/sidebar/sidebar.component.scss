@@ -1,9 +1,9 @@
 // ============================================================================
-// Sidebar - Premium Glassmorphic Theme
+// Sidebar - Theme-Aware Premium Styling
 // ============================================================================
 //
-// AI-ASSISTED: Enhanced with premium glassmorphic styling to match
-// the Command Center theme across the Foundation system (Feb 2026).
+// AI-ASSISTED: Enhanced with theme-aware CSS custom properties.
+// Supports light and dark themes via --fnd-* tokens from _themes.scss.
 //
 
 /* sizing tokens */
@@ -21,15 +21,8 @@ $nav-gap: 4px;
 $toggle-size: 32px;
 $toggle-half: calc($toggle-size / 2);
 
-/* Premium color palette */
-$sidebar-gradient-start: #0f172a;
-$sidebar-gradient-end: #1e293b;
-$accent-blue: #3b82f6;
-$accent-blue-light: #60a5fa;
-$accent-blue-glow: rgba(59, 130, 246, 0.4);
-
 .sidebar {
-  background: linear-gradient(180deg, $sidebar-gradient-start 0%, $sidebar-gradient-end 100%);
+  background: var(--fnd-sidebar-bg);
   position: fixed;
   inset: $header-height auto 0 0;
   display: flex;
@@ -39,7 +32,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   z-index: 1030;
   transition: width .25s ease, box-shadow .25s ease, transform .25s ease;
   font-family: sans-serif;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  border-right: 1px solid var(--fnd-border);
 
   .nav {
     padding: $nav-pad-y 0 $nav-pad-y;
@@ -47,15 +40,12 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   }
 
   //
-  // Divider with gradient fade
+  // Divider with theme-aware color
   //
   .dropdown-divider {
     border-color: transparent !important;
     height: 1px;
-    background: linear-gradient(90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.12) 50%,
-        transparent 100%);
+    background: var(--fnd-sidebar-divider);
     margin: 8px 12px !important;
   }
 
@@ -64,7 +54,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     align-items: center;
     min-height: $item-h;
     padding: 0 12px;
-    color: rgba(255, 255, 255, 0.75) !important;
+    color: var(--fnd-sidebar-text) !important;
     border-radius: 0;
     transition: all .2s ease;
     cursor: pointer;
@@ -90,34 +80,30 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   }
 
   .nav-link:hover:not(.active) {
-    background: linear-gradient(90deg,
-        rgba(59, 130, 246, 0.08) 0%,
-        rgba(59, 130, 246, 0.04) 100%);
-    color: white !important;
+    background: var(--fnd-sidebar-hover-bg);
+    color: var(--fnd-text-primary) !important;
 
     i {
-      color: $accent-blue-light;
+      color: var(--fnd-primary);
       transform: scale(1.1);
     }
   }
 
   .nav-link:focus-visible {
-    outline: 2px solid $accent-blue;
+    outline: 2px solid var(--fnd-primary);
     outline-offset: -2px;
   }
 
   //
-  // Active state with blue accent bar
+  // Active state with accent bar
   //
   .nav-link.active {
-    background: linear-gradient(90deg,
-        rgba(59, 130, 246, 0.2) 0%,
-        rgba(59, 130, 246, 0.08) 100%);
-    color: white !important;
+    background: var(--fnd-sidebar-active-bg);
+    color: var(--fnd-text-primary) !important;
     border-radius: 0;
 
     //
-    // Blue accent bar on the left
+    // Accent bar on the left
     //
     &::before {
       content: '';
@@ -126,13 +112,13 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
       top: 6px;
       bottom: 6px;
       width: 3px;
-      background: linear-gradient(180deg, $accent-blue-light 0%, $accent-blue 100%);
+      background: var(--fnd-gradient-primary);
       border-radius: 0 2px 2px 0;
-      box-shadow: 0 0 8px $accent-blue-glow;
+      box-shadow: 0 0 8px var(--fnd-accent-glow);
     }
 
     i {
-      color: $accent-blue-light;
+      color: var(--fnd-primary);
     }
   }
 
@@ -144,12 +130,12 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     /* completely off the rail */
     width: $toggle-size;
     height: $toggle-size;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--fnd-border);
     border-radius: 999px;
     display: grid;
     place-items: center;
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    color: #fff;
+    background: var(--fnd-bg-card);
+    color: var(--fnd-text-primary);
     cursor: pointer;
     outline: none;
     z-index: 1031;
@@ -160,12 +146,13 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     transition: left .2s ease, opacity .2s ease, visibility 0s linear .2s,
       /* delay visibility toggle so fade-out completes */
       background .2s ease, transform .2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--fnd-shadow-md);
 
     &:hover {
-      background: linear-gradient(135deg, $accent-blue 0%, #2563eb 100%);
-      border-color: $accent-blue;
-      box-shadow: 0 4px 16px $accent-blue-glow;
+      background: var(--fnd-gradient-primary);
+      border-color: var(--fnd-primary);
+      color: white;
+      box-shadow: var(--fnd-btn-shadow-hover);
     }
 
     &:active {
@@ -199,8 +186,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 
   &.expanded {
     width: $sidebar-expanded-w;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, .5),
-      0 0 60px rgba(59, 130, 246, 0.05);
+    box-shadow: var(--fnd-shadow-lg);
 
     .nav-link {
       justify-content: flex-start;
@@ -214,7 +200,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     }
   }
 
-  /* Accordion styling (dark theme, bold headers, no chevron, indented submenu) */
+  /* Accordion styling (theme-aware) */
   .custom-accordion {
     background-color: transparent !important;
     width: 100%;
@@ -222,16 +208,14 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 
     .custom-accordion-header {
       background-color: transparent !important;
-      color: #e6e6e6 !important;
-      /* a touch dimmer than pure white */
+      color: var(--fnd-sidebar-text) !important;
       border: none;
       font-weight: 600;
-      /* slightly bold */
     }
 
     .accordion-button {
-      background: rgba(255, 255, 255, 0.03) !important;
-      color: #f1f1f1 !important;
+      background: var(--fnd-surface-subtle) !important;
+      color: var(--fnd-text-primary) !important;
       border: none;
       box-shadow: none;
       padding: 0 12px;
@@ -258,14 +242,14 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 
     .accordion-button:hover,
     .accordion-button:focus {
-      background: rgba(59, 130, 246, 0.08) !important;
-      color: #ffffff !important;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) inset;
+      background: var(--fnd-sidebar-hover-bg) !important;
+      color: var(--fnd-text-primary) !important;
+      box-shadow: none;
     }
 
     .accordion-button:not(.collapsed) {
-      background: rgba(59, 130, 246, 0.1) !important;
-      color: #ffffff !important;
+      background: var(--fnd-sidebar-active-bg) !important;
+      color: var(--fnd-text-primary) !important;
     }
 
     .border-0 {
@@ -279,7 +263,7 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
 
     .custom-accordion-content {
       background-color: transparent !important;
-      color: #e0e0e0 !important;
+      color: var(--fnd-sidebar-text) !important;
       padding: 0.25rem 0 0.25rem 0;
       /* subtle nudge to the right */
       margin-left: 0.25rem;
@@ -287,25 +271,25 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     }
 
     .custom-accordion-content .nav-link {
-      color: #cfd3da !important;
+      color: var(--fnd-sidebar-text-muted) !important;
       font-size: 16px;
       min-height: $item-h;
     }
 
     .custom-accordion-content .nav-link:hover,
     .custom-accordion-content .nav-link.active {
-      background: rgba(59, 130, 246, 0.1);
-      color: #ffffff !important;
+      background: var(--fnd-sidebar-active-bg);
+      color: var(--fnd-text-primary) !important;
       border-radius: 6px;
     }
   }
 }
 
-/* Backdrop for overlay mode - Premium blur */
+/* Backdrop for overlay mode */
 .sidebar-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, .4);
+  background: var(--fnd-modal-backdrop);
   z-index: 1025;
   backdrop-filter: blur(4px);
   animation: fadeIn 0.2s ease;
@@ -326,50 +310,45 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
   margin-left: $sidebar-collapsed-w;
 }
 
-/* Global safeguard - Active state with blue accent */
+/* Global safeguard - Active state */
 .nav-link.active {
-  background: linear-gradient(90deg,
-      rgba(59, 130, 246, 0.2) 0%,
-      rgba(59, 130, 246, 0.08) 100%);
-  color: #fff !important;
+  background: var(--fnd-sidebar-active-bg);
+  color: var(--fnd-text-primary) !important;
   border-radius: 0;
 }
 
 /* Tooltip theme used by tooltipClass="sidebar-tip" */
 .sidebar-tip .tooltip-inner {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  color: #fff;
+  background: var(--fnd-bg-card);
+  color: var(--fnd-text-primary);
   border-radius: 8px;
   font-family: sans-serif;
   font-size: 0.875rem;
   padding: 6px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--fnd-border);
+  box-shadow: var(--fnd-shadow-md);
 }
 
 .sidebar-tip.bs-tooltip-end .tooltip-arrow::before,
 .sidebar-tip.bs-tooltip-auto[data-popper-placement^="right"] .tooltip-arrow::before {
-  border-right-color: #1e293b;
+  border-right-color: var(--fnd-bg-card);
 }
 
 //
-// Administration Submenu Dropdown - Premium Glassmorphic
+// Administration Submenu Dropdown - Theme-Aware
 //
 .admin-submenu {
-  background: linear-gradient(135deg,
-      rgba(30, 41, 59, 0.98) 0%,
-      rgba(15, 23, 42, 0.98) 100%);
+  background: var(--fnd-bg-card);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--fnd-border);
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4),
-    0 0 40px rgba(59, 130, 246, 0.1);
+  box-shadow: var(--fnd-shadow-lg);
   min-width: 220px;
   padding: 0.5rem 0;
   animation: submenuSlideIn 0.2s ease;
 
   .dropdown-item {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--fnd-text-secondary);
     padding: 0.625rem 1rem;
     font-size: 0.875rem;
     transition: all 0.2s ease;
@@ -378,26 +357,22 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
     i {
       width: 20px;
       text-align: center;
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--fnd-text-muted);
       transition: color 0.2s ease;
     }
 
     &:hover {
-      background: linear-gradient(90deg,
-          rgba(59, 130, 246, 0.15) 0%,
-          rgba(59, 130, 246, 0.05) 100%);
-      color: #fff;
+      background: var(--fnd-surface-hover);
+      color: var(--fnd-text-primary);
 
       i {
-        color: $accent-blue-light;
+        color: var(--fnd-primary);
       }
     }
 
     &.active {
-      background: linear-gradient(90deg,
-          rgba(59, 130, 246, 0.2) 0%,
-          rgba(59, 130, 246, 0.08) 100%);
-      color: #fff;
+      background: var(--fnd-sidebar-active-bg);
+      color: var(--fnd-text-primary);
 
       &::before {
         content: '';
@@ -406,19 +381,19 @@ $accent-blue-glow: rgba(59, 130, 246, 0.4);
         top: 8px;
         bottom: 8px;
         width: 3px;
-        background: linear-gradient(180deg, $accent-blue-light 0%, $accent-blue 100%);
+        background: var(--fnd-gradient-primary);
         border-radius: 0 2px 2px 0;
-        box-shadow: 0 0 8px $accent-blue-glow;
+        box-shadow: 0 0 8px var(--fnd-accent-glow);
       }
 
       i {
-        color: $accent-blue-light;
+        color: var(--fnd-primary);
       }
     }
   }
 
   .dropdown-divider {
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--fnd-border);
     margin: 0.25rem 0;
   }
 }

@@ -1,0 +1,426 @@
+/**
+ * Foundation Theme System — CSS Custom Properties
+ *
+ * AI-DEVELOPED: Theme system adapted from Scheduler's theme architecture for Foundation.
+ *
+ * Five professional themes: Default (clean light), Warm (amber light), Midnight (navy dark),
+ * Slate (cool dark), Ocean (deep blue dark).
+ *
+ * Applied via [data-theme] attribute on <body>.
+ *
+ * Token naming convention: --fnd-* prefix for all Foundation-specific tokens.
+ */
+
+
+// ─── Default Theme (clean professional light) ───────────────────────────────
+body,
+body[data-theme="default"] {
+
+    // Brand Colors — professional blue
+    --fnd-primary: #2563eb;
+    --fnd-primary-dark: #1d4ed8;
+    --fnd-primary-light: #60a5fa;
+    --fnd-accent: #0891b2;
+    --fnd-accent-light: #22d3ee;
+
+    // Surface Colors — clean white/gray
+    --fnd-bg: #f1f5f9;
+    --fnd-bg-deep: #f1f5f9;
+    --fnd-bg-dark: #e2e8f0;
+    --fnd-bg-card: #ffffff;
+    --fnd-bg-elevated: #f8fafc;
+    --fnd-bg-hover: #f1f5f9;
+    --fnd-panel-bg: #ffffff;
+
+    // Text
+    --fnd-text-primary: #0f172a;
+    --fnd-text-secondary: #475569;
+    --fnd-text-muted: #94a3b8;
+
+    // Borders
+    --fnd-border: #e2e8f0;
+    --fnd-border-strong: #cbd5e1;
+    --fnd-panel-border: #e2e8f0;
+
+    // Shadows
+    --fnd-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --fnd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --fnd-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.1);
+
+    // Gradients
+    --fnd-gradient-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+
+    // Accent glow
+    --fnd-accent-glow: rgba(37, 99, 235, 0.15);
+    --fnd-accent-glow-soft: rgba(37, 99, 235, 0.06);
+
+    // Header / Navbar
+    --fnd-header-bg: #ffffff;
+    --fnd-header-border: #e2e8f0;
+    --fnd-header-text: #0f172a;
+    --fnd-header-text-muted: #64748b;
+
+    // Sidebar
+    --fnd-sidebar-bg: #ffffff;
+    --fnd-sidebar-text: #64748b;
+    --fnd-sidebar-text-muted: #64748b;
+    --fnd-sidebar-active-bg: rgba(37, 99, 235, 0.08);
+    --fnd-sidebar-active-border: #2563eb;
+    --fnd-sidebar-hover-bg: rgba(37, 99, 235, 0.04);
+    --fnd-sidebar-divider: #e2e8f0;
+
+    // Subtle surfaces
+    --fnd-surface-subtle: rgba(0, 0, 0, 0.02);
+    --fnd-surface-hover: rgba(37, 99, 235, 0.04);
+
+    // Scrollbar
+    --fnd-scrollbar-thumb: rgba(0, 0, 0, 0.15);
+    --fnd-scrollbar-thumb-hover: rgba(0, 0, 0, 0.25);
+
+    // Table
+    --fnd-table-striped-bg: rgba(0, 0, 0, 0.02);
+    --fnd-table-header-bg: #f8fafc;
+
+    // Button
+    --fnd-btn-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    --fnd-btn-shadow-hover: 0 4px 16px rgba(37, 99, 235, 0.3);
+
+    // Form controls
+    --fnd-input-bg: #ffffff;
+    --fnd-input-border: #cbd5e1;
+    --fnd-input-focus-border: #2563eb;
+    --fnd-input-focus-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+
+    // Modal
+    --fnd-modal-bg: #ffffff;
+    --fnd-modal-backdrop: rgba(0, 0, 0, 0.5);
+
+    // Close button filter
+    --fnd-close-btn-filter: none;
+
+    // Login background
+    --fnd-login-bg-gradient: linear-gradient(135deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.80) 50%, rgba(15, 23, 42, 0.90) 100%);
+    --fnd-login-bg-color: #0f172a;
+
+    // Status colors
+    --fnd-success: #16a34a;
+    --fnd-warning: #d97706;
+    --fnd-danger: #dc2626;
+    --fnd-info: #0891b2;
+}
+
+
+// ─── Warm Theme (amber light) ───────────────────────────────────────────────
+body[data-theme="warm"] {
+
+    --fnd-primary: #d97706;
+    --fnd-primary-dark: #b45309;
+    --fnd-primary-light: #fbbf24;
+    --fnd-accent: #c2410c;
+    --fnd-accent-light: #ea580c;
+
+    --fnd-bg: #faf5ee;
+    --fnd-bg-deep: #faf5ee;
+    --fnd-bg-dark: #f0e8db;
+    --fnd-bg-card: #fffdf8;
+    --fnd-bg-elevated: #fefcf6;
+    --fnd-bg-hover: #f5efe5;
+    --fnd-panel-bg: #fffdf8;
+
+    --fnd-text-primary: #1c1408;
+    --fnd-text-secondary: #5e4c2e;
+    --fnd-text-muted: #a08d6c;
+
+    --fnd-border: #e8dcc8;
+    --fnd-border-strong: #d4c4a8;
+    --fnd-panel-border: #e8dcc8;
+
+    --fnd-shadow-sm: 0 1px 3px rgba(100, 70, 20, 0.06);
+    --fnd-shadow-md: 0 4px 12px rgba(100, 70, 20, 0.08);
+    --fnd-shadow-lg: 0 12px 40px rgba(100, 70, 20, 0.1);
+
+    --fnd-gradient-primary: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+
+    --fnd-accent-glow: rgba(217, 119, 6, 0.18);
+    --fnd-accent-glow-soft: rgba(217, 119, 6, 0.08);
+
+    --fnd-header-bg: #fffdf8;
+    --fnd-header-border: #e8dcc8;
+    --fnd-header-text: #1c1408;
+    --fnd-header-text-muted: #8a7558;
+
+    --fnd-sidebar-bg: #fffdf8;
+    --fnd-sidebar-text: #5e4c2e;
+    --fnd-sidebar-text-muted: #a08d6c;
+    --fnd-sidebar-active-bg: rgba(217, 119, 6, 0.08);
+    --fnd-sidebar-active-border: #d97706;
+    --fnd-sidebar-hover-bg: rgba(217, 119, 6, 0.04);
+    --fnd-sidebar-divider: #e8dcc8;
+
+    --fnd-surface-subtle: rgba(100, 70, 20, 0.02);
+    --fnd-surface-hover: rgba(217, 119, 6, 0.04);
+
+    --fnd-scrollbar-thumb: rgba(100, 70, 20, 0.15);
+    --fnd-scrollbar-thumb-hover: rgba(100, 70, 20, 0.25);
+
+    --fnd-table-striped-bg: rgba(100, 70, 20, 0.02);
+    --fnd-table-header-bg: #fefcf6;
+
+    --fnd-btn-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+    --fnd-btn-shadow-hover: 0 4px 16px rgba(217, 119, 6, 0.3);
+
+    --fnd-input-bg: #fffdf8;
+    --fnd-input-border: #d4c4a8;
+    --fnd-input-focus-border: #d97706;
+    --fnd-input-focus-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+
+    --fnd-modal-bg: #fffdf8;
+    --fnd-modal-backdrop: rgba(28, 20, 8, 0.5);
+
+    --fnd-close-btn-filter: none;
+
+    --fnd-login-bg-gradient: linear-gradient(135deg, rgba(28, 20, 8, 0.88) 0%, rgba(60, 40, 15, 0.80) 50%, rgba(28, 20, 8, 0.88) 100%);
+    --fnd-login-bg-color: #1c1408;
+
+    --fnd-success: #16a34a;
+    --fnd-warning: #d97706;
+    --fnd-danger: #dc2626;
+    --fnd-info: #0891b2;
+}
+
+
+// ─── Midnight Theme (deep navy dark) ────────────────────────────────────────
+body[data-theme="midnight"] {
+
+    --fnd-primary: #60a5fa;
+    --fnd-primary-dark: #3b82f6;
+    --fnd-primary-light: #93c5fd;
+    --fnd-accent: #818cf8;
+    --fnd-accent-light: #a5b4fc;
+
+    --fnd-bg: #0b1120;
+    --fnd-bg-deep: #0b1120;
+    --fnd-bg-dark: #111a2e;
+    --fnd-bg-card: #162032;
+    --fnd-bg-elevated: #1c2840;
+    --fnd-bg-hover: #22304a;
+    --fnd-panel-bg: #162032;
+
+    --fnd-text-primary: rgba(255, 255, 255, 0.92);
+    --fnd-text-secondary: rgba(255, 255, 255, 0.60);
+    --fnd-text-muted: rgba(255, 255, 255, 0.35);
+
+    --fnd-border: rgba(96, 165, 250, 0.10);
+    --fnd-border-strong: rgba(96, 165, 250, 0.18);
+    --fnd-panel-border: rgba(96, 165, 250, 0.10);
+
+    --fnd-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --fnd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+    --fnd-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+    --fnd-gradient-primary: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+
+    --fnd-accent-glow: rgba(96, 165, 250, 0.2);
+    --fnd-accent-glow-soft: rgba(96, 165, 250, 0.08);
+
+    --fnd-header-bg: linear-gradient(135deg, #0b1120 0%, #162032 100%);
+    --fnd-header-border: rgba(96, 165, 250, 0.10);
+    --fnd-header-text: rgba(255, 255, 255, 0.92);
+    --fnd-header-text-muted: rgba(255, 255, 255, 0.50);
+
+    --fnd-sidebar-bg: linear-gradient(180deg, #111a2e 0%, #0b1120 100%);
+    --fnd-sidebar-text: rgba(255, 255, 255, 0.75);
+    --fnd-sidebar-text-muted: rgba(255, 255, 255, 0.35);
+    --fnd-sidebar-active-bg: rgba(96, 165, 250, 0.10);
+    --fnd-sidebar-active-border: #60a5fa;
+    --fnd-sidebar-hover-bg: rgba(96, 165, 250, 0.06);
+    --fnd-sidebar-divider: rgba(96, 165, 250, 0.08);
+
+    --fnd-surface-subtle: rgba(255, 255, 255, 0.02);
+    --fnd-surface-hover: rgba(96, 165, 250, 0.06);
+
+    --fnd-scrollbar-thumb: rgba(96, 165, 250, 0.18);
+    --fnd-scrollbar-thumb-hover: rgba(96, 165, 250, 0.30);
+
+    --fnd-table-striped-bg: rgba(96, 165, 250, 0.03);
+    --fnd-table-header-bg: #1c2840;
+
+    --fnd-btn-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+    --fnd-btn-shadow-hover: 0 4px 16px rgba(59, 130, 246, 0.35);
+
+    --fnd-input-bg: #111a2e;
+    --fnd-input-border: rgba(96, 165, 250, 0.15);
+    --fnd-input-focus-border: #60a5fa;
+    --fnd-input-focus-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+
+    --fnd-modal-bg: #162032;
+    --fnd-modal-backdrop: rgba(0, 0, 0, 0.6);
+
+    --fnd-close-btn-filter: invert(1) brightness(0.8);
+
+    --fnd-login-bg-gradient: linear-gradient(135deg, rgba(11, 17, 32, 0.92) 0%, rgba(22, 32, 50, 0.85) 50%, rgba(11, 17, 32, 0.92) 100%);
+    --fnd-login-bg-color: #0b1120;
+
+    --fnd-success: #4ade80;
+    --fnd-warning: #fbbf24;
+    --fnd-danger: #f87171;
+    --fnd-info: #22d3ee;
+}
+
+
+// ─── Slate Theme (cool slate dark) ──────────────────────────────────────────
+body[data-theme="slate"] {
+
+    --fnd-primary: #2dd4bf;
+    --fnd-primary-dark: #14b8a6;
+    --fnd-primary-light: #5eead4;
+    --fnd-accent: #94a3b8;
+    --fnd-accent-light: #cbd5e1;
+
+    --fnd-bg: #0f1419;
+    --fnd-bg-deep: #0f1419;
+    --fnd-bg-dark: #161c24;
+    --fnd-bg-card: #1c242e;
+    --fnd-bg-elevated: #232d3a;
+    --fnd-bg-hover: #2a3545;
+    --fnd-panel-bg: #1c242e;
+
+    --fnd-text-primary: rgba(255, 255, 255, 0.90);
+    --fnd-text-secondary: rgba(255, 255, 255, 0.55);
+    --fnd-text-muted: rgba(255, 255, 255, 0.32);
+
+    --fnd-border: rgba(45, 212, 191, 0.08);
+    --fnd-border-strong: rgba(45, 212, 191, 0.16);
+    --fnd-panel-border: rgba(45, 212, 191, 0.08);
+
+    --fnd-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+    --fnd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --fnd-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+    --fnd-gradient-primary: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+
+    --fnd-accent-glow: rgba(45, 212, 191, 0.2);
+    --fnd-accent-glow-soft: rgba(45, 212, 191, 0.06);
+
+    --fnd-header-bg: linear-gradient(135deg, #0f1419 0%, #1c242e 100%);
+    --fnd-header-border: rgba(45, 212, 191, 0.08);
+    --fnd-header-text: rgba(255, 255, 255, 0.90);
+    --fnd-header-text-muted: rgba(255, 255, 255, 0.45);
+
+    --fnd-sidebar-bg: linear-gradient(180deg, #161c24 0%, #0f1419 100%);
+    --fnd-sidebar-text: rgba(255, 255, 255, 0.70);
+    --fnd-sidebar-text-muted: rgba(255, 255, 255, 0.30);
+    --fnd-sidebar-active-bg: rgba(45, 212, 191, 0.10);
+    --fnd-sidebar-active-border: #2dd4bf;
+    --fnd-sidebar-hover-bg: rgba(45, 212, 191, 0.05);
+    --fnd-sidebar-divider: rgba(45, 212, 191, 0.06);
+
+    --fnd-surface-subtle: rgba(255, 255, 255, 0.02);
+    --fnd-surface-hover: rgba(45, 212, 191, 0.05);
+
+    --fnd-scrollbar-thumb: rgba(45, 212, 191, 0.15);
+    --fnd-scrollbar-thumb-hover: rgba(45, 212, 191, 0.28);
+
+    --fnd-table-striped-bg: rgba(45, 212, 191, 0.02);
+    --fnd-table-header-bg: #232d3a;
+
+    --fnd-btn-shadow: 0 2px 8px rgba(20, 184, 166, 0.2);
+    --fnd-btn-shadow-hover: 0 4px 16px rgba(20, 184, 166, 0.3);
+
+    --fnd-input-bg: #161c24;
+    --fnd-input-border: rgba(45, 212, 191, 0.12);
+    --fnd-input-focus-border: #2dd4bf;
+    --fnd-input-focus-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+
+    --fnd-modal-bg: #1c242e;
+    --fnd-modal-backdrop: rgba(0, 0, 0, 0.6);
+
+    --fnd-close-btn-filter: invert(1) brightness(0.8);
+
+    --fnd-login-bg-gradient: linear-gradient(135deg, rgba(15, 20, 25, 0.92) 0%, rgba(28, 36, 46, 0.85) 50%, rgba(15, 20, 25, 0.92) 100%);
+    --fnd-login-bg-color: #0f1419;
+
+    --fnd-success: #4ade80;
+    --fnd-warning: #fbbf24;
+    --fnd-danger: #f87171;
+    --fnd-info: #22d3ee;
+}
+
+
+// ─── Ocean Theme (deep blue dark) ───────────────────────────────────────────
+body[data-theme="ocean"] {
+
+    --fnd-primary: #06b6d4;
+    --fnd-primary-dark: #0891b2;
+    --fnd-primary-light: #22d3ee;
+    --fnd-accent: #3b82f6;
+    --fnd-accent-light: #60a5fa;
+
+    --fnd-bg: #061018;
+    --fnd-bg-deep: #061018;
+    --fnd-bg-dark: #0a1a28;
+    --fnd-bg-card: #0e2234;
+    --fnd-bg-elevated: #142c42;
+    --fnd-bg-hover: #1a3650;
+    --fnd-panel-bg: #0e2234;
+
+    --fnd-text-primary: rgba(255, 255, 255, 0.92);
+    --fnd-text-secondary: rgba(255, 255, 255, 0.58);
+    --fnd-text-muted: rgba(255, 255, 255, 0.32);
+
+    --fnd-border: rgba(6, 182, 212, 0.10);
+    --fnd-border-strong: rgba(6, 182, 212, 0.18);
+    --fnd-panel-border: rgba(6, 182, 212, 0.10);
+
+    --fnd-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+    --fnd-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --fnd-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+    --fnd-gradient-primary: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+
+    --fnd-accent-glow: rgba(6, 182, 212, 0.22);
+    --fnd-accent-glow-soft: rgba(6, 182, 212, 0.08);
+
+    --fnd-header-bg: linear-gradient(135deg, #061018 0%, #0e2234 100%);
+    --fnd-header-border: rgba(6, 182, 212, 0.10);
+    --fnd-header-text: rgba(255, 255, 255, 0.92);
+    --fnd-header-text-muted: rgba(255, 255, 255, 0.48);
+
+    --fnd-sidebar-bg: linear-gradient(180deg, #0a1a28 0%, #061018 100%);
+    --fnd-sidebar-text: rgba(255, 255, 255, 0.72);
+    --fnd-sidebar-text-muted: rgba(255, 255, 255, 0.32);
+    --fnd-sidebar-active-bg: rgba(6, 182, 212, 0.10);
+    --fnd-sidebar-active-border: #06b6d4;
+    --fnd-sidebar-hover-bg: rgba(6, 182, 212, 0.05);
+    --fnd-sidebar-divider: rgba(6, 182, 212, 0.06);
+
+    --fnd-surface-subtle: rgba(255, 255, 255, 0.02);
+    --fnd-surface-hover: rgba(6, 182, 212, 0.05);
+
+    --fnd-scrollbar-thumb: rgba(6, 182, 212, 0.16);
+    --fnd-scrollbar-thumb-hover: rgba(6, 182, 212, 0.28);
+
+    --fnd-table-striped-bg: rgba(6, 182, 212, 0.02);
+    --fnd-table-header-bg: #142c42;
+
+    --fnd-btn-shadow: 0 2px 8px rgba(8, 145, 178, 0.22);
+    --fnd-btn-shadow-hover: 0 4px 16px rgba(8, 145, 178, 0.32);
+
+    --fnd-input-bg: #0a1a28;
+    --fnd-input-border: rgba(6, 182, 212, 0.14);
+    --fnd-input-focus-border: #06b6d4;
+    --fnd-input-focus-shadow: 0 0 0 3px rgba(6, 182, 212, 0.14);
+
+    --fnd-modal-bg: #0e2234;
+    --fnd-modal-backdrop: rgba(0, 0, 0, 0.6);
+
+    --fnd-close-btn-filter: invert(1) brightness(0.8);
+
+    --fnd-login-bg-gradient: linear-gradient(135deg, rgba(6, 16, 24, 0.92) 0%, rgba(14, 34, 52, 0.85) 50%, rgba(6, 16, 24, 0.92) 100%);
+    --fnd-login-bg-color: #061018;
+
+    --fnd-success: #4ade80;
+    --fnd-warning: #fbbf24;
+    --fnd-danger: #f87171;
+    --fnd-info: #22d3ee;
+}

@@ -7,10 +7,10 @@
 }
 
 .section-card {
-    background: #f8f9fa;
+    background: var(--fnd-bg-elevated);
     border-radius: 12px;
     padding: 1.25rem;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--fnd-border);
 }
 
 .section-title {
@@ -18,7 +18,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: #495057;
+    color: var(--fnd-text-secondary);
 }
 
 .table {
@@ -26,7 +26,7 @@
         font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         font-weight: 600;
         border-bottom: 2px solid #dee2e6;
     }

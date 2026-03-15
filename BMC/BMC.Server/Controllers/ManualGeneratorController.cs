@@ -464,5 +464,312 @@ namespace Foundation.BMC.Controllers.WebAPI
                 return StatusCode(500, "Failed to prepare project for manual generation.");
             }
         }
+
+
+        // ════════════════════════════════════════════════════════════════
+        //  Batch Load — All Steps for a Manual (single request)
+        // ════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// GET /api/manual-generator/manual/{manualId}/all-steps
+        ///
+        /// Returns ALL steps for every page of a manual in a single request.
+        /// This replaces N per-page getSteps calls and avoids rate-limiting.
+        ///
+        /// AI-developed — March 2026
+        /// </summary>
+        [HttpGet]
+        [Route("api/manual-generator/manual/{manualId}/all-steps")]
+        public async Task<IActionResult> GetAllStepsForManual(
+            int manualId,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                //
+                // Single query: join Pages → Steps for this manual.
+                // Return steps with their pageId so the client can group them.
+                //
+                var steps = await _context.BuildManualSteps
+                    .Where(s => s.buildManualPage.buildManualId == manualId
+                             && s.active == true
+                             && s.deleted == false
+                             && s.buildManualPage.active == true
+                             && s.buildManualPage.deleted == false)
+                    .OrderBy(s => s.buildManualPage.pageNum)
+                    .ThenBy(s => s.stepNumber)
+                    .Select(s => new
+                    {
+                        s.id,
+                        s.buildManualPageId,
+                        s.stepNumber,
+                        s.cameraPositionX,
+                        s.cameraPositionY,
+                        s.cameraPositionZ,
+                        s.cameraTargetX,
+                        s.cameraTargetY,
+                        s.cameraTargetZ,
+                        s.cameraZoom,
+                        s.showExplodedView,
+                        s.explodedDistance,
+                        s.renderImagePath,
+                        s.pliImagePath,
+                        s.fadeStepEnabled,
+                        s.isCallout,
+                        s.calloutModelName,
+                        s.showPartsListImage,
+                        s.calloutNestingDepth,
+                        s.calloutInstanceCount,
+                        s.objectGuid,
+                        s.active,
+                        s.deleted
+                    })
+                    .ToListAsync(cancellationToken);
+
+                return Ok(steps);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load all steps for manual {ManualId}", manualId);
+                return StatusCode(500, "Failed to load manual steps.");
+            }
+        }
+
+
+        /// <summary>
+        /// Export a manual from the database as HTML or PDF.
+        /// Uses the same builders as the live generator, but reads
+        /// pre-rendered images from the DB instead of re-rendering.
+        /// </summary>
+        [HttpPost]
+        [Route("api/manual-generator/manual/{manualId}/export")]
+        public async Task<IActionResult> ExportManual(
+            int manualId,
+            [FromQuery] string format = "html",
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                var exportService = new ManualExportService(_context, _logger);
+                var result = await exportService.ExportAsync(manualId, format);
+
+                // Store in CompletedManuals for download via existing endpoint
+                string downloadId = Guid.NewGuid().ToString("N");
+                bool isPdf = string.Equals(format, "pdf", StringComparison.OrdinalIgnoreCase);
+
+                if (isPdf)
+                {
+                    CompletedManuals[downloadId] =
+                        (result.DocumentBytes, $"manual-{manualId}", "application/pdf", DateTime.UtcNow);
+                }
+                else
+                {
+                    byte[] htmlBytes = System.Text.Encoding.UTF8.GetBytes(result.Html ?? "");
+                    CompletedManuals[downloadId] =
+                        (htmlBytes, $"manual-{manualId}", "text/html; charset=utf-8", DateTime.UtcNow);
+                }
+
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.ReadEntity,
+                    $"Manual exported — id={manualId}, format={format}",
+                    manualId.ToString());
+
+                return Ok(new
+                {
+                    downloadUrl = $"/api/manual-generator/download/{downloadId}",
+                    format = isPdf ? "pdf" : "html",
+                    totalSteps = result.TotalSteps,
+                    totalParts = result.TotalParts
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to export manual {ManualId} as {Format}", manualId, format);
+                return StatusCode(500, "Failed to export manual.");
+            }
+        }
+
+        /// <summary>
+        /// Reorder steps within a page.
+        /// Accepts an ordered list of step IDs; updates stepNumber to match the new order.
+        /// </summary>
+        [HttpPut]
+        [Route("api/manual-generator/page/{pageId}/reorder-steps")]
+        public async Task<IActionResult> ReorderSteps(
+            int pageId,
+            [FromBody] ReorderStepsRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            if (request?.StepIds == null || request.StepIds.Length == 0)
+            {
+                return BadRequest("StepIds is required.");
+            }
+
+            try
+            {
+                var steps = await _context.BuildManualSteps
+                    .Where(s => request.StepIds.Contains(s.id) && !s.deleted)
+                    .ToListAsync(cancellationToken);
+
+                for (int i = 0; i < request.StepIds.Length; i++)
+                {
+                    var step = steps.FirstOrDefault(s => s.id == request.StepIds[i]);
+                    if (step != null)
+                    {
+                        step.stepNumber = i + 1;
+                        if (request.TargetPageId.HasValue)
+                        {
+                            step.buildManualPageId = request.TargetPageId.Value;
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.UpdateEntity,
+                    $"Steps reordered - page={pageId}, count={request.StepIds.Length}",
+                    pageId.ToString());
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to reorder steps for page {PageId}", pageId);
+                return StatusCode(500, "Failed to reorder steps.");
+            }
+        }
+        /// <summary>
+        /// Re-render a step with current camera coordinates.
+        /// Loads the model from the project, renders with elevation/azimuth
+        /// derived from the step's camera position, and updates the stored image.
+        /// </summary>
+        [HttpPost]
+        [Route("api/manual-generator/step/{stepId}/re-render")]
+        public async Task<IActionResult> ReRenderStep(
+            int stepId,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                // 1. Load the step with its page -> manual -> project
+                var step = await _context.BuildManualSteps
+                    .Include(s => s.buildManualPage)
+                        .ThenInclude(p => p.buildManual)
+                    .FirstOrDefaultAsync(s => s.id == stepId && !s.deleted, cancellationToken);
+
+                if (step == null)
+                    return NotFound("Step not found.");
+
+                var manual = step.buildManualPage?.buildManual;
+                if (manual == null)
+                    return NotFound("Manual not found for step.");
+
+                // 2. Load the model document to get LDraw lines
+                var modelDoc = await _context.ModelDocuments
+                    .FirstOrDefaultAsync(md => md.projectId == manual.projectId
+                                            && md.active && !md.deleted, cancellationToken);
+
+                if (modelDoc?.sourceFileData == null)
+                    return BadRequest("No model file found for this project.");
+
+                string fileText = System.Text.Encoding.UTF8.GetString(modelDoc.sourceFileData);
+                string[] lines = fileText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+
+                // 3. Convert camera position to elevation/azimuth
+                float cx = (float)(step.cameraPositionX ?? 100);
+                float cy = (float)(step.cameraPositionY ?? 100);
+                float cz = (float)(step.cameraPositionZ ?? -100);
+                float tx = (float)(step.cameraTargetX ?? 0);
+                float ty = (float)(step.cameraTargetY ?? 0);
+                float tz = (float)(step.cameraTargetZ ?? 0);
+
+                float dx = cx - tx;
+                float dy = cy - ty;
+                float dz = cz - tz;
+                float dist = (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+                float elevation = dist > 0.001f ? (float)(Math.Asin(dy / dist) * (180.0 / Math.PI)) : 30f;
+                float azimuth = (float)(Math.Atan2(dx, dz) * (180.0 / Math.PI));
+
+                // 4. Render
+                string dataPath = _configuration.GetValue<string>("LDraw:DataPath");
+                if (string.IsNullOrEmpty(dataPath))
+                    return StatusCode(500, "LDraw data path not configured.");
+
+                var renderService = new RenderService(dataPath);
+
+                int stepIndex = (step.stepNumber ?? 1) - 1;
+                byte[] png = renderService.RenderStep(
+                    lines: lines,
+                    fileName: modelDoc.sourceFileName ?? modelDoc.name,
+                    stepIndex: stepIndex,
+                    width: 512,
+                    height: 512,
+                    colourCode: -1,
+                    elevation: elevation,
+                    azimuth: azimuth,
+                    renderEdges: true,
+                    smoothShading: true,
+                    antiAliasMode: AntiAliasMode.None);
+
+                if (png == null || png.Length == 0)
+                    return StatusCode(500, "Rendering produced no image.");
+
+                // 5. Update step with new image
+                string base64 = "data:image/png;base64," + Convert.ToBase64String(png);
+                step.renderImagePath = base64;
+                await _context.SaveChangesAsync(cancellationToken);
+
+                await CreateAuditEventAsync(
+                    AuditEngine.AuditType.UpdateEntity,
+                    "Step re-rendered with new camera — id=" + stepId,
+                    stepId.ToString());
+
+                return Ok(new { renderImagePath = base64 });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to re-render step {StepId}", stepId);
+                return StatusCode(500, "Failed to re-render step.");
+            }
+        }
+    }
+
+    public class ReorderStepsRequest
+    {
+        public int[] StepIds { get; set; }
+        public int? TargetPageId { get; set; }
     }
 }

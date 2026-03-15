@@ -136,7 +136,7 @@ namespace Foundation.Alerting.CodeGeneration
             //
             // Create Angular Components to interact with the data services  Roller Ops does not use authorization.
             //
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Alerting", typeof(Foundation.Alerting.Database.AlertingContext), alertingDatabaseGenerator.database, outputFolder);
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Alerting", typeof(Foundation.Alerting.Database.AlertingContext), alertingDatabaseGenerator.database, outputFolder, applicationThemePrefix: "lrt");
 
 
             Console.WriteLine();

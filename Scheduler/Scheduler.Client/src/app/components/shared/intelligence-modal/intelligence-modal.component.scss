@@ -1,20 +1,18 @@
 //
-// Variables
+// Variables — accent colors stay
 //
 $premium-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 $glass-bg: rgba(255, 255, 255, 0.95);
 $glass-border: 1px solid rgba(255, 255, 255, 0.2);
-$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
 .intelligence-modal {
     font-family: 'Inter', sans-serif;
-    /* Assuming font availability, fallback generic */
     overflow: hidden;
     border-radius: 0.5rem;
 }
 
 //
-// Header
+// Header (gradient — stays)
 //
 .modal-header-premium {
     background: $premium-gradient;
@@ -64,7 +62,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
 //
 .modal-body-premium {
     padding: 0;
-    background-color: #f8f9fa;
+    background-color: var(--sch-bg-elevated);
     min-height: 400px;
 }
 
@@ -77,13 +75,13 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
     align-items: center;
     justify-content: center;
     height: 400px;
-    background: white;
+    background: var(--sch-bg-card);
 
     .scanner-animation {
         width: 80px;
         height: 80px;
         border-radius: 50%;
-        border: 4px solid #f3f3f3;
+        border: 4px solid var(--sch-border);
         border-top: 4px solid #764ba2;
         animation: spin 1s linear infinite, Pulse 2s ease-in-out infinite;
         margin-bottom: 2rem;
@@ -108,24 +106,24 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
 }
 
 .section-card {
-    background: white;
+    background: var(--sch-bg-card);
     margin: 1.5rem;
     padding: 1.5rem;
     border-radius: 1rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+    border: 1px solid var(--sch-border);
+    box-shadow: var(--sch-shadow-sm);
     transition: transform 0.2s;
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--sch-shadow-md);
     }
 
     h5 {
-        color: #4a5568;
+        color: var(--sch-text-secondary);
         font-weight: 600;
         margin-bottom: 1.25rem;
-        border-bottom: 2px solid #edf2f7;
+        border-bottom: 2px solid var(--sch-border);
         padding-bottom: 0.75rem;
         display: flex;
         align-items: center;
@@ -146,19 +144,19 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
 .stat-item {
     text-align: center;
     padding: 1rem;
-    background: #f8fafc;
+    background: var(--sch-bg-elevated);
     border-radius: 0.75rem;
 
     .stat-val {
         display: block;
         font-size: 1.5rem;
         font-weight: 800;
-        color: #2d3748;
+        color: var(--sch-text-primary);
     }
 
     .stat-label {
         font-size: 0.85rem;
-        color: #718096;
+        color: var(--sch-text-muted);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -177,8 +175,8 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
         align-items: center;
         justify-content: center;
         border-radius: 50%;
-        background: #edf2f7;
-        color: #4a5568;
+        background: var(--sch-bg-elevated);
+        color: var(--sch-text-secondary);
         transition: all 0.2s;
         text-decoration: none;
 
@@ -198,10 +196,10 @@ $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.
     li {
         padding: 0.75rem 1rem;
         margin-bottom: 0.5rem;
-        background: #f0f4ff;
+        background: rgba(102, 126, 234, 0.06);
         border-left: 4px solid #667eea;
         border-radius: 0.25rem;
-        color: #2d3748;
+        color: var(--sch-text-primary);
         font-size: 0.95rem;
     }
 }

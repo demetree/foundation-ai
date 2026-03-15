@@ -10,7 +10,7 @@
 // Hierarchy Accordion Structure
 //
 .org-hierarchy {
-    background: #f8f9fa;
+    background: var(--fnd-bg-elevated);
     border-radius: 12px;
     padding: 0.5rem;
 }
@@ -42,16 +42,16 @@
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
-    background: white;
+    background: var(--fnd-panel-bg);
 
     &:hover {
-        background: #f8f9fa;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        background: var(--fnd-bg-elevated);
+        box-shadow: var(--fnd-shadow-sm);
     }
 
     &.expanded {
-        background: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        background: var(--fnd-panel-bg);
+        box-shadow: var(--fnd-shadow-sm);
     }
 }
 
@@ -91,7 +91,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    color: #6c757d;
+    color: var(--fnd-text-muted);
     transition: transform 0.2s ease;
 
     &.placeholder {
@@ -99,7 +99,7 @@
     }
 
     &:hover {
-        color: #212529;
+        color: var(--fnd-text-primary);
     }
 }
 
@@ -140,7 +140,7 @@
 
 .hierarchy-name {
     font-weight: 600;
-    color: #212529;
+    color: var(--fnd-text-primary);
     font-size: 0.95rem;
     white-space: nowrap;
     overflow: hidden;
@@ -149,7 +149,7 @@
 
 .hierarchy-desc {
     font-size: 0.8rem;
-    color: #6c757d;
+    color: var(--fnd-text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -199,7 +199,7 @@
 }
 
 .hierarchy-empty {
-    color: #6c757d;
+    color: var(--fnd-text-muted);
 
     .btn-link {
         padding: 0 0.25rem;

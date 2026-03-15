@@ -461,7 +461,7 @@ namespace BMC.LDraw.Render
                     azimuth: -45f,
                     renderEdges: true,
                     smoothShading: true,
-                    antiAliasMode: AntiAliasMode.SSAA2x);
+                    antiAliasMode: AntiAliasMode.None);
 
                 _thumbnailRgbaCache[cacheKey] = rgbaPixels;
 
@@ -797,13 +797,56 @@ namespace BMC.LDraw.Render
                                   bool smoothShading = true,
                                   AntiAliasMode antiAliasMode = AntiAliasMode.None)
         {
+            // Resolve full model inline (original behavior)
+            return RenderStep(lines, fileName, stepIndex,
+                              fullMesh: null,
+                              width, height, colourCode,
+                              elevation, azimuth, renderEdges,
+                              smoothShading, antiAliasMode);
+        }
+
+
+        /// <summary>
+        /// Resolve the full model mesh from file content.
+        /// Call this ONCE before a batch of RenderStep calls and pass the result
+        /// to each call to avoid redundant geometry resolution.
+        /// </summary>
+        public LDrawMesh ResolveFullModelMesh(string[] lines, string fileName, int colourCode = -1)
+        {
+            EnsureColours();
+            int effectiveColour = colourCode >= 0 ? colourCode : 4;
+            GeometryResolver resolver = new GeometryResolver(_libraryPath, _colours);
+            return resolver.ResolveContentUpToStep(lines, fileName, int.MaxValue, effectiveColour);
+        }
+
+
+        /// <summary>
+        /// Render a single build step from file content, with an optional pre-resolved full mesh
+        /// for camera framing. When fullMesh is null, it is resolved internally.
+        /// </summary>
+        public byte[] RenderStep(string[] lines,
+                                  string fileName,
+                                  int stepIndex,
+                                  LDrawMesh fullMesh,
+                                  int width = 512,
+                                  int height = 512,
+                                  int colourCode = -1,
+                                  float elevation = 30f,
+                                  float azimuth = -45f,
+                                  bool renderEdges = true,
+                                  bool smoothShading = true,
+                                  AntiAliasMode antiAliasMode = AntiAliasMode.None)
+        {
             EnsureColours();
 
             int effectiveColour = colourCode >= 0 ? colourCode : 4;
 
-            // Resolve the FULL model for consistent camera framing across all steps
-            GeometryResolver fullResolver = new GeometryResolver(_libraryPath, _colours);
-            LDrawMesh fullMesh = fullResolver.ResolveContentUpToStep(lines, fileName, int.MaxValue, effectiveColour);
+            // Resolve the full model for camera framing — use cached if provided
+            if (fullMesh == null)
+            {
+                GeometryResolver fullResolver = new GeometryResolver(_libraryPath, _colours);
+                fullMesh = fullResolver.ResolveContentUpToStep(lines, fileName, int.MaxValue, effectiveColour);
+            }
 
             // Resolve the step mesh for actual rendering
             GeometryResolver stepResolver = new GeometryResolver(_libraryPath, _colours);

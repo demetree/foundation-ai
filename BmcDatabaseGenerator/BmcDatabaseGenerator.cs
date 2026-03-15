@@ -1341,6 +1341,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             buildManualStepTable.AddBoolField("isCallout", false, false).AddScriptComments("Whether this step is a callout (submodel assembly shown in-line)");
             buildManualStepTable.AddString250Field("calloutModelName", true).AddScriptComments("Name of the submodel this callout refers to (from LPub3D CALLOUT meta)");
             buildManualStepTable.AddBoolField("showPartsListImage", false, true).AddScriptComments("Whether to show the Parts List Indicator (PLI) image for this step");
+            buildManualStepTable.AddIntField("calloutNestingDepth", true).AddScriptComments("Nesting depth in the submodel tree (0=top-level, 1=first sub-assembly, 2=sub-sub-assembly, null=top-level)");
+            buildManualStepTable.AddIntField("calloutInstanceCount", true).AddScriptComments("How many times this callout submodel is placed in the parent step (null or 1 = single instance)");
             buildManualStepTable.AddVersionControl();
             buildManualStepTable.AddControlFields();
 

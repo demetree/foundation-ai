@@ -1,4 +1,5 @@
 /* AI-Developed — This file was significantly developed with AI assistance. */
+/* AI-DEVELOPED: Migrated structural colors to --sch-* theme tokens (Mar 2026). */
 
 .page-container {
     max-width: 1100px;
@@ -6,7 +7,7 @@
     padding: 1.5rem;
 }
 
-// Header — Teal
+// Header — Teal (entity gradient — stays)
 .listing-header {
     background: linear-gradient(135deg, #00695c 0%, #00897b 50%, #26a69a 100%);
     border-radius: 16px;
@@ -51,14 +52,14 @@
     }
 }
 
-// Summary cards
+// Summary cards — functional accent colors stay
 .summary-card {
     display: flex;
     align-items: center;
     gap: 1rem;
     padding: 1rem 1.25rem;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--sch-border);
 }
 
 .outstanding-card {
@@ -95,7 +96,7 @@
 .summary-label {
     font-size: 0.7rem;
     text-transform: uppercase;
-    color: #90a4ae;
+    color: var(--sch-text-muted);
     letter-spacing: 0.5px;
 }
 
@@ -106,7 +107,7 @@
 
 .summary-count {
     font-size: 0.75rem;
-    color: #78909c;
+    color: var(--sch-text-muted);
 }
 
 // Filters
@@ -124,9 +125,9 @@
 }
 
 .pill {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #90a4ae;
+    background: var(--sch-surface-subtle);
+    border: 1px solid var(--sch-border);
+    color: var(--sch-text-muted);
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -157,15 +158,13 @@
         left: 12px;
         top: 50%;
         transform: translateY(-50%);
-        color: #78909c;
+        color: var(--sch-text-muted);
         font-size: 0.85rem;
     }
 
     .form-control {
         padding-left: 36px;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.04);
     }
 }
 
@@ -177,15 +176,15 @@
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #90a4ae;
+        color: var(--sch-text-muted);
         padding: 0.6rem 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--sch-border);
         font-weight: 600;
     }
 
     td {
         padding: 0.65rem 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid var(--sch-border);
         font-size: 0.9rem;
     }
 
@@ -194,6 +193,7 @@
     }
 }
 
+// Status badges — functional colors stay
 .status-badge {
     padding: 0.2rem 0.6rem;
     font-size: 0.7rem;
@@ -239,8 +239,8 @@
 }
 
 .mobile-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--sch-bg-card);
+    border: 1px solid var(--sch-border);
     border-radius: 12px;
     padding: 0.9rem 1rem;
 
@@ -279,7 +279,7 @@
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    color: #78909c;
+    color: var(--sch-text-muted);
 
     i {
         font-size: 3rem;

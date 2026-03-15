@@ -5,7 +5,7 @@
 //
 
 .modal-container {
-    background: #fff;
+    background: var(--fnd-panel-bg);
     border-radius: 16px;
     overflow: hidden;
 }
@@ -39,7 +39,7 @@
 // Summary Stats Row
 //
 .summary-stat {
-    background: #f8f9fa;
+    background: var(--fnd-bg-elevated);
     border-radius: 8px;
     padding: 0.875rem;
     text-align: center;
@@ -48,13 +48,13 @@
 
     &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--fnd-shadow-sm);
     }
 
     .stat-value {
         font-size: 1.5rem;
         font-weight: 700;
-        color: #212529;
+        color: var(--fnd-text-primary);
         line-height: 1.2;
     }
 
@@ -62,7 +62,7 @@
         font-size: 0.7rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         margin-top: 0.25rem;
     }
 
@@ -87,22 +87,22 @@
 // Chart Cards
 //
 .chart-card {
-    background: white;
-    border: 1px solid #e9ecef;
+    background: var(--fnd-panel-bg);
+    border: 1px solid var(--fnd-border);
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--fnd-shadow-sm);
     overflow: hidden;
     height: 100%;
 
     .chart-header {
-        background: #f8f9fa;
+        background: var(--fnd-bg-elevated);
         padding: 0.875rem 1rem;
-        border-bottom: 1px solid #e9ecef;
+        border-bottom: 1px solid var(--fnd-border);
 
         h6 {
             margin: 0;
             font-weight: 600;
-            color: #495057;
+            color: var(--fnd-text-secondary);
             font-size: 0.875rem;
         }
     }
@@ -120,14 +120,14 @@
     font-size: 0.85rem;
 
     thead {
-        background: #f8f9fa;
+        background: var(--fnd-bg-elevated);
         position: sticky;
         top: 0;
         z-index: 1;
 
         th {
             font-weight: 600;
-            color: #6c757d;
+            color: var(--fnd-text-muted);
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.3px;
@@ -140,7 +140,7 @@
         td {
             padding: 0.5rem;
             vertical-align: middle;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--fnd-border);
         }
     }
 
@@ -183,7 +183,7 @@
 // Modal Footer
 //
 .modal-footer {
-    background: #f8f9fa;
+    background: var(--fnd-bg-elevated);
     padding: 1rem 1.5rem;
 }
 

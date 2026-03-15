@@ -6,7 +6,7 @@ $glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
 /* Page Container */
 .shift-details-container {
-    background-color: #f4f6f9;
+    background-color: var(--sch-bg);
     min-height: 100%;
 }
 

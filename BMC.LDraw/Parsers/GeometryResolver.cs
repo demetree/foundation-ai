@@ -375,7 +375,16 @@ namespace BMC.LDraw.Parsers
                 }
             }
 
+            //
+            // Determine the correct root geometry to resolve:
+            // If fileName matches a cached submodel, use that instead of geos[0].
+            // This is critical for rendering individual submodel steps in MPD files.
+            //
             LDrawGeometry root = geos[0];
+            if (fileName != null && _cache.TryGetValue(fileName, out LDrawGeometry subModelGeo))
+            {
+                root = subModelGeo;
+            }
 
             if (root.StepBreaks.Count == 0 || stepIndex >= root.StepBreaks.Count)
             {

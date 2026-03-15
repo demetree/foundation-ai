@@ -5,7 +5,7 @@
 
 .log-viewer-container {
     padding: 1.5rem;
-    background-color: #f8fafc;
+    background-color: var(--fnd-bg-elevated);
     min-height: calc(100vh - 60px);
 }
 
@@ -68,7 +68,7 @@
 
     .badge-warning {
         background: rgba(255, 193, 7, 0.9);
-        color: #212529;
+        color: var(--fnd-text-primary);
     }
 
     .btn-outline-light {
@@ -114,7 +114,7 @@
 
         th {
             font-weight: 600;
-            color: #495057;
+            color: var(--fnd-text-secondary);
             border-bottom: 2px solid #dee2e6;
             padding: 0.75rem;
             white-space: nowrap;
@@ -137,7 +137,7 @@
         td {
             padding: 0.5rem 0.75rem;
             vertical-align: top;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid var(--fnd-border);
         }
     }
 }
@@ -185,7 +185,7 @@
 }
 
 .expand-icon {
-    color: #6c757d;
+    color: var(--fnd-text-muted);
     font-size: 0.75rem;
     opacity: 0.7;
 }
@@ -220,7 +220,7 @@
 
     &.level-debug {
         border-left: 3px solid #6c757d;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
     }
 
     &.level-default {

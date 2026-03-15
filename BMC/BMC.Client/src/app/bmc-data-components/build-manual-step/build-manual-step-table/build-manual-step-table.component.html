@@ -95,6 +95,14 @@
                 Show  Parts  List  Image
                 <span *ngIf="sortColumn === 'showPartsListImage'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('calloutNestingDepth')">
+                Callout  Nesting  Depth
+                <span *ngIf="sortColumn === 'calloutNestingDepth'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('calloutInstanceCount')">
+                Callout  Instance  Count
+                <span *ngIf="sortColumn === 'calloutInstanceCount'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -197,6 +205,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><boolean-icon [value]="buildManualStep.isCallout"/></td>
             <td class="text-truncate">{{buildManualStep.calloutModelName}}</td>
             <td class="text-truncate"><boolean-icon [value]="buildManualStep.showPartsListImage"/></td>
+            <td class="text-truncate">{{buildManualStep.calloutNestingDepth | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{buildManualStep.calloutInstanceCount | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -411,6 +421,14 @@ End of commented block for alternate definition option -->
             <p class="build-manual-step-info" *ngIf="buildManualStep.showPartsListImage != null">
               <strong>Show Parts List Image: </strong>
               <boolean-icon [value]="buildManualStep.showPartsListImage"/>
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.calloutNestingDepth != null">
+              <strong>Callout Nesting Depth: </strong>
+              {{buildManualStep.calloutNestingDepth | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="build-manual-step-info" *ngIf="buildManualStep.calloutInstanceCount != null">
+              <strong>Callout Instance Count: </strong>
+              {{buildManualStep.calloutInstanceCount | bigNumberFormat : '1.0-2'}}
             </p>
             </div>
          </div>

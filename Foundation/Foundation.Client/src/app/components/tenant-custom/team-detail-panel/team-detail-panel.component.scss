@@ -5,7 +5,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #f8f9fa;
+    background: var(--fnd-bg-elevated);
 }
 
 .panel-header {
@@ -47,15 +47,15 @@
 
 .panel-tabs {
     display: flex;
-    background: white;
-    border-bottom: 1px solid #dee2e6;
+    background: var(--fnd-panel-bg);
+    border-bottom: 1px solid var(--fnd-border);
     padding: 0 1rem;
 
     .tab-btn {
         padding: 0.875rem 1rem;
         border: none;
         background: transparent;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         font-weight: 500;
         font-size: 0.875rem;
         cursor: pointer;
@@ -81,15 +81,15 @@
 
 .info-card,
 .hierarchy-card {
-    background: white;
+    background: var(--fnd-panel-bg);
     border-radius: 12px;
     padding: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--fnd-shadow-sm);
 }
 
 .hierarchy-card {
     .card-title {
-        color: #495057;
+        color: var(--fnd-text-secondary);
         font-weight: 600;
         margin-bottom: 1rem;
     }
@@ -146,20 +146,20 @@
     display: flex;
     justify-content: space-between;
     padding: 0.75rem 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--fnd-border);
 
     &:last-child {
         border-bottom: none;
     }
 
     .info-label {
-        color: #6c757d;
+        color: var(--fnd-text-muted);
         font-size: 0.875rem;
     }
 
     .info-value {
         font-weight: 500;
-        color: #212529;
+        color: var(--fnd-text-primary);
     }
 }
 
@@ -174,7 +174,7 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.875rem 1rem;
-    background: white;
+    background: var(--fnd-panel-bg);
     border-radius: 10px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -202,12 +202,12 @@
 
     .entity-name {
         font-weight: 500;
-        color: #212529;
+        color: var(--fnd-text-primary);
     }
 
     .entity-desc {
         font-size: 0.8125rem;
-        color: #6c757d;
+        color: var(--fnd-text-muted);
     }
 }
 

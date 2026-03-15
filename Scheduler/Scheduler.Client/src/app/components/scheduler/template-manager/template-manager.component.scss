@@ -1,16 +1,16 @@
 // =============================================================================
-// Template Manager — Premium Theme
+// Template Manager — Theme-Aware Premium Design
 // =============================================================================
 // AI-Developed — This file was significantly developed with AI assistance.
+// AI-DEVELOPED: Migrated structural colors to --sch-* theme tokens (Mar 2026).
 // =============================================================================
 
 // ---------------------------------------------------------------------------
-// Design Tokens
+// Design Tokens — entity accent colors stay
 // ---------------------------------------------------------------------------
 $gradient-scheduler: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 $glass-bg: rgba(255, 255, 255, 0.15);
 $glass-border: rgba(255, 255, 255, 0.2);
-$page-bg: #f4f6f9;
 $card-radius: 16px;
 $btn-radius: 8px;
 $accent-primary: #667eea;
@@ -21,20 +21,20 @@ $accent-secondary: #764ba2;
 // Page Container
 // ---------------------------------------------------------------------------
 .template-manager-container {
-    background-color: $page-bg;
+    background-color: var(--sch-bg-deep);
     min-height: 100%;
     padding: 1.5rem;
 }
 
 
 // ---------------------------------------------------------------------------
-// Premium Header
+// Premium Header (entity gradient — stays)
 // ---------------------------------------------------------------------------
 .premium-header {
     border: none;
     border-radius: $card-radius;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--sch-shadow-md);
 
     .card-header {
         background: $gradient-scheduler;
@@ -143,7 +143,7 @@ $accent-secondary: #764ba2;
     }
 
     h5 {
-        color: #1e293b;
+        color: var(--sch-text-primary);
         font-weight: 700;
     }
 }
@@ -159,11 +159,11 @@ $accent-secondary: #764ba2;
 }
 
 .template-card {
-    background: #fff;
+    background: var(--sch-bg-card);
     border-radius: 12px;
     padding: 1.25rem;
-    border: 1px solid #edf0f5;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--sch-border);
+    box-shadow: var(--sch-shadow-sm);
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -171,7 +171,7 @@ $accent-secondary: #764ba2;
     position: relative;
 
     &:hover {
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        box-shadow: var(--sch-shadow-md);
         transform: translateY(-2px);
         border-color: rgba($accent-primary, 0.3);
 
@@ -212,7 +212,7 @@ $accent-secondary: #764ba2;
         border: none;
         padding: 0.25rem 0.4rem;
         border-radius: 6px;
-        color: #94a3b8;
+        color: var(--sch-text-muted);
         cursor: pointer;
         transition: all 0.15s ease;
 
@@ -229,14 +229,14 @@ $accent-secondary: #764ba2;
     .template-name {
         font-size: 1rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--sch-text-primary);
         margin-bottom: 0.35rem;
         line-height: 1.3;
     }
 
     .template-desc {
         font-size: 0.8rem;
-        color: #64748b;
+        color: var(--sch-text-muted);
         line-height: 1.5;
         margin-bottom: 0.75rem;
         display: -webkit-box;
@@ -258,11 +258,11 @@ $accent-secondary: #764ba2;
             gap: 0.25rem;
             font-size: 0.72rem;
             font-weight: 600;
-            color: #64748b;
-            background: #f8fafc;
+            color: var(--sch-text-muted);
+            background: var(--sch-bg-elevated);
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            border: 1px solid #f1f3f7;
+            border: 1px solid var(--sch-border);
             white-space: nowrap;
 
             i {
@@ -277,9 +277,9 @@ $accent-secondary: #764ba2;
         text-align: center;
         margin-top: 0.75rem;
         padding-top: 0.5rem;
-        border-top: 1px solid #f1f3f7;
+        border-top: 1px solid var(--sch-border);
         font-size: 0.7rem;
-        color: #94a3b8;
+        color: var(--sch-text-muted);
         font-weight: 500;
         transition: opacity 0.15s ease;
 

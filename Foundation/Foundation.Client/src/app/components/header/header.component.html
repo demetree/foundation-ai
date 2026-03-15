@@ -1,8 +1,8 @@
 <header class="navbar navbar-dark fixed-top bg-dark p-2 shadow no-select justify-content-between">
   <!-- Logo (left) -->
   <div class="logo-container d-flex align-items-center">
-    <a routerLink="/" class="d-flex align-items-center text-white text-decoration-none mb-1">
-      <img src="assets/images/k2_logo_white.png" alt="logo" style="height:32px;width:32px;margin-right:15px">
+    <a routerLink="/" class="d-flex align-items-center text-decoration-none mb-1" style="color: var(--fnd-header-text)">
+      <img [src]="themeService.isDarkTheme ? 'assets/images/k2_logo_white.png' : 'assets/images/k2_logo_black.png'" alt="logo" style="height:32px;width:32px;margin-right:15px">
       <span class="fs-4"><strong>Foundation</strong></span>
     </a>
   </div>
@@ -29,10 +29,23 @@
             <div class="fw-semibold">{{ currentUserFirstName || 'User' }}</div>
             <div class="text-muted">{{ authService.currentUser?.email }}</div>
           </div>
+          <!-- Theme Picker -->
+          <div class="theme-picker-section px-3 py-2 border-bottom">
+            <div class="theme-picker-label small text-muted mb-2">Theme</div>
+            <div class="theme-picker-grid">
+              <button *ngFor="let theme of themeService.availableThemes"
+                      class="theme-swatch-btn"
+                      [class.active]="themeService.currentTheme === theme.id"
+                      [title]="theme.label"
+                      (click)="themeService.setTheme(theme.id); $event.stopPropagation()">
+                <div class="theme-swatch">
+                  <span class="swatch-color" *ngFor="let color of theme.swatchColors" [style.background]="color"></span>
+                </div>
+                <span class="theme-name">{{ theme.label }}</span>
+              </button>
+            </div>
+          </div>
           <!-- Actions -->
-          <!--<button ngbDropdownItem (click)="goToSettings(profileMenu)">
-            <i class="fa-solid fa-user-gear me-2"></i> Profile / Settings
-          </button>-->
           <button ngbDropdownItem (click)="logout(); profileMenu.close()">
             <i class="fa fa-sign-out me-2"></i> {{ 'Logout' | translate }}
           </button>

@@ -2,6 +2,7 @@ import { Component, OnInit, EventEmitter, Output, Input, Inject } from '@angular
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { AlertService } from '../../services/alert.service';
+import { ThemeService, ThemeDefinition } from '../../services/theme.service';
 import { HttpClient } from '@angular/common/http';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 
@@ -31,7 +32,8 @@ export class HeaderComponent implements OnInit {
     private alertService: AlertService,
     @Inject('BASE_URL') private baseUrl: string,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    public themeService: ThemeService
   ) { }
 
   ngOnInit(): void {

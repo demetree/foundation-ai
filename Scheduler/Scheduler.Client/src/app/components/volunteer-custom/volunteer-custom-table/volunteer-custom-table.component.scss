@@ -1,187 +1,203 @@
 .virtual-table-container {
-    height: calc(100vh - 220px);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    background: white;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+  height: calc(100vh - 220px);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--sch-shadow-sm);
+  background: var(--sch-bg-card);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sch-border);
 }
 
+/* Fixed header (outside viewport) */
 .table-header-fixed {
-    background: #f8fafc;
-    z-index: 30;
-    border-bottom: 1px solid #e2e8f0;
+  background: var(--sch-table-header-bg);
+  z-index: 30;
+  border-bottom: 1px solid var(--sch-border);
 }
 
+/* Viewport — the only thing that scrolls */
 .viewport {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: auto;
-    scrollbar-gutter: stable;
-    padding-right: 14px;
-    margin-right: -14px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+
+  /* Hack for consistent column sizing */
+  padding-right: 14px;
+  margin-right: -14px;
 }
 
 .mobile-viewport {
-    height: calc(100vh - 180px);
-    display: block;
+  height: calc(100vh - 180px);
+  display: block;
 }
 
+/* Base table */
 .custom-table {
-    table-layout: fixed;
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin: 0;
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 0;
 }
 
 .table-header-fixed .custom-table {
-    border-collapse: collapse;
+  border-collapse: collapse;
 }
 
+/* Inactive/Deleted styling */
 tr.row-inactive,
 .card.row-inactive {
-    font-style: italic;
-    opacity: 0.75;
+  font-style: italic;
+  opacity: 0.75;
 }
 
 tr.row-deleted,
 .card.row-deleted {
-    text-decoration: line-through;
-    opacity: 0.6;
-    color: #94a3b8;
+  text-decoration: line-through;
+  opacity: 0.6;
+  color: var(--sch-text-muted);
 }
 
 tr.row-deleted.row-inactive {
-    font-style: normal;
+  font-style: normal;
 }
 
+
+/* Body table */
 .viewport .custom-table {
-    background: transparent;
+  background: transparent;
 }
 
 .viewport .custom-table tbody tr {
-    background-color: white;
-    transition: background-color 0.15s ease;
-    border-bottom: 1px solid #f1f5f9;
+  background-color: var(--sch-bg-card);
+  transition: background-color 0.15s ease;
+  border-bottom: 1px solid var(--sch-border);
 }
 
+// Remove odd striping for a cleaner look, or make it very subtle
 .viewport .custom-table tbody tr:nth-child(odd) {
-    background-color: #ffffff;
+  background-color: var(--sch-bg-card);
 }
 
 .viewport .custom-table tbody tr:hover {
-    background-color: #f1f5f9 !important;
+  background-color: var(--sch-bg-hover) !important;
 }
 
+/* Identical alignment */
 .custom-table th,
 .custom-table td {
-    padding: 1rem 1rem !important;
-    border: none !important;
-    box-sizing: border-box;
-    white-space: nowrap;
-    overflow: hidden;
-    vertical-align: middle;
+  padding: 1rem 1rem !important;
+  border: none !important;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  vertical-align: middle;
 }
 
+/* Header Styling */
 .custom-table th {
-    font-weight: 600;
-    color: #475569;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.05em;
-    padding-top: 1.25rem !important;
-    padding-bottom: 1.25rem !important;
+  font-weight: 600;
+  color: var(--sch-text-secondary);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding-top: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
 }
 
 .custom-table td {
-    color: #334155;
-    font-size: 0.9rem;
-    border-bottom: 1px solid #f1f5f9 !important;
+  color: var(--sch-text-primary);
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--sch-border) !important;
 }
+
 
 .header-action-button {
-    width: 48px !important;
-    min-width: 48px !important;
-    max-width: 48px !important;
-    text-align: center;
+  width: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  text-align: center;
 }
 
+/* Sortable header */
 .sortable {
-    cursor: pointer;
-    position: relative;
-    padding-right: 1.5rem;
+  cursor: pointer;
+  position: relative;
+  padding-right: 1.5rem;
 }
 
 .sortable:hover {
-    background-color: #e2e8f0;
-    color: #1e293b;
+  background-color: var(--sch-bg-hover);
+  color: var(--sch-text-primary);
 }
 
+/* Sort arrows */
 .arrow-up::after,
 .arrow-down::after {
-    content: '';
-    display: inline-block;
-    margin-left: 6px;
-    width: 0;
-    height: 0;
-    border-left: 4px solid transparent;
-    border-right: 4px solid transparent;
+  content: '';
+  display: inline-block;
+  margin-left: 6px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
 }
 
 .arrow-up::after {
-    border-bottom: 4px solid #64748b;
+  border-bottom: 4px solid var(--sch-text-muted);
 }
 
 .arrow-down::after {
-    border-top: 4px solid #64748b;
+  border-top: 4px solid var(--sch-text-muted);
 }
 
 .cdk-virtual-scroll-content-wrapper {
-    width: 100% !important;
+  width: 100% !important;
 }
 
+
+/* Scrollbar */
 .viewport::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  width: 8px;
+  height: 8px;
 }
 
 .viewport::-webkit-scrollbar-track {
-    background: transparent;
+  background: transparent;
 }
 
 .viewport::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.5);
-    border-radius: 4px;
-    border: 2px solid transparent;
-    background-clip: content-box;
+  background: var(--sch-scrollbar-thumb);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 .viewport::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 116, 139, 0.8);
-    background-clip: content-box;
+  background: var(--sch-scrollbar-thumb-hover);
+  background-clip: content-box;
 }
 
 .color-swatch {
-    display: inline-block;
-    width: 22px;
-    height: 22px;
-    border: 1px solid #e2e8f0;
-    border-radius: 6px;
-    flex-shrink: 0;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--sch-border);
+  border-radius: 6px;
+  flex-shrink: 0;
+  box-shadow: var(--sch-shadow-sm);
 }
 
 @media (min-width: 768px) {
-    .color-swatch {
-        width: 26px;
-        height: 26px;
-    }
+  .color-swatch {
+    width: 26px;
+    height: 26px;
+  }
 }
 
 td .color-swatch,
 .col-7 .color-swatch {
-    vertical-align: middle;
+  vertical-align: middle;
 }

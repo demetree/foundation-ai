@@ -64,9 +64,9 @@ namespace Foundation.CodeGeneration
             //
             // Create Angular Components to interact with the data services
             //
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Security", typeof(Foundation.Security.Database.SecurityContext), securityGenerator.database, folderPath);
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Auditor", typeof(Foundation.Auditor.Database.AuditorContext), auditorGenerator.database, folderPath);
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Telemetry", typeof(Foundation.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath);
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Security", typeof(Foundation.Security.Database.SecurityContext), securityGenerator.database, folderPath, applicationThemePrefix: "fnd");
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Auditor", typeof(Foundation.Auditor.Database.AuditorContext), auditorGenerator.database, folderPath, applicationThemePrefix: "fnd");
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Telemetry", typeof(Foundation.Telemetry.Database.TelemetryContext), telemetryGenerator.database, folderPath, applicationThemePrefix: "fnd");
 
             return;
         }

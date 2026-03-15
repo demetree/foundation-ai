@@ -2636,6 +2636,8 @@ CREATE TABLE "BuildManualStep"
 	"isCallout" BIT NOT NULL DEFAULT 0,		-- Whether this step is a callout (submodel assembly shown in-line)
 	"calloutModelName" VARCHAR(250) NULL COLLATE NOCASE,		-- Name of the submodel this callout refers to (from LPub3D CALLOUT meta)
 	"showPartsListImage" BIT NOT NULL DEFAULT 1,		-- Whether to show the Parts List Indicator (PLI) image for this step
+	"calloutNestingDepth" INTEGER NULL,		-- Nesting depth in the submodel tree (0=top-level, 1=first sub-assembly, 2=sub-sub-assembly, null=top-level)
+	"calloutInstanceCount" INTEGER NULL,		-- How many times this callout submodel is placed in the parent step (null or 1 = single instance)
 	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
 	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
 	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.

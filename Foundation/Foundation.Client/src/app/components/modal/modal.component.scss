@@ -12,7 +12,7 @@
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: var(--fnd-panel-bg);
   padding: 20px;
   border-radius: 8px;
   width: 400px;
@@ -54,6 +54,6 @@ input[type="submit"] {
   position: relative;
   margin: auto;
   z-index: 1050;
-  background: #fff;
+  background: var(--fnd-modal-bg);
   border-radius: 8px;
 }

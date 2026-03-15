@@ -162,6 +162,34 @@ $selected-border: var(--bmc-primary);
         &:hover:not(:disabled) { background: var(--bmc-primary-dark); }
         &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
+
+    .btn-export {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 12px;
+        background: rgba(255, 255, 255, 0.08);
+        color: $text-secondary;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--bmc-text-primary);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+        &:disabled { opacity: 0.4; cursor: not-allowed; }
+    }
+
+    .export-error {
+        font-size: 11px;
+        color: $accent;
+        margin-left: 8px;
+    }
 }
 
 .btn-icon {
@@ -258,6 +286,7 @@ $selected-border: var(--bmc-primary);
         overflow: hidden;
         transition: all 0.2s;
         border: 2px solid transparent;
+        flex-shrink: 0; // Prevent flex column from collapsing when many pages
 
         &:hover {
             border-color: $border-color;
@@ -269,18 +298,23 @@ $selected-border: var(--bmc-primary);
         }
 
         .page-thumb-preview {
-            background: var(--bmc-bg-card);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 100%;
+            padding-bottom: 141%; // A4 portrait ratio (297/210 ≈ 1.414)
+            background: #ffffff;
+            border: 1px solid #d0d0d0;
             position: relative;
-            min-height: 100px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
         .page-num {
-            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
             font-weight: 700;
-            color: var(--bmc-text-muted);
+            color: #ccc;
         }
 
         .step-indicators {
@@ -524,6 +558,16 @@ $selected-border: var(--bmc-primary);
                 background: #d2992233;
                 color: #d29922;
             }
+
+            &.multiplier {
+                background: #23863633;
+                color: #3fb950;
+                font-weight: 700;
+            }
+        }
+
+        &.callout-step {
+            border-left: 3px solid #58a6ff;
         }
     }
 
@@ -765,4 +809,56 @@ $selected-border: var(--bmc-primary);
     border-radius: 3px;
 
     &:hover { background: $text-muted; }
+}
+
+
+// ═══ CDK Drag & Drop ═══
+.cdk-drag-preview {
+    box-sizing: border-box;
+    border-radius: 10px;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.4);
+    opacity: 0.9;
+    background: $bg-card;
+}
+
+.cdk-drag-placeholder {
+    opacity: 0.3;
+    border: 2px dashed $accent;
+    border-radius: 10px;
+    background: rgba(229, 62, 62, 0.05);
+}
+
+.cdk-drag-animating {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.steps-grid.cdk-drop-list-dragging .step-card:not(.cdk-drag-placeholder) {
+    transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+
+// ═══ Re-render Button ═══
+.btn-rerender {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 14px;
+    background: $accent;
+    color: $text-primary;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, opacity 0.2s;
+    justify-content: center;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.15);
+    }
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 }

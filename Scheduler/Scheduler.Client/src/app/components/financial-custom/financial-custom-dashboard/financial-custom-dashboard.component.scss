@@ -1,11 +1,11 @@
 .page-container {
-    background-color: #f4f6f9;
+    background-color: var(--sch-bg-deep);
     min-height: 100%;
     padding: 1rem;
 }
 
 //
-// Premium Header — Finance gradient (teal/emerald)
+// Premium Header — Finance gradient (teal/emerald — entity identity color, stays)
 //
 $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%);
 
@@ -67,7 +67,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
     &:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: var(--sch-shadow-md) !important;
     }
 
     .card-body {
@@ -80,6 +80,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     width: 100%;
 }
 
+// Accent gradients — functional colors, stay hardcoded
 .accent-success {
     background: linear-gradient(90deg, #10b981, #34d399);
 }
@@ -102,6 +103,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     font-size: 1.25rem;
 }
 
+// Functional icon colors — stay hardcoded
 .income-icon {
     background: rgba(16, 185, 129, 0.1);
     color: #10b981;
@@ -144,7 +146,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
 
 //
-// Monthly Chart — compact height to reduce overall page scroll
+// Monthly Chart
 //
 .chart-container {
     height: 180px;
@@ -189,6 +191,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     transition: height 0.6s ease;
 }
 
+// Chart bar colors — functional, stay
 .income-bar {
     background: linear-gradient(180deg, #10b981, #34d399);
 }
@@ -199,7 +202,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
 .month-label {
     font-size: 0.7rem;
-    color: #6b7280;
+    color: var(--sch-text-muted);
     margin-top: 6px;
     text-transform: uppercase;
 }
@@ -209,7 +212,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     align-items: center;
     gap: 6px;
     font-size: 0.8rem;
-    color: #6b7280;
+    color: var(--sch-text-muted);
 }
 
 .legend-dot {
@@ -228,7 +231,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
 
 //
-// Recent Transactions — reduced height to keep everything visible
+// Recent Transactions
 //
 .recent-list {
     max-height: 300px;
@@ -237,11 +240,11 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
 .recent-item {
     padding: 0.85rem 1.25rem;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--sch-border);
     transition: background 0.15s ease;
 
     &:hover {
-        background: #f9fafb;
+        background: var(--sch-bg-hover);
     }
 
     &:last-child {
@@ -260,6 +263,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     flex-shrink: 0;
 }
 
+// Functional colors — stay
 .tx-income {
     background: rgba(16, 185, 129, 0.1);
     color: #10b981;
@@ -288,20 +292,20 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 }
 
 .office-pill-active {
-    background: var(--bs-primary, #3b82f6);
+    background: var(--sch-primary);
     color: white;
-    border-color: var(--bs-primary, #3b82f6);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+    border-color: var(--sch-primary);
+    box-shadow: var(--sch-btn-shadow);
 }
 
 .office-pill-inactive {
-    background: rgba(0, 0, 0, 0.04);
-    color: #6b7280;
-    border-color: rgba(0, 0, 0, 0.08);
+    background: var(--sch-surface-subtle);
+    color: var(--sch-text-muted);
+    border-color: var(--sch-border);
 
     &:hover {
-        background: rgba(0, 0, 0, 0.08);
-        color: #374151;
+        background: var(--sch-bg-hover);
+        color: var(--sch-text-secondary);
     }
 }
 
@@ -319,7 +323,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 //
 .breakdown-col {
     &:first-child {
-        border-right: 1px solid #f3f4f6;
+        border-right: 1px solid var(--sch-border);
     }
 }
 
@@ -332,6 +336,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     border-left: 3px solid transparent;
 }
 
+// Revenue/expense colors — functional, stay
 .revenue-header {
     color: #059669;
     border-left-color: #10b981;
@@ -349,7 +354,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
     th {
         font-weight: 500;
-        border-bottom: 1px solid #f3f4f6;
+        border-bottom: 1px solid var(--sch-border);
         padding: 0.4rem 0.5rem;
     }
 
@@ -359,13 +364,13 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     }
 
     tfoot tr {
-        border-top: 2px solid #e5e7eb;
+        border-top: 2px solid var(--sch-border-strong);
     }
 }
 
 .net-income-footer {
-    border-top: 2px solid #e5e7eb;
-    background: #fafbfc;
+    border-top: 2px solid var(--sch-border-strong);
+    background: var(--sch-table-header-bg);
 }
 
 
@@ -395,17 +400,14 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
         }
     }
 
-    // Summary cards — ensure they stack and don't overflow
     .summary-card {
         min-width: unset !important;
     }
 
-    // Tables — horizontal scroll on mobile
     .table-responsive {
         -webkit-overflow-scrolling: touch;
     }
 
-    // Category breakdown table — smaller text
     .category-breakdown-table {
         font-size: 0.75rem;
 
@@ -414,8 +416,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
         }
     }
 
-    // Chart container — reduce height
     .chart-container canvas {
         max-height: 250px;
     }
-}
+}

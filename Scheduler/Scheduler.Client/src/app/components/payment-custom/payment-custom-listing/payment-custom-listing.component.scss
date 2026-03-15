@@ -1,4 +1,5 @@
 /* AI-Developed — This file was significantly developed with AI assistance. */
+/* AI-DEVELOPED: Migrated structural colors to --sch-* theme tokens (Mar 2026). */
 
 //
 // Payment Listing — Premium Styles (Amber/Orange Theme)
@@ -12,7 +13,7 @@
 
 
 // ──────────────────────────────────────
-// Header
+// Header (entity gradient — stays)
 // ──────────────────────────────────────
 .listing-header {
     background: linear-gradient(135deg, #e65100 0%, #f57c00 50%, #ff9800 100%);
@@ -76,15 +77,13 @@
         left: 12px;
         top: 50%;
         transform: translateY(-50%);
-        color: #78909c;
+        color: var(--sch-text-muted);
         font-size: 0.85rem;
     }
 
     .form-control {
         padding-left: 36px;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        background: rgba(255, 255, 255, 0.04);
     }
 }
 
@@ -94,9 +93,9 @@
 }
 
 .pill {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #90a4ae;
+    background: var(--sch-surface-subtle);
+    border: 1px solid var(--sch-border);
+    color: var(--sch-text-muted);
     padding: 0.3rem 0.8rem;
     border-radius: 20px;
     font-size: 0.8rem;
@@ -130,9 +129,9 @@
         font-size: 0.75rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #90a4ae;
+        color: var(--sch-text-muted);
         padding: 0.6rem 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid var(--sch-border);
         font-weight: 600;
 
         &.sortable {
@@ -147,7 +146,7 @@
 
     td {
         padding: 0.65rem 0.75rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid var(--sch-border);
         font-size: 0.9rem;
     }
 
@@ -156,14 +155,14 @@
         transition: background 0.15s;
 
         &:hover {
-            background: rgba(255, 152, 0, 0.06);
+            background: var(--sch-bg-hover);
         }
     }
 }
 
 
 // ──────────────────────────────────────
-// Status badges
+// Status badges (functional — stay)
 // ──────────────────────────────────────
 .status-badge {
     padding: 0.2rem 0.6rem;
@@ -205,15 +204,15 @@
 }
 
 .mobile-card {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--sch-bg-card);
+    border: 1px solid var(--sch-border);
     border-radius: 12px;
     padding: 0.9rem 1rem;
     cursor: pointer;
     transition: all 0.2s;
 
     &:hover {
-        background: rgba(255, 152, 0, 0.06);
+        background: var(--sch-bg-hover);
         border-color: rgba(255, 152, 0, 0.2);
     }
 }
@@ -227,7 +226,7 @@
 
 .card-date {
     font-size: 0.75rem;
-    color: #90a4ae;
+    color: var(--sch-text-muted);
 }
 
 .card-main {
@@ -252,7 +251,7 @@
     justify-content: space-between;
     margin-top: 0.3rem;
     font-size: 0.8rem;
-    color: #78909c;
+    color: var(--sch-text-muted);
 }
 
 
@@ -262,7 +261,7 @@
 .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    color: #78909c;
+    color: var(--sch-text-muted);
 
     i {
         font-size: 3rem;
@@ -279,7 +278,7 @@
 .results-count {
     text-align: right;
     font-size: 0.8rem;
-    color: #78909c;
+    color: var(--sch-text-muted);
     margin-top: 0.75rem;
 }
 

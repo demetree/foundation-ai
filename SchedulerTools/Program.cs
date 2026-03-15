@@ -1194,7 +1194,7 @@ namespace Foundation.Scheduler.CodeGeneration
             //
             // Create Angular Components to interact with the data services  Roller Ops does not use authorization.
             //
-            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Scheduler", typeof(Foundation.Scheduler.Database.SchedulerContext), SchedulerDatabaseGenerator.database, outputFolder);
+            Foundation.CodeGeneration.AngularComponentGenerator.BuildAngularComponentImplementationFromEntityFrameworkContext("Scheduler", typeof(Foundation.Scheduler.Database.SchedulerContext), SchedulerDatabaseGenerator.database, outputFolder, applicationThemePrefix: "sch");
 
 
             Console.WriteLine();

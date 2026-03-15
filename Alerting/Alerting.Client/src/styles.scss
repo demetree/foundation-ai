@@ -11,6 +11,19 @@
 @import 'app/assets/styles/ngx-datatable';
 
 
+// ============================================
+// Global Bootstrap Modal Overrides
+// ============================================
+
+// Login re-authentication modal — make the Bootstrap modal-content transparent
+// so the login card's own glassmorphic styling shows through
+.login-control .modal-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
 
 .spinner-container {
   position: absolute;
