@@ -193,10 +193,14 @@ export class LoginGeoMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
         for (const attempt of this.attempts) {
             //
-            // Check if this attempt has geo data
-            // These fields are flattened from the IpAddressLocation nav property in the DTO
+            // Check if this attempt has geo data from the IpAddressLocation nav property
             //
-            const geoData = attempt as any;
+            const geoData = attempt.ipAddressLocation;
+
+            if (geoData == null) {
+                continue;
+            }
+
             const lat = geoData.latitude;
             const lon = geoData.longitude;
             const countryCode = geoData.countryCode;

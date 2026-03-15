@@ -251,7 +251,7 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
     private buildQueryParams(): Partial<LoginAttemptQueryParameters> {
         const params: Partial<LoginAttemptQueryParameters> = {
             deleted: false,
-            includeRelations: false
+            includeRelations: true
         };
 
         // Time filter

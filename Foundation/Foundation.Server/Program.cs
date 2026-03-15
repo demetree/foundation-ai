@@ -262,6 +262,13 @@ namespace Foundation.Server
                     Foundation.Services.SecurityContextAuthenticatedUsersProvider>();
 
                 //
+                // IP Geolocation Services (for login attempt geographic visualization)
+                //
+                builder.Services.AddSingleton<Foundation.Services.IIpGeolocationService, Foundation.Services.IpApiGeolocationService>();
+                builder.Services.AddScoped<Foundation.Services.IpAddressLocationManager>();
+                builder.Services.AddHostedService<Foundation.Services.IpAddressLocationWorker>();
+
+                //
                 // Telemetry Collector Service
                 //
                 builder.Services.AddTelemetryServices(builder.Configuration);
