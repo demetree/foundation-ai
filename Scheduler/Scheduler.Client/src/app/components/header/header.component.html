@@ -68,8 +68,13 @@
       <button class="btn btn-close btn-close-white" (click)="closeMobileMenu()" aria-label="Close menu"></button>
     </div>
 
-    <!-- Navigation List - Identical to Sidebar -->
+    <!-- Navigation List — Matches Sidebar 3-Tier Structure -->
     <ul class="nav nav-pills flex-column px-3">
+
+      <!-- ============================== -->
+      <!-- CORE — Always Visible           -->
+      <!-- ============================== -->
+
       <!-- Overview -->
       <li class="nav-item">
         <a routerLink="/overview" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
@@ -79,32 +84,16 @@
         </a>
       </li>
 
-      <li class="nav-item my-2">
-        <hr class="border-secondary">
-      </li>
-
-      <!-- Core Planning -->
+      <!-- Schedule -->
       <li class="nav-item">
         <a routerLink="/schedule" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
           (click)="closeMobileMenu()">
           <i class="fa-solid fa-calendar-days me-3"></i>
-          <span>Scheduled Events</span>
+          <span>Schedule</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a routerLink="/clients" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
-          (click)="closeMobileMenu()">
-          <i class="fa-solid fa-handshake me-3"></i>
-          <span>Clients</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/schedulingtargets" routerLinkActive="active"
-          class="nav-link text-white d-flex align-items-center py-2" (click)="closeMobileMenu()">
-          <i class="fa-solid fa-bullseye me-3"></i>
-          <span>Targets</span>
-        </a>
-      </li>
+
+      <!-- Contacts -->
       <li class="nav-item">
         <a routerLink="/contacts" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
           (click)="closeMobileMenu()">
@@ -112,87 +101,153 @@
           <span>Contacts</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a routerLink="/resources" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
-          (click)="closeMobileMenu()">
-          <i class="fa-solid fa-user-gear me-3"></i>
-          <span>Resources</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/crews" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
-          (click)="closeMobileMenu()">
-          <i class="fa-solid fa-users-gear me-3"></i>
-          <span>Crews</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/resourceshifts" routerLinkActive="active"
-          class="nav-link text-white d-flex align-items-center py-2" (click)="closeMobileMenu()">
-          <i class="fa-solid fa-clock me-3"></i>
-          <span>Shifts</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="/shiftpatterns" routerLinkActive="active"
-          class="nav-link text-white d-flex align-items-center py-2" (click)="closeMobileMenu()">
-          <i class="fa-solid fa-layer-group me-3"></i>
-          <span>Shift Patterns</span>
-        </a>
-      </li>
 
-      <!-- Only show offices in the side bar if there is at least one configured -->
-      <li class="nav-item" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
-        <a routerLink="/offices" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
+      <!-- Finances -->
+      <li class="nav-item">
+        <a routerLink="/finances" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
           (click)="closeMobileMenu()">
-          <i class="fa-solid fa-building me-3"></i>
-          <span>Offices</span>
+          <i class="fa-solid fa-wallet me-3"></i>
+          <span>Finances</span>
         </a>
       </li>
-
-      <!--- moved these to admin -->
-      <!--<li class="nav-item my-2"><hr class="border-secondary"></li>-->
-      <!-- Availability & Roles -->
-      <!--<li class="nav-item">
-    <a routerLink="/resourceavailabilities"
-       routerLinkActive="active"
-       class="nav-link text-white d-flex align-items-center py-2"
-       (click)="closeMobileMenu()">
-      <i class="fa-solid fa-clock me-3"></i>
-      <span>Availability</span>
-    </a>
-  </li>
-  <li class="nav-item">
-    <a routerLink="/assignmentroles"
-       routerLinkActive="active"
-       class="nav-link text-white d-flex align-items-center py-2"
-       (click)="closeMobileMenu()">
-      <i class="fa-solid fa-user-tag me-3"></i>
-      <span>Assignment Roles</span>
-    </a>
-  </li>-->
 
       <li class="nav-item my-2">
         <hr class="border-secondary">
       </li>
 
-      <!-- Organization -->
-      <!--<li class="nav-item">
-    <a routerLink="/calendars"
-       routerLinkActive="active"
-       class="nav-link text-white d-flex align-items-center py-2"
-       (click)="closeMobileMenu()">
-      <i class="fa-solid fa-calendar-week me-3"></i>
-      <span>Calendars</span>
-    </a>
-  </li>-->
+      <!-- ============================== -->
+      <!-- COLLAPSIBLE GROUPS              -->
+      <!-- ============================== -->
+
+      <!-- Volunteers Group -->
       <li class="nav-item">
-        <a routerLink="/ratesheets" routerLinkActive="active" class="nav-link text-white d-flex align-items-center py-2"
-          (click)="closeMobileMenu()">
-          <i class="fa-solid fa-dollar-sign me-3"></i>
-          <span>Rate Sheet</span>
+        <a class="nav-link text-white d-flex align-items-center py-2"
+           (click)="mobileVolunteersExpanded = !mobileVolunteersExpanded"
+           style="cursor: pointer;">
+          <i class="fa-solid fa-hand-holding-heart me-3"></i>
+          <span>Volunteers</span>
+          <i class="fa-solid fa-chevron-down ms-auto"
+             [style.transform]="mobileVolunteersExpanded ? 'rotate(180deg)' : 'rotate(0)'"
+             style="transition: transform 0.2s ease; font-size: 0.7rem; opacity: 0.6;"></i>
         </a>
       </li>
+
+      <ng-container *ngIf="mobileVolunteersExpanded">
+        <li class="nav-item mobile-nested">
+          <a routerLink="/volunteers" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-user-group me-3"></i>
+            <span>Volunteers</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/volunteergroups" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-people-group me-3"></i>
+            <span>Volunteer Groups</span>
+          </a>
+        </li>
+      </ng-container>
+
+      <!-- Setup Group -->
+      <li class="nav-item">
+        <a class="nav-link text-white d-flex align-items-center py-2"
+           (click)="mobileSetupExpanded = !mobileSetupExpanded"
+           style="cursor: pointer;">
+          <i class="fa-solid fa-sliders me-3"></i>
+          <span>Setup</span>
+          <i class="fa-solid fa-chevron-down ms-auto"
+             [style.transform]="mobileSetupExpanded ? 'rotate(180deg)' : 'rotate(0)'"
+             style="transition: transform 0.2s ease; font-size: 0.7rem; opacity: 0.6;"></i>
+        </a>
+      </li>
+
+      <ng-container *ngIf="mobileSetupExpanded">
+        <li class="nav-item mobile-nested">
+          <a routerLink="/clients" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-handshake me-3"></i>
+            <span>Clients</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/schedulingtargets" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-bullseye me-3"></i>
+            <span>Targets</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/resources" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-user-gear me-3"></i>
+            <span>Resources</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/crews" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-users-gear me-3"></i>
+            <span>Crews</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/templates" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-bookmark me-3"></i>
+            <span>Templates</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/resourceshifts" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-clock me-3"></i>
+            <span>Shifts</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/shiftpatterns" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-layer-group me-3"></i>
+            <span>Shift Patterns</span>
+          </a>
+        </li>
+        <li class="nav-item mobile-nested">
+          <a routerLink="/ratesheets" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-dollar-sign me-3"></i>
+            <span>Rate Sheets</span>
+          </a>
+        </li>
+
+        <!-- Only show offices if there is at least one configured -->
+        <li class="nav-item mobile-nested" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
+          <a routerLink="/offices" routerLinkActive="active"
+             class="nav-link text-white d-flex align-items-center py-2"
+             (click)="closeMobileMenu()">
+            <i class="fa-solid fa-building me-3"></i>
+            <span>Offices</span>
+          </a>
+        </li>
+      </ng-container>
+
+      <li class="nav-item my-2">
+        <hr class="border-secondary">
+      </li>
+
+      <!-- ============================== -->
+      <!-- BOTTOM — Administration         -->
+      <!-- ============================== -->
 
       <li class="nav-item">
         <a routerLink="/administration" routerLinkActive="active"

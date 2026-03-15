@@ -1,0 +1,64 @@
+<div class="container-fluid p-1 m-0 gallery-album-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="gallery-album-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Gallery Album</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Gallery Album' : 'Add Gallery Album'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsCommunityGalleryAlbumReader()">
+                <div class="col m-2 gallery-album-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="galleryAlbumForm" (ngSubmit)="submitForm()" class="gallery-album-details-form">
+                            <div class="gallery-album-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="galleryAlbumForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Gallery Album">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !galleryAlbumForm.valid || !galleryAlbumForm.dirty || galleryAlbumForm.pristine  || userIsCommunityGalleryAlbumWriter() == false " ngbTooltip="Save the Gallery Album changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Gallery Album' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsCommunityGalleryAlbumReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 gallery-album-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="galleryImageService.userIsCommunityGalleryImageReader()">
+                            <button ngbNavLink>Gallery Images
+                                <span class="badge bg-primary ms-2">
+                                    {{ (galleryAlbumData?.GalleryImagesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-gallery-image-table [queryParams]="{ galleryAlbumId: galleryAlbumData?.id }" [showAddButton]="true" [preSeededData]="{ galleryAlbumId: galleryAlbumData?.id }" [hiddenFields]="['galleryAlbumId']"></app-gallery-image-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

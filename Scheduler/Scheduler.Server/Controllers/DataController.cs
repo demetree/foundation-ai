@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -53,6 +53,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         public async Task<IActionResult> ExportDatabaseToExcel(CancellationToken cancellationToken = default)
         {
             SecurityUser securityUser = await GetSecurityUserAsync();
+
+            StartAuditEventClock();
 
             bool userIsReader = await UserCanReadAsync(255);          // 255 is for the Foundation super admin user level.   Until we finish this feature, we're hiding it from regular users.
 

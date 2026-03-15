@@ -89,7 +89,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   //
   // Tab state
   //
-  public activeTab = 'system';
+  public activeTab = 'rec-committee';
 
   //
   // Dashboard data - System Overview
@@ -228,15 +228,18 @@ export class OverviewComponent implements OnInit, OnDestroy {
    * Role-based tab visibility checks.
    */
   public canSeeDispatcherTab(): boolean {
-    return this.authService.isSchedulerReaderWriter || this.authService.isSchedulerAdministrator;
+    // Hidden for v1 community focus — re-enable when construction workflows are built out
+    return false;
   }
 
   public canSeeSchedulerTab(): boolean {
-    return this.authService.isSchedulerReaderWriter || this.authService.isSchedulerAdministrator;
+    // Hidden for v1 community focus — re-enable when scheduling planner workflows are built out
+    return false;
   }
 
   public canSeeManagerTab(): boolean {
-    return this.authService.isSchedulerReader || this.authService.isSchedulerReaderWriter || this.authService.isSchedulerAdministrator;
+    // Hidden for v1 community focus — re-enable when project management workflows are built out
+    return false;
   }
 
   public canSeeRecCommitteeTab(): boolean {
@@ -512,7 +515,16 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   navigateToCalendar(): void {
-    this.router.navigate(['/calendar']);
+    this.router.navigate(['/schedule']);
+  }
+
+  navigateToScheduleDate(date: Date): void {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    this.router.navigate(['/schedule'], { queryParams: { date: dateStr } });
+  }
+
+  navigateToResource(id: number): void {
+    this.router.navigate(['/resources', id]);
   }
 
   navigateToEntity(entity: string, id: number): void {

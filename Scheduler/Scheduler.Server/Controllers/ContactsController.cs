@@ -31,6 +31,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [Route("api/Contacts/GetCurrentUserContact")]
         public async Task<IActionResult> GetCurrentUserContact()
         {
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED) == false)
             {
                 return Forbid();
@@ -146,6 +148,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 //
                 // Convert to DTO object before serializing out.
                 //
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "Current user contact loaded — id=" + contactForCurrentUser.id, securityUser.accountName);
+
                 return Ok(contactForCurrentUser.ToOutputDTO());
 
             }

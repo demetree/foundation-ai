@@ -18,6 +18,8 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   @ViewChild('customerSupport') customerSupport: any; // optional
 
   public isExpanded = false;
+  public volunteersExpanded = false;
+  public setupExpanded = false;
   public isUserFoundationAdmin = false; // keep if you gate items elsewhere
   private navSub?: Subscription;
 

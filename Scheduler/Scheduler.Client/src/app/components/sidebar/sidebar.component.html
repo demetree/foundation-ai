@@ -11,6 +11,10 @@
 
   <ul class="nav nav-pills flex-column">
 
+    <!-- ============================================================ -->
+    <!-- CORE — Always Visible                                        -->
+    <!-- ============================================================ -->
+
     <!-- Overview -->
     <li class="nav-item">
       <a routerLink="/overview" routerLinkActive="active" class="nav-link text-white"
@@ -21,49 +25,17 @@
       </a>
     </li>
 
-    <!-- Divider -->
-    <li class="nav-item" *ngIf="isExpanded">
-      <hr class="dropdown-divider text-secondary my-2">
-    </li>
-
-    <!-- Core Planning -->
+    <!-- Schedule -->
     <li class="nav-item">
       <a routerLink="/schedule" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Scheduled Events' : null" triggers="hover" #tEvents="ngbTooltip"
+         [ngbTooltip]="!isExpanded ? 'Schedule' : null" triggers="hover" #tEvents="ngbTooltip"
          (click)="tEvents.close()" placement="right" tooltipClass="sidebar-tip">
         <i class="fa-solid fa-calendar-days"></i>
-        <span class="label px-2">Scheduled Events</span>
+        <span class="label px-2">Schedule</span>
       </a>
     </li>
 
-    <li class="nav-item">
-      <a routerLink="/templates" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Templates' : null" triggers="hover" #tTemplates="ngbTooltip"
-         (click)="tTemplates.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-bookmark"></i>
-        <span class="label px-2">Templates</span>
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a routerLink="/clients" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Clients' : null" triggers="hover" #tClients="ngbTooltip" (click)="tClients.close()"
-         placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-handshake"></i>
-        <span class="label px-2">Clients</span>
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a routerLink="/schedulingtargets" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Targets' : null" triggers="hover" #tResources="ngbTooltip"
-         (click)="tResources.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-bullseye"></i>
-        <span class="label px-2">Targets</span>
-      </a>
-    </li>
-
-
+    <!-- Contacts -->
     <li class="nav-item">
       <a routerLink="/contacts" routerLinkActive="active" class="nav-link text-white"
          [ngbTooltip]="!isExpanded ? 'Contacts' : null" triggers="hover" #tContacts="ngbTooltip"
@@ -73,77 +45,7 @@
       </a>
     </li>
 
-
-
-    <li class="nav-item">
-      <a routerLink="/resources" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Resources' : null" triggers="hover" #tResources="ngbTooltip"
-         (click)="tResources.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-user-gear"></i>
-        <span class="label px-2">Resources</span>
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a routerLink="/crews" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Crews' : null" triggers="hover" #tCrews="ngbTooltip" (click)="tCrews.close()"
-         placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-users-gear"></i>
-        <span class="label px-2">Crews</span>
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a routerLink="/volunteers" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Volunteers' : null" triggers="hover" #tVolunteers="ngbTooltip"
-         (click)="tVolunteers.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-hand-holding-heart"></i>
-        <span class="label px-2">Volunteers</span>
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a routerLink="/volunteergroups" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Volunteer Groups' : null" triggers="hover" #tVolunteerGroups="ngbTooltip"
-         (click)="tVolunteerGroups.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-people-group"></i>
-        <span class="label px-2">Volunteer Groups</span>
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a routerLink="/resourceshifts" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Resource Shifts' : null" triggers="hover" #tShifts="ngbTooltip"
-         (click)="tShifts.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-clock"></i>
-        <span class="label px-2">Shifts</span>
-      </a>
-    </li>
-
-    <li class="nav-item">
-      <a routerLink="/shiftpatterns" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Shift Patterns' : null" triggers="hover" #tShiftPatterns="ngbTooltip"
-         (click)="tShiftPatterns.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-layer-group"></i>
-        <span class="label px-2">Shift Patterns</span>
-      </a>
-    </li>
-
-    <!-- Only show offices in the side bar if there is at least one configured -->
-    <li class="nav-item" *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
-      <a routerLink="/offices" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Offices' : null" triggers="hover" #tOffices="ngbTooltip" (click)="tOffices.close()"
-         placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-building"></i>
-        <span class="label px-2">Offices</span>
-      </a>
-    </li>
-
-    <!-- Organization -->
-    <li class="nav-item" *ngIf="isExpanded">
-      <hr class="dropdown-divider text-secondary my-2">
-    </li>
-
+    <!-- Finances -->
     <li class="nav-item">
       <a routerLink="/finances" routerLinkActive="active" class="nav-link text-white"
          [ngbTooltip]="!isExpanded ? 'Finances' : null" triggers="hover" #tFinances="ngbTooltip"
@@ -153,13 +55,155 @@
       </a>
     </li>
 
+    <!-- Divider -->
+    <li class="nav-item" *ngIf="isExpanded">
+      <hr class="dropdown-divider text-secondary my-2">
+    </li>
+
+    <!-- ============================================================ -->
+    <!-- COLLAPSIBLE GROUPS                                           -->
+    <!-- ============================================================ -->
+
+    <!-- Volunteers Group -->
     <li class="nav-item">
-      <a routerLink="/ratesheets" routerLinkActive="active" class="nav-link text-white"
-         [ngbTooltip]="!isExpanded ? 'Rate Sheet' : null" triggers="hover" #tRatesheets="ngbTooltip"
-         (click)="tRatesheets.close()" placement="right" tooltipClass="sidebar-tip">
-        <i class="fa-solid fa-dollar-sign"></i>
-        <span class="label px-2">Rate Sheets</span>
+      <a class="nav-link text-white group-toggle" (click)="volunteersExpanded = !volunteersExpanded"
+         [ngbTooltip]="!isExpanded ? 'Volunteers' : null" triggers="hover" #tVolGroup="ngbTooltip"
+         (mousedown)="tVolGroup.close()" placement="right" tooltipClass="sidebar-tip"
+         style="cursor: pointer;">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+        <span class="label px-2">Volunteers</span>
+        <i *ngIf="isExpanded" class="fa-solid fa-chevron-down ms-auto"
+           [style.transform]="volunteersExpanded ? 'rotate(180deg)' : 'rotate(0)'"
+           style="transition: transform 0.2s ease; font-size: 0.7rem;"></i>
       </a>
+    </li>
+
+    <ng-container *ngIf="volunteersExpanded">
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/volunteers" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Volunteers' : null" triggers="hover" #tVolunteers="ngbTooltip"
+           (click)="tVolunteers.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-user-group"></i>
+          <span class="label px-2">Volunteers</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/volunteergroups" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Volunteer Groups' : null" triggers="hover" #tVolunteerGroups="ngbTooltip"
+           (click)="tVolunteerGroups.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-people-group"></i>
+          <span class="label px-2">Volunteer Groups</span>
+        </a>
+      </li>
+    </ng-container>
+
+    <!-- Setup Group -->
+    <li class="nav-item">
+      <a class="nav-link text-white group-toggle" (click)="setupExpanded = !setupExpanded"
+         [ngbTooltip]="!isExpanded ? 'Setup' : null" triggers="hover" #tSetup="ngbTooltip"
+         (mousedown)="tSetup.close()" placement="right" tooltipClass="sidebar-tip"
+         style="cursor: pointer;">
+        <i class="fa-solid fa-sliders"></i>
+        <span class="label px-2">Setup</span>
+        <i *ngIf="isExpanded" class="fa-solid fa-chevron-down ms-auto"
+           [style.transform]="setupExpanded ? 'rotate(180deg)' : 'rotate(0)'"
+           style="transition: transform 0.2s ease; font-size: 0.7rem;"></i>
+      </a>
+    </li>
+
+    <ng-container *ngIf="setupExpanded">
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/clients" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Clients' : null" triggers="hover" #tClients="ngbTooltip"
+           (click)="tClients.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-handshake"></i>
+          <span class="label px-2">Clients</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/schedulingtargets" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Targets' : null" triggers="hover" #tTargets="ngbTooltip"
+           (click)="tTargets.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-bullseye"></i>
+          <span class="label px-2">Targets</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/resources" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Resources' : null" triggers="hover" #tResources="ngbTooltip"
+           (click)="tResources.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-user-gear"></i>
+          <span class="label px-2">Resources</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/crews" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Crews' : null" triggers="hover" #tCrews="ngbTooltip"
+           (click)="tCrews.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-users-gear"></i>
+          <span class="label px-2">Crews</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/templates" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Templates' : null" triggers="hover" #tTemplates="ngbTooltip"
+           (click)="tTemplates.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-bookmark"></i>
+          <span class="label px-2">Templates</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/resourceshifts" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Shifts' : null" triggers="hover" #tShifts="ngbTooltip"
+           (click)="tShifts.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-clock"></i>
+          <span class="label px-2">Shifts</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/shiftpatterns" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Shift Patterns' : null" triggers="hover" #tShiftPatterns="ngbTooltip"
+           (click)="tShiftPatterns.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-layer-group"></i>
+          <span class="label px-2">Shift Patterns</span>
+        </a>
+      </li>
+
+      <li class="nav-item" [class.group-nested]="isExpanded">
+        <a routerLink="/ratesheets" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Rate Sheets' : null" triggers="hover" #tRatesheets="ngbTooltip"
+           (click)="tRatesheets.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-dollar-sign"></i>
+          <span class="label px-2">Rate Sheets</span>
+        </a>
+      </li>
+
+      <!-- Only show offices if there is at least one configured -->
+      <li class="nav-item" [class.group-nested]="isExpanded"
+          *ngIf="officeCount$ != null && ((officeCount$ | async) ?? 0) > 0">
+        <a routerLink="/offices" routerLinkActive="active" class="nav-link text-white"
+           [ngbTooltip]="!isExpanded ? 'Offices' : null" triggers="hover" #tOffices="ngbTooltip"
+           (click)="tOffices.close()" placement="right" tooltipClass="sidebar-tip">
+          <i class="fa-solid fa-building"></i>
+          <span class="label px-2">Offices</span>
+        </a>
+      </li>
+    </ng-container>
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM — Administration                                      -->
+    <!-- ============================================================ -->
+
+    <!-- Divider -->
+    <li class="nav-item" *ngIf="isExpanded">
+      <hr class="dropdown-divider text-secondary my-2">
     </li>
 
     <li class="nav-item mt-auto" *ngIf="isUserSchedulerAdmin">

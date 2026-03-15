@@ -1,0 +1,114 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "CommunityContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "MinimumProductVersion": "2.6.1186",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Database",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Foundation.Community",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[Community].[Announcement]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[AnnouncementChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[ContactSubmission]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[DocumentDownload]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[GalleryAlbum]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[GalleryImage]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[MediaAsset]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[Menu]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[MenuItem]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[Page]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[PageChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[Post]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[PostCategory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[PostChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[PostTag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[PostTagAssignment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Community].[SiteSetting]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": false,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": false,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}

@@ -443,6 +443,17 @@
 }
 
 //
+// Nested items in collapsible groups (Volunteers, Setup)
+//
+.mobile-sidebar .mobile-nested .nav-link {
+  padding-left: 2.5rem;
+  font-size: 0.9rem;
+  min-height: 36px;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+//
 // Logout button in mobile menu
 //
 .mobile-sidebar .mt-auto {

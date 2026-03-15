@@ -57,7 +57,7 @@
 
       <!-- Quick Actions -->
       <div class="quick-actions-header">
-        <button class="btn btn-light btn-lg shadow-sm" (click)="createNewEvent()" ngbTooltip="Create new event">
+        <button class="btn btn-outline-light btn-lg shadow-sm" (click)="navigateToCalendar()" ngbTooltip="Open schedule to create a new event">
           <i class="fa-solid fa-plus me-2"></i>New Event
         </button>
       </div>
@@ -81,7 +81,7 @@
       <!-- System State Tab -->
       <li ngbNavItem="system">
         <button ngbNavLink>
-          <i class="fa-solid fa-gauge-high me-2"></i>System Overview
+          <i class="fa-solid fa-gauge-high me-2"></i>Overview
         </button>
         <ng-template ngbNavContent>
           <div class="tab-content-inner">
@@ -101,31 +101,39 @@
                   <div class="card-body">
                     <div class="row text-center mb-4">
                       <div class="col">
-                        <div class="stat-circle bg-primary-soft">
-                          <span class="display-5 fw-bold text-primary">{{ todaysAssignments.length }}</span>
-                        </div>
-                        <div class="text-muted small mt-2">Active Jobs</div>
+                        <a class="text-decoration-none drillable" (click)="navigateToCalendar()" style="cursor: pointer;">
+                          <div class="stat-circle bg-primary-soft">
+                            <span class="display-5 fw-bold text-primary">{{ todaysAssignments.length }}</span>
+                          </div>
+                          <div class="text-muted small mt-2">Scheduled Events</div>
+                        </a>
                       </div>
                       <div class="col">
-                        <div class="stat-circle bg-success-soft">
-                          <span class="display-5 fw-bold text-success">{{ activeResourcesToday }}</span>
-                        </div>
-                        <div class="text-muted small mt-2">Deployed</div>
+                        <a class="text-decoration-none drillable" (click)="navigateToResources()" style="cursor: pointer;">
+                          <div class="stat-circle bg-success-soft">
+                            <span class="display-5 fw-bold text-success">{{ activeResourcesToday }}</span>
+                          </div>
+                          <div class="text-muted small mt-2">Assigned</div>
+                        </a>
                       </div>
                       <div class="col">
-                        <div class="stat-circle bg-warning-soft">
-                          <span class="display-5 fw-bold text-warning">{{ resourcesOnBlackoutToday.length }}</span>
-                        </div>
-                        <div class="text-muted small mt-2">Unavailable</div>
+                        <a class="text-decoration-none drillable" (click)="navigateToResources()" style="cursor: pointer;">
+                          <div class="stat-circle bg-warning-soft">
+                            <span class="display-5 fw-bold text-warning">{{ resourcesOnBlackoutToday.length }}</span>
+                          </div>
+                          <div class="text-muted small mt-2">Unavailable</div>
+                        </a>
                       </div>
                       <div class="col">
-                        <div class="stat-circle"
-                          [ngClass]="potentialConflictsToday > 0 ? 'bg-danger-soft' : 'bg-success-soft'">
-                          <span class="display-5 fw-bold"
-                            [ngClass]="potentialConflictsToday > 0 ? 'text-danger' : 'text-success'">{{
-                            potentialConflictsToday }}</span>
-                        </div>
-                        <div class="text-muted small mt-2">Conflicts</div>
+                        <a class="text-decoration-none drillable" (click)="navigateToCalendar()" style="cursor: pointer;">
+                          <div class="stat-circle"
+                            [ngClass]="potentialConflictsToday > 0 ? 'bg-danger-soft' : 'bg-success-soft'">
+                            <span class="display-5 fw-bold"
+                              [ngClass]="potentialConflictsToday > 0 ? 'text-danger' : 'text-success'">{{
+                              potentialConflictsToday }}</span>
+                          </div>
+                          <div class="text-muted small mt-2">Overlaps</div>
+                        </a>
                       </div>
                     </div>
 
@@ -161,7 +169,7 @@
                     </h5>
                   </div>
                   <div class="card-body">
-                    <div *ngFor="let day of next7Days" class="day-row d-flex align-items-center mb-3">
+                    <div *ngFor="let day of next7Days" class="day-row d-flex align-items-center mb-3 drillable" (click)="navigateToScheduleDate(day.date)" style="cursor: pointer;">
                       <div class="day-label me-3"
                         [ngClass]="{'fw-bold text-primary': day.date.toDateString() === today.toDateString()}">
                         {{ day.date | date:'EEE, MMM d' }}
@@ -199,7 +207,7 @@
                   <div
                     class="card-header gradient-info text-white border-0 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                      <i class="fa-solid fa-bullseye me-2"></i>Active Projects
+                      <i class="fa-solid fa-bullseye me-2"></i>Activity
                     </h5>
                     <span class="badge bg-white text-info">{{ activeTargets.length }}</span>
                   </div>
@@ -231,20 +239,20 @@
                 <div class="card h-100 shadow-sm border-0 premium-card">
                   <div class="card-header gradient-warning border-0 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-dark">
-                      <i class="fa-solid fa-users me-2"></i>Resource Status
+                      <i class="fa-solid fa-users me-2"></i>Resources
                     </h5>
                   </div>
                   <div class="card-body">
                     <div class="row text-center mb-4">
-                      <div class="col-4">
+                      <div class="col-4 drillable" (click)="navigateToResources()" style="cursor: pointer;">
                         <div class="fs-2 fw-bold text-success">{{ availableResources }}</div>
                         <div class="small text-muted">Available</div>
                       </div>
-                      <div class="col-4">
+                      <div class="col-4 drillable" (click)="navigateToResources()" style="cursor: pointer;">
                         <div class="fs-2 fw-bold text-primary">{{ bookedResources }}</div>
                         <div class="small text-muted">Booked</div>
                       </div>
-                      <div class="col-4">
+                      <div class="col-4 drillable" (click)="navigateToResources()" style="cursor: pointer;">
                         <div class="fs-2 fw-bold text-danger">{{ resourcesOnBlackoutToday.length }}</div>
                         <div class="small text-muted">Unavailable</div>
                       </div>
@@ -253,7 +261,8 @@
                     <h6 class="fw-semibold mb-2">Top Utilization Today</h6>
                     <ol class="list-group list-group-numbered list-group-flush" *ngIf="topUtilizedResources.length > 0">
                       <li *ngFor="let res of topUtilizedResources"
-                        class="list-group-item d-flex justify-content-between align-items-center border-0 py-2">
+                        class="list-group-item d-flex justify-content-between align-items-center border-0 py-2 drillable"
+                        (click)="navigateToResource(res.id)" style="cursor: pointer;">
                         <span>{{ res.name }}</span>
                         <span class="badge bg-primary rounded-pill">{{ res.hours }} hrs</span>
                       </li>
@@ -359,14 +368,14 @@
         </ng-template>
       </li>
 
-      <!-- Rec Committee Tab -->
+      <!-- Coordinator Tab -->
       <li ngbNavItem="rec-committee" *ngIf="canSeeRecCommitteeTab()">
         <button ngbNavLink>
-          <i class="fa-solid fa-people-group me-2"></i>Rec Committee
+          <i class="fa-solid fa-people-group me-2"></i>Community
         </button>
         <ng-template ngbNavContent>
           <div class="tab-content-inner">
-            <app-overview-rec-committee-tab></app-overview-rec-committee-tab>
+            <app-overview-coordinator-tab></app-overview-coordinator-tab>
           </div>
         </ng-template>
       </li>

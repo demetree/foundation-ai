@@ -1,0 +1,38 @@
+<div class="add-media-asset" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-media-asset me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Media Asset" 
+        *ngIf="userIsCommunityMediaAssetWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #mediaAssetModal let-modal>
+   <div class="modal-header media-asset-modal-header">
+      <h5 class="modal-title mb-0" id="mediaAssetModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Media Asset' : 'Add Media Asset' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body media-asset-modal-body">
+      <form [formGroup]="mediaAssetForm" (ngSubmit)="submitForm()">
+         <div class="modal-footer media-asset-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Media Asset changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mediaAssetForm.valid || mediaAssetForm.pristine  || userIsCommunityMediaAssetWriter() == false " ngbTooltip="Save the Media Asset changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Media Asset' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -9,8 +9,11 @@
   <div class="premium-header">
     <div class="card-header">
 
-      <!-- Left: Icon + Title -->
+      <!-- Left: Back + Icon + Title -->
       <div class="header-left">
+        <button class="btn-glass me-2" (click)="goBack()" *ngIf="canGoBack()" title="Go Back">
+          <i class="bi bi-arrow-left"></i>
+        </button>
         <i class="bi bi-calendar3 page-icon text-white"></i>
         <h2 class="page-title">Schedule</h2>
       </div>

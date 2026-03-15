@@ -1,0 +1,38 @@
+<div class="add-post-category" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-post-category me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Post Category" 
+        *ngIf="userIsCommunityPostCategoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #postCategoryModal let-modal>
+   <div class="modal-header post-category-modal-header">
+      <h5 class="modal-title mb-0" id="postCategoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Post Category' : 'Add Post Category' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body post-category-modal-body">
+      <form [formGroup]="postCategoryForm" (ngSubmit)="submitForm()">
+         <div class="modal-footer post-category-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Post Category changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !postCategoryForm.valid || postCategoryForm.pristine  || userIsCommunityPostCategoryWriter() == false " ngbTooltip="Save the Post Category changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Post Category' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

@@ -1,0 +1,40 @@
+<div class="container-fluid p-1 m-0 gallery-image-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="gallery-image-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Gallery Image</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Gallery Image' : 'Add Gallery Image'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsCommunityGalleryImageReader()">
+                <div class="col m-2 gallery-image-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="galleryImageForm" (ngSubmit)="submitForm()" class="gallery-image-details-form">
+                            <div class="gallery-image-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="galleryImageForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Gallery Image">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !galleryImageForm.valid || !galleryImageForm.dirty || galleryImageForm.pristine  || userIsCommunityGalleryImageWriter() == false " ngbTooltip="Save the Gallery Image changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Gallery Image' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

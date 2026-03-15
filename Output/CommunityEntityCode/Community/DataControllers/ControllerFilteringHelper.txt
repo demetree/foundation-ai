@@ -1,0 +1,12 @@
+//
+// Use this data to paste into the Kestrel startup program to configure the input for the .UseSpecificControllers service
+//
+// use the extensions from Damian Hickey to reference needed controllers only
+List<Type> controllers = new List<Type>();
+
+//
+// Start of code generated controller list for Community module
+//
+//
+// End of code generated controller list for Community module
+//

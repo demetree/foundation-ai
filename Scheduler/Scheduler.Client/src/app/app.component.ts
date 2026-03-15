@@ -134,7 +134,9 @@ export class AppComponent implements OnInit, OnDestroy {
           // Display regular intro alert if user can read from Foundation
           //
           this.alertService.resetStickyMessage();
-          this.alertService.showMessage(this.gT('app.alerts.Login'), this.gT('app.alerts.WelcomeBack', { username: this.userName }), MessageSeverity.default);
+
+          // tired of seeing this.   Adds no value.
+          //this.alertService.showMessage(this.gT('app.alerts.Login'), this.gT('app.alerts.WelcomeBack', { username: this.userName }), MessageSeverity.default);
         }
       }
     }, 2000);

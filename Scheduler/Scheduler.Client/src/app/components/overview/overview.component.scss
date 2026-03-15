@@ -231,6 +231,20 @@
 
 
 //
+// Drillable Elements (subtle hover hint that items are clickable)
+//
+.drillable {
+  transition: all 0.15s ease;
+  border-radius: 8px;
+
+  &:hover {
+    transform: translateY(-1px);
+    opacity: 0.85;
+  }
+}
+
+
+//
 // Day Row in Week Forecast
 //
 .day-row {

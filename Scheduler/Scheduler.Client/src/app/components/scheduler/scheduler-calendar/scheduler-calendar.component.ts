@@ -32,6 +32,7 @@ import { ScheduledEventDependencyService } from '../../../scheduler-data-service
 import { EventResourceAssignmentService, EventResourceAssignmentData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { ResourceAvailabilityService, ResourceAvailabilityData } from '../../../scheduler-data-services/resource-availability.service';
 import { ResourceShiftService, ResourceShiftData } from '../../../scheduler-data-services/resource-shift.service';
+import { NavigationService } from '../../../utility-services/navigation.service';
 
 @Component({
   selector: 'app-scheduler-calendar',
@@ -45,7 +46,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   //
   // Header state
   //
-  currentView: string = 'timeGridWeek';
+  currentView: string = window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek';
   currentTitle: string = '';
 
 
@@ -94,7 +95,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   //
   calendarOptions: CalendarOptions = {
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-    initialView: 'timeGridWeek',
+    initialView: window.innerWidth < 768 ? 'timeGridDay' : 'timeGridWeek',
     headerToolbar: false,  // We use our own premium header
     editable: true,
     selectable: true,
@@ -106,6 +107,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     allDaySlot: true,
     slotMinTime: '06:00:00',
     slotMaxTime: '22:00:00',
+    scrollTime: '08:00:00',
     expandRows: true,
     stickyHeaderDates: true,
     events: [],
@@ -131,7 +133,8 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     private dependencyService: ScheduledEventDependencyService,
     private assignmentService: EventResourceAssignmentService,
     private resourceAvailabilityService: ResourceAvailabilityService,
-    private resourceShiftService: ResourceShiftService
+    private resourceShiftService: ResourceShiftService,
+    private navigationService: NavigationService
   ) { }
 
 
@@ -149,6 +152,18 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearPopoverTimers();
+  }
+
+
+  //
+  // Back navigation (consistent with all other custom components)
+  //
+  public goBack(): void {
+    this.navigationService.goBack();
+  }
+
+  public canGoBack(): boolean {
+    return this.navigationService.canGoBack();
   }
 
 
@@ -649,10 +664,34 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   // =========================================================================
 
   getEventColor(event: ScheduledEventData): string {
+    // 1. Explicit event color wins
     if (event.color) return event.color;
+
+    // 2. Status-configured color
     if (event.eventStatus?.color) return event.eventStatus.color;
+
+    // 3. Scheduling target color
     if (event.schedulingTarget?.color) return event.schedulingTarget.color;
-    return '#667eea';  // Match our accent color
+
+    // 4. Smart fallback — color by status name for instant visual scanning
+    const statusName = event.eventStatus?.name?.toLowerCase();
+    if (statusName) {
+      const statusPalette: Record<string, string> = {
+        'confirmed': '#10b981',    // emerald — solid/locked in
+        'tentative': '#f59e0b',    // amber — pending confirmation
+        'cancelled': '#ef4444',    // red — cancelled
+        'completed': '#6b7280',    // gray — done/past
+        'in progress': '#3b82f6',  // blue — active
+        'planned': '#8b5cf6',      // violet — future plan
+        'draft': '#a3a3a3',        // neutral gray — incomplete
+      };
+      for (const [key, color] of Object.entries(statusPalette)) {
+        if (statusName.includes(key)) return color;
+      }
+    }
+
+    // 5. Fallback — our accent color
+    return '#667eea';
   }
 
 

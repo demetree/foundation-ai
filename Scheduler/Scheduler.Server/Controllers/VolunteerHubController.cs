@@ -20,6 +20,8 @@ using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.Scheduler.Database;
 using Foundation.Scheduler.Services;
+using Foundation.Auditor;
+using Microsoft.Extensions.Configuration;
 
 namespace Foundation.Scheduler.Controllers.WebAPI
 {
@@ -30,15 +32,82 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         private readonly SchedulerContext _schedulerDb;
         private readonly VolunteerHubService _volunteerHubService;
         private readonly ILogger<VolunteerHubController> _logger;
+        private readonly string _environmentName;
+
+        //
+        // Tracks when the current request started for audit duration measurement.
+        //
+        private DateTime _auditStartTime = DateTime.MinValue;
 
         public VolunteerHubController(
             SchedulerContext schedulerDb,
             VolunteerHubService volunteerHubService,
-            ILogger<VolunteerHubController> logger)
+            ILogger<VolunteerHubController> logger,
+            IConfiguration configuration)
         {
             _schedulerDb = schedulerDb;
             _volunteerHubService = volunteerHubService;
             _logger = logger;
+            _environmentName = configuration["EnvironmentName"] ?? "Unknown";
+        }
+
+
+        /// <summary>
+        /// Marks the beginning of an auditable action (captures UTC start time).
+        /// </summary>
+        private void StartAuditEventClock()
+        {
+            _auditStartTime = DateTime.UtcNow;
+        }
+
+
+        /// <summary>
+        /// Writes an audit event through the Foundation AuditEngine singleton.
+        /// Mirrors the SecureWebAPIController pattern but works without inheriting from it.
+        /// </summary>
+        private async Task CreateAuditEventAsync(
+            AuditEngine.AuditType auditType,
+            string message,
+            string userName = null,
+            bool success = true)
+        {
+            try
+            {
+                DateTime startTime = _auditStartTime != DateTime.MinValue
+                    ? _auditStartTime
+                    : DateTime.UtcNow;
+
+                DateTime stopTime = DateTime.UtcNow;
+
+                AuditEngine auditEngine = AuditEngine.Instance;
+
+                await auditEngine.CreateAuditEventAsync(
+                    startTime,
+                    stopTime,
+                    success,
+                    AuditEngine.AuditAccessType.WebBrowser,
+                    auditType,
+                    userName ?? "anonymous",
+                    null,
+                    HttpContext?.Request?.Headers["UserHostAddress"].FirstOrDefault(),
+                    HttpContext?.Request?.Headers["UserAgent"].FirstOrDefault(),
+                    "Scheduler",
+                    "VolunteerHub",
+                    HttpContext?.Request?.Path.ToString() + HttpContext?.Request?.QueryString.ToString(),
+                    _environmentName,
+                    null,
+                    System.Threading.Thread.CurrentThread.ManagedThreadId,
+                    message,
+                    null,
+                    null,
+                    null);
+
+                _auditStartTime = DateTime.MinValue;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to write audit event for VolunteerHub action");
+            }
         }
 
 
@@ -53,6 +122,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("auth/request-code")]
         public async Task<IActionResult> RequestCode([FromBody] OtpRequestModel model)
         {
+            StartAuditEventClock();
+
             if (string.IsNullOrWhiteSpace(model?.Identifier))
             {
                 return BadRequest(new { message = "Email or phone number is required." });
@@ -142,12 +213,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                     _logger.LogInformation("VolunteerHub OTP sent for user {User}", user.accountName);
 
+                    await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "VolunteerHub OTP requested — " + identifier, user.accountName);
+
                     return Ok(new { message = "If an account exists with that email or phone, a code has been sent." });
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing OTP request for VolunteerHub");
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "VolunteerHub OTP request failed — " + identifier, null, false);
                 return StatusCode(500, new { message = "An error occurred. Please try again." });
             }
         }
@@ -163,6 +237,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("auth/verify-code")]
         public async Task<IActionResult> VerifyCode([FromBody] OtpVerifyModel model)
         {
+            StartAuditEventClock();
+
             if (string.IsNullOrWhiteSpace(model?.Identifier) || string.IsNullOrWhiteSpace(model?.Code))
             {
                 return BadRequest(new { message = "Email/phone and code are required." });
@@ -183,6 +259,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                     if (user == null)
                     {
+                        await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "VolunteerHub OTP verify failed — unknown user: " + identifier, null, false);
                         return Unauthorized(new { message = "Invalid credentials." });
                     }
 
@@ -215,6 +292,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     _logger.LogInformation("VolunteerHub session created for user {User}, expires {Expiry}",
                         user.accountName, sessionExpiry);
 
+                    await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "VolunteerHub OTP verified — session created", user.accountName);
+
                     return Ok(new
                     {
                         sessionToken = sessionToken,
@@ -226,6 +305,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error verifying OTP for VolunteerHub");
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "VolunteerHub OTP verification error", null, false);
                 return StatusCode(500, new { message = "An error occurred. Please try again." });
             }
         }
@@ -241,6 +321,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("auth/session")]
         public async Task<IActionResult> GetSession()
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionUserAsync(token);
             if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
@@ -248,6 +330,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             var profile = await _volunteerHubService.GetVolunteerProfileForUserAsync(user);
             if (profile == null) return Unauthorized(new { message = "No volunteer profile linked." });
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "VolunteerHub session validated", user.accountName);
 
             return Ok(new
             {
@@ -268,6 +352,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("me")]
         public async Task<IActionResult> GetMyProfile()
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionUserAsync(token);
             if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
@@ -275,6 +361,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             var profile = await _volunteerHubService.GetVolunteerProfileForUserAsync(user);
             if (profile == null) return NotFound(new { message = "Volunteer profile not found." });
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "VolunteerHub profile viewed", user.accountName);
 
             return Ok(profile.ToOutputDTO());
         }
@@ -292,6 +380,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             DateTime? from = null,
             DateTime? to = null)
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionUserAsync(token);
             if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
@@ -341,6 +431,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 notes = a.volunteerNotes
             });
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, "VolunteerHub assignments loaded — count=" + assignments.Count, user.accountName);
+
             return Ok(result);
         }
 
@@ -355,6 +447,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("me/assignments/{assignmentId}/report-hours")]
         public async Task<IActionResult> ReportHours(int assignmentId, [FromBody] ReportHoursModel model)
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionUserAsync(token);
             if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
@@ -381,6 +475,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             _logger.LogInformation(
                 "VolunteerHub: User {User} reported {Hours} hours for assignment {AssignmentId}",
                 user.accountName, model.Hours, assignmentId);
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "VolunteerHub hours reported — assignment=" + assignmentId + ", hours=" + model.Hours, user.accountName);
 
             return Ok(new { message = "Hours reported successfully.", reportedHours = model.Hours });
         }
@@ -433,6 +529,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 "VolunteerHub: User {User} {Response} assignment {AssignmentId}",
                 user.accountName, model.Accepted ? "accepted" : "declined", assignmentId);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "VolunteerHub assignment " + (model.Accepted ? "accepted" : "declined") + " — id=" + assignmentId, user.accountName);
+
             return Ok(new { message = $"Assignment {targetStatusName.ToLower()} successfully.", status = targetStatusName });
         }
 
@@ -447,6 +545,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPut("me/profile")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileModel model)
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionUserAsync(token);
             if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
@@ -472,6 +572,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             _logger.LogInformation("VolunteerHub: User {User} updated their profile", user.accountName);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "VolunteerHub profile updated", user.accountName);
+
             return Ok(new { message = "Profile updated successfully." });
         }
 
@@ -486,6 +588,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("auth/logout")]
         public async Task<IActionResult> Logout()
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionUserAsync(token);
             if (!session.IsValid) return Unauthorized(new { message = session.ErrorMessage });
@@ -508,6 +612,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             _logger.LogInformation("VolunteerHub: User {User} logged out", user.accountName);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, "VolunteerHub logout", user.accountName);
+
             return Ok(new { message = "Logged out successfully." });
         }
 
@@ -525,6 +631,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("admin/provision-access")]
         public async Task<IActionResult> ProvisionAccess([FromBody] ProvisionAccessModel model)
         {
+            StartAuditEventClock();
+
             if (string.IsNullOrWhiteSpace(model?.Email))
             {
                 return BadRequest(new { message = "Email is required." });
@@ -652,6 +760,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 volunteerProfile.linkedUserGuid = linkedUserGuid;
                 await _schedulerDb.SaveChangesAsync();
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "VolunteerHub access provisioned — profile=" + model.VolunteerProfileId, accountName);
+
                 return Ok(new
                 {
                     linkedUserGuid = linkedUserGuid,
@@ -662,6 +772,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error provisioning hub access for volunteer profile {ProfileId}", model.VolunteerProfileId);
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "VolunteerHub access provisioning failed — profile=" + model.VolunteerProfileId, null, false);
                 return StatusCode(500, new { message = "An error occurred while provisioning access." });
             }
         }
@@ -679,6 +790,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("public/register")]
         public async Task<IActionResult> Register([FromBody] VolunteerRegistrationModel model)
         {
+            StartAuditEventClock();
+
             if (string.IsNullOrWhiteSpace(model.Email))
                 return BadRequest(new { error = "Email is required." });
 
@@ -755,6 +868,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 _logger.LogInformation("Volunteer self-registration created: profile {Id} for {Email}",
                     profile.id, model.Email);
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "VolunteerHub self-registration — email=" + model.Email);
+
                 return Ok(new
                 {
                     message = "Registration submitted! An administrator will review your application.",
@@ -764,6 +879,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing volunteer self-registration for {Email}", model.Email);
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "VolunteerHub self-registration failed — email=" + model.Email, null, false);
                 return StatusCode(500, new { error = "Failed to process registration." });
             }
         }
@@ -780,6 +896,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("admin/registrations")]
         public async Task<IActionResult> GetPendingRegistrations()
         {
+            StartAuditEventClock();
+
             var pendingStatus = await _schedulerDb.VolunteerStatuses
                 .FirstOrDefaultAsync(s => s.name == "Pending");
 
@@ -803,6 +921,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 })
                 .ToListAsync();
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, "VolunteerHub pending registrations viewed — count=" + pending.Count);
+
             return Ok(pending);
         }
 
@@ -813,6 +933,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("admin/registrations/{profileId}/approve")]
         public async Task<IActionResult> ApproveRegistration(int profileId)
         {
+            StartAuditEventClock();
+
             var profile = await _schedulerDb.VolunteerProfiles
                 .Include(vp => vp.resource)
                 .FirstOrDefaultAsync(vp => vp.id == profileId);
@@ -878,6 +1000,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 _logger.LogInformation("Volunteer registration approved: profile {Id}, email {Email}", profileId, email);
 
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "VolunteerHub registration approved — profile=" + profileId);
+
                 return Ok(new
                 {
                     message = "Registration approved. Volunteer can now log in to the Hub.",
@@ -888,6 +1012,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error approving registration for profile {Id}", profileId);
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error, "VolunteerHub registration approval failed — profile=" + profileId, null, false);
                 return StatusCode(500, new { error = "Failed to approve registration." });
             }
         }
@@ -899,6 +1024,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("admin/registrations/{profileId}/reject")]
         public async Task<IActionResult> RejectRegistration(int profileId, [FromBody] RejectRegistrationModel model)
         {
+            StartAuditEventClock();
+
             var profile = await _schedulerDb.VolunteerProfiles
                 .FirstOrDefaultAsync(vp => vp.id == profileId);
 
@@ -938,6 +1065,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             _logger.LogInformation("Volunteer registration rejected: profile {Id}", profileId);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "VolunteerHub registration rejected — profile=" + profileId);
+
             return Ok(new { message = "Registration rejected." });
         }
 
@@ -956,6 +1085,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             DateTime? fromDate = null,
             DateTime? toDate = null)
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionAsync(token);
             if (session == null) return Unauthorized(new { error = "Invalid session." });
@@ -1014,6 +1145,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 })
                 .ToListAsync();
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, "VolunteerHub opportunities browsed — count=" + events.Count);
+
             return Ok(events);
         }
 
@@ -1024,6 +1157,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpPost("opportunities/{eventId}/sign-up")]
         public async Task<IActionResult> SignUpForOpportunity(int eventId)
         {
+            StartAuditEventClock();
+
             var token = Request.Headers["X-Volunteer-Session"].FirstOrDefault();
             var session = await _volunteerHubService.ResolveSessionAsync(token);
             if (session == null) return Unauthorized(new { error = "Invalid session." });
@@ -1076,6 +1211,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             _logger.LogInformation("Volunteer {ResourceId} signed up for event {EventId}",
                 session.ResourceId, eventId);
 
+            await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "VolunteerHub sign-up — event=" + eventId);
+
             return Ok(new
             {
                 message = "Successfully signed up!",
@@ -1096,6 +1233,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("public/branding")]
         public async Task<IActionResult> GetBranding(Guid? tenantGuid = null)
         {
+            StartAuditEventClock();
+
             try
             {
                 Guid resolvedGuid = tenantGuid ?? await _volunteerHubService.GetDefaultTenantGuidAsync();
@@ -1119,6 +1258,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 }
 
                 bool hasLogo = profile.companyLogoData != null && profile.companyLogoData.Length > 0;
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "VolunteerHub branding loaded");
 
                 return Ok(new
                 {
@@ -1146,6 +1287,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [HttpGet("public/branding/logo")]
         public async Task<IActionResult> GetBrandingLogo(Guid? tenantGuid = null)
         {
+            StartAuditEventClock();
+
             try
             {
                 Guid resolvedGuid = tenantGuid ?? await _volunteerHubService.GetDefaultTenantGuidAsync();
@@ -1160,6 +1303,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 }
 
                 string mimeType = profile.companyLogoMimeType ?? "image/png";
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.ReadEntity, "VolunteerHub logo served");
+
                 return File(profile.companyLogoData, mimeType);
             }
             catch (Exception ex)

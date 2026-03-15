@@ -1,0 +1,38 @@
+<div class="add-menu-item" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-menu-item me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Menu Item" 
+        *ngIf="userIsCommunityMenuItemWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #menuItemModal let-modal>
+   <div class="modal-header menu-item-modal-header">
+      <h5 class="modal-title mb-0" id="menuItemModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Menu Item' : 'Add Menu Item' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body menu-item-modal-body">
+      <form [formGroup]="menuItemForm" (ngSubmit)="submitForm()">
+         <div class="modal-footer menu-item-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Menu Item changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !menuItemForm.valid || menuItemForm.pristine  || userIsCommunityMenuItemWriter() == false " ngbTooltip="Save the Menu Item changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Menu Item' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

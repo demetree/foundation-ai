@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\CodeGenerationCommon\CodeGenerationCommon.csproj" />
+		<ProjectReference Include="..\CodeGenerationCore\CodeGenerationCore.csproj" />
+		<ProjectReference Include="..\CommunityDatabaseGenerator\CommunityDatabaseGenerator.csproj" />
+		<ProjectReference Include="..\CommunityDatabase\CommunityDatabase.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="appsettings.Development.json" Condition="Exists('appsettings.Development.json')">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+</Project>

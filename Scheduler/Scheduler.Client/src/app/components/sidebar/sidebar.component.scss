@@ -276,6 +276,25 @@ $toggle-half: calc($toggle-size / 2);
       border-radius: 6px;
     }
   }
+
+  // Collapsible group sections (Volunteers, Setup)
+  .group-toggle {
+    .fa-chevron-down {
+      opacity: 0.6;
+    }
+
+    &:hover .fa-chevron-down {
+      opacity: 1;
+    }
+  }
+
+  .group-nested {
+    .nav-link {
+      padding-left: 24px;
+      font-size: 0.9rem;
+      min-height: 36px;
+    }
+  }
 }
 
 /* Backdrop for overlay mode */

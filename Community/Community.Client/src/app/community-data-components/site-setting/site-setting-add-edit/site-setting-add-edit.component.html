@@ -1,0 +1,38 @@
+<div class="add-site-setting" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-site-setting me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Site Setting" 
+        *ngIf="userIsCommunitySiteSettingWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #siteSettingModal let-modal>
+   <div class="modal-header site-setting-modal-header">
+      <h5 class="modal-title mb-0" id="siteSettingModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Site Setting' : 'Add Site Setting' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body site-setting-modal-body">
+      <form [formGroup]="siteSettingForm" (ngSubmit)="submitForm()">
+         <div class="modal-footer site-setting-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Site Setting changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !siteSettingForm.valid || siteSettingForm.pristine  || userIsCommunitySiteSettingWriter() == false " ngbTooltip="Save the Site Setting changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Site Setting' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

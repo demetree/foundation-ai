@@ -1,0 +1,599 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Foundation.Entity;
+using Foundation.ChangeHistory;
+
+namespace Foundation.Community.Database
+{
+	//
+	// The purpose of this partial class is to provide helper methods to convert an object into a simpler anonymous object better suited for JSON serialization to web client for the web api controllers to use.
+	//
+	public partial class Announcement : IVersionTrackedEntity<Announcement>, IAnonymousConvertible
+	{
+        /// <summary>
+        /// This is for setting the context for change history inquiries.
+        /// </summary>
+        private CommunityContext _contextForVersionInquiry = null;
+
+
+
+        /// <summary>
+        /// 
+        /// Gets the a Change History toolset for the user that support write and read operations.
+        /// 
+        /// </summary>
+        /// <param name="context">A context object that contains the entities</param>
+        /// <param name="securityUser">The security user that the changes will be made on behalf of.</param>
+        /// <param name="insideTransaction">Whether or not there is a transaction in process by the using function</param>
+        /// <returns>A change history toolset instance to interact with the change history of the entity</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        public static ChangeHistoryToolset<Announcement, AnnouncementChangeHistory> GetChangeHistoryToolsetForWriting(CommunityContext context, Foundation.Security.Database.SecurityUser securityUser, bool insideTransaction = false, CancellationToken cancellationToken = default)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (securityUser == null)
+            {
+                throw new ArgumentNullException(nameof(securityUser));
+            }
+
+            //
+            // This table does not have data visibility enabled, therefore the user ID is to be taken directly from the security user object.
+            // 
+            return new ChangeHistoryToolset<Announcement, AnnouncementChangeHistory>(context, securityUser.id, insideTransaction, cancellationToken);
+        }
+
+        /// <summary>
+        /// 
+        /// Gets the a Change History toolset for read only purposes.
+        /// 
+        /// </summary>
+        /// <param name="context">A context object that contains the entities</param>
+        /// <returns>A change history toolset instance to interact with the change history of the entity</returns>       
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        public static ChangeHistoryToolset<Announcement, AnnouncementChangeHistory> GetChangeHistoryToolsetForReading(CommunityContext context, CancellationToken cancellationToken = default)
+        {
+            return new ChangeHistoryToolset<Announcement, AnnouncementChangeHistory>(context, cancellationToken);
+        }
+
+
+        /// <summary>
+        /// 
+        /// This needs to be called before running any version inquiry method from the IVersionTrackedEntity interface.
+        ///
+        /// It sets up the context and the tenant guid to use.  Provide the context used for the work, and the tenant guid of the user executing the logic.
+        ///
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="tenantGuid"></param>
+        public void SetupVersionInquiry(CommunityContext context)
+        {
+            _contextForVersionInquiry = context;
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about the entity's version history using the version of the entity as the basis for the query.
+        /// 
+        /// Use this to get the update user/time metadata for this version.  IncludingData here is optional and default to false, as it is probably redundant in most cases 
+        /// unless the entity you're working with might have unsaved changes.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Announcement>> GetThisVersionAsync(bool includeData = false, CancellationToken cancellationToken = default)
+        {
+            return await GetVersionAsync(this.versionNumber, includeData, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about the first version of the entity.  Equivalent to GetVersionAsync(1, includeData), but name is a bit more concise.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Announcement>> GetFirstVersionAsync(bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            return await GetVersionAsync(1, includeData, cancellationToken).ConfigureAwait(false);
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about the version of the entity at the provided point in time.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Announcement>> GetVersionAtTimeAsync(DateTime pointInTime, bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
+            {
+                throw new Exception("Context for version inquiry is not set.  Please call SetupVersionInquiry() before calling this function.");
+            }
+
+
+            var chts = GetChangeHistoryToolsetForReading(_contextForVersionInquiry, cancellationToken);
+
+            // Get the version for the point in time provided
+            AuditEntry versionAudit = await chts.GetAuditForTime(this, pointInTime).ConfigureAwait(false);
+
+            if (versionAudit == null)
+            {
+                throw new Exception($"No change history found for point in time {pointInTime.ToString("s")} of this Announcement entity.");
+            }
+
+            VersionInformation<Announcement> version = new VersionInformation<Announcement>();
+
+            version.versionNumber = versionAudit.versionNumber;
+
+            version.timeStamp = versionAudit.timeStamp;
+
+            if (versionAudit.userId.HasValue == true)
+            {
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                // Continency to return a change history user configured to indicate that we don't know the user.
+                version.user = new ChangeHistoryUser() { firstName = "Unknown", id = 0, middleName = null, lastName = "User" };
+            }
+
+            if (includeData == true)
+            {
+                version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
+            }
+
+            return version;
+        }
+
+
+        /// <summary>
+        /// 
+        /// Gets meta data and optionally the entity data about a specific version of the entity.
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<VersionInformation<Announcement>> GetVersionAsync(int versionNumber, bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            if (_contextForVersionInquiry == null)
+            {
+                throw new Exception("Context for version inquiry is not set.  Please call SetupVersionInquiry() before accessing the GetVersion function.");
+            }
+
+            var chts = GetChangeHistoryToolsetForReading(_contextForVersionInquiry, cancellationToken);
+
+            // Get the requested version
+            AuditEntry versionAudit = await chts.GetAuditForVersion(this, versionNumber).ConfigureAwait(false);
+
+            if (versionAudit == null)
+            {
+                throw new Exception($"No change history found for version {versionNumber} of this Announcement entity.");
+            }
+
+            VersionInformation<Announcement> version = new VersionInformation<Announcement>();
+
+            version.versionNumber = versionAudit.versionNumber;
+            version.timeStamp = versionAudit.timeStamp;
+
+            if (versionAudit.userId.HasValue == true)
+            {
+                // Note that this system is has neither multi tenancy or data visibility enabled, so it gets its change history users from the security module, and gets all users.
+                version.user = await Foundation.Security.ChangeHistory.GetChangeHistoryUserAsync(versionAudit.userId.Value, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                // Continency to return a change history user configured to indicate that we don't know the user.
+                version.user = new ChangeHistoryUser() { firstName = "Unknown", id = 0, middleName = null, lastName = "User" };
+            }
+
+            if (includeData == true)
+            {
+                version.data = await chts.GetVersionAsync(this, versionNumber).ConfigureAwait(false);
+            }
+
+            return version;
+        }
+
+
+        /// <summary>
+        /// 
+        /// This gets all the available meta data version information for this entity, and optionally the entity states too
+        /// 
+        /// </summary>
+        /// <param name="includeData">Whether or not to return the entity data with the results.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<List<VersionInformation<Announcement>>> GetAllVersionsAsync(bool includeData = true, CancellationToken cancellationToken = default)
+        {
+            if (_contextForVersionInquiry == null)
+            {
+                throw new Exception("Context for version inquiry is not set.Please call SetupVersionInquiry() before accessing the GetAllVersions function.");
+            }
+
+            var chts = GetChangeHistoryToolsetForReading(_contextForVersionInquiry, cancellationToken);
+
+            List<AuditEntry> versionAudits = await chts.GetAuditTrailAsync(this).ConfigureAwait(false);
+
+            if (versionAudits == null)
+            {
+                throw new Exception($"No change history audits found for this entity.");
+            }
+
+            List <VersionInformation<Announcement>> versions = new List<VersionInformation<Announcement>>();
+
+            foreach (AuditEntry versionAudit in versionAudits)
+            {
+                VersionInformation<Announcement> version = new VersionInformation<Announcement>();
+
+                version.versionNumber = versionAudit.versionNumber;
+                version.timeStamp = versionAudit.timeStamp;
+
+                if (versionAudit.userId.HasValue == true)
+                {
+                // Note that this system is has neither multi tenancy or data visibility enabled, so it gets its change history users from the security module, and gets all users.
+                version.user = await Foundation.Security.ChangeHistory.GetChangeHistoryUserAsync(versionAudit.userId.Value, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // Continency to return a change history user configured to indicate that we don't know the user.
+                    version.user = new ChangeHistoryUser() { firstName = "Unknown", id = 0, middleName = null, lastName = "User" };
+                }
+
+                if (includeData == true)
+                {
+                    version.data = await chts.GetVersionAsync(this, versionAudit.versionNumber).ConfigureAwait(false);
+                }
+
+                versions.Add(version);
+            }
+
+            return versions;
+        }
+
+
+		/// <summary>
+		///
+		/// INPUT Data Transfer Object intended to be used for posting data into the system from the outside.  It only contains user editable value type properties.
+		///
+		/// Required fields are given the Required decorator
+		///
+		/// </summary>
+		public class AnnouncementDTO
+		{
+			public Int32 Id { get; set; }
+			public String Title { get; set; }
+			public String Body { get; set; }
+			public String Severity { get; set; }
+			public DateTime StartDate { get; set; }
+			public DateTime? EndDate { get; set; }
+			public Boolean IsPinned { get; set; }
+			public Int32 VersionNumber { get; set; }
+			public Guid ObjectGuid { get; set; }
+			public Boolean? Active { get; set; }
+			public Boolean? Deleted { get; set; }
+		}
+
+
+		/// <summary>
+		///
+		/// OUTPUT Data Transfer Object intended to be used sending data out of the system.  Contains all value type properties and first level nav property objects, but no child object lists.
+		///
+		/// </summary>
+		public class AnnouncementOutputDTO : AnnouncementDTO
+		{
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Announcement to an INPUT (or No Nav property OUTPUT) Data Transfer Object intended to be used for posting data into the system from the outside, or or outputting data without nav properties.
+		///
+		/// Note that sub objects use the base DTO, not the output DTO, so they will not have any nav properties on them, and this is by design.
+		///
+		/// </summary>
+		public AnnouncementDTO ToDTO()
+		{
+			return new AnnouncementDTO
+			{
+				Id = this.Id,
+				Title = this.Title,
+				Body = this.Body,
+				Severity = this.Severity,
+				StartDate = this.StartDate,
+				EndDate = this.EndDate,
+				IsPinned = this.IsPinned,
+				VersionNumber = this.VersionNumber,
+				ObjectGuid = this.ObjectGuid,
+				Active = this.Active,
+				Deleted = this.Deleted
+			};
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Announcement list to list of INPUT Data Transfer Object intended to be used for posting data into the system, or outputting data without nav properties.
+		///
+		/// </summary>
+		public static List<AnnouncementDTO> ToDTOList(List<Announcement> data)
+		{
+			if (data == null)
+			{
+				return null;
+			}
+
+			List<AnnouncementDTO> output = new List<AnnouncementDTO>();
+
+			output.Capacity = data.Count;
+
+			foreach (Announcement announcement in data)
+			{
+				output.Add(announcement.ToDTO());
+			}
+
+			return output;
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Announcement to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AnnouncementEntity type directly.
+		///
+		/// </summary>
+		public AnnouncementOutputDTO ToOutputDTO()
+		{
+			return new AnnouncementOutputDTO
+			{
+				Id = this.Id,
+				Title = this.Title,
+				Body = this.Body,
+				Severity = this.Severity,
+				StartDate = this.StartDate,
+				EndDate = this.EndDate,
+				IsPinned = this.IsPinned,
+				VersionNumber = this.VersionNumber,
+				ObjectGuid = this.ObjectGuid,
+				Active = this.Active,
+				Deleted = this.Deleted
+			};
+		}
+
+
+		/// <summary>
+		///
+		/// Converts a Announcement list to list of Output Data Transfer Object intended to be used for serializing a list of Announcement objects to avoid using the Announcement entity type directly.
+		///
+		/// </summary>
+		public static List<AnnouncementOutputDTO> ToOutputDTOList(List<Announcement> data)
+		{
+			if (data == null)
+			{
+				return null;
+			}
+
+			List<AnnouncementOutputDTO> output = new List<AnnouncementOutputDTO>();
+
+			output.Capacity = data.Count;
+
+			foreach (Announcement announcement in data)
+			{
+				output.Add(announcement.ToOutputDTO());
+			}
+
+			return output;
+		}
+
+
+		/// <summary>
+		///
+		/// Converts an INPUT DTO to a Announcement Object.
+		///
+		/// </summary>
+		public static Database.Announcement FromDTO(AnnouncementDTO dto)
+		{
+			return new Database.Announcement
+			{
+				Id = dto.Id,
+				Title = dto.Title,
+				Body = dto.Body,
+				Severity = dto.Severity,
+				StartDate = dto.StartDate,
+				EndDate = dto.EndDate,
+				IsPinned = dto.IsPinned,
+				VersionNumber = dto.VersionNumber,
+				ObjectGuid = dto.ObjectGuid,
+				Active = dto.Active ?? true,
+				Deleted = dto.Deleted ?? false
+			};
+		}
+
+
+		/// <summary>
+		///
+		/// Applies the values from an INPUT DTO to a Announcement Object.
+		///
+		/// </summary>
+		public void ApplyDTO(AnnouncementDTO dto)
+		{
+			if (dto == null || this.id != dto.id)
+			{
+			    throw new Exception("DTO is null or has an id mismatch.");
+			}
+
+			this.Title = dto.Title;
+			this.Body = dto.Body;
+			this.Severity = dto.Severity;
+			this.StartDate = dto.StartDate;
+			this.EndDate = dto.EndDate;
+			this.IsPinned = dto.IsPinned;
+			this.VersionNumber = dto.VersionNumber;
+			this.ObjectGuid = dto.ObjectGuid;
+			if (dto.Active.HasValue == true)
+			{
+				this.Active = dto.Active.Value;
+			}
+			if (dto.Deleted.HasValue == true)
+			{
+				this.Deleted = dto.Deleted.Value;
+			}
+		}
+
+
+		/// <summary>
+		///
+		/// Creates a deep copy clone of a Announcement Object.
+		///
+		/// </summary>
+		public Announcement Clone()
+		{
+			//
+			// Return a cloned object without any object or list properties.
+			//
+			return new Announcement{
+				Id = this.Id,
+				Title = this.Title,
+				Body = this.Body,
+				Severity = this.Severity,
+				StartDate = this.StartDate,
+				EndDate = this.EndDate,
+				IsPinned = this.IsPinned,
+				VersionNumber = this.VersionNumber,
+				ObjectGuid = this.ObjectGuid,
+				Active = this.Active,
+				Deleted = this.Deleted,
+			 };
+		}
+
+
+        /// <summary>
+        ///
+        /// Creates an anonymous object containing properties from a Announcement Object.
+        ///
+        /// </summary>
+        public object ToAnonymous()
+        {
+            return CreateAnonymous(this);
+        }
+
+        /// <summary>
+        ///
+        /// Creates an anonymous object containing properties from a Announcement Object, with minimal versions of first level sub objects
+        ///
+        /// </summary>
+        public object ToAnonymousWithFirstLevelSubObjects()
+        {
+            return CreateAnonymousWithFirstLevelSubObjects(this);
+        }
+
+        /// <summary>
+        ///
+        /// Creates an minimal anonymous object containing name and description properties from a Announcement Object, as best it can.
+        ///
+        /// </summary>
+        public object ToMinimalAnonymous()
+        {
+            return CreateMinimalAnonymous(this);
+        }
+
+
+
+		/// <summary>
+		///
+		/// Creates an anonymous object version of a Announcement Object.
+		///
+		/// </summary>
+		public static object CreateAnonymous(Database.Announcement announcement)
+		{
+			//
+			// Return a simplified object without any object or list properties.
+			//
+			if (announcement == null)
+			{
+				return null;
+			}
+
+			return new {
+				Id = announcement.Id,
+				Title = announcement.Title,
+				Body = announcement.Body,
+				Severity = announcement.Severity,
+				StartDate = announcement.StartDate,
+				EndDate = announcement.EndDate,
+				IsPinned = announcement.IsPinned,
+				VersionNumber = announcement.VersionNumber,
+				ObjectGuid = announcement.ObjectGuid,
+				Active = announcement.Active,
+				Deleted = announcement.Deleted,
+			 };
+		}
+
+		/// <summary>
+		///
+		/// Creates an anonymous object version of a Announcement Object with first level sub ojbects.
+		///
+		/// </summary>
+		public static object CreateAnonymousWithFirstLevelSubObjects(Announcement announcement)
+		{
+			//
+			// Return a simplified object with simple first level sub objects.
+			//
+			if (announcement == null)
+			{
+				return null;
+			}
+
+			return new {
+				Id = announcement.Id,
+				Title = announcement.Title,
+				Body = announcement.Body,
+				Severity = announcement.Severity,
+				StartDate = announcement.StartDate,
+				EndDate = announcement.EndDate,
+				IsPinned = announcement.IsPinned,
+				VersionNumber = announcement.VersionNumber,
+				ObjectGuid = announcement.ObjectGuid,
+				Active = announcement.Active,
+				Deleted = announcement.Deleted,
+			 };
+		}
+
+		/// <summary>
+		///
+		/// Creates an minimal anonymous object version of a Announcement Object.  This has just id, name, and description properties.
+		///
+		/// </summary>
+		public static object CreateMinimalAnonymous(Announcement announcement)
+		{
+			//
+			// Return a very minimal object.
+			//
+			if (announcement == null)
+			{
+				return null;
+			}
+
+			return new {
+				name = announcement.title,
+				description = string.Join(", ", new[] { announcement.title, announcement.severity}.Where(s => !string.IsNullOrWhiteSpace(s)))
+			 };
+		}
+	}
+}

@@ -1,0 +1,64 @@
+<div class="container-fluid p-1 m-0 post-tag-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="post-tag-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Post Tag</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Post Tag' : 'Add Post Tag'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsCommunityPostTagReader()">
+                <div class="col m-2 post-tag-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="postTagForm" (ngSubmit)="submitForm()" class="post-tag-details-form">
+                            <div class="post-tag-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="postTagForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Post Tag">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !postTagForm.valid || !postTagForm.dirty || postTagForm.pristine  || userIsCommunityPostTagWriter() == false " ngbTooltip="Save the Post Tag changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Post Tag' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsCommunityPostTagReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 post-tag-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="postTagAssignmentService.userIsCommunityPostTagAssignmentReader()">
+                            <button ngbNavLink>Post Tag Assignments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (postTagData?.PostTagAssignmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-post-tag-assignment-table [queryParams]="{ postTagId: postTagData?.id }" [showAddButton]="true" [preSeededData]="{ postTagId: postTagData?.id }" [hiddenFields]="['postTagId']"></app-post-tag-assignment-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

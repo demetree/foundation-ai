@@ -1,0 +1,120 @@
+//
+// Card header gradient (needed here due to Angular view encapsulation —
+// the parent overview.component.scss styles don't reach child components)
+//
+.gradient-primary {
+  background: var(--sch-gradient-primary);
+}
+
+.premium-card {
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: var(--sch-bg-card);
+  border-color: var(--sch-border);
+
+  .card-header {
+    padding: 16px 20px;
+    font-weight: 600;
+    border-radius: 16px 16px 0 0;
+  }
+}
+
+//
+// Premium Card Styling (duplicated from overview.component.scss because Angular view encapsulation
+// prevents parent-scoped styles from applying in child components)
+//
+.premium-card {
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background-color: var(--sch-bg-card);
+  border-color: var(--sch-border);
+
+  &:hover {
+    box-shadow: var(--sch-shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .card-header {
+    padding: 16px 20px;
+    font-weight: 600;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+}
+
+//
+// Gradient Headers for Cards
+//
+.gradient-primary {
+  background: var(--sch-gradient-primary);
+}
+
+.gradient-success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.gradient-warning {
+  background: linear-gradient(135deg, #FFC107 0%, #FFCA28 100%);
+}
+
+.gradient-info {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+//
+// Empty state styling
+//
+.empty-state-card {
+  color: var(--sch-text-muted);
+
+  i {
+    opacity: 0.5;
+  }
+}
+
+.rec-committee-tab {
+  .hover-lift {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+  }
+}
+
+// Mobile responsive
+@media (max-width: 767px) {
+  .rec-committee-tab {
+    .row {
+      gap: 0.5rem;
+    }
+
+    .card {
+      margin-bottom: 0.5rem;
+    }
+
+    .card-body {
+      padding: 0.75rem;
+    }
+
+    .table {
+      font-size: 0.8rem;
+
+      th, td {
+        padding: 0.3rem 0.5rem;
+      }
+    }
+
+    h6 {
+      font-size: 0.9rem;
+    }
+  }
+}

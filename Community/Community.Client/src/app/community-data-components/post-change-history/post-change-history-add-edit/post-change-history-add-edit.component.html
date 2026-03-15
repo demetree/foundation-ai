@@ -1,0 +1,38 @@
+<div class="add-post-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-post-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Post Change History" 
+        *ngIf="userIsCommunityPostChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #postChangeHistoryModal let-modal>
+   <div class="modal-header post-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="postChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Post Change History' : 'Add Post Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body post-change-history-modal-body">
+      <form [formGroup]="postChangeHistoryForm" (ngSubmit)="submitForm()">
+         <div class="modal-footer post-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Post Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !postChangeHistoryForm.valid || postChangeHistoryForm.pristine  || userIsCommunityPostChangeHistoryWriter() == false " ngbTooltip="Save the Post Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Post Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

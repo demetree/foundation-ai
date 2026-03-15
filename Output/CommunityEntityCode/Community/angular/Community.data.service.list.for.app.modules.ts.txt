@@ -1,0 +1,21 @@
+These are the import lines to add to the app.module.ts file for the auto generated services
+
+//
+// Beginning of imports for Community Data Services 
+//
+import { CommunityDataServiceManagerService } from './community-data-services/community-data-service-manager.service';
+//
+// End of imports for Community Data Services 
+//
+
+
+
+These are lines to add to the Providers array section of the app.module definition for the auto generated services.
+
+//
+// Beginning of provider declarations for Community Data Services 
+//
+CommunityDataServiceManagerService,
+//
+// End of provider declarations for Community Data Services 
+//

@@ -1,0 +1,40 @@
+<div class="container-fluid p-1 m-0 site-setting-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="site-setting-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Site Setting</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Site Setting' : 'Add Site Setting'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsCommunitySiteSettingReader()">
+                <div class="col m-2 site-setting-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="siteSettingForm" (ngSubmit)="submitForm()" class="site-setting-details-form">
+                            <div class="site-setting-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="siteSettingForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Site Setting">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !siteSettingForm.valid || !siteSettingForm.dirty || siteSettingForm.pristine  || userIsCommunitySiteSettingWriter() == false " ngbTooltip="Save the Site Setting changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Site Setting' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

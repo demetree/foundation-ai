@@ -1,0 +1,21 @@
+These are the import lines to add to the top of app.module.ts file to import the auto generated component files.  This has listing and Add/Edit components
+
+//
+// Beginning of imports for Community Data Components
+//
+//
+// End of imports for Community Data Components
+//
+
+
+These are the import lines to add to declarations section of the the app.module.ts to reference the auto generated component objects
+
+//
+// Beginning of declarations for Community Data Components
+//
+//
+// End of declarations for Community Data Components
+//
+
+
+

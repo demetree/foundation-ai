@@ -1,0 +1,40 @@
+<div class="container-fluid p-1 m-0 announcement-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="announcement-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Announcement Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Announcement Change History' : 'Add Announcement Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsCommunityAnnouncementChangeHistoryReader()">
+                <div class="col m-2 announcement-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="announcementChangeHistoryForm" (ngSubmit)="submitForm()" class="announcement-change-history-details-form">
+                            <div class="announcement-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="announcementChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Announcement Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !announcementChangeHistoryForm.valid || !announcementChangeHistoryForm.dirty || announcementChangeHistoryForm.pristine  || userIsCommunityAnnouncementChangeHistoryWriter() == false " ngbTooltip="Save the Announcement Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Announcement Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

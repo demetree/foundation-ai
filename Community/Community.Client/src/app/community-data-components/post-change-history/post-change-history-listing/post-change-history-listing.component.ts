@@ -1,0 +1,183 @@
+/*
+   GENERATED FORM FOR THE POSTCHANGEHISTORY TABLE - DO NOT MODIFY DIRECTLY
+   =================================================================================
+
+   This is the default form generated from PostChangeHistory table metadata.
+
+   It is useful for low usage worksflows such as basic configuration, but is likely not good enough for primary workflow usage
+   because it's form layout and validation is too simple.
+   
+   For building better looking and/or versions with custom logic, create a custom version of this:
+
+   1. Copy this component
+   2. Rename to post-change-history-custom (or similar)
+   3. Modify layout, grouping, field types, add workflow logic
+   
+   This generated version is kept simple on purpose so it's easy to use as a reference/scaffold.
+
+*/
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Observable, map, finalize, startWith, shareReplay } from 'rxjs';
+import { BreakpointObserver } from '@angular/cdk/layout';
+import { NavigationService } from '../../../utility-services/navigation.service';
+import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
+import { PostChangeHistoryService, PostChangeHistoryData } from '../../../community-data-services/post-change-history.service';
+import { PostChangeHistoryAddEditComponent } from '../post-change-history-add-edit/post-change-history-add-edit.component';
+import { PostChangeHistoryTableComponent } from '../post-change-history-table/post-change-history-table.component';
+import { AlertService, MessageSeverity } from '../../../services/alert.service';
+
+@Component({
+  selector: 'app-post-change-history-listing',
+  templateUrl: './post-change-history-listing.component.html',
+  styleUrls: ['./post-change-history-listing.component.scss']
+})
+export class PostChangeHistoryListingComponent implements OnInit, AfterViewInit, CanComponentDeactivate {
+  @ViewChild(PostChangeHistoryAddEditComponent) addEditPostChangeHistoryComponent!: PostChangeHistoryAddEditComponent;
+  @ViewChild(PostChangeHistoryTableComponent) postChangeHistoryTableComponent!: PostChangeHistoryTableComponent;
+
+  public PostChangeHistories: PostChangeHistoryData[] | null = null;
+  public isSmallScreen: boolean = false;
+
+  public filterText: string | null = null;
+
+  public totalPostChangeHistoryCount$ : Observable<number> | null = null;
+  public filteredPostChangeHistoryCount$: Observable<number> | null = null;
+  public loadingTotalCount = false;
+  public loadingFilteredCount = false;
+
+  private debounceTimeout: any;
+
+  constructor(private postChangeHistoryService: PostChangeHistoryService,
+              private alertService: AlertService,
+              private navigationService: NavigationService,
+              private breakpointObserver: BreakpointObserver) { }
+
+  ngOnInit(): void {
+
+    this.breakpointObserver
+      .observe(['(max-width: 1100px)']) // this size is specified to try and find a balance so tablets and phone see cards, but wider screens get a table.
+      .subscribe((result) => {
+        this.isSmallScreen = result.matches;
+      });
+
+    this.loadCounts();
+  }
+
+
+  ngAfterViewInit(): void {
+    //
+    // Subscribe to the postChangeHistoryChanged observable on the add/edit component so that when a PostChangeHistory changes we can reload the list.
+    //
+    this.addEditPostChangeHistoryComponent.postChangeHistoryChanged.subscribe({
+      next: (result: PostChangeHistoryData[] | null) => {
+        this.postChangeHistoryTableComponent.loadData();
+        this.loadCounts();
+      },
+      error: (err: any) => {
+         this.alertService.showMessage("Error during Post Change History changed notification", JSON.stringify(err), MessageSeverity.error);
+      }
+    });
+  }
+
+  canDeactivate(): boolean {
+    //
+    // Do not allow route changes when the modal is up.
+    //
+    if (this.addEditPostChangeHistoryComponent.modalIsDisplayed == true) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+
+  private loadCounts(): void {
+
+    this.loadingTotalCount = true;
+    this.loadingFilteredCount = true;
+
+    // Total count (no filter)
+    this.totalPostChangeHistoryCount$ = this.postChangeHistoryService.GetPostChangeHistoriesRowCount({
+      active: true,
+      deleted: false
+    }).pipe(
+      map(c => Number(c ?? 0)),
+      startWith(0),
+      finalize(() => {
+        this.loadingTotalCount = false;
+      }),
+      shareReplay(1)
+    );
+
+    if (this.filterText) {
+
+      this.filteredPostChangeHistoryCount$ = this.postChangeHistoryService.GetPostChangeHistoriesRowCount({
+        active: true,
+        deleted: false,
+        anyStringContains: this.filterText || undefined
+      }).pipe(
+        map(c => Number(c ?? 0)),
+        startWith(0),
+        finalize(() => {
+          this.loadingFilteredCount = false;
+        }),
+        shareReplay(1)
+      )
+    } else {
+
+      this.filteredPostChangeHistoryCount$ = this.totalPostChangeHistoryCount$; // No filter, so assign to be same as total observable
+      this.loadingFilteredCount = false;
+    }
+
+    //
+    // Subscribe to the observables to kick them off.  We don't want to depend on the template to do this.
+    //
+    // Although the templates would (and do) subscribe to these, repeated fast filtering operations can sometimes get stuck in a loading state, so this is a defensive measure to eliminate that risk.
+    //
+    this.totalPostChangeHistoryCount$.subscribe();
+
+    if (this.filteredPostChangeHistoryCount$ != this.totalPostChangeHistoryCount$) {
+      this.filteredPostChangeHistoryCount$.subscribe();
+    }
+  }
+
+
+  public goBack(): void {
+    this.navigationService.goBack();
+   }
+
+
+  public canGoBack(): boolean {
+    return this.navigationService.canGoBack();
+  }
+
+
+  public clearFilter() {
+    this.filterText = '';
+  }
+
+
+  //
+  // Update the counts when the filter change
+  //
+  public onFilterChange(): void {
+
+    clearTimeout(this.debounceTimeout);
+
+    this.debounceTimeout = setTimeout(() => {
+      this.postChangeHistoryTableComponent.resetToFirstPage(); // Reset to page 1 on filter change
+      this.postChangeHistoryTableComponent.loadData(); // Refresh table
+      this.loadCounts(); // Refresh both counts
+    }, 500);           // 500 millisecond debounce
+  }
+
+
+
+  public userIsCommunityPostChangeHistoryReader(): boolean {
+    return this.postChangeHistoryService.userIsCommunityPostChangeHistoryReader();
+  }
+
+  public userIsCommunityPostChangeHistoryWriter(): boolean {
+    return this.postChangeHistoryService.userIsCommunityPostChangeHistoryWriter();
+  }
+}

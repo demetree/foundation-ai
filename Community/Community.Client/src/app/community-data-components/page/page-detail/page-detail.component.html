@@ -1,0 +1,78 @@
+<div class="container-fluid p-1 m-0 page-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="page-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Page</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Page' : 'Add Page'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsCommunityPageReader()">
+                <div class="col m-2 page-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="pageForm" (ngSubmit)="submitForm()" class="page-details-form">
+                            <div class="page-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="pageForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Page">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !pageForm.valid || !pageForm.dirty || pageForm.pristine  || userIsCommunityPageWriter() == false " ngbTooltip="Save the Page changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Page' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsCommunityPageReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 page-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="pageChangeHistoryService.userIsCommunityPageChangeHistoryReader()">
+                            <button ngbNavLink>Page Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (pageData?.PageChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-page-change-history-table [queryParams]="{ pageId: pageData?.id }" [showAddButton]="true" [preSeededData]="{ pageId: pageData?.id }" [hiddenFields]="['pageId']"></app-page-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="menuItemService.userIsCommunityMenuItemReader()">
+                            <button ngbNavLink>Menu Items
+                                <span class="badge bg-primary ms-2">
+                                    {{ (pageData?.MenuItemsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-menu-item-table [queryParams]="{ pageId: pageData?.id }" [showAddButton]="true" [preSeededData]="{ pageId: pageData?.id }" [hiddenFields]="['pageId']"></app-menu-item-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

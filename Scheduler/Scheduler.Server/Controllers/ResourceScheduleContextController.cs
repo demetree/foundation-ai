@@ -60,6 +60,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 return Ok(); // Nothing to log
             }
 
+            StartAuditEventClock();
+
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();

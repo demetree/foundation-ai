@@ -57,7 +57,7 @@ namespace Foundation.CodeGeneration
                     return;
                 }
 
-                if (comment.Contains(Environment.NewLine) == false)
+                if (comment.Contains(Environment.NewLine) == false && comment.Contains('\n') == false)
                 {
                     for (int i = 0; i < prefixTabs; i++)
                     {

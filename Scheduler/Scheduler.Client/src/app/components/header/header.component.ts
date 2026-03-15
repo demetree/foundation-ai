@@ -27,6 +27,8 @@ export class HeaderComponent implements OnInit {
 
   // PHONE PART: mobile menu state
   public isMobileMenuOpen = false;
+  public mobileVolunteersExpanded = false;
+  public mobileSetupExpanded = false;
 
   // To get the count of offices to allow the offices button to be invisible if there are no offices (It can always be found under Administration)
   public officeCount$ = this.schedulerHelperService.ActiveOfficeCount$;

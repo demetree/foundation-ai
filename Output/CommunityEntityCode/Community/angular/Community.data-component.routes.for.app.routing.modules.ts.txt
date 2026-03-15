@@ -1,0 +1,20 @@
+These are the import lines to add to the top of routing module file to import the auto generated component files.  List is just listing components.
+
+//
+// Beginning of imports for Community Data Components
+//
+//
+// End of imports for Community Data Components
+//
+
+
+These are the lines to add to routing module to reference case insensitively reference the auto generated component objects
+
+//
+// Beginning of routes for Community Data Components
+//
+//
+// End of routes for Community Data Components
+//
+
+

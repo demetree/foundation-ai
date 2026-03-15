@@ -1,0 +1,40 @@
+<div class="container-fluid p-1 m-0 media-asset-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="media-asset-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Media Asset</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Media Asset' : 'Add Media Asset'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsCommunityMediaAssetReader()">
+                <div class="col m-2 media-asset-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="mediaAssetForm" (ngSubmit)="submitForm()" class="media-asset-details-form">
+                            <div class="media-asset-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="mediaAssetForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Media Asset">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mediaAssetForm.valid || !mediaAssetForm.dirty || mediaAssetForm.pristine  || userIsCommunityMediaAssetWriter() == false " ngbTooltip="Save the Media Asset changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Media Asset' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
