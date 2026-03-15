@@ -87,6 +87,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? priorityId = null,
 			int? bookingSourceTypeId = null,
 			int? partySize = null,
+			string bookingContactName = null,
+			string bookingContactEmail = null,
+			string bookingContactPhone = null,
 			string notes = null,
 			string color = null,
 			string externalId = null,
@@ -245,6 +248,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(se => se.partySize == partySize.Value);
 			}
+			if (string.IsNullOrEmpty(bookingContactName) == false)
+			{
+				query = query.Where(se => se.bookingContactName == bookingContactName);
+			}
+			if (string.IsNullOrEmpty(bookingContactEmail) == false)
+			{
+				query = query.Where(se => se.bookingContactEmail == bookingContactEmail);
+			}
+			if (string.IsNullOrEmpty(bookingContactPhone) == false)
+			{
+				query = query.Where(se => se.bookingContactPhone == bookingContactPhone);
+			}
 			if (string.IsNullOrEmpty(notes) == false)
 			{
 				query = query.Where(se => se.notes == notes);
@@ -316,6 +331,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.location.Contains(anyStringContains)
+			       || x.bookingContactName.Contains(anyStringContains)
+			       || x.bookingContactEmail.Contains(anyStringContains)
+			       || x.bookingContactPhone.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
@@ -363,6 +381,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.parentScheduledEvent.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentScheduledEvent.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentScheduledEvent.location.Contains(anyStringContains))
+			       || (includeRelations == true && x.parentScheduledEvent.bookingContactName.Contains(anyStringContains))
+			       || (includeRelations == true && x.parentScheduledEvent.bookingContactEmail.Contains(anyStringContains))
+			       || (includeRelations == true && x.parentScheduledEvent.bookingContactPhone.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentScheduledEvent.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentScheduledEvent.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.parentScheduledEvent.externalId.Contains(anyStringContains))
@@ -481,6 +502,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? priorityId = null,
 			int? bookingSourceTypeId = null,
 			int? partySize = null,
+			string bookingContactName = null,
+			string bookingContactEmail = null,
+			string bookingContactPhone = null,
 			string notes = null,
 			string color = null,
 			string externalId = null,
@@ -619,6 +643,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(se => se.partySize == partySize.Value);
 			}
+			if (bookingContactName != null)
+			{
+				query = query.Where(se => se.bookingContactName == bookingContactName);
+			}
+			if (bookingContactEmail != null)
+			{
+				query = query.Where(se => se.bookingContactEmail == bookingContactEmail);
+			}
+			if (bookingContactPhone != null)
+			{
+				query = query.Where(se => se.bookingContactPhone == bookingContactPhone);
+			}
 			if (notes != null)
 			{
 				query = query.Where(se => se.notes == notes);
@@ -687,6 +723,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.location.Contains(anyStringContains)
+			       || x.bookingContactName.Contains(anyStringContains)
+			       || x.bookingContactEmail.Contains(anyStringContains)
+			       || x.bookingContactPhone.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
@@ -734,6 +773,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.parentScheduledEvent.name.Contains(anyStringContains)
 			       || x.parentScheduledEvent.description.Contains(anyStringContains)
 			       || x.parentScheduledEvent.location.Contains(anyStringContains)
+			       || x.parentScheduledEvent.bookingContactName.Contains(anyStringContains)
+			       || x.parentScheduledEvent.bookingContactEmail.Contains(anyStringContains)
+			       || x.parentScheduledEvent.bookingContactPhone.Contains(anyStringContains)
 			       || x.parentScheduledEvent.notes.Contains(anyStringContains)
 			       || x.parentScheduledEvent.color.Contains(anyStringContains)
 			       || x.parentScheduledEvent.externalId.Contains(anyStringContains)
@@ -1042,6 +1084,21 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					scheduledEvent.location = scheduledEvent.location.Substring(0, 250);
 				}
 
+				if (scheduledEvent.bookingContactName != null && scheduledEvent.bookingContactName.Length > 250)
+				{
+					scheduledEvent.bookingContactName = scheduledEvent.bookingContactName.Substring(0, 250);
+				}
+
+				if (scheduledEvent.bookingContactEmail != null && scheduledEvent.bookingContactEmail.Length > 250)
+				{
+					scheduledEvent.bookingContactEmail = scheduledEvent.bookingContactEmail.Substring(0, 250);
+				}
+
+				if (scheduledEvent.bookingContactPhone != null && scheduledEvent.bookingContactPhone.Length > 50)
+				{
+					scheduledEvent.bookingContactPhone = scheduledEvent.bookingContactPhone.Substring(0, 50);
+				}
+
 				if (scheduledEvent.color != null && scheduledEvent.color.Length > 10)
 				{
 					scheduledEvent.color = scheduledEvent.color.Substring(0, 10);
@@ -1188,6 +1245,21 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (scheduledEvent.location != null && scheduledEvent.location.Length > 250)
 				{
 					scheduledEvent.location = scheduledEvent.location.Substring(0, 250);
+				}
+
+				if (scheduledEvent.bookingContactName != null && scheduledEvent.bookingContactName.Length > 250)
+				{
+					scheduledEvent.bookingContactName = scheduledEvent.bookingContactName.Substring(0, 250);
+				}
+
+				if (scheduledEvent.bookingContactEmail != null && scheduledEvent.bookingContactEmail.Length > 250)
+				{
+					scheduledEvent.bookingContactEmail = scheduledEvent.bookingContactEmail.Substring(0, 250);
+				}
+
+				if (scheduledEvent.bookingContactPhone != null && scheduledEvent.bookingContactPhone.Length > 50)
+				{
+					scheduledEvent.bookingContactPhone = scheduledEvent.bookingContactPhone.Substring(0, 50);
 				}
 
 				if (scheduledEvent.color != null && scheduledEvent.color.Length > 10)
@@ -1435,6 +1507,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    scheduledEvent.priorityId = oldScheduledEvent.priorityId;
 				    scheduledEvent.bookingSourceTypeId = oldScheduledEvent.bookingSourceTypeId;
 				    scheduledEvent.partySize = oldScheduledEvent.partySize;
+				    scheduledEvent.bookingContactName = oldScheduledEvent.bookingContactName;
+				    scheduledEvent.bookingContactEmail = oldScheduledEvent.bookingContactEmail;
+				    scheduledEvent.bookingContactPhone = oldScheduledEvent.bookingContactPhone;
 				    scheduledEvent.notes = oldScheduledEvent.notes;
 				    scheduledEvent.color = oldScheduledEvent.color;
 				    scheduledEvent.externalId = oldScheduledEvent.externalId;
@@ -1904,6 +1979,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? priorityId = null,
 			int? bookingSourceTypeId = null,
 			int? partySize = null,
+			string bookingContactName = null,
+			string bookingContactEmail = null,
+			string bookingContactPhone = null,
 			string notes = null,
 			string color = null,
 			string externalId = null,
@@ -2061,6 +2139,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(se => se.partySize == partySize.Value);
 			}
+			if (string.IsNullOrEmpty(bookingContactName) == false)
+			{
+				query = query.Where(se => se.bookingContactName == bookingContactName);
+			}
+			if (string.IsNullOrEmpty(bookingContactEmail) == false)
+			{
+				query = query.Where(se => se.bookingContactEmail == bookingContactEmail);
+			}
+			if (string.IsNullOrEmpty(bookingContactPhone) == false)
+			{
+				query = query.Where(se => se.bookingContactPhone == bookingContactPhone);
+			}
 			if (string.IsNullOrEmpty(notes) == false)
 			{
 				query = query.Where(se => se.notes == notes);
@@ -2130,6 +2220,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.location.Contains(anyStringContains)
+			       || x.bookingContactName.Contains(anyStringContains)
+			       || x.bookingContactEmail.Contains(anyStringContains)
+			       || x.bookingContactPhone.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
 			       || x.color.Contains(anyStringContains)
 			       || x.externalId.Contains(anyStringContains)
@@ -2177,6 +2270,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.parentScheduledEvent.name.Contains(anyStringContains)
 			       || x.parentScheduledEvent.description.Contains(anyStringContains)
 			       || x.parentScheduledEvent.location.Contains(anyStringContains)
+			       || x.parentScheduledEvent.bookingContactName.Contains(anyStringContains)
+			       || x.parentScheduledEvent.bookingContactEmail.Contains(anyStringContains)
+			       || x.parentScheduledEvent.bookingContactPhone.Contains(anyStringContains)
 			       || x.parentScheduledEvent.notes.Contains(anyStringContains)
 			       || x.parentScheduledEvent.color.Contains(anyStringContains)
 			       || x.parentScheduledEvent.externalId.Contains(anyStringContains)

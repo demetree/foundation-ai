@@ -4220,6 +4220,9 @@ CREATE TABLE `ScheduledEvent`(
 	`priorityId` INT NULL,		-- Optional priority
 	`bookingSourceTypeId` INT NULL,		-- Optional booking source for reservation type workflows.
 	`partySize` INT NULL,		-- Optional for use when running as a reservation system
+	`bookingContactName` VARCHAR(250) NULL,		-- Name of the person booking (e.g., hall renter). Supports quick data entry without creating a full Contact.
+	`bookingContactEmail` VARCHAR(250) NULL,		-- Email of the person booking.
+	`bookingContactPhone` VARCHAR(50) NULL,		-- Phone number of the person booking.
 	`notes` TEXT NULL,
 	`color` VARCHAR(10) NULL,		-- Override Hex color for UI display
 	`externalId` VARCHAR(100) NULL,		-- Optional link to an entity in another system

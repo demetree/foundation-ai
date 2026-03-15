@@ -107,6 +107,18 @@
                 Party  Size
                 <span *ngIf="sortColumn === 'partySize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('bookingContactName')">
+                Booking  Contact  Name
+                <span *ngIf="sortColumn === 'bookingContactName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bookingContactEmail')">
+                Booking  Contact  Email
+                <span *ngIf="sortColumn === 'bookingContactEmail'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('bookingContactPhone')">
+                Booking  Contact  Phone
+                <span *ngIf="sortColumn === 'bookingContactPhone'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('notes')">
                 Notes
                 <span *ngIf="sortColumn === 'notes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -236,6 +248,9 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/priority', scheduledEvent.priorityId]" class="btn btn-link text-left" ngbTooltip="Open Priority details">{{scheduledEvent.priority?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/bookingsourcetype', scheduledEvent.bookingSourceTypeId]" class="btn btn-link text-left" ngbTooltip="Open Booking Source Type details">{{scheduledEvent.bookingSourceType?.name}}</a></td>
             <td class="text-truncate">{{scheduledEvent.partySize | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{scheduledEvent.bookingContactName}}</td>
+            <td class="text-truncate"><a href="mailto:{{scheduledEvent?.bookingContactEmail}}" ngbTooltip="Send Email to {{scheduledEvent?.bookingContactEmail}}">{{scheduledEvent.bookingContactEmail}}</a></td>
+            <td class="text-truncate"><a href="tel:{{scheduledEvent?.bookingContactPhone}}" ngbTooltip="Call {{scheduledEvent?.bookingContactPhone}}">{{scheduledEvent.bookingContactPhone}}</a></td>
             <td class="text-truncate">{{scheduledEvent.notes}}</td>
             <td class="text-truncate">{{scheduledEvent.color}}</td>
             <td class="text-truncate">{{scheduledEvent.externalId}}</td>
@@ -468,6 +483,18 @@ End of commented block for alternate definition option -->
             <p class="scheduled-event-info" *ngIf="scheduledEvent.partySize != null">
               <strong>Party Size: </strong>
               {{scheduledEvent.partySize | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.bookingContactName != null">
+              <strong>Booking Contact Name: </strong>
+              {{scheduledEvent.bookingContactName}}
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.bookingContactEmail != null">
+              <strong>Booking Contact Email: </strong>
+              <a href="mailto:{{scheduledEvent?.bookingContactEmail}}" ngbTooltip="Send Email to {{scheduledEvent?.bookingContactEmail}}">{{scheduledEvent.bookingContactEmail}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.bookingContactPhone != null">
+              <strong>Booking Contact Phone: </strong>
+              <a href="tel:{{scheduledEvent?.bookingContactPhone}}" ngbTooltip="Call {{scheduledEvent?.bookingContactPhone}}">{{scheduledEvent.bookingContactPhone}}</a>
             </p>
             <p class="scheduled-event-info" *ngIf="scheduledEvent.notes != null">
               <strong>Notes: </strong>

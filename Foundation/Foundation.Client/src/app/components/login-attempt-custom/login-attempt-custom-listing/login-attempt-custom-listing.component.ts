@@ -133,6 +133,27 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
     };
 
     //
+    // Hourly Distribution chart (stacked bar, 0-23 hours)
+    //
+    hourlyChartData: ChartData<'bar'> = { labels: [], datasets: [] };
+    hourlyChartOptions: ChartConfiguration<'bar'>['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+                labels: { usePointStyle: true, padding: 15 }
+            },
+            tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+            x: { display: true, grid: { display: false }, stacked: true },
+            y: { display: true, beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, stacked: true }
+        }
+    };
+
+    //
     // Auto-refresh
     //
     autoRefreshEnabled: boolean = false;
@@ -352,6 +373,9 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
 
         // Build sparkline data (hourly buckets for the past 24 hours or current range)
         this.buildSparkline(attempts, successes, failures);
+
+        // Build hourly distribution chart
+        this.computeHourlyDistribution(attempts);
     }
 
 
@@ -404,6 +428,48 @@ export class LoginAttemptCustomListingComponent implements OnInit, OnDestroy {
                     borderColor: '#7b1fa2',
                     backgroundColor: 'rgba(123, 31, 162, 0.1)',
                     fill: true
+                }
+            ]
+        };
+    }
+
+
+    //
+    // Compute hourly distribution (hour of day 0-23, stacked success/failure bar chart)
+    //
+    private computeHourlyDistribution(attempts: LoginAttemptData[]): void {
+        const hourlySuccess = new Array(24).fill(0);
+        const hourlyFailure = new Array(24).fill(0);
+
+        attempts.forEach(a => {
+            const hour = new Date(a.timeStamp).getHours();
+            if (this.isSuccess(a)) {
+                hourlySuccess[hour]++;
+            } else {
+                hourlyFailure[hour]++;
+            }
+        });
+
+        const labels = Array.from({ length: 24 }, (_, i) =>
+            `${i.toString().padStart(2, '0')}:00`
+        );
+
+        this.hourlyChartData = {
+            labels,
+            datasets: [
+                {
+                    label: 'Success',
+                    data: hourlySuccess,
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                    borderColor: '#28a745',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Failure',
+                    data: hourlyFailure,
+                    backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                    borderColor: '#dc3545',
+                    borderWidth: 1
                 }
             ]
         };

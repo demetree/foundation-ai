@@ -70,6 +70,9 @@ export class ScheduledEventQueryParameters {
     priorityId: bigint | number | null | undefined = null;
     bookingSourceTypeId: bigint | number | null | undefined = null;
     partySize: bigint | number | null | undefined = null;
+    bookingContactName: string | null | undefined = null;
+    bookingContactEmail: string | null | undefined = null;
+    bookingContactPhone: string | null | undefined = null;
     notes: string | null | undefined = null;
     color: string | null | undefined = null;
     externalId: string | null | undefined = null;
@@ -112,6 +115,9 @@ export class ScheduledEventSubmitData {
     priorityId: bigint | number | null = null;
     bookingSourceTypeId: bigint | number | null = null;
     partySize: bigint | number | null = null;
+    bookingContactName: string | null = null;
+    bookingContactEmail: string | null = null;
+    bookingContactPhone: string | null = null;
     notes: string | null = null;
     color: string | null = null;
     externalId: string | null = null;
@@ -208,6 +214,9 @@ export class ScheduledEventData {
     priorityId!: bigint | number;
     bookingSourceTypeId!: bigint | number;
     partySize!: bigint | number;
+    bookingContactName!: string | null;
+    bookingContactEmail!: string | null;
+    bookingContactPhone!: string | null;
     notes!: string | null;
     color!: string | null;
     externalId!: string | null;
@@ -1760,6 +1769,9 @@ export class ScheduledEventService extends SecureEndpointBase {
         output.priorityId = data.priorityId;
         output.bookingSourceTypeId = data.bookingSourceTypeId;
         output.partySize = data.partySize;
+        output.bookingContactName = data.bookingContactName;
+        output.bookingContactEmail = data.bookingContactEmail;
+        output.bookingContactPhone = data.bookingContactPhone;
         output.notes = data.notes;
         output.color = data.color;
         output.externalId = data.externalId;

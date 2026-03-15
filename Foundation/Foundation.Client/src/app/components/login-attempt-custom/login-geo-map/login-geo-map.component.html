@@ -19,7 +19,7 @@
     <ng-container *ngIf="hasGeoData === true">
 
         <!-- Stats bar -->
-        <div class="geo-stats-bar mb-3">
+        <div class="geo-stats-bar mb-3" *ngIf="showMap">
             <span class="badge bg-primary me-2">
                 <i class="fa-solid fa-map-marker-alt me-1"></i>{{ geoGroups.length }} Location(s)
             </span>
@@ -29,14 +29,14 @@
         </div>
 
         <!-- Map -->
-        <div class="map-wrapper">
+        <div class="map-wrapper" *ngIf="showMap">
             <div #mapContainer class="leaflet-map"></div>
         </div>
 
         <!-- Country / Continent Summary Table -->
-        <div class="country-summary mt-3" *ngIf="continentGroups.length > 0">
+        <div class="country-summary" [class.mt-3]="showMap" *ngIf="showBreakdown && continentGroups.length > 0">
 
-            <h6 class="summary-title">
+            <h6 class="summary-title" *ngIf="showMap">
                 <i class="fa-solid fa-earth-americas me-2"></i>Geographic Breakdown
             </h6>
 

@@ -256,6 +256,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       bookingSourceTypeId: [null],
       color: [null],
       isAllDay: [false],
+      bookingContactName: [''],
+      bookingContactEmail: [''],
+      bookingContactPhone: [''],
       isOpenForVolunteers: [false],
       maxVolunteerSlots: [null]
     });
@@ -895,6 +898,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       bookingSourceTypeId: eventData.bookingSourceTypeId,
       color: eventData.color,
       isAllDay: eventData.isAllDay || false,
+      bookingContactName: eventData.bookingContactName || '',
+      bookingContactEmail: eventData.bookingContactEmail || '',
+      bookingContactPhone: eventData.bookingContactPhone || '',
       isOpenForVolunteers: eventData.isOpenForVolunteers || false,
       maxVolunteerSlots: eventData.maxVolunteerSlots || null
     });
@@ -1045,6 +1051,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         bookingSourceTypeId: formVal.bookingSourceTypeId || null,
         officeId: formVal.officeId || null,
         partySize: null,
+        bookingContactName: formVal.bookingContactName?.trim() || null,
+        bookingContactEmail: formVal.bookingContactEmail?.trim() || null,
+        bookingContactPhone: formVal.bookingContactPhone?.trim() || null,
         color: formVal.color || null,
         active: true,
         deleted: false
@@ -1986,6 +1995,145 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
     this.deletedQualReqIds = [];
     this.pendingNewQualReqs = [];
+  }
+
+  // -------------------------------------------------------------------------
+  // Print Booking Summary
+  // -------------------------------------------------------------------------
+
+  /**
+   * Opens a print-friendly window with the booking summary.
+   * Includes event name, date/time, location, booking contact,
+   * charges with deposit status, and overall event status.
+   */
+  printBookingSummary(): void {
+    if (!this.event) return;
+
+    const formVal = this.eventForm.value;
+    const statusName = this.eventStatuses.find(
+      s => Number(s.id) === Number(formVal.eventStatusId)
+    )?.name || '—';
+
+    const startDate = formVal.startDateTime
+      ? new Date(formVal.startDateTime).toLocaleString()
+      : '—';
+    const endDate = formVal.endDateTime
+      ? new Date(formVal.endDateTime).toLocaleString()
+      : '—';
+
+    // Build charges table rows
+    let chargeRows = '';
+    if (this.eventCharges.length > 0) {
+      for (const charge of this.eventCharges) {
+        const typeName = charge.chargeType?.name || '—';
+        const depositLabel = charge.isDeposit
+          ? (charge.depositRefundedDate
+            ? ' <span style="color:green">(Refunded)</span>'
+            : ' <span style="color:darkorange">(Held)</span>')
+          : '';
+        chargeRows += `<tr>
+          <td>${typeName}${depositLabel}</td>
+          <td>${charge.description || '—'}</td>
+          <td style="text-align:right">$${(Number(charge.extendedAmount) || 0).toFixed(2)}</td>
+          <td style="text-align:right">$${(Number(charge.taxAmount) || 0).toFixed(2)}</td>
+          <td style="text-align:right"><strong>$${(Number(charge.totalAmount) || 0).toFixed(2)}</strong></td>
+        </tr>`;
+      }
+    } else {
+      chargeRows = '<tr><td colspan="5" style="text-align:center;color:#999">No charges recorded</td></tr>';
+    }
+
+    // Contact section
+    const contactName = formVal.bookingContactName || '';
+    const contactEmail = formVal.bookingContactEmail || '';
+    const contactPhone = formVal.bookingContactPhone || '';
+    const hasContact = contactName || contactEmail || contactPhone;
+    const contactSection = hasContact ? `
+      <div style="margin-bottom:18px">
+        <h3 style="margin:0 0 8px;font-size:14px;color:#555;text-transform:uppercase;letter-spacing:1px">Booking Contact</h3>
+        <table style="width:100%;border-collapse:collapse">
+          ${contactName ? `<tr><td style="padding:3px 8px;color:#777;width:80px">Name</td><td style="padding:3px 8px">${contactName}</td></tr>` : ''}
+          ${contactEmail ? `<tr><td style="padding:3px 8px;color:#777;width:80px">Email</td><td style="padding:3px 8px">${contactEmail}</td></tr>` : ''}
+          ${contactPhone ? `<tr><td style="padding:3px 8px;color:#777;width:80px">Phone</td><td style="padding:3px 8px">${contactPhone}</td></tr>` : ''}
+        </table>
+      </div>
+    ` : '';
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Booking Confirmation — ${formVal.name || 'Event'}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; color: #333; }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    h2 { margin: 0 0 20px; font-size: 14px; color: #777; font-weight: normal; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; margin-bottom: 18px; }
+    .detail-label { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .detail-value { font-size: 14px; margin-bottom: 8px; }
+    table.charges { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.charges th { background: #f5f5f5; padding: 6px 8px; text-align: left; border-bottom: 2px solid #ddd; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #777; }
+    table.charges td { padding: 6px 8px; border-bottom: 1px solid #eee; }
+    .footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 11px; color: #999; }
+    @media print { body { margin: 20px; } }
+  </style>
+</head>
+<body>
+  <h1>${formVal.name || 'Booking Confirmation'}</h1>
+  <h2>Status: ${statusName}</h2>
+
+  <div class="detail-grid">
+    <div>
+      <div class="detail-label">Start</div>
+      <div class="detail-value">${startDate}</div>
+    </div>
+    <div>
+      <div class="detail-label">End</div>
+      <div class="detail-value">${endDate}</div>
+    </div>
+    <div>
+      <div class="detail-label">Location</div>
+      <div class="detail-value">${formVal.location || '—'}</div>
+    </div>
+    <div>
+      <div class="detail-label">All Day</div>
+      <div class="detail-value">${formVal.isAllDay ? 'Yes' : 'No'}</div>
+    </div>
+  </div>
+
+  ${contactSection}
+
+  ${formVal.description ? `<div style="margin-bottom:18px"><div class="detail-label">Description</div><div class="detail-value">${formVal.description}</div></div>` : ''}
+  ${formVal.notes ? `<div style="margin-bottom:18px"><div class="detail-label">Notes</div><div class="detail-value">${formVal.notes}</div></div>` : ''}
+
+  <h3 style="margin:0 0 8px;font-size:14px;color:#555;text-transform:uppercase;letter-spacing:1px">Charges</h3>
+  <table class="charges">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th style="text-align:right">Amount</th>
+        <th style="text-align:right">Tax</th>
+        <th style="text-align:right">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${chargeRows}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    Printed ${new Date().toLocaleString()}
+  </div>
+
+  <script>window.print();</script>
+</body>
+</html>`;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
   }
 }
 

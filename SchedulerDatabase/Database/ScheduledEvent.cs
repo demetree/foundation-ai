@@ -51,6 +51,12 @@ public partial class ScheduledEvent
 
     public int? partySize { get; set; }
 
+    public string bookingContactName { get; set; }
+
+    public string bookingContactEmail { get; set; }
+
+    public string bookingContactPhone { get; set; }
+
     public string notes { get; set; }
 
     public string color { get; set; }

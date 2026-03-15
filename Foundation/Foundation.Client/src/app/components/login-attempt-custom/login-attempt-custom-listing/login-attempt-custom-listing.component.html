@@ -1,7 +1,7 @@
 <div class="page-container">
 
-    <!-- Premium Header -->
-    <div class="card mb-4 header-card premium-header shadow-lg border-0">
+    <!-- Premium Header with Integrated Filters -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
         <div
             class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
             <div class="header-left d-flex align-items-center gap-2">
@@ -53,127 +53,46 @@
                 </button>
             </div>
         </div>
-    </div>
 
-    <!-- Statistics Panel -->
-    <div class="row g-3 mb-4 stats-row" *ngIf="!(isLoading$ | async)">
-        <div class="col-6 col-md">
-            <div class="stat-card stat-total">
-                <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
-                <div class="stat-value">{{ stats.totalAttempts | number }}</div>
-                <div class="stat-label">Total Attempts</div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="stat-card stat-success">
-                <div class="stat-icon"><i class="fa-solid fa-check-circle"></i></div>
-                <div class="stat-value">{{ stats.successCount | number }}</div>
-                <div class="stat-label">Successes</div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="stat-card stat-failure">
-                <div class="stat-icon"><i class="fa-solid fa-exclamation-triangle"></i></div>
-                <div class="stat-value">{{ stats.failureCount | number }}</div>
-                <div class="stat-label">Failures</div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="stat-card stat-rate">
-                <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
-                <div class="stat-value">{{ stats.successRate }}%</div>
-                <div class="stat-label">Success Rate</div>
-            </div>
-        </div>
-        <div class="col-6 col-md">
-            <div class="stat-card stat-users">
-                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                <div class="stat-value">{{ stats.uniqueUsers | number }}</div>
-                <div class="stat-label">Unique Users</div>
-            </div>
-        </div>
-        <!-- Activity Sparkline (Clickable for Analytics) -->
-        <div class="col-12 col-lg-4">
-            <div class="stat-card stat-sparkline clickable" (click)="openAnalyticsModal()"
-                ngbTooltip="Click for detailed analytics">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="stat-label mb-0">Activity Trend (Hourly)</span>
-                    <span class="kpi-action">
-                        <i class="fa-solid fa-chart-bar"></i>
-                    </span>
-                </div>
-                <div class="sparkline-container" *ngIf="sparklineData.datasets.length > 0">
-                    <canvas baseChart [data]="sparklineData" [options]="sparklineOptions" [type]="'line'">
-                    </canvas>
-                </div>
-                <div class="text-muted small text-center" *ngIf="sparklineData.datasets.length === 0">
-                    No data for sparkline
-                </div>
-            </div>
-        </div>
-    </div>
+        <!-- Integrated Filter Bar -->
+        <div class="filter-bar">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <select class="form-select form-select-sm filter-input" [(ngModel)]="selectedTimePreset"
+                    (change)="onTimePresetChange()" style="width: auto; min-width: 140px;">
+                    <option *ngFor="let preset of timePresets" [value]="preset.value">{{ preset.label }}</option>
+                </select>
 
-    <!-- Filter Panel -->
-    <div class="card mb-4 shadow-sm border-0 filter-card">
-        <div class="card-body">
-            <div class="row g-3 align-items-end">
-
-                <!-- Time Preset -->
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">Time Range</label>
-                    <select class="form-select" [(ngModel)]="selectedTimePreset" (change)="onTimePresetChange()">
-                        <option *ngFor="let preset of timePresets" [value]="preset.value">{{ preset.label }}</option>
-                    </select>
-                </div>
-
-                <!-- Custom Date Range (shown when 'custom' selected) -->
                 <ng-container *ngIf="selectedTimePreset === 'custom'">
-                    <div class="col-md-2">
-                        <label class="form-label small text-muted">Start Date</label>
-                        <input type="date" class="form-control" name="startDate" [(ngModel)]="customStartDate"
-                            (change)="applyFilters()">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small text-muted">End Date</label>
-                        <input type="date" class="form-control" name="endDate" [(ngModel)]="customEndDate"
-                            (change)="applyFilters()">
-                    </div>
+                    <input type="date" class="form-control form-control-sm filter-input" name="startDate"
+                        [(ngModel)]="customStartDate" (change)="applyFilters()" style="width: auto;">
+                    <span class="text-white-50 small">to</span>
+                    <input type="date" class="form-control form-control-sm filter-input" name="endDate"
+                        [(ngModel)]="customEndDate" (change)="applyFilters()" style="width: auto;">
                 </ng-container>
 
-                <!-- Status Filter -->
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">Status</label>
-                    <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
-                        <option value="all">All</option>
-                        <option value="success">Success Only</option>
-                        <option value="failure">Failures Only</option>
-                    </select>
+                <select class="form-select form-select-sm filter-input" [(ngModel)]="statusFilter"
+                    (change)="applyFilters()" style="width: auto; min-width: 120px;">
+                    <option value="all">All Status</option>
+                    <option value="success">Success Only</option>
+                    <option value="failure">Failures Only</option>
+                </select>
+
+                <input type="text" class="form-control form-control-sm filter-input" placeholder="Filter by user..."
+                    [(ngModel)]="userFilter" (keyup.enter)="applyFilters()" style="width: auto; min-width: 140px;">
+
+                <div class="input-group input-group-sm" style="width: auto; min-width: 180px;">
+                    <input type="text" class="form-control filter-input" placeholder="Search all..."
+                        [(ngModel)]="searchText" (keyup.enter)="applyFilters()">
+                    <button class="btn btn-light" (click)="applyFilters()">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
                 </div>
 
-                <!-- User Filter -->
-                <div class="col-md-2">
-                    <label class="form-label small text-muted">User</label>
-                    <input type="text" class="form-control" placeholder="Filter by user..." [(ngModel)]="userFilter"
-                        (keyup.enter)="applyFilters()">
-                </div>
-
-                <!-- Search with integrated action buttons -->
-                <div class="col-md-4">
-                    <label class="form-label small text-muted">Search</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search all..." [(ngModel)]="searchText"
-                            (keyup.enter)="applyFilters()">
-                        <button class="btn btn-primary" (click)="applyFilters()" ngbTooltip="Search">
-                            <i class="fa-solid fa-search"></i>
-                        </button>
-                        <!-- Reset filters button - only visible when filters are active -->
-                        <button class="btn btn-outline-danger"
-                            *ngIf="statusFilter !== 'all' || userFilter || searchText || selectedTimePreset !== '24h'"
-                            (click)="clearFilters()" ngbTooltip="Reset filters to defaults">
-                            <i class="fa-solid fa-undo"></i>
-                        </button>
-                    </div>
-                </div>
+                <button class="btn btn-sm btn-outline-light"
+                    *ngIf="statusFilter !== 'all' || userFilter || searchText || selectedTimePreset !== '24h'"
+                    (click)="clearFilters()" ngbTooltip="Reset filters">
+                    <i class="fa-solid fa-undo me-1"></i>Reset
+                </button>
             </div>
         </div>
     </div>
@@ -186,160 +105,254 @@
         <p class="text-muted mt-3">Loading login attempts...</p>
     </div>
 
-    <!-- Data Table -->
-    <div class="card shadow-sm border-0" *ngIf="!(isLoading$ | async)">
-        <div class="card-body p-0">
+    <!-- Dashboard Content (visible when not loading) -->
+    <ng-container *ngIf="!(isLoading$ | async)">
 
-            <!-- Empty State -->
-            <div *ngIf="(loginAttempts$ | async)?.length === 0" class="text-center py-5">
-                <i class="fa-solid fa-right-to-bracket fa-4x text-muted opacity-50 mb-3"></i>
-                <h5 class="text-muted">No Login Attempts Found</h5>
-                <p class="text-muted">Try adjusting your filters or selecting a different time range.</p>
+        <!-- Compact Stats Bar -->
+        <div class="stats-bar mb-3">
+            <div class="stat-pill stat-total">
+                <i class="fa-solid fa-chart-line"></i>
+                <span class="stat-number">{{ stats.totalAttempts | number }}</span>
+                <span class="stat-text">TOTAL ATTEMPTS</span>
             </div>
-
-            <!-- Attempts Table -->
-            <div class="table-responsive" *ngIf="(loginAttempts$ | async)?.length">
-                <table class="table table-hover login-table mb-0">
-                    <thead>
-                        <tr>
-                            <th style="width: 40px;"></th>
-                            <th style="width: 120px;" class="sortable" (click)="sortBy('timeStamp')">
-                                Time <i class="fa-solid" [ngClass]="getSortIcon('timeStamp')"></i>
-                            </th>
-                            <th style="width: 80px;" class="text-center sortable" (click)="sortBy('value')">
-                                Status <i class="fa-solid" [ngClass]="getSortIcon('value')"></i>
-                            </th>
-                            <th style="width: 150px;" class="sortable" (click)="sortBy('userName')">
-                                User <i class="fa-solid" [ngClass]="getSortIcon('userName')"></i>
-                            </th>
-                            <th style="width: 130px;" class="sortable" (click)="sortBy('ipAddress')">
-                                IP Address <i class="fa-solid" [ngClass]="getSortIcon('ipAddress')"></i>
-                            </th>
-                            <th>Resource</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <ng-container *ngFor="let attempt of pagedAttempts; trackBy: trackByAttemptId">
-                            <!-- Main Row - click anywhere to expand -->
-                            <tr class="attempt-row" [class.expanded]="isExpanded(attempt)"
-                                [class.failure-row]="!isSuccess(attempt)" (click)="toggleExpand(attempt)"
-                                style="cursor: pointer;" title="Click to expand details">
-                                <td>
-                                    <span class="expand-icon">
-                                        <i class="fa-solid" [class.fa-chevron-right]="!isExpanded(attempt)"
-                                            [class.fa-chevron-down]="isExpanded(attempt)"></i>
-                                    </span>
-                                </td>
-                                <td>
-                                    <span [ngbTooltip]="formatFullDateTime(attempt.timeStamp)" container="body">
-                                        {{ formatRelativeTime(attempt.timeStamp) }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge" [class.bg-success]="isSuccess(attempt)"
-                                        [class.bg-danger]="!isSuccess(attempt)">
-                                        <i class="fa-solid" [class.fa-check]="isSuccess(attempt)"
-                                            [class.fa-times]="!isSuccess(attempt)"></i>
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="user-name">{{ attempt.userName || '—' }}</span>
-                                </td>
-                                <td>
-                                    <span class="ip-address">{{ attempt.ipAddress || '—' }}</span>
-                                </td>
-                                <td [ngbTooltip]="attempt.resource" container="body">
-                                    {{ truncateText(attempt.resource, 40) }}
-                                </td>
-                            </tr>
-
-                            <!-- Expanded Detail Row -->
-                            <tr *ngIf="isExpanded(attempt)" class="detail-row">
-                                <td colspan="6">
-                                    <div class="detail-content">
-                                        <div class="row g-3">
-                                            <div class="col-md-3">
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Session ID</span>
-                                                    <span class="detail-value">{{ attempt.sessionId || '—' }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="detail-item">
-                                                    <span class="detail-label">IP Address</span>
-                                                    <span class="detail-value">{{ attempt.ipAddress || '—' }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Resource</span>
-                                                    <span class="detail-value">{{ attempt.resource || '—' }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Attempt ID</span>
-                                                    <span class="detail-value">#{{ attempt.id }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-12" *ngIf="attempt.userAgent">
-                                                <div class="detail-item">
-                                                    <span class="detail-label">User Agent</span>
-                                                    <span class="detail-value user-agent-full">{{ attempt.userAgent
-                                                        }}</span>
-                                                </div>
-                                            </div>
-                                            <div class="col-12" *ngIf="attempt.value">
-                                                <div class="detail-item">
-                                                    <span class="detail-label">Result Details</span>
-                                                    <span class="detail-value">{{ attempt.value }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </ng-container>
-                    </tbody>
-                </table>
+            <div class="stat-pill stat-success">
+                <i class="fa-solid fa-check-circle"></i>
+                <span class="stat-number">{{ stats.successCount | number }}</span>
+                <span class="stat-text">SUCCESSES</span>
             </div>
-
-            <!-- Pagination -->
-            <div class="card-footer bg-white border-0 d-flex justify-content-between align-items-center"
-                *ngIf="totalPages > 1">
-                <div class="text-muted small">
-                    Showing {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize,
-                    (loginAttempts$ | async)?.length || 0) }}
-                    of {{ (loginAttempts$ | async)?.length || 0 }} attempts
+            <div class="stat-pill stat-failure">
+                <i class="fa-solid fa-exclamation-triangle"></i>
+                <span class="stat-number">{{ stats.failureCount | number }}</span>
+                <span class="stat-text">FAILURES</span>
+            </div>
+            <div class="stat-pill stat-rate">
+                <i class="fa-solid fa-percent"></i>
+                <span class="stat-number">{{ stats.successRate }}%</span>
+                <span class="stat-text">SUCCESS RATE</span>
+            </div>
+            <div class="stat-pill stat-users">
+                <i class="fa-solid fa-users"></i>
+                <span class="stat-number">{{ stats.uniqueUsers | number }}</span>
+                <span class="stat-text">UNIQUE USERS</span>
+            </div>
+            <!-- Activity Sparkline (clickable) -->
+            <div class="stat-pill stat-sparkline clickable" (click)="openAnalyticsModal()"
+                ngbTooltip="Click for detailed analytics">
+                <span class="stat-text">ACTIVITY TREND (HOURLY)</span>
+                <i class="fa-solid fa-chart-bar kpi-action"></i>
+                <div class="sparkline-container" *ngIf="sparklineData.datasets.length > 0">
+                    <canvas baseChart [data]="sparklineData" [options]="sparklineOptions" [type]="'line'">
+                    </canvas>
                 </div>
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        <li class="page-item" [class.disabled]="currentPage === 1">
-                            <button class="page-link" (click)="goToPage(1)">
-                                <i class="fa-solid fa-angles-left"></i>
-                            </button>
-                        </li>
-                        <li class="page-item" [class.disabled]="currentPage === 1">
-                            <button class="page-link" (click)="goToPage(currentPage - 1)">
-                                <i class="fa-solid fa-angle-left"></i>
-                            </button>
-                        </li>
-                        <li class="page-item active">
-                            <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
-                        </li>
-                        <li class="page-item" [class.disabled]="currentPage === totalPages">
-                            <button class="page-link" (click)="goToPage(currentPage + 1)">
-                                <i class="fa-solid fa-angle-right"></i>
-                            </button>
-                        </li>
-                        <li class="page-item" [class.disabled]="currentPage === totalPages">
-                            <button class="page-link" (click)="goToPage(totalPages)">
-                                <i class="fa-solid fa-angles-right"></i>
-                            </button>
-                        </li>
-                    </ul>
-                </nav>
             </div>
         </div>
-    </div>
+
+        <!-- Empty State -->
+        <div *ngIf="(loginAttempts$ | async)?.length === 0" class="text-center py-5">
+            <i class="fa-solid fa-right-to-bracket fa-4x text-muted opacity-50 mb-3"></i>
+            <h5 class="text-muted">No Login Attempts Found</h5>
+            <p class="text-muted">Try adjusting your filters or selecting a different time range.</p>
+        </div>
+
+        <!-- 2×2 Dashboard Grid -->
+        <ng-container *ngIf="(loginAttempts$ | async)?.length">
+
+            <!-- Row 1: Hourly Distribution + Login Origins (map only) -->
+            <div class="row g-3 mb-3">
+                <div class="col-lg-6">
+                    <div class="inline-analytics-card">
+                        <div class="analytics-card-header">
+                            <h6 class="mb-0"><i class="fa-solid fa-clock me-2"></i>Hourly Distribution (Local Time)</h6>
+                        </div>
+                        <div class="analytics-chart-container" style="height: 220px;">
+                            <canvas baseChart [data]="hourlyChartData" [options]="hourlyChartOptions"
+                                [type]="'bar'"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="inline-analytics-card">
+                        <div class="analytics-card-header">
+                            <h6 class="mb-0"><i class="fa-solid fa-globe me-2"></i>Login Origins</h6>
+                        </div>
+                        <app-login-geo-map [attempts]="(loginAttempts$ | async) || []"
+                            [showMap]="true" [showBreakdown]="false"></app-login-geo-map>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Login Attempt Detail + Geographic Origins -->
+            <div class="row g-3">
+
+                <!-- Login Attempt Detail (table) -->
+                <div class="col-lg-7">
+                    <div class="inline-analytics-card">
+                        <div class="analytics-card-header d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fa-solid fa-list me-2"></i>Login Attempt Detail</h6>
+                            <span class="badge bg-secondary" *ngIf="totalPages > 1">
+                                Page {{ currentPage }} of {{ totalPages }}
+                            </span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover login-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 36px;"></th>
+                                        <th style="width: 110px;" class="sortable" (click)="sortBy('timeStamp')">
+                                            Time <i class="fa-solid" [ngClass]="getSortIcon('timeStamp')"></i>
+                                        </th>
+                                        <th style="width: 60px;" class="text-center sortable" (click)="sortBy('value')">
+                                            Status <i class="fa-solid" [ngClass]="getSortIcon('value')"></i>
+                                        </th>
+                                        <th style="width: 130px;" class="sortable" (click)="sortBy('userName')">
+                                            User <i class="fa-solid" [ngClass]="getSortIcon('userName')"></i>
+                                        </th>
+                                        <th style="width: 120px;" class="sortable" (click)="sortBy('ipAddress')">
+                                            IP Address <i class="fa-solid" [ngClass]="getSortIcon('ipAddress')"></i>
+                                        </th>
+                                        <th>Resource</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ng-container *ngFor="let attempt of pagedAttempts; trackBy: trackByAttemptId">
+                                        <tr class="attempt-row" [class.expanded]="isExpanded(attempt)"
+                                            [class.failure-row]="!isSuccess(attempt)" (click)="toggleExpand(attempt)"
+                                            style="cursor: pointer;" title="Click to expand details">
+                                            <td>
+                                                <span class="expand-icon">
+                                                    <i class="fa-solid" [class.fa-chevron-right]="!isExpanded(attempt)"
+                                                        [class.fa-chevron-down]="isExpanded(attempt)"></i>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span [ngbTooltip]="formatFullDateTime(attempt.timeStamp)" container="body">
+                                                    {{ formatRelativeTime(attempt.timeStamp) }}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge" [class.bg-success]="isSuccess(attempt)"
+                                                    [class.bg-danger]="!isSuccess(attempt)">
+                                                    <i class="fa-solid" [class.fa-check]="isSuccess(attempt)"
+                                                        [class.fa-times]="!isSuccess(attempt)"></i>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="user-name">{{ attempt.userName || '—' }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="ip-address">{{ attempt.ipAddress || '—' }}</span>
+                                            </td>
+                                            <td [ngbTooltip]="attempt.resource" container="body">
+                                                {{ truncateText(attempt.resource, 40) }}
+                                            </td>
+                                        </tr>
+
+                                        <!-- Expanded Detail Row -->
+                                        <tr *ngIf="isExpanded(attempt)" class="detail-row">
+                                            <td colspan="6">
+                                                <div class="detail-content">
+                                                    <div class="row g-3">
+                                                        <div class="col-md-3">
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Session ID</span>
+                                                                <span class="detail-value">{{ attempt.sessionId || '—' }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">IP Address</span>
+                                                                <span class="detail-value">{{ attempt.ipAddress || '—' }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Resource</span>
+                                                                <span class="detail-value">{{ attempt.resource || '—' }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-3">
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Attempt ID</span>
+                                                                <span class="detail-value">#{{ attempt.id }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12" *ngIf="attempt.userAgent">
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">User Agent</span>
+                                                                <span class="detail-value user-agent-full">{{ attempt.userAgent }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-12" *ngIf="attempt.value">
+                                                            <div class="detail-item">
+                                                                <span class="detail-label">Result Details</span>
+                                                                <span class="detail-value">{{ attempt.value }}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-container>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="card-footer border-0 d-flex justify-content-between align-items-center px-3 py-2"
+                            *ngIf="totalPages > 1">
+                            <div class="text-muted small">
+                                {{ (currentPage - 1) * pageSize + 1 }}–{{ Math.min(currentPage * pageSize,
+                                (loginAttempts$ | async)?.length || 0) }}
+                                of {{ (loginAttempts$ | async)?.length || 0 }}
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" [class.disabled]="currentPage === 1">
+                                        <button class="page-link" (click)="goToPage(1)">
+                                            <i class="fa-solid fa-angles-left"></i>
+                                        </button>
+                                    </li>
+                                    <li class="page-item" [class.disabled]="currentPage === 1">
+                                        <button class="page-link" (click)="goToPage(currentPage - 1)">
+                                            <i class="fa-solid fa-angle-left"></i>
+                                        </button>
+                                    </li>
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ currentPage }} / {{ totalPages }}</span>
+                                    </li>
+                                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                                        <button class="page-link" (click)="goToPage(currentPage + 1)">
+                                            <i class="fa-solid fa-angle-right"></i>
+                                        </button>
+                                    </li>
+                                    <li class="page-item" [class.disabled]="currentPage === totalPages">
+                                        <button class="page-link" (click)="goToPage(totalPages)">
+                                            <i class="fa-solid fa-angles-right"></i>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Geographic Origins (breakdown only, no map) -->
+                <div class="col-lg-5">
+                    <div class="inline-analytics-card">
+                        <div class="analytics-card-header">
+                            <h6 class="mb-0"><i class="fa-solid fa-earth-americas me-2"></i>Geographic Origins</h6>
+                        </div>
+                        <div class="geo-breakdown-container">
+                            <app-login-geo-map [attempts]="(loginAttempts$ | async) || []"
+                                [showMap]="false" [showBreakdown]="true"></app-login-geo-map>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </ng-container>
+
+    </ng-container>
+
 </div>

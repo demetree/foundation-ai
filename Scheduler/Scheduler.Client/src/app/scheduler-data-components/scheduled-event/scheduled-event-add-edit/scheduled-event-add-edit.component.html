@@ -148,6 +148,20 @@
                 <label for="ScheduledEvent-partySize" id="label-ScheduledEvent-partySize">Party Size</label>
                 <input type="number" id="ScheduledEvent-partySize" formControlName="partySize" placeholder="Enter Party Size" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-partySize" />
             </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bookingContactName')">
+                <label for="ScheduledEvent-bookingContactName" id="label-ScheduledEvent-bookingContactName">Booking Contact Name</label>
+                <input type="text" id="ScheduledEvent-bookingContactName" formControlName="bookingContactName" placeholder="Enter Booking Contact Name" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-bookingContactName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bookingContactEmail')">
+                <label for="ScheduledEvent-bookingContactEmail" id="label-ScheduledEvent-bookingContactEmail" *ngIf="isEditMode"><a href="mailto:{{scheduledEventSubmitData?.bookingContactEmail}}" ngbTooltip="Send Email to {{scheduledEventSubmitData?.bookingContactEmail}}">Booking Contact Email</a></label>
+                <label for="ScheduledEvent-bookingContactEmail" id="label-ScheduledEvent-bookingContactEmail" *ngIf="!isEditMode">Booking Contact Email</label>
+                <input type="text" id="ScheduledEvent-bookingContactEmail" formControlName="bookingContactEmail" placeholder="Enter Booking Contact Email" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-bookingContactEmail" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('bookingContactPhone')">
+                <label for="ScheduledEvent-bookingContactPhone" id="label-ScheduledEvent-bookingContactPhone" *ngIf="isEditMode"><a href="tel:{{scheduledEventSubmitData?.bookingContactPhone}}" ngbTooltip="Phone {{scheduledEventSubmitData?.bookingContactPhone}}">Booking Contact Phone</a></label>
+                <label for="ScheduledEvent-bookingContactPhone" id="label-ScheduledEvent-bookingContactPhone" *ngIf="!isEditMode">Booking Contact Phone</label>
+                <input type="text" id="ScheduledEvent-bookingContactPhone" formControlName="bookingContactPhone" placeholder="Enter Booking Contact Phone" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-bookingContactPhone" />
+            </div>
             <div class="form-group" *ngIf="!isFieldHidden('notes')">
                 <label for="ScheduledEvent-notes" id="label-ScheduledEvent-notes">Notes</label>
                 <textarea id="ScheduledEvent-notes" formControlName="notes" placeholder="Enter Notes" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()"></textarea>

@@ -305,6 +305,9 @@ namespace Foundation.Scheduler.Database
 			public Int32? priorityId { get; set; }
 			public Int32? bookingSourceTypeId { get; set; }
 			public Int32? partySize { get; set; }
+			public String bookingContactName { get; set; }
+			public String bookingContactEmail { get; set; }
+			public String bookingContactPhone { get; set; }
 			public String notes { get; set; }
 			public String color { get; set; }
 			public String externalId { get; set; }
@@ -374,6 +377,9 @@ namespace Foundation.Scheduler.Database
 				priorityId = this.priorityId,
 				bookingSourceTypeId = this.bookingSourceTypeId,
 				partySize = this.partySize,
+				bookingContactName = this.bookingContactName,
+				bookingContactEmail = this.bookingContactEmail,
+				bookingContactPhone = this.bookingContactPhone,
 				notes = this.notes,
 				color = this.color,
 				externalId = this.externalId,
@@ -443,6 +449,9 @@ namespace Foundation.Scheduler.Database
 				priorityId = this.priorityId,
 				bookingSourceTypeId = this.bookingSourceTypeId,
 				partySize = this.partySize,
+				bookingContactName = this.bookingContactName,
+				bookingContactEmail = this.bookingContactEmail,
+				bookingContactPhone = this.bookingContactPhone,
 				notes = this.notes,
 				color = this.color,
 				externalId = this.externalId,
@@ -524,6 +533,9 @@ namespace Foundation.Scheduler.Database
 				priorityId = dto.priorityId,
 				bookingSourceTypeId = dto.bookingSourceTypeId,
 				partySize = dto.partySize,
+				bookingContactName = dto.bookingContactName,
+				bookingContactEmail = dto.bookingContactEmail,
+				bookingContactPhone = dto.bookingContactPhone,
 				notes = dto.notes,
 				color = dto.color,
 				externalId = dto.externalId,
@@ -570,6 +582,9 @@ namespace Foundation.Scheduler.Database
 			this.priorityId = dto.priorityId;
 			this.bookingSourceTypeId = dto.bookingSourceTypeId;
 			this.partySize = dto.partySize;
+			this.bookingContactName = dto.bookingContactName;
+			this.bookingContactEmail = dto.bookingContactEmail;
+			this.bookingContactPhone = dto.bookingContactPhone;
 			this.notes = dto.notes;
 			this.color = dto.color;
 			this.externalId = dto.externalId;
@@ -622,6 +637,9 @@ namespace Foundation.Scheduler.Database
 				priorityId = this.priorityId,
 				bookingSourceTypeId = this.bookingSourceTypeId,
 				partySize = this.partySize,
+				bookingContactName = this.bookingContactName,
+				bookingContactEmail = this.bookingContactEmail,
+				bookingContactPhone = this.bookingContactPhone,
 				notes = this.notes,
 				color = this.color,
 				externalId = this.externalId,
@@ -705,6 +723,9 @@ namespace Foundation.Scheduler.Database
 				priorityId = scheduledEvent.priorityId,
 				bookingSourceTypeId = scheduledEvent.bookingSourceTypeId,
 				partySize = scheduledEvent.partySize,
+				bookingContactName = scheduledEvent.bookingContactName,
+				bookingContactEmail = scheduledEvent.bookingContactEmail,
+				bookingContactPhone = scheduledEvent.bookingContactPhone,
 				notes = scheduledEvent.notes,
 				color = scheduledEvent.color,
 				externalId = scheduledEvent.externalId,
@@ -755,6 +776,9 @@ namespace Foundation.Scheduler.Database
 				priorityId = scheduledEvent.priorityId,
 				bookingSourceTypeId = scheduledEvent.bookingSourceTypeId,
 				partySize = scheduledEvent.partySize,
+				bookingContactName = scheduledEvent.bookingContactName,
+				bookingContactEmail = scheduledEvent.bookingContactEmail,
+				bookingContactPhone = scheduledEvent.bookingContactPhone,
 				notes = scheduledEvent.notes,
 				color = scheduledEvent.color,
 				externalId = scheduledEvent.externalId,

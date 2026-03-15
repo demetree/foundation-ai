@@ -217,6 +217,33 @@
           </select>
         </div>
 
+        <!-- Booking Contact (Quick Entry) -->
+        <div class="col-12">
+          <label class="form-label fw-semibold">
+            <i class="bi bi-person-lines-fill me-1 text-info"></i>Booking Contact
+          </label>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <input type="text" class="form-control" formControlName="bookingContactName"
+                placeholder="Contact name" />
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" class="form-control" formControlName="bookingContactEmail"
+                  placeholder="Email" />
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                <input type="tel" class="form-control" formControlName="bookingContactPhone"
+                  placeholder="Phone" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Description -->
         <div class="col-12">
           <label class="form-label fw-semibold">Description</label>
@@ -973,6 +1000,10 @@
   <button type="button" class="btn btn-outline-info me-auto" (click)="saveAsTemplate()"
     title="Save current configuration as a reusable template">
     <i class="bi bi-bookmark-plus me-1"></i>Save as Template
+  </button>
+  <button type="button" class="btn btn-outline-secondary" (click)="printBookingSummary()"
+    *ngIf="isEditMode" ngbTooltip="Print booking summary">
+    <i class="bi bi-printer me-1"></i>Print
   </button>
   <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss('cancel')">
     <i class="bi bi-x-lg me-1"></i>Cancel

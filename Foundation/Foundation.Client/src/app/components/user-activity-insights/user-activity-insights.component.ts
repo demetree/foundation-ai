@@ -371,7 +371,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('fill', d => colorScale(d.count))
             .attr('opacity', 0.85)
             .on('mouseover', function (event, d) {
-                d3.select(this).attr('opacity', 1).attr('stroke', 'var(--bs-body-color)').attr('stroke-width', 2);
+                d3.select(this).attr('opacity', 1).attr('stroke', 'var(--fnd-text-primary)').attr('stroke-width', 2);
                 tooltip.style('opacity', 1)
                     .html(`<strong>${d.hour}:00 – ${d.hour}:59</strong><br/>${d.count.toLocaleString()} events`)
                     .style('left', (event.offsetX + 10) + 'px')
@@ -401,7 +401,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
                 .attr('y', Math.sin(angle) * labelRadius)
                 .attr('text-anchor', 'middle')
                 .attr('dominant-baseline', 'middle')
-                .attr('fill', 'var(--bs-body-color)')
+                .attr('fill', 'var(--fnd-text-primary)')
                 .attr('font-size', '11px')
                 .attr('opacity', 0.7)
                 .text(`${h}h`);
@@ -488,7 +488,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('y', (_, i) => i * (cellSize + cellPadding) + cellSize / 2)
             .attr('text-anchor', 'end')
             .attr('dominant-baseline', 'middle')
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '10px')
             .attr('opacity', 0.6)
             .text(d => d);
@@ -505,7 +505,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
                         .attr('class', 'month-label')
                         .attr('x', weekNum * (cellSize + cellPadding))
                         .attr('y', -6)
-                        .attr('fill', 'var(--bs-body-color)')
+                        .attr('fill', 'var(--fnd-text-primary)')
                         .attr('font-size', '10px')
                         .attr('opacity', 0.6)
                         .text(d.date.toLocaleString('default', { month: 'short' }));
@@ -533,10 +533,10 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('width', cellSize)
             .attr('height', cellSize)
             .attr('rx', 2)
-            .attr('fill', d => d.count > 0 ? colorScale(d.count) : 'var(--bs-border-color)')
+            .attr('fill', d => d.count > 0 ? colorScale(d.count) : 'var(--fnd-border)')
             .attr('opacity', 0)
             .on('mouseover', function (event, d) {
-                d3.select(this).attr('stroke', 'var(--bs-body-color)').attr('stroke-width', 2);
+                d3.select(this).attr('stroke', 'var(--fnd-text-primary)').attr('stroke-width', 2);
                 tooltip.style('opacity', 1)
                     .html(`<strong>${d.date.toLocaleDateString()}</strong><br/>${d.count.toLocaleString()} events<br/>${d.uniqueUsers} users`)
                     .style('left', (event.offsetX + 10) + 'px')
@@ -633,7 +633,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('y', d => yScale(d.moduleName) || 0)
             .attr('height', yScale.bandwidth())
             .attr('rx', 4)
-            .attr('fill', 'var(--bs-secondary)')
+            .attr('fill', 'var(--fnd-text-muted)')
             .attr('opacity', 0.4)
             .attr('width', 0)
             .transition()
@@ -651,7 +651,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('y', d => (yScale(d.moduleName) || 0) + yScale.bandwidth() / 2)
             .attr('text-anchor', 'end')
             .attr('dominant-baseline', 'middle')
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '11px')
             .text(d => d.moduleName.length > 18 ? d.moduleName.substring(0, 18) + '…' : d.moduleName);
 
@@ -664,7 +664,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('x', d => xScale(d.eventCount) + 5)
             .attr('y', d => (yScale(d.moduleName) || 0) + yScale.bandwidth() / 2)
             .attr('dominant-baseline', 'middle')
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '10px')
             .attr('opacity', 0.6)
             .text(d => d.eventCount.toLocaleString());
@@ -746,7 +746,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('d', arc)
             .attr('fill', d => color(d.data.auditTypeName))
             .attr('opacity', 0.85)
-            .attr('stroke', 'var(--bs-body-bg)')
+            .attr('stroke', 'var(--fnd-panel-bg)')
             .attr('stroke-width', 2)
             .on('mouseover', function (event, d) {
                 d3.select(this)
@@ -779,7 +779,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
         svg.append('text')
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '24px')
             .attr('font-weight', '700')
             .text(total.toLocaleString());
@@ -788,7 +788,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
             .attr('y', 22)
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '11px')
             .attr('opacity', 0.6)
             .text('events');
@@ -951,26 +951,44 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('class', 'sunburst-arc')
             .attr('d', arc as any)
             .attr('fill', d => getNodeColor(d as any))
-            .attr('stroke', 'var(--bs-body-bg)')
+            .attr('stroke', 'var(--fnd-panel-bg)')
             .attr('stroke-width', 1)
             .attr('cursor', 'pointer')
             .attr('opacity', 1);
 
-        // 2) Ring-level labels (above arcs)
+        // 2) Ring-level labels (above arcs) with background pill
         const depthLabels = ['', 'Users', 'Modules', 'Entities'];
         for (let depth = 1; depth <= 3; depth++) {
             const r = (hierarchy.descendants().find(d => d.depth === depth) as any);
             if (r) {
                 const labelRadius = (r.y0 + r.y1) / 2 * 0.65;
+                const labelText = depthLabels[depth];
+                const pillWidth = labelText.length * 7 + 12;
+                const pillHeight = 18;
+
+                // Background pill
+                g.append('rect')
+                    .attr('x', -pillWidth / 2)
+                    .attr('y', -labelRadius - pillHeight / 2)
+                    .attr('width', pillWidth)
+                    .attr('height', pillHeight)
+                    .attr('rx', pillHeight / 2)
+                    .attr('ry', pillHeight / 2)
+                    .attr('fill', 'var(--fnd-panel-bg)')
+                    .attr('stroke', 'var(--fnd-border)')
+                    .attr('stroke-width', 1)
+                    .attr('opacity', 0.92);
+
+                // Label text
                 g.append('text')
                     .attr('text-anchor', 'middle')
                     .attr('y', -labelRadius)
-                    .attr('fill', 'var(--bs-secondary-color)')
-                    .attr('font-size', '9px')
-                    .attr('font-weight', '600')
-                    .attr('opacity', 0.5)
-                    .attr('text-transform', 'uppercase')
-                    .text(depthLabels[depth]);
+                    .attr('dominant-baseline', 'central')
+                    .attr('fill', 'var(--fnd-text-muted)')
+                    .attr('font-size', '10px')
+                    .attr('font-weight', '700')
+                    .attr('letter-spacing', '0.06em')
+                    .text(labelText.toUpperCase());
             }
         }
 
@@ -981,7 +999,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
 
         const centerLabel = centerGroup.append('text')
             .attr('text-anchor', 'middle')
-            .attr('fill', 'var(--bs-body-color)');
+            .attr('fill', 'var(--fnd-text-primary)');
 
         const centerValue = centerLabel.append('tspan')
             .attr('x', 0)
@@ -995,7 +1013,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('x', 0)
             .attr('dy', '1.5em')
             .attr('font-size', '0.7rem')
-            .attr('fill', 'var(--bs-secondary-color)')
+            .attr('fill', 'var(--fnd-text-muted)')
             .attr('text-transform', 'uppercase')
             .text('total events');
 
@@ -1003,8 +1021,8 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
         const breadcrumbText = centerGroup.append('text')
             .attr('text-anchor', 'middle')
             .attr('y', 40)
-            .attr('fill', 'var(--bs-secondary-color)')
-            .attr('font-size', '0.72rem')
+            .attr('fill', 'var(--fnd-text-primary)')
+            .attr('font-size', '0.82rem')
             .attr('opacity', 0);
 
         // Hover interaction — highlight ancestors (sequence path)
@@ -1200,7 +1218,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('y', (d: any) => (d.y0 + d.y1) / 2)
             .attr('text-anchor', (d: any) => d.column === 2 ? 'start' : d.column === 0 ? 'end' : 'middle')
             .attr('dominant-baseline', 'middle')
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '11px')
             .attr('font-weight', (d: any) => d.column === 2 ? '700' : '400')
             .text((d: any) => {
@@ -1219,7 +1237,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
                 .attr('x', col.x)
                 .attr('y', -2)
                 .attr('text-anchor', col.x === 0 ? 'start' : col.x === width ? 'end' : 'middle')
-                .attr('fill', 'var(--bs-secondary-color)')
+                .attr('fill', 'var(--fnd-text-muted)')
                 .attr('font-size', '9px')
                 .attr('font-weight', '600')
                 .attr('text-transform', 'uppercase')
@@ -1401,7 +1419,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
         groups.append('text')
             .attr('x', (d: any) => d.x0 + 4)
             .attr('y', (d: any) => d.y0 + 13)
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '11px')
             .attr('font-weight', '600')
             .attr('opacity', 0.8)
@@ -1439,7 +1457,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
             .attr('rx', 3)
             .attr('opacity', 0)
             .on('mouseover', function (event: any, d: any) {
-                d3.select(this).attr('opacity', 1).attr('stroke', 'var(--bs-body-color)').attr('stroke-width', 1.5);
+                d3.select(this).attr('opacity', 1).attr('stroke', 'var(--fnd-text-primary)').attr('stroke-width', 1.5);
                 const modName = d.parent?.data?.name || '';
                 tooltip.style('opacity', 1)
                     .html(`<strong>${modName} / ${d.data.name}</strong><br/>${(d.value || 0).toLocaleString()} events`)
@@ -1465,7 +1483,7 @@ export class UserActivityInsightsComponent implements OnInit, OnDestroy, AfterVi
         leaves.append('text')
             .attr('x', (d: any) => d.x0 + 4)
             .attr('y', (d: any) => d.y0 + 13)
-            .attr('fill', 'var(--bs-body-color)')
+            .attr('fill', 'var(--fnd-text-primary)')
             .attr('font-size', '10px')
             .attr('opacity', 0.8)
             .text((d: any) => d.data.name)

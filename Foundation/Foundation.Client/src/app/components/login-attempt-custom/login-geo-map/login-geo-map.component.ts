@@ -131,6 +131,12 @@ export class LoginGeoMapComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() attempts: LoginAttemptData[] = [];
 
     //
+    // Display control: show/hide map and breakdown independently
+    //
+    @Input() showMap: boolean = true;
+    @Input() showBreakdown: boolean = true;
+
+    //
     // Map and marker state
     //
     private map: L.Map | null = null;

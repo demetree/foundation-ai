@@ -2121,18 +2121,8 @@ namespace Foundation.Scheduler.CodeGeneration
                 DateTime startTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, 10, 0, 0, DateTimeKind.Utc);
                 DateTime endTime = new DateTime(eventDate.Year, eventDate.Month, eventDate.Day, 14, 0, 0, DateTimeKind.Utc);
 
-                // Build notes from all the extra columns
+                // Build notes from the extra columns (contact info now goes in dedicated fields)
                 string notes = "";
-
-                if (!string.IsNullOrEmpty(contactName))
-                {
-                    notes += $"Contact: {contactName}\n";
-                }
-
-                if (!string.IsNullOrEmpty(contactInfo))
-                {
-                    notes += $"Contact Info: {contactInfo}\n";
-                }
 
                 if (!string.IsNullOrEmpty(rentalAgreement))
                 {
@@ -2161,6 +2151,11 @@ namespace Foundation.Scheduler.CodeGeneration
                 se.location = "Recreation Centre";
                 se.notes = notes.Trim();
                 se.externalId = $"PHMC-BOOKING-{loadedCount + 1:D4}";
+
+                // Populate dedicated booking contact fields from spreadsheet columns
+                se.bookingContactName = string.IsNullOrEmpty(contactName) ? null : contactName;
+                se.bookingContactPhone = string.IsNullOrEmpty(contactInfo) ? null : contactInfo;
+
                 se.versionNumber = 0;
                 se.objectGuid = Guid.NewGuid();
                 se.active = true;

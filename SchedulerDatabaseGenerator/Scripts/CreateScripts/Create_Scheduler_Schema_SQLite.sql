@@ -4805,6 +4805,9 @@ CREATE TABLE "ScheduledEvent"
 	"priorityId" INTEGER NULL,		-- Optional priority
 	"bookingSourceTypeId" INTEGER NULL,		-- Optional booking source for reservation type workflows.
 	"partySize" INTEGER NULL,		-- Optional for use when running as a reservation system
+	"bookingContactName" VARCHAR(250) NULL COLLATE NOCASE,		-- Name of the person booking (e.g., hall renter). Supports quick data entry without creating a full Contact.
+	"bookingContactEmail" VARCHAR(250) NULL COLLATE NOCASE,		-- Email of the person booking.
+	"bookingContactPhone" VARCHAR(50) NULL COLLATE NOCASE,		-- Phone number of the person booking.
 	"notes" TEXT NULL COLLATE NOCASE,
 	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Override Hex color for UI display
 	"externalId" VARCHAR(100) NULL COLLATE NOCASE,		-- Optional link to an entity in another system

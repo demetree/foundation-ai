@@ -345,7 +345,11 @@
                                         <span class="user-rank" [class.rank-gold]="i === 0"
                                             [class.rank-silver]="i === 1" [class.rank-bronze]="i === 2">{{ i + 1
                                             }}</span>
-                                        {{ user.userName }}
+                                        <span [ngbTooltip]="user.userName === 'Anonymous' ? 'Unauthenticated traffic from public browse endpoints (Parts Catalog, Set Explorer, Themes, Minifig Gallery, etc.)' : null"
+                                            [class.text-muted]="user.userName === 'Anonymous'">
+                                            {{ user.userName }}
+                                            <i *ngIf="user.userName === 'Anonymous'" class="bi bi-info-circle ms-1 opacity-50" style="font-size: 0.75rem;"></i>
+                                        </span>
                                     </td>
                                     <td class="text-end fw-semibold">{{ user.eventCount | number }}</td>
                                     <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ user.topModule

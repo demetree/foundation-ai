@@ -2897,6 +2897,13 @@ You attach the specific Crew/Resource to Event B.";
             scheduledEventTable.AddForeignKeyField(priorityTable, true, true).AddScriptComments("Optional priority");
             scheduledEventTable.AddForeignKeyField(bookingSourceTypeTable, true, true).AddScriptComments("Optional booking source for reservation type workflows.");
             scheduledEventTable.AddIntField("partySize", true, null).AddScriptComments("Optional for use when running as a reservation system");
+
+            // Booking contact — lightweight inline fields for quick entry of renter/booker
+            // contact info without needing to create a full Contact record.
+            scheduledEventTable.AddString250Field("bookingContactName", true).AddScriptComments("Name of the person booking (e.g., hall renter). Supports quick data entry without creating a full Contact.");
+            scheduledEventTable.AddString250Field("bookingContactEmail", true).AddScriptComments("Email of the person booking.");
+            scheduledEventTable.AddString50Field("bookingContactPhone", true).AddScriptComments("Phone number of the person booking.");
+
             scheduledEventTable.AddTextField("notes", true);
             scheduledEventTable.AddHTMLColorField("color", true).AddScriptComments("Override Hex color for UI display");
 
