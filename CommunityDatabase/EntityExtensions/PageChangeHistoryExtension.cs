@@ -284,7 +284,7 @@ namespace Foundation.Community.Database
 				timeStamp = pageChangeHistory.timeStamp,
 				userId = pageChangeHistory.userId,
 				data = pageChangeHistory.data,
-				page = Page.CreateMinimalAnonymous(pageChangeHistory.page)
+				page = Page.CreateMinimalAnonymous(pageChangeHistory.page),
 			 };
 		}
 

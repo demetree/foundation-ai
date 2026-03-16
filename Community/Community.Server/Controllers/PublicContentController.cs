@@ -502,6 +502,47 @@ namespace Foundation.Community.Controllers
 
             return Ok(new { success = true, message = "Thank you for your message. We will get back to you soon." });
         }
+
+
+        // ─── Media ──────────────────────────────────────────────────────
+        //
+        // GET api/PublicContent/Media/{objectGuid}
+        //
+        // Serves binary file data for a media asset by its objectGuid.
+        // Returns the raw file with correct MIME type and cache headers.
+        //
+
+        [HttpGet("Media/{objectGuid}")]
+        [ResponseCache(Duration = 604800)]  // 7-day client cache
+        public async Task<IActionResult> GetMedia(Guid objectGuid)
+        {
+            if (!_tenantContext.IsResolved)
+            {
+                return TenantNotResolved();
+            }
+
+            Guid tg = _tenantContext.TenantGuid.Value;
+
+            var mediaContent = await _context.MediaContents
+                .Include(mc => mc.mediaAsset)
+                .Where(mc => mc.mediaAsset.objectGuid == objectGuid
+                          && mc.mediaAsset.tenantGuid == tg
+                          && mc.mediaAsset.active == true
+                          && mc.mediaAsset.deleted == false
+                          && mc.active == true
+                          && mc.deleted == false)
+                .FirstOrDefaultAsync();
+
+            if (mediaContent == null || mediaContent.fileData == null)
+            {
+                return NotFound(new { error = "Media asset not found." });
+            }
+
+            string mimeType = mediaContent.mediaAsset?.mimeType ?? "application/octet-stream";
+            string fileName = mediaContent.mediaAsset?.fileName ?? "file";
+
+            return File(mediaContent.fileData, mimeType, fileName);
+        }
     }
 
 

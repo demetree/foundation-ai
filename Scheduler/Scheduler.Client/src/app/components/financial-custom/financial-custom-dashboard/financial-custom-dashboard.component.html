@@ -22,10 +22,10 @@
                     <i class="fa-solid" [ngClass]="isExporting ? 'fa-spinner fa-spin' : 'fa-file-excel'" ></i>
                     {{ isExporting ? 'Exporting...' : 'Export Report' }}
                 </button>
-                <button class="btn btn-glass btn-sm me-2" (click)="goToTransactions()" ngbTooltip="Record Income">
+                <button class="btn btn-glass btn-sm me-2" (click)="recordIncome()" ngbTooltip="Record Income">
                     <i class="fa-solid fa-plus-circle me-1"></i> Record Income
                 </button>
-                <button class="btn btn-glass btn-sm me-2" (click)="goToTransactions()" ngbTooltip="Record Expense">
+                <button class="btn btn-glass btn-sm me-2" (click)="recordExpense()" ngbTooltip="Record Expense">
                     <i class="fa-solid fa-minus-circle me-1"></i> Record Expense
                 </button>
                 <button class="btn btn-glass btn-sm me-2" (click)="goToCategories()">
@@ -52,22 +52,46 @@
     <!-- Dashboard Content -->
     <ng-container *ngIf="!isLoading">
 
-        <!-- Office Picker -->
-        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap" *ngIf="offices.length > 1">
-            <small class="text-muted fw-semibold text-uppercase me-1">
-                <i class="fa-solid fa-building me-1"></i>Office:
-            </small>
-            <button class="btn btn-sm office-pill"
-                [ngClass]="selectedOfficeId === null ? 'office-pill-active' : 'office-pill-inactive'"
-                (click)="onOfficeChange(null)">
-                All Offices
-            </button>
-            <button *ngFor="let office of offices" class="btn btn-sm office-pill"
-                [ngClass]="selectedOfficeId === $any(office.id) ? 'office-pill-active' : 'office-pill-inactive'"
-                [style.--office-color]="office.color || '#6b7280'" (click)="onOfficeChange($any(office.id))">
-                <span class="office-dot me-1" [style.background]="office.color || '#6b7280'"></span>
-                {{ office.name }}
-            </button>
+        <!-- Filters Row: Office Picker + Fiscal Year Picker -->
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+
+            <!-- Office Picker -->
+            <div class="d-flex align-items-center gap-2 flex-wrap" *ngIf="offices.length > 1">
+                <small class="text-muted fw-semibold text-uppercase me-1">
+                    <i class="fa-solid fa-building me-1"></i>Office:
+                </small>
+                <button class="btn btn-sm office-pill"
+                    [ngClass]="selectedOfficeId === null ? 'office-pill-active' : 'office-pill-inactive'"
+                    (click)="onOfficeChange(null)">
+                    All Offices
+                </button>
+                <button *ngFor="let office of offices" class="btn btn-sm office-pill"
+                    [ngClass]="selectedOfficeId === $any(office.id) ? 'office-pill-active' : 'office-pill-inactive'"
+                    [style.--office-color]="office.color || '#6b7280'" (click)="onOfficeChange($any(office.id))">
+                    <span class="office-dot me-1" [style.background]="office.color || '#6b7280'"></span>
+                    {{ office.name }}
+                </button>
+            </div>
+
+            <!-- Fiscal Year Picker -->
+            <div class="d-flex align-items-center gap-1 ms-auto" *ngIf="availableYears.length > 0">
+                <small class="text-muted fw-semibold text-uppercase me-1">
+                    <i class="fa-solid fa-calendar me-1"></i>Year:
+                </small>
+                <button class="btn btn-sm btn-outline-secondary year-step-btn" (click)="stepYear(-1)"
+                    [disabled]="!canStepYear(-1)" ngbTooltip="Previous Year">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <select class="form-select form-select-sm year-select" [(ngModel)]="selectedYear"
+                    (ngModelChange)="onYearChange($event)">
+                    <option *ngFor="let y of availableYears" [ngValue]="y">{{ y }}</option>
+                </select>
+                <button class="btn btn-sm btn-outline-secondary year-step-btn" (click)="stepYear(1)"
+                    [disabled]="!canStepYear(1)" ngbTooltip="Next Year">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+
         </div>
 
         <!-- Summary Cards Row -->
@@ -82,7 +106,7 @@
                                 <small class="text-muted text-uppercase fw-bold ls-1">Total Income</small>
                                 <h3 class="mb-0 mt-2 text-success fw-bold">{{ totalIncome |
                                     currency:'CAD':'symbol':'1.2-2' }}</h3>
-                                <small class="text-muted">All time revenue</small>
+                                <small class="text-muted">{{ selectedYear }} revenue</small>
                             </div>
                             <div class="summary-icon income-icon">
                                 <i class="fa-solid fa-arrow-trend-up"></i>
@@ -102,7 +126,7 @@
                                 <small class="text-muted text-uppercase fw-bold ls-1">Total Expenses</small>
                                 <h3 class="mb-0 mt-2 text-danger fw-bold">{{ totalExpenses |
                                     currency:'CAD':'symbol':'1.2-2' }}</h3>
-                                <small class="text-muted">All time expenses</small>
+                                <small class="text-muted">{{ selectedYear }} expenses</small>
                             </div>
                             <div class="summary-icon expense-icon">
                                 <i class="fa-solid fa-arrow-trend-down"></i>
@@ -124,7 +148,7 @@
                                     [ngClass]="netBalance >= 0 ? 'text-success' : 'text-danger'">
                                     {{ netBalance | currency:'CAD':'symbol':'1.2-2' }}
                                 </h3>
-                                <small class="text-muted">Income minus expenses</small>
+                                <small class="text-muted">{{ selectedYear }} net</small>
                             </div>
                             <div class="summary-icon balance-icon">
                                 <i class="fa-solid fa-scale-balanced"></i>
@@ -168,24 +192,8 @@
                             Monthly Breakdown
                         </h6>
 
-                        <!-- Fiscal Year Picker -->
-                        <div class="d-flex align-items-center gap-1" *ngIf="availableYears.length > 0">
-                            <button class="btn btn-sm btn-outline-secondary year-step-btn" (click)="stepYear(-1)"
-                                [disabled]="!canStepYear(-1)" ngbTooltip="Previous Year">
-                                <i class="fa-solid fa-chevron-left"></i>
-                            </button>
-                            <select class="form-select form-select-sm year-select" [(ngModel)]="selectedYear"
-                                (ngModelChange)="onYearChange($event)">
-                                <option *ngFor="let y of availableYears" [ngValue]="y">{{ y }}</option>
-                            </select>
-                            <button class="btn btn-sm btn-outline-secondary year-step-btn" (click)="stepYear(1)"
-                                [disabled]="!canStepYear(1)" ngbTooltip="Next Year">
-                                <i class="fa-solid fa-chevron-right"></i>
-                            </button>
-                        </div>
-
-                        <!-- Fallback when no fiscal periods exist -->
-                        <span class="badge bg-secondary" *ngIf="availableYears.length === 0">
+                        <!-- Year context label (picker is now at the top) -->
+                        <span class="badge bg-primary-subtle text-primary fs-6">
                             {{ selectedYear }}
                         </span>
                     </div>
@@ -451,6 +459,64 @@
                 </div>
             </div>
         </div>
+        <!-- Reports & Tools -->
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-semibold">
+                    <i class="fa-solid fa-toolbox me-2 text-primary"></i>Reports &amp; Tools
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3" style="flex-wrap: nowrap;">
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToPnlReport()">
+                            <i class="fa-solid fa-file-invoice-dollar fa-2x mb-2"></i>
+                            <span class="fw-semibold">Income Statement (P&amp;L)</span>
+                            <small class="text-muted">Revenue vs expenses report</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToBudgetReport()">
+                            <i class="fa-solid fa-chart-bar fa-2x mb-2"></i>
+                            <span class="fw-semibold">Budget Report</span>
+                            <small class="text-muted">Budget vs actual comparison</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToAccountantReports()">
+                            <i class="fa-solid fa-calculator fa-2x mb-2"></i>
+                            <span class="fw-semibold">Accountant Reports</span>
+                            <small class="text-muted">Trial balance, CoA, journal</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToDeposits()">
+                            <i class="fa-solid fa-lock fa-2x mb-2"></i>
+                            <span class="fw-semibold">Deposit Manager</span>
+                            <small class="text-muted">Track &amp; refund deposits</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToFiscalPeriodClose()">
+                            <i class="fa-solid fa-calendar-check fa-2x mb-2"></i>
+                            <span class="fw-semibold">Fiscal Period Close</span>
+                            <small class="text-muted">Close or reopen periods</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </ng-container>
+
+    <!-- Transaction Add-Edit Modal (opened by Record Income / Record Expense buttons) -->
+    <app-financial-transaction-custom-add-edit #txAddEdit
+        (financialTransactionChanged)="onTransactionChanged()">
+    </app-financial-transaction-custom-add-edit>
+
 </div>

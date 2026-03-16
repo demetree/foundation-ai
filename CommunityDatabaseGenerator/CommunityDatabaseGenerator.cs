@@ -199,6 +199,20 @@ All operational tables include auditing and security controls.";
 
             mediaAssetTable.AddControlFields();
 
+
+            // -------------------------------------------------
+            // MediaContent — Binary file data for media assets
+            // -------------------------------------------------
+            Database.Table mediaContentTable = database.AddTable("MediaContent");
+            mediaContentTable.comment = "Binary storage for media asset file data. Separated from MediaAsset to keep metadata queries lightweight. One-to-one relationship with MediaAsset.";
+            mediaContentTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
+            mediaContentTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
+            mediaContentTable.AddIdField();
+            mediaContentTable.AddMultiTenantSupport();
+            mediaContentTable.AddForeignKeyField(mediaAssetTable, false).AddScriptComments("The media asset this content belongs to");
+            mediaContentTable.AddBinaryField("fileData", false).AddScriptComments("Binary file content (varbinary MAX)");
+            mediaContentTable.AddControlFields();
+
             #endregion
 
 

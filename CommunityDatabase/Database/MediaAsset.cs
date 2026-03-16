@@ -32,4 +32,6 @@ public partial class MediaAsset
     public bool active { get; set; }
 
     public bool deleted { get; set; }
+
+    public virtual ICollection<MediaContent> MediaContents { get; set; } = new List<MediaContent>();
 }

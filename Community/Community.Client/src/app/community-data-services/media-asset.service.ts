@@ -16,6 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
+import { MediaContentService, MediaContentData } from './media-content.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -122,6 +123,11 @@ export class MediaAssetData {
     //
     // Private lazy-loading caches for related collections
     //
+    private _mediaContents: MediaContentData[] | null = null;
+    private _mediaContentsPromise: Promise<MediaContentData[]> | null  = null;
+    private _mediaContentsSubject = new BehaviorSubject<MediaContentData[] | null>(null);
+
+                
 
     //
     // Public observables — use with | async in templates
@@ -129,6 +135,31 @@ export class MediaAssetData {
     //
     // Also includes an observable for each child list to access its row count.
     //
+    public MediaContents$ = this._mediaContentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._mediaContents === null && this._mediaContentsPromise === null) {
+            this.loadMediaContents(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _mediaContentsCount$: Observable<bigint | number> | null = null;
+    public get MediaContentsCount$(): Observable<bigint | number> {
+        if (this._mediaContentsCount$ === null) {
+            this._mediaContentsCount$ = MediaContentService.Instance.GetMediaContentsRowCount({mediaAssetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._mediaContentsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -167,12 +198,82 @@ export class MediaAssetData {
      //
      // Reset every collection cache and notify subscribers
      //
+     this._mediaContents = null;
+     this._mediaContentsPromise = null;
+     this._mediaContentsSubject.next(null);
+     this._mediaContentsCount$ = null;
+
   }
 
     //
     // Promise-based getters below — same lazy-load logic as observables
     // Use these in component code with await or .then()
     //
+    /**
+     *
+     * Gets the MediaContents for this MediaAsset.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.mediaAsset.MediaContents.then(mediaAssets => { ... })
+     *   or
+     *   await this.mediaAsset.mediaAssets
+     *
+    */
+    public get MediaContents(): Promise<MediaContentData[]> {
+        if (this._mediaContents !== null) {
+            return Promise.resolve(this._mediaContents);
+        }
+
+        if (this._mediaContentsPromise !== null) {
+            return this._mediaContentsPromise;
+        }
+
+        // Start the load
+        this.loadMediaContents();
+
+        return this._mediaContentsPromise!;
+    }
+
+
+
+    private loadMediaContents(): void {
+
+        this._mediaContentsPromise = lastValueFrom(
+            MediaAssetService.Instance.GetMediaContentsForMediaAsset(this.id)
+        )
+        .then(MediaContents => {
+            this._mediaContents = MediaContents ?? [];
+            this._mediaContentsSubject.next(this._mediaContents);
+            return this._mediaContents;
+         })
+        .catch(err => {
+            this._mediaContents = [];
+            this._mediaContentsSubject.next(this._mediaContents);
+            throw err;
+        })
+        .finally(() => {
+            this._mediaContentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached MediaContent. Call after mutations to force refresh.
+     */
+    public ClearMediaContentsCache(): void {
+        this._mediaContents = null;
+        this._mediaContentsPromise = null;
+        this._mediaContentsSubject.next(this._mediaContents);      // Emit to observable
+    }
+
+    public get HasMediaContents(): Promise<boolean> {
+        return this.MediaContents.then(mediaContents => mediaContents.length > 0);
+    }
+
+
 
 
     /**
@@ -208,6 +309,7 @@ export class MediaAssetService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
+        private mediaContentService: MediaContentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -571,6 +673,16 @@ export class MediaAssetService extends SecureEndpointBase {
         return userIsCommunityMediaAssetWriter;
     }
 
+    public GetMediaContentsForMediaAsset(mediaAssetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<MediaContentData[]> {
+        return this.mediaContentService.GetMediaContentList({
+            mediaAssetId: mediaAssetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full MediaAssetData instance.
@@ -606,6 +718,10 @@ export class MediaAssetService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
+    (revived as any)._mediaContents = null;
+    (revived as any)._mediaContentsPromise = null;
+    (revived as any)._mediaContentsSubject = new BehaviorSubject<MediaContentData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -618,6 +734,18 @@ export class MediaAssetService extends SecureEndpointBase {
     // 2. But private methods (loadMediaAssetXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
+    (revived as any).MediaContents$ = (revived as any)._mediaContentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._mediaContents === null && (revived as any)._mediaContentsPromise === null) {
+                (revived as any).loadMediaContents();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._mediaContentsCount$ = null;
+
+
 
     return revived;
   }

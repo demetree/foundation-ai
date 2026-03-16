@@ -27,6 +27,8 @@ public partial class CommunityContext : DbContext
 
     public virtual DbSet<MediaAsset> MediaAssets { get; set; }
 
+    public virtual DbSet<MediaContent> MediaContents { get; set; }
+
     public virtual DbSet<Menu> Menus { get; set; }
 
     public virtual DbSet<MenuItem> MenuItems { get; set; }
@@ -51,7 +53,7 @@ public partial class CommunityContext : DbContext
     {
         modelBuilder.Entity<Announcement>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Announce__3213E83F358CA734");
+            entity.HasKey(e => e.id).HasName("PK__Announce__3213E83F237E8C01");
 
             entity.ToTable("Announcement", "Community");
 
@@ -61,7 +63,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_Announcement_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Announce__3E543F94229E0CC6").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Announce__3E543F943967DEA1").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.severity)
@@ -76,7 +78,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<AnnouncementChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Announce__3213E83F3F94E511");
+            entity.HasKey(e => e.id).HasName("PK__Announce__3213E83F866FC76F");
 
             entity.ToTable("AnnouncementChangeHistory", "Community");
 
@@ -99,7 +101,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<ContactSubmission>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__ContactS__3213E83F02CD745F");
+            entity.HasKey(e => e.id).HasName("PK__ContactS__3213E83FF865C538");
 
             entity.ToTable("ContactSubmission", "Community");
 
@@ -109,7 +111,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_ContactSubmission_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__ContactS__3E543F9499F07836").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__ContactS__3E543F94DBE30CAE").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.adminNotes).HasMaxLength(500);
@@ -125,7 +127,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<DocumentDownload>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Document__3213E83F72125143");
+            entity.HasKey(e => e.id).HasName("PK__Document__3213E83F929421A2");
 
             entity.ToTable("DocumentDownload", "Community");
 
@@ -135,7 +137,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_DocumentDownload_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Document__3E543F9439540086").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Document__3E543F949E5CEE11").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.categoryName).HasMaxLength(100);
@@ -154,7 +156,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<GalleryAlbum>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__GalleryA__3213E83FB1BF2BEC");
+            entity.HasKey(e => e.id).HasName("PK__GalleryA__3213E83FCC97014A");
 
             entity.ToTable("GalleryAlbum", "Community");
 
@@ -166,7 +168,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.slug }, "I_GalleryAlbum_tenantGuid_slug").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__GalleryA__3E543F94024167AF").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__GalleryA__3E543F94996E5E0D").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.coverImageUrl).HasMaxLength(500);
@@ -181,7 +183,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<GalleryImage>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__GalleryI__3213E83F49C168A7");
+            entity.HasKey(e => e.id).HasName("PK__GalleryI__3213E83F057802E6");
 
             entity.ToTable("GalleryImage", "Community");
 
@@ -193,7 +195,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.galleryAlbumId }, "I_GalleryImage_tenantGuid_galleryAlbumId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__GalleryI__3E543F94BF936377").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__GalleryI__3E543F94C8B05DD0").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.altText).HasMaxLength(250);
@@ -209,7 +211,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<MediaAsset>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__MediaAss__3213E83FBDFB2887");
+            entity.HasKey(e => e.id).HasName("PK__MediaAss__3213E83FCC33DCA3");
 
             entity.ToTable("MediaAsset", "Community");
 
@@ -219,7 +221,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_MediaAsset_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__MediaAss__3E543F940D131572").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__MediaAss__3E543F94C7786273").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.altText).HasMaxLength(250);
@@ -235,9 +237,33 @@ public partial class CommunityContext : DbContext
                 .HasMaxLength(100);
         });
 
+        modelBuilder.Entity<MediaContent>(entity =>
+        {
+            entity.HasKey(e => e.id).HasName("PK__MediaCon__3213E83FCB7EDFAD");
+
+            entity.ToTable("MediaContent", "Community");
+
+            entity.HasIndex(e => e.tenantGuid, "I_MediaContent_tenantGuid");
+
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_MediaContent_tenantGuid_active");
+
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_MediaContent_tenantGuid_deleted");
+
+            entity.HasIndex(e => new { e.tenantGuid, e.mediaAssetId }, "I_MediaContent_tenantGuid_mediaAssetId");
+
+            entity.HasIndex(e => e.objectGuid, "UQ__MediaCon__3E543F94E196A212").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.fileData).IsRequired();
+
+            entity.HasOne(d => d.mediaAsset).WithMany(p => p.MediaContents)
+                .HasForeignKey(d => d.mediaAssetId)
+                .OnDelete(DeleteBehavior.ClientSetNull);
+        });
+
         modelBuilder.Entity<Menu>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Menu__3213E83FB10FD218");
+            entity.HasKey(e => e.id).HasName("PK__Menu__3213E83F965E1786");
 
             entity.ToTable("Menu", "Community");
 
@@ -251,7 +277,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Menu_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Menu__3E543F94ED37095B").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Menu__3E543F942A57CA98").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.location)
@@ -264,7 +290,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<MenuItem>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__MenuItem__3213E83F7E2371E4");
+            entity.HasKey(e => e.id).HasName("PK__MenuItem__3213E83FD25DD7A8");
 
             entity.ToTable("MenuItem", "Community");
 
@@ -280,7 +306,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.parentMenuItemId }, "I_MenuItem_tenantGuid_parentMenuItemId");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__MenuItem__3E543F9445F6D3A0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__MenuItem__3E543F9477323288").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.iconClass).HasMaxLength(50);
@@ -300,7 +326,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<Page>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Page__3213E83F6FDC736F");
+            entity.HasKey(e => e.id).HasName("PK__Page__3213E83FE21B0E1E");
 
             entity.ToTable("Page", "Community");
 
@@ -312,7 +338,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.slug }, "I_Page_tenantGuid_slug").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Page__3E543F94059B313E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Page__3E543F94C92ADEF7").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.featuredImageUrl).HasMaxLength(500);
@@ -329,7 +355,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<PageChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PageChan__3213E83FB3C7B03E");
+            entity.HasKey(e => e.id).HasName("PK__PageChan__3213E83F7458F180");
 
             entity.ToTable("PageChangeHistory", "Community");
 
@@ -352,7 +378,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<Post>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__Post__3213E83FADFE0BF7");
+            entity.HasKey(e => e.id).HasName("PK__Post__3213E83FEF296058");
 
             entity.ToTable("Post", "Community");
 
@@ -368,7 +394,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.title }, "I_Post_tenantGuid_title");
 
-            entity.HasIndex(e => e.objectGuid, "UQ__Post__3E543F943F9838DE").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__Post__3E543F940FF0309E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.authorName).HasMaxLength(100);
@@ -388,7 +414,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<PostCategory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PostCate__3213E83FBB22EBB6");
+            entity.HasKey(e => e.id).HasName("PK__PostCate__3213E83F93DA8C10");
 
             entity.ToTable("PostCategory", "Community");
 
@@ -400,9 +426,9 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => e.slug, "I_PostCategory_slug").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PostCate__3E543F9471D8369E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PostCate__3E543F94AAF7C8E9").IsUnique();
 
-            entity.HasIndex(e => e.name, "UQ__PostCate__72E12F1B512D56D5").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__PostCate__72E12F1B523C613E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(500);
@@ -416,7 +442,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<PostChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PostChan__3213E83F81336CE9");
+            entity.HasKey(e => e.id).HasName("PK__PostChan__3213E83F6AD417E6");
 
             entity.ToTable("PostChangeHistory", "Community");
 
@@ -439,7 +465,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<PostTag>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PostTag__3213E83F8CDDC9C1");
+            entity.HasKey(e => e.id).HasName("PK__PostTag__3213E83F158A3F74");
 
             entity.ToTable("PostTag", "Community");
 
@@ -455,7 +481,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_PostTag_tenantGuid_name").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PostTag__3E543F94B38B708E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PostTag__3E543F94DF02F455").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.name)
@@ -468,7 +494,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<PostTagAssignment>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__PostTagA__3213E83F46294E37");
+            entity.HasKey(e => e.id).HasName("PK__PostTagA__3213E83F50E19016");
 
             entity.ToTable("PostTagAssignment", "Community");
 
@@ -482,7 +508,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.postId, e.postTagId }, "UC_PostTagAssignment_postId_postTagId").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__PostTagA__3E543F94758E3A7A").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PostTagA__3E543F947CEBFA1E").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
 
@@ -497,7 +523,7 @@ public partial class CommunityContext : DbContext
 
         modelBuilder.Entity<SiteSetting>(entity =>
         {
-            entity.HasKey(e => e.id).HasName("PK__SiteSett__3213E83F7B57ABDB");
+            entity.HasKey(e => e.id).HasName("PK__SiteSett__3213E83FB5C3DE47");
 
             entity.ToTable("SiteSetting", "Community");
 
@@ -509,7 +535,7 @@ public partial class CommunityContext : DbContext
 
             entity.HasIndex(e => new { e.tenantGuid, e.settingKey }, "I_SiteSetting_tenantGuid_settingKey").IsUnique();
 
-            entity.HasIndex(e => e.objectGuid, "UQ__SiteSett__3E543F9414C20164").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__SiteSett__3E543F948E7EA084").IsUnique();
 
             entity.Property(e => e.active).HasDefaultValue(true);
             entity.Property(e => e.description).HasMaxLength(250);

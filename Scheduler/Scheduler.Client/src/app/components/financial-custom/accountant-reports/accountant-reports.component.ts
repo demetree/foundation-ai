@@ -1,6 +1,6 @@
 // AI-Developed — This file was significantly developed with AI assistance.
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
@@ -94,7 +94,8 @@ export class AccountantReportsComponent implements OnInit {
         private officeService: FinancialOfficeService,
         private alertService: AlertService,
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) { }
 
 
@@ -111,6 +112,24 @@ export class AccountantReportsComponent implements OnInit {
             next: ({ offices, periods }) => {
                 this.offices = offices ?? [];
                 this.fiscalPeriods = (periods ?? []).sort((a, b) => (a.startDate ?? '').localeCompare(b.startDate ?? ''));
+
+                //
+                // Pre-select filters from dashboard query params
+                //
+                const qp = this.route.snapshot.queryParams;
+                if (qp['officeId']) {
+                    this.selectedOfficeId = Number(qp['officeId']);
+                    this.selectedOfficeName = this.offices.find(o => Number(o.id) === this.selectedOfficeId)?.name ?? 'All Offices';
+                }
+                if (qp['year']) {
+                    const year = Number(qp['year']);
+                    const matchingPeriod = this.fiscalPeriods.find(p => Number(p.fiscalYear) === year);
+                    if (matchingPeriod) {
+                        this.selectedFiscalPeriodId = Number(matchingPeriod.id);
+                        this.selectedPeriodName = matchingPeriod.name ?? 'Unknown';
+                    }
+                }
+
                 this.loadData();
             },
             error: () => {
@@ -136,7 +155,7 @@ export class AccountantReportsComponent implements OnInit {
         this.isLoading = true;
 
         const catParams: any = { active: true, deleted: false, includeRelations: true };
-        const txParams: any = { active: true, deleted: false, includeRelations: true };
+        const txParams: any = { active: true, deleted: false, includeRelations: true, pageSize: 10000 };
         if (this.selectedOfficeId) {
             catParams.financialOfficeId = this.selectedOfficeId;
             txParams.financialOfficeId = this.selectedOfficeId;
@@ -148,7 +167,25 @@ export class AccountantReportsComponent implements OnInit {
         }).subscribe({
             next: ({ categories, transactions }) => {
                 this.allCategories = categories ?? [];
-                this.allTransactions = transactions ?? [];
+                let filteredTx = transactions ?? [];
+
+                //
+                // Filter transactions by fiscal period date range when a period is selected
+                //
+                if (this.selectedFiscalPeriodId) {
+                    const period = this.fiscalPeriods.find(p => Number(p.id) === this.selectedFiscalPeriodId);
+                    if (period?.startDate && period?.endDate) {
+                        const periodStart = new Date(period.startDate).getTime();
+                        const periodEnd = new Date(period.endDate).getTime();
+                        filteredTx = filteredTx.filter(tx => {
+                            if (!tx.transactionDate) return false;
+                            const txTime = new Date(tx.transactionDate).getTime();
+                            return txTime >= periodStart && txTime <= periodEnd;
+                        });
+                    }
+                }
+
+                this.allTransactions = filteredTx;
                 this.buildTrialBalance();
                 this.buildChartOfAccounts();
                 this.buildJournal();
@@ -399,5 +436,13 @@ export class AccountantReportsComponent implements OnInit {
         } catch { return dateStr; }
     }
 
-    goBack(): void { this.router.navigate(['/finances']); }
+    goBack(): void {
+        const params: any = {};
+        if (this.selectedFiscalPeriodId) {
+            const period = this.fiscalPeriods.find(p => Number(p.id) === this.selectedFiscalPeriodId);
+            if (period?.fiscalYear) params.year = Number(period.fiscalYear);
+        }
+        if (this.selectedOfficeId) params.officeId = this.selectedOfficeId;
+        this.router.navigate(['/finances'], { queryParams: params });
+    }
 }

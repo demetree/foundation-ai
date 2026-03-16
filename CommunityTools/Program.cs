@@ -64,6 +64,11 @@ namespace Foundation.Community.CodeGeneration
                         GenerateCommunityApplicationCode();
                         break;
 
+                    case ConsoleKey.D3:
+                    case ConsoleKey.NumPad3:
+                        ScrapePHMCWebsite();
+                        break;
+
                     case ConsoleKey.X:
                         exit = true;
                         Console.WriteLine("Exiting...");
@@ -86,6 +91,7 @@ namespace Foundation.Community.CodeGeneration
             Console.WriteLine();
             Console.WriteLine("1. Generate Community Database Script Code");
             Console.WriteLine("2. Generate Community Application Code");
+            Console.WriteLine("3. Scrape PHMC Website -> Seed Community Database");
             Console.WriteLine();
             Console.WriteLine("X. Exit");
             Console.WriteLine();
@@ -200,6 +206,17 @@ namespace Foundation.Community.CodeGeneration
                 Console.WriteLine($"Error reading configuration or deploying: {ex.Message}");
                 Process.Start("explorer.exe", outputFolder);
             }
+        }
+
+
+        private static void ScrapePHMCWebsite()
+        {
+            Console.WriteLine();
+            Console.WriteLine("Starting PHMC website scraper...");
+            Console.WriteLine();
+
+            PHMCScraper scraper = new PHMCScraper();
+            scraper.ScrapeAndSeedAsync().GetAwaiter().GetResult();
         }
     }
 }

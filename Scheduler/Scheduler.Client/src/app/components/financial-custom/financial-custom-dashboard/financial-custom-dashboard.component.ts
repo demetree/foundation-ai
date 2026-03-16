@@ -7,8 +7,8 @@
 // by FiscalPeriod records so that only defined fiscal years appear in the dropdown.
 //
 
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { FinancialTransactionService, FinancialTransactionData } from '../../../scheduler-data-services/financial-transaction.service';
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
@@ -16,7 +16,8 @@ import { FiscalPeriodService, FiscalPeriodData } from '../../../scheduler-data-s
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { FinancialTransactionCustomAddEditComponent } from '../financial-transaction-custom-add-edit/financial-transaction-custom-add-edit.component';
 
 
 @Component({
@@ -25,6 +26,8 @@ import { Router } from '@angular/router';
     styleUrls: ['./financial-custom-dashboard.component.scss']
 })
 export class FinancialCustomDashboardComponent implements OnInit {
+
+    @ViewChild('txAddEdit') txAddEdit!: FinancialTransactionCustomAddEditComponent;
 
     public isLoading = true;
 
@@ -96,13 +99,15 @@ export class FinancialCustomDashboardComponent implements OnInit {
         private authService: AuthService,
         private alertService: AlertService,
         private navigationService: NavigationService,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) { }
 
 
     ngOnInit(): void {
         this.loadDashboardData();
         this.loadCategoryBreakdown();
+        this.loadMonthlyBreakdown();
         this.loadOutstandingDeposits();
     }
 
@@ -120,6 +125,17 @@ export class FinancialCustomDashboardComponent implements OnInit {
         }).subscribe({
             next: (offices) => {
                 this.offices = offices ?? [];
+
+                //
+                // Restore office selection from query params (e.g. when returning from a report)
+                //
+                const qpOffice = this.route.snapshot.queryParams['officeId'];
+                if (qpOffice) {
+                    const officeId = Number(qpOffice);
+                    if (this.offices.some(o => Number(o.id) === officeId)) {
+                        this.selectedOfficeId = officeId;
+                    }
+                }
             }
         });
 
@@ -199,12 +215,16 @@ export class FinancialCustomDashboardComponent implements OnInit {
         //
         // Default to current calendar year if it exists in the list, otherwise use the most recent
         //
-        const currentCalendarYear = new Date().getFullYear();
-
-        if (this.availableYears.includes(currentCalendarYear)) {
-            this.selectedYear = currentCalendarYear;
-        } else if (this.availableYears.length > 0) {
-            this.selectedYear = this.availableYears[0];
+        const qpYear = this.route.snapshot.queryParams['year'];
+        if (qpYear && this.availableYears.includes(Number(qpYear))) {
+            this.selectedYear = Number(qpYear);
+        } else {
+            const currentCalendarYear = new Date().getFullYear();
+            if (this.availableYears.includes(currentCalendarYear)) {
+                this.selectedYear = currentCalendarYear;
+            } else if (this.availableYears.length > 0) {
+                this.selectedYear = this.availableYears[0];
+            }
         }
     }
 
@@ -213,27 +233,8 @@ export class FinancialCustomDashboardComponent implements OnInit {
         this.transactionCount = transactions.length;
 
         //
-        // Calculate all-time totals (unaffected by year picker)
+        // Monthly breakdown is now loaded from the server via loadMonthlyBreakdown()
         //
-        this.totalIncome = 0;
-        this.totalExpenses = 0;
-
-        for (const t of transactions) {
-            const amount = Number(t.totalAmount ?? t.amount ?? 0);
-
-            if (t.isRevenue) {
-                this.totalIncome += amount;
-            } else {
-                this.totalExpenses += amount;
-            }
-        }
-
-        this.netBalance = this.totalIncome - this.totalExpenses;
-
-        //
-        // Build the monthly breakdown for the selected year
-        //
-        this.rebuildMonthlyBreakdown();
 
         //
         // Recent transactions: sort by date descending, take last 10
@@ -251,28 +252,30 @@ export class FinancialCustomDashboardComponent implements OnInit {
 
 
     /**
-     * Recalculates the monthly income/expense arrays for the currently selected year.
-     * Called on init and whenever the year picker changes.
+     * Loads monthly income/expense arrays from the server for the selected year and office.
+     * Replaces the previous client-side computation to ensure consistency with the
+     * server-side CategoryBreakdown data used by the header cards.
      */
-    private rebuildMonthlyBreakdown(): void {
-
-        this.monthlyIncome = new Array(12).fill(0);
-        this.monthlyExpenses = new Array(12).fill(0);
-
-        for (const t of this.getFilteredTransactions()) {
-            const txDate = t.transactionDate ? new Date(t.transactionDate) : null;
-
-            if (txDate && txDate.getFullYear() === this.selectedYear) {
-                const month = txDate.getMonth();
-                const amount = Number(t.totalAmount ?? t.amount ?? 0);
-
-                if (t.isRevenue) {
-                    this.monthlyIncome[month] += amount;
-                } else {
-                    this.monthlyExpenses[month] += amount;
-                }
-            }
+    private loadMonthlyBreakdown(): void {
+        let url = `/api/FinancialTransactions/MonthlyBreakdown?year=${this.selectedYear}`;
+        if (this.selectedOfficeId !== null) {
+            url += `&financialOfficeId=${this.selectedOfficeId}`;
         }
+
+        const headers = new HttpHeaders({
+            'Authorization': 'Bearer ' + this.authService.accessToken
+        });
+
+        this.http.get<{ year: number; income: number[]; expenses: number[] }>(url, { headers }).subscribe({
+            next: (response) => {
+                this.monthlyIncome = response?.income ?? new Array(12).fill(0);
+                this.monthlyExpenses = response?.expenses ?? new Array(12).fill(0);
+            },
+            error: () => {
+                this.monthlyIncome = new Array(12).fill(0);
+                this.monthlyExpenses = new Array(12).fill(0);
+            }
+        });
     }
 
 
@@ -282,8 +285,9 @@ export class FinancialCustomDashboardComponent implements OnInit {
 
     public onYearChange(year: number): void {
         this.selectedYear = year;
-        this.rebuildMonthlyBreakdown();
+        this.processTransactions(this.getFilteredTransactions());
         this.loadCategoryBreakdown();
+        this.loadMonthlyBreakdown();
     }
 
 
@@ -291,6 +295,7 @@ export class FinancialCustomDashboardComponent implements OnInit {
         this.selectedOfficeId = officeId;
         this.processTransactions(this.getFilteredTransactions());
         this.loadCategoryBreakdown();
+        this.loadMonthlyBreakdown();
     }
 
 
@@ -312,7 +317,9 @@ export class FinancialCustomDashboardComponent implements OnInit {
 
         if (newIndex >= 0 && newIndex < this.availableYears.length) {
             this.selectedYear = this.availableYears[newIndex];
-            this.rebuildMonthlyBreakdown();
+            this.processTransactions(this.getFilteredTransactions());
+            this.loadCategoryBreakdown();
+            this.loadMonthlyBreakdown();
         }
     }
 
@@ -340,6 +347,82 @@ export class FinancialCustomDashboardComponent implements OnInit {
 
     public goToBudgets(): void {
         this.router.navigate(['/finances/budgets']);
+    }
+
+
+    public goToPnlReport(): void {
+        this.router.navigate(['/finances/pnl-report'], { queryParams: this.getFilterQueryParams() });
+    }
+
+
+    public goToBudgetReport(): void {
+        this.router.navigate(['/finances/budget-report'], { queryParams: this.getFilterQueryParams() });
+    }
+
+
+    public goToAccountantReports(): void {
+        this.router.navigate(['/finances/accountant-reports'], { queryParams: this.getFilterQueryParams() });
+    }
+
+
+    public goToDeposits(): void {
+        this.router.navigate(['/finances/deposits']);
+    }
+
+
+    public goToFiscalPeriodClose(): void {
+        this.router.navigate(['/finances/fiscal-period-close'], { queryParams: { year: this.selectedYear } });
+    }
+
+
+    /**
+     * Builds query params object from current dashboard filter state.
+     */
+    private getFilterQueryParams(): { [key: string]: any } {
+        const params: { [key: string]: any } = { year: this.selectedYear };
+        if (this.selectedOfficeId !== null) {
+            params['officeId'] = this.selectedOfficeId;
+        }
+        return params;
+    }
+
+
+    /**
+     * Opens the add-edit modal pre-seeded for revenue (income).
+     */
+    public recordIncome(): void {
+        if (this.txAddEdit) {
+            this.txAddEdit.preSeededData = {
+                isRevenue: true,
+                financialOfficeId: this.selectedOfficeId
+            };
+            this.txAddEdit.openModal();
+        }
+    }
+
+
+    /**
+     * Opens the add-edit modal pre-seeded for expense.
+     */
+    public recordExpense(): void {
+        if (this.txAddEdit) {
+            this.txAddEdit.preSeededData = {
+                isRevenue: false,
+                financialOfficeId: this.selectedOfficeId
+            };
+            this.txAddEdit.openModal();
+        }
+    }
+
+
+    /**
+     * Called after a transaction is saved from the add-edit modal.
+     * Reloads all dashboard data.
+     */
+    public onTransactionChanged(): void {
+        this.loadDashboardData();
+        this.loadCategoryBreakdown();
+        this.loadOutstandingDeposits();
     }
 
 
@@ -387,7 +470,11 @@ export class FinancialCustomDashboardComponent implements OnInit {
             url += `&financialOfficeId=${this.selectedOfficeId}`;
         }
 
-        this.http.get(url, { responseType: 'blob', observe: 'response' }).subscribe({
+        const headers = new HttpHeaders({
+            'Authorization': 'Bearer ' + this.authService.accessToken
+        });
+
+        this.http.get(url, { responseType: 'blob', observe: 'response', headers }).subscribe({
             next: (response) => {
                 const blob = response.body;
                 if (!blob) {
@@ -402,16 +489,20 @@ export class FinancialCustomDashboardComponent implements OnInit {
                 const contentDisposition = response.headers.get('Content-Disposition');
                 let filename = `Financial_Report_${this.selectedYear}.xlsx`;
                 if (contentDisposition) {
-                    const match = contentDisposition.match(/filename="?([^"]+)"?/);
+                    const match = contentDisposition.match(/filename[*]?="?([^";]+)"?/);
                     if (match && match[1]) {
                         filename = match[1];
                     }
                 }
 
                 //
-                // Trigger browser download
+                // Create a typed blob so the browser recognizes the file format,
+                // then trigger a browser download with the correct filename.
                 //
-                const blobUrl = window.URL.createObjectURL(blob);
+                const typedBlob = new Blob([blob], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                const blobUrl = window.URL.createObjectURL(typedBlob);
                 const a = document.createElement('a');
                 a.href = blobUrl;
                 a.download = filename;
@@ -442,7 +533,11 @@ export class FinancialCustomDashboardComponent implements OnInit {
             url += `&financialOfficeId=${this.selectedOfficeId}`;
         }
 
-        this.http.get<CategoryBreakdownResponse>(url).subscribe({
+        const headers = new HttpHeaders({
+            'Authorization': 'Bearer ' + this.authService.accessToken
+        });
+
+        this.http.get<CategoryBreakdownResponse>(url, { headers }).subscribe({
             next: (response) => {
                 const categories = response?.categories ?? [];
                 this.revenueCategories = categories.filter((c: CategoryBreakdownItem) => c.isRevenue);
@@ -450,6 +545,15 @@ export class FinancialCustomDashboardComponent implements OnInit {
                 this.yearRevenue = this.revenueCategories.reduce((sum, c) => sum + c.total, 0);
                 this.yearExpenses = this.expenseCategories.reduce((sum, c) => sum + c.total, 0);
                 this.yearNet = this.yearRevenue - this.yearExpenses;
+
+                //
+                // Also drive the header summary cards from the same server-side data
+                // to ensure consistency between the two views.
+                //
+                this.totalIncome = this.yearRevenue;
+                this.totalExpenses = this.yearExpenses;
+                this.netBalance = this.yearNet;
+
                 this.loadingBreakdown = false;
             },
             error: () => {
@@ -465,7 +569,11 @@ export class FinancialCustomDashboardComponent implements OnInit {
     private loadOutstandingDeposits(): void {
         this.loadingDeposits = true;
 
-        this.http.get<OutstandingDepositsResponse>('/api/FinancialTransactions/OutstandingDeposits').subscribe({
+        const headers = new HttpHeaders({
+            'Authorization': 'Bearer ' + this.authService.accessToken
+        });
+
+        this.http.get<OutstandingDepositsResponse>('/api/FinancialTransactions/OutstandingDeposits', { headers }).subscribe({
             next: (response) => {
                 this.outstandingDeposits = response?.deposits ?? [];
                 this.outstandingDepositsTotal = response?.totalAmount ?? 0;

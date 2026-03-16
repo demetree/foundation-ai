@@ -284,7 +284,7 @@ namespace Foundation.Community.Database
 				timeStamp = postChangeHistory.timeStamp,
 				userId = postChangeHistory.userId,
 				data = postChangeHistory.data,
-				post = Post.CreateMinimalAnonymous(postChangeHistory.post)
+				post = Post.CreateMinimalAnonymous(postChangeHistory.post),
 			 };
 		}
 

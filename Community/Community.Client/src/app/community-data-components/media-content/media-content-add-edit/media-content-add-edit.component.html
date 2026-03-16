@@ -1,0 +1,63 @@
+<div class="add-media-content" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-media-content me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Media Content" 
+        *ngIf="userIsCommunityMediaContentWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #mediaContentModal let-modal>
+   <div class="modal-header media-content-modal-header">
+      <h5 class="modal-title mb-0" id="mediaContentModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Media Content' : 'Add Media Content' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body media-content-modal-body">
+      <form [formGroup]="mediaContentForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('mediaAssetId')">
+                <label for="MediaContent-mediaAssetId" id="label-MediaContent-mediaAssetId"><span class="text-danger">*</span>Media Asset</label>
+                <select id="MediaContent-mediaAssetId" formControlName="mediaAssetId" class="form-select media-content-select" [disabled]="!userIsCommunityMediaContentWriter()">
+                    <option [ngValue]="null">Select Media Asset</option>
+                    <option *ngFor="let mediaAsset of mediaAssets$ | async" [ngValue]="mediaAsset.id">{{mediaAsset.fileName}}</option>
+                </select>
+                <div *ngIf="mediaContentForm.get('mediaAssetId')?.invalid && mediaContentForm.get('mediaAssetId')?.touched" class="text-danger">
+                    Media Asset is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fileData')">
+                <label for="MediaContent-fileData" id="label-MediaContent-fileData"><span class="text-danger">*</span>File Data</label>
+                <input type="text" id="MediaContent-fileData" formControlName="fileData" placeholder="Enter File Data" class="form-control media-content-input" [disabled]="!userIsCommunityMediaContentWriter()" aria-labelledby="label-fileData" />
+                <div *ngIf="mediaContentForm.get('fileData')?.invalid && mediaContentForm.get('fileData')?.touched" class="text-danger">
+                    File Data is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MediaContent-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityMediaContentWriter()" />
+                <label for="MediaContent-active" class="form-check-label" id="label-MediaContent-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="MediaContent-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityMediaContentWriter()" />
+                <label for="MediaContent-deleted" class="form-check-label" id="label-MediaContent-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer media-content-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Media Content changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mediaContentForm.valid || mediaContentForm.pristine  || userIsCommunityMediaContentWriter() == false " ngbTooltip="Save the Media Content changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Media Content' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

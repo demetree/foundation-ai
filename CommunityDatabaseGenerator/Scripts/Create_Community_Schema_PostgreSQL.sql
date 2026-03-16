@@ -32,6 +32,7 @@ CREATE SCHEMA "Community"
 -- DROP TABLE "Community"."SiteSetting"
 -- DROP TABLE "Community"."MenuItem"
 -- DROP TABLE "Community"."Menu"
+-- DROP TABLE "Community"."MediaContent"
 -- DROP TABLE "Community"."MediaAsset"
 -- DROP TABLE "Community"."PostTagAssignment"
 -- DROP TABLE "Community"."PostTag"
@@ -51,6 +52,7 @@ CREATE SCHEMA "Community"
 -- ALTER INDEX ALL ON "SiteSetting" DISABLE
 -- ALTER INDEX ALL ON "MenuItem" DISABLE
 -- ALTER INDEX ALL ON "Menu" DISABLE
+-- ALTER INDEX ALL ON "MediaContent" DISABLE
 -- ALTER INDEX ALL ON "MediaAsset" DISABLE
 -- ALTER INDEX ALL ON "PostTagAssignment" DISABLE
 -- ALTER INDEX ALL ON "PostTag" DISABLE
@@ -70,6 +72,7 @@ CREATE SCHEMA "Community"
 -- ALTER INDEX ALL ON "SiteSetting" REBUILD
 -- ALTER INDEX ALL ON "MenuItem" REBUILD
 -- ALTER INDEX ALL ON "Menu" REBUILD
+-- ALTER INDEX ALL ON "MediaContent" REBUILD
 -- ALTER INDEX ALL ON "MediaAsset" REBUILD
 -- ALTER INDEX ALL ON "PostTagAssignment" REBUILD
 -- ALTER INDEX ALL ON "PostTag" REBUILD
@@ -359,6 +362,35 @@ CREATE INDEX "I_MediaAsset_tenantGuid_active" ON "Community"."MediaAsset" ("tena
 
 -- Index on the MediaAsset table's tenantGuid,deleted fields.
 CREATE INDEX "I_MediaAsset_tenantGuid_deleted" ON "Community"."MediaAsset" ("tenantGuid", "deleted")
+;
+
+
+-- Binary storage for media asset file data. Separated from MediaAsset to keep metadata queries lightweight. One-to-one relationship with MediaAsset.
+CREATE TABLE "Community"."MediaContent"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"mediaAssetId" INT NOT NULL,		-- The media asset this content belongs to
+	"fileData" BYTEA NOT NULL,		-- Binary file content (varbinary MAX)
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "mediaAssetId" FOREIGN KEY ("mediaAssetId") REFERENCES "Community"."MediaAsset"("id")		-- Foreign key to the MediaAsset table.
+);
+-- Index on the MediaContent table's tenantGuid field.
+CREATE INDEX "I_MediaContent_tenantGuid" ON "Community"."MediaContent" ("tenantGuid")
+;
+
+-- Index on the MediaContent table's tenantGuid,mediaAssetId fields.
+CREATE INDEX "I_MediaContent_tenantGuid_mediaAssetId" ON "Community"."MediaContent" ("tenantGuid", "mediaAssetId")
+;
+
+-- Index on the MediaContent table's tenantGuid,active fields.
+CREATE INDEX "I_MediaContent_tenantGuid_active" ON "Community"."MediaContent" ("tenantGuid", "active")
+;
+
+-- Index on the MediaContent table's tenantGuid,deleted fields.
+CREATE INDEX "I_MediaContent_tenantGuid_deleted" ON "Community"."MediaContent" ("tenantGuid", "deleted")
 ;
 
 

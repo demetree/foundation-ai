@@ -222,6 +222,87 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         /// <summary>
+        /// Aggregates transactions by month for a given year, split by revenue/expense.
+        /// Returns 12 entries (one per month) with income and expense totals.
+        /// Used by the dashboard's monthly breakdown chart.
+        /// </summary>
+        [HttpGet]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/FinancialTransactions/MonthlyBreakdown")]
+        public async Task<IActionResult> GetMonthlyBreakdown(
+            int? financialOfficeId = null,
+            int? year = null,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "MonthlyBreakdown requested by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            IQueryable<Database.FinancialTransaction> query = _context.FinancialTransactions
+                .Where(ft => ft.tenantGuid == userTenantGuid && ft.active == true && ft.deleted == false);
+
+            if (financialOfficeId.HasValue)
+            {
+                query = query.Where(ft => ft.financialOfficeId == financialOfficeId.Value);
+            }
+
+            int filterYear = year ?? DateTime.UtcNow.Year;
+
+            query = query.Where(ft => ft.transactionDate.Year == filterYear);
+
+            var monthlyData = await query
+                .GroupBy(ft => new { ft.transactionDate.Month, ft.isRevenue })
+                .Select(g => new
+                {
+                    month = g.Key.Month,
+                    isRevenue = g.Key.isRevenue,
+                    total = g.Sum(ft => ft.totalAmount)
+                })
+                .ToListAsync(cancellationToken);
+
+            // Build 12-month arrays
+            var income = new decimal[12];
+            var expenses = new decimal[12];
+            foreach (var entry in monthlyData)
+            {
+                var idx = entry.month - 1; // Month is 1-based, array is 0-based
+                if (entry.isRevenue)
+                    income[idx] = entry.total;
+                else
+                    expenses[idx] = entry.total;
+            }
+
+            await CreateAuditEventAsync(AuditType.ReadList,
+                $"Monthly breakdown read. Year={filterYear}");
+
+            return Ok(new
+            {
+                year = filterYear,
+                income,
+                expenses
+            });
+        }
+
+
+        /// <summary>
         /// Generates a formatted Excel financial report and returns it as a file download.
         ///
         /// Produces a workbook with three sheets:

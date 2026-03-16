@@ -1,6 +1,6 @@
 // AI-Developed — This file was significantly developed with AI assistance.
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { FiscalPeriodService, FiscalPeriodData, FiscalPeriodSubmitData } from '../../../scheduler-data-services/fiscal-period.service';
@@ -37,7 +37,8 @@ export class FiscalPeriodCloseComponent implements OnInit {
         private fiscalPeriodService: FiscalPeriodService,
         private alertService: AlertService,
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) { }
 
 
@@ -67,6 +68,19 @@ export class FiscalPeriodCloseComponent implements OnInit {
                 this.fiscalYears = Array.from(yearSet).sort((a, b) => b - a);
 
                 this.updateCounts();
+
+                //
+                // Pre-select year from dashboard query param
+                //
+                const qp = this.route.snapshot.queryParams;
+                if (qp['year']) {
+                    const year = Number(qp['year']);
+                    if (this.fiscalYears.includes(year)) {
+                        this.selectedYear = year;
+                        this.updateCounts();
+                    }
+                }
+
                 this.isLoading = false;
             },
             error: () => {
@@ -162,5 +176,9 @@ export class FiscalPeriodCloseComponent implements OnInit {
         } catch { return dateStr; }
     }
 
-    goBack(): void { this.router.navigate(['/finances']); }
+    goBack(): void {
+        const params: any = {};
+        if (this.selectedYear) params.year = this.selectedYear;
+        this.router.navigate(['/finances'], { queryParams: params });
+    }
 }

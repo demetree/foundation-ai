@@ -231,7 +231,7 @@ namespace Foundation.Community.Database
 				imageHeight = this.imageHeight,
 				objectGuid = this.objectGuid,
 				active = this.active,
-				deleted = this.deleted
+				deleted = this.deleted,
 			 };
 		}
 
@@ -295,7 +295,7 @@ namespace Foundation.Community.Database
 				imageHeight = mediaAsset.imageHeight,
 				objectGuid = mediaAsset.objectGuid,
 				active = mediaAsset.active,
-				deleted = mediaAsset.deleted
+				deleted = mediaAsset.deleted,
 			 };
 		}
 
@@ -326,7 +326,7 @@ namespace Foundation.Community.Database
 				imageHeight = mediaAsset.imageHeight,
 				objectGuid = mediaAsset.objectGuid,
 				active = mediaAsset.active,
-				deleted = mediaAsset.deleted
+				deleted = mediaAsset.deleted,
 			 };
 		}
 

@@ -7,7 +7,7 @@ import { BudgetService, BudgetData } from '../../../scheduler-data-services/budg
 import { FinancialTransactionService, FinancialTransactionData } from '../../../scheduler-data-services/financial-transaction.service';
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { FiscalPeriodService, FiscalPeriodData } from '../../../scheduler-data-services/fiscal-period.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 
 interface ReportRow {
@@ -53,7 +53,8 @@ export class BudgetReportComponent implements OnInit {
         private fiscalPeriodService: FiscalPeriodService,
         private alertService: AlertService,
         private authService: AuthService,
-        private router: Router
+        private router: Router,
+        private route: ActivatedRoute
     ) { }
 
 
@@ -70,6 +71,24 @@ export class BudgetReportComponent implements OnInit {
             next: ({ offices, periods }) => {
                 this.offices = offices ?? [];
                 this.fiscalPeriods = (periods ?? []).sort((a, b) => (a.startDate ?? '').localeCompare(b.startDate ?? ''));
+
+                //
+                // Pre-select filters from dashboard query params
+                //
+                const qp = this.route.snapshot.queryParams;
+                if (qp['officeId']) {
+                    this.selectedOfficeId = Number(qp['officeId']);
+                    this.selectedOfficeName = this.offices.find(o => Number(o.id) === this.selectedOfficeId)?.name ?? 'All Offices';
+                }
+                if (qp['year']) {
+                    const year = Number(qp['year']);
+                    const matchingPeriod = this.fiscalPeriods.find(p => Number(p.fiscalYear) === year);
+                    if (matchingPeriod) {
+                        this.selectedFiscalPeriodId = Number(matchingPeriod.id);
+                        this.selectedPeriodName = matchingPeriod.name ?? 'Unknown';
+                    }
+                }
+
                 this.loadReport();
             },
             error: () => {
@@ -98,7 +117,7 @@ export class BudgetReportComponent implements OnInit {
         if (this.selectedOfficeId) budgetParams.financialOfficeId = this.selectedOfficeId;
         if (this.selectedFiscalPeriodId) budgetParams.fiscalPeriodId = this.selectedFiscalPeriodId;
 
-        const txParams: any = { active: true, deleted: false };
+        const txParams: any = { active: true, deleted: false, pageSize: 10000 };
         if (this.selectedOfficeId) txParams.financialOfficeId = this.selectedOfficeId;
 
         forkJoin({
@@ -106,7 +125,25 @@ export class BudgetReportComponent implements OnInit {
             transactions: this.transactionService.GetFinancialTransactionList(txParams)
         }).subscribe({
             next: ({ budgets, transactions }) => {
-                this.buildRows(budgets ?? [], transactions ?? []);
+                let filteredTx = transactions ?? [];
+
+                //
+                // Filter transactions by fiscal period date range when a period is selected
+                //
+                if (this.selectedFiscalPeriodId) {
+                    const period = this.fiscalPeriods.find(p => Number(p.id) === this.selectedFiscalPeriodId);
+                    if (period?.startDate && period?.endDate) {
+                        const periodStart = new Date(period.startDate).getTime();
+                        const periodEnd = new Date(period.endDate).getTime();
+                        filteredTx = filteredTx.filter(tx => {
+                            if (!tx.transactionDate) return false;
+                            const txTime = new Date(tx.transactionDate).getTime();
+                            return txTime >= periodStart && txTime <= periodEnd;
+                        });
+                    }
+                }
+
+                this.buildRows(budgets ?? [], filteredTx);
                 this.isLoading = false;
             },
             error: () => {
@@ -197,7 +234,13 @@ export class BudgetReportComponent implements OnInit {
 
 
     goBack(): void {
-        this.router.navigate(['/finances/dashboard']);
+        const params: any = {};
+        if (this.selectedFiscalPeriodId) {
+            const period = this.fiscalPeriods.find(p => Number(p.id) === this.selectedFiscalPeriodId);
+            if (period?.fiscalYear) params.year = Number(period.fiscalYear);
+        }
+        if (this.selectedOfficeId) params.officeId = this.selectedOfficeId;
+        this.router.navigate(['/finances'], { queryParams: params });
     }
 
 

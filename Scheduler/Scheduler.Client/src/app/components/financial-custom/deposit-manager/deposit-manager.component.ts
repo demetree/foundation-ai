@@ -158,7 +158,7 @@ export class DepositManagerComponent implements OnInit {
 
 
     goBack(): void {
-        this.router.navigate(['/finances/dashboard']);
+        this.router.navigate(['/finances']);
     }
 
 

@@ -28,6 +28,7 @@ GO
 -- DROP TABLE [Community].[SiteSetting]
 -- DROP TABLE [Community].[MenuItem]
 -- DROP TABLE [Community].[Menu]
+-- DROP TABLE [Community].[MediaContent]
 -- DROP TABLE [Community].[MediaAsset]
 -- DROP TABLE [Community].[PostTagAssignment]
 -- DROP TABLE [Community].[PostTag]
@@ -47,6 +48,7 @@ GO
 -- ALTER INDEX ALL ON [Community].[SiteSetting] DISABLE
 -- ALTER INDEX ALL ON [Community].[MenuItem] DISABLE
 -- ALTER INDEX ALL ON [Community].[Menu] DISABLE
+-- ALTER INDEX ALL ON [Community].[MediaContent] DISABLE
 -- ALTER INDEX ALL ON [Community].[MediaAsset] DISABLE
 -- ALTER INDEX ALL ON [Community].[PostTagAssignment] DISABLE
 -- ALTER INDEX ALL ON [Community].[PostTag] DISABLE
@@ -66,6 +68,7 @@ GO
 -- ALTER INDEX ALL ON [Community].[SiteSetting] REBUILD
 -- ALTER INDEX ALL ON [Community].[MenuItem] REBUILD
 -- ALTER INDEX ALL ON [Community].[Menu] REBUILD
+-- ALTER INDEX ALL ON [Community].[MediaContent] REBUILD
 -- ALTER INDEX ALL ON [Community].[MediaAsset] REBUILD
 -- ALTER INDEX ALL ON [Community].[PostTagAssignment] REBUILD
 -- ALTER INDEX ALL ON [Community].[PostTag] REBUILD
@@ -381,6 +384,38 @@ GO
 
 -- Index on the MediaAsset table's tenantGuid,deleted fields.
 CREATE INDEX [I_MediaAsset_tenantGuid_deleted] ON [Community].[MediaAsset] ([tenantGuid], [deleted])
+GO
+
+
+-- Binary storage for media asset file data. Separated from MediaAsset to keep metadata queries lightweight. One-to-one relationship with MediaAsset.
+CREATE TABLE [Community].[MediaContent]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[mediaAssetId] INT NOT NULL,		-- The media asset this content belongs to
+	[fileData] VARBINARY(MAX) NOT NULL,		-- Binary file content (varbinary MAX)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_MediaContent_MediaAsset_mediaAssetId] FOREIGN KEY ([mediaAssetId]) REFERENCES [Community].[MediaAsset] ([id])		-- Foreign key to the MediaAsset table.
+)
+GO
+
+-- Index on the MediaContent table's tenantGuid field.
+CREATE INDEX [I_MediaContent_tenantGuid] ON [Community].[MediaContent] ([tenantGuid])
+GO
+
+-- Index on the MediaContent table's tenantGuid,mediaAssetId fields.
+CREATE INDEX [I_MediaContent_tenantGuid_mediaAssetId] ON [Community].[MediaContent] ([tenantGuid], [mediaAssetId])
+GO
+
+-- Index on the MediaContent table's tenantGuid,active fields.
+CREATE INDEX [I_MediaContent_tenantGuid_active] ON [Community].[MediaContent] ([tenantGuid], [active])
+GO
+
+-- Index on the MediaContent table's tenantGuid,deleted fields.
+CREATE INDEX [I_MediaContent_tenantGuid_deleted] ON [Community].[MediaContent] ([tenantGuid], [deleted])
 GO
 
 

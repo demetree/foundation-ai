@@ -16,6 +16,7 @@ import {DocumentDownloadService} from  './document-download.service';
 import {GalleryAlbumService} from  './gallery-album.service';
 import {GalleryImageService} from  './gallery-image.service';
 import {MediaAssetService} from  './media-asset.service';
+import {MediaContentService} from  './media-content.service';
 import {MenuService} from  './menu.service';
 import {MenuItemService} from  './menu-item.service';
 import {PageService} from  './page.service';
@@ -40,6 +41,7 @@ export class CommunityDataServiceManagerService  {
               , public galleryAlbumService: GalleryAlbumService
               , public galleryImageService: GalleryImageService
               , public mediaAssetService: MediaAssetService
+              , public mediaContentService: MediaContentService
               , public menuService: MenuService
               , public menuItemService: MenuItemService
               , public pageService: PageService
@@ -62,6 +64,7 @@ export class CommunityDataServiceManagerService  {
         this.galleryAlbumService.ClearAllCaches();
         this.galleryImageService.ClearAllCaches();
         this.mediaAssetService.ClearAllCaches();
+        this.mediaContentService.ClearAllCaches();
         this.menuService.ClearAllCaches();
         this.menuItemService.ClearAllCaches();
         this.pageService.ClearAllCaches();

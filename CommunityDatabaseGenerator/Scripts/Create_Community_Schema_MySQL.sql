@@ -20,6 +20,7 @@ USE `Community`;
 -- DROP TABLE `SiteSetting`
 -- DROP TABLE `MenuItem`
 -- DROP TABLE `Menu`
+-- DROP TABLE `MediaContent`
 -- DROP TABLE `MediaAsset`
 -- DROP TABLE `PostTagAssignment`
 -- DROP TABLE `PostTag`
@@ -39,6 +40,7 @@ USE `Community`;
 -- ALTER INDEX ALL ON `SiteSetting` DISABLE
 -- ALTER INDEX ALL ON `MenuItem` DISABLE
 -- ALTER INDEX ALL ON `Menu` DISABLE
+-- ALTER INDEX ALL ON `MediaContent` DISABLE
 -- ALTER INDEX ALL ON `MediaAsset` DISABLE
 -- ALTER INDEX ALL ON `PostTagAssignment` DISABLE
 -- ALTER INDEX ALL ON `PostTag` DISABLE
@@ -58,6 +60,7 @@ USE `Community`;
 -- ALTER INDEX ALL ON `SiteSetting` REBUILD
 -- ALTER INDEX ALL ON `MenuItem` REBUILD
 -- ALTER INDEX ALL ON `Menu` REBUILD
+-- ALTER INDEX ALL ON `MediaContent` REBUILD
 -- ALTER INDEX ALL ON `MediaAsset` REBUILD
 -- ALTER INDEX ALL ON `PostTagAssignment` REBUILD
 -- ALTER INDEX ALL ON `PostTag` REBUILD
@@ -304,6 +307,30 @@ CREATE INDEX `I_MediaAsset_tenantGuid_active` ON `MediaAsset` (`tenantGuid`, `ac
 
 -- Index on the MediaAsset table's tenantGuid,deleted fields.
 CREATE INDEX `I_MediaAsset_tenantGuid_deleted` ON `MediaAsset` (`tenantGuid`, `deleted`);
+
+
+-- Binary storage for media asset file data. Separated from MediaAsset to keep metadata queries lightweight. One-to-one relationship with MediaAsset.
+CREATE TABLE `MediaContent`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`mediaAssetId` INT NOT NULL,		-- The media asset this content belongs to
+	`fileData` BLOB NOT NULL,		-- Binary file content (varbinary MAX)
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`mediaAssetId`) REFERENCES `MediaAsset`(`id`)		-- Foreign key to the MediaAsset table.
+);
+-- Index on the MediaContent table's tenantGuid field.
+CREATE INDEX `I_MediaContent_tenantGuid` ON `MediaContent` (`tenantGuid`);
+
+-- Index on the MediaContent table's tenantGuid,mediaAssetId fields.
+CREATE INDEX `I_MediaContent_tenantGuid_mediaAssetId` ON `MediaContent` (`tenantGuid`, `mediaAssetId`);
+
+-- Index on the MediaContent table's tenantGuid,active fields.
+CREATE INDEX `I_MediaContent_tenantGuid_active` ON `MediaContent` (`tenantGuid`, `active`);
+
+-- Index on the MediaContent table's tenantGuid,deleted fields.
+CREATE INDEX `I_MediaContent_tenantGuid_deleted` ON `MediaContent` (`tenantGuid`, `deleted`);
 
 
 -- Named navigation menus for different positions on the site (e.g. header, footer, sidebar).

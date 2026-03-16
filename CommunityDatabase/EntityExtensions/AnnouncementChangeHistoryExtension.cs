@@ -284,7 +284,7 @@ namespace Foundation.Community.Database
 				timeStamp = announcementChangeHistory.timeStamp,
 				userId = announcementChangeHistory.userId,
 				data = announcementChangeHistory.data,
-				announcement = Announcement.CreateMinimalAnonymous(announcementChangeHistory.announcement)
+				announcement = Announcement.CreateMinimalAnonymous(announcementChangeHistory.announcement),
 			 };
 		}
 

@@ -44,6 +44,10 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Community].[MediaContent]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Community].[Menu]",
          "ObjectType": 0
       },
