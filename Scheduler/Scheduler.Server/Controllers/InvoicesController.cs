@@ -3,15 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.Controllers;
+using Foundation.ChangeHistory;
+using Foundation.Scheduler.Database;
 using static Foundation.Auditor.AuditEngine;
 
 using Scheduler.Server.Services;
@@ -37,8 +41,16 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         /// <summary>
         ///
         /// Creates a draft invoice from event charges on a scheduled event.
-        /// Copies all active, non-deleted EventCharge records on the specified event
-        /// into InvoiceLineItem records on a new Invoice.
+        ///
+        /// Delegates all financial logic to FinancialManagementService, which handles:
+        ///   - Invoice + line item creation inside a DB transaction
+        ///   - FinancialTransaction ledger entry (Accounts Receivable)
+        ///   - EventCharge status cascade → "Invoiced"
+        ///   - Invoice number generation with lock
+        ///   - Fiscal period validation
+        ///   - Change history
+        ///
+        /// This controller method is a thin wrapper: auth, tenant, audit, HTTP response.
         ///
         /// </summary>
         [HttpPost]
@@ -71,120 +83,36 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             }
 
             //
-            // Load the event and its charges
+            // Resolve the FinancialManagementService from DI
+            // (cannot constructor-inject because this is a partial class extension of auto-generated code)
             //
-            var scheduledEvent = await _context.ScheduledEvents
-                .Where(e => e.id == eventId && e.tenantGuid == tenantGuid && e.active == true && e.deleted == false)
-                .FirstOrDefaultAsync(cancellationToken);
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
 
-            if (scheduledEvent == null)
+            if (financialService == null)
             {
-                return NotFound("Scheduled event not found.");
+                return Problem("Financial Management Service is not available.");
             }
 
-            var eventCharges = await _context.EventCharges
-                .Where(ec => ec.scheduledEventId == eventId && ec.tenantGuid == tenantGuid && ec.active == true && ec.deleted == false)
-                .ToListAsync(cancellationToken);
+            var result = await financialService.CreateInvoiceFromEventAsync(
+                tenantGuid, eventId, securityUser.id, cancellationToken);
 
-            if (eventCharges.Count == 0)
+            if (!result.Success)
             {
-                return BadRequest("No charges found on this event.");
+                await CreateAuditEventAsync(AuditType.Miscellaneous,
+                    $"Invoice creation from event {eventId} failed: {result.ErrorMessage}");
+                return BadRequest(result.ErrorMessage);
             }
-
-            //
-            // Get tenant profile for currency defaults and invoice number mask
-            //
-            var tenantProfile = await _context.TenantProfiles
-                .Where(tp => tp.tenantGuid == tenantGuid && tp.active == true && tp.deleted == false)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            //
-            // Generate next invoice number
-            //
-            string invoiceNumber = await GenerateNextInvoiceNumberAsync(tenantGuid, tenantProfile, cancellationToken);
-
-            //
-            // Determine default currency (use first charge's currency or fallback)
-            //
-            int currencyId = eventCharges.First().currencyId;
-
-            //
-            // Get default InvoiceStatus (Draft = sequence 1)
-            //
-            var draftStatus = await _context.InvoiceStatuses
-                .Where(s => s.active == true && s.deleted == false)
-                .OrderBy(s => s.sequence)
-                .FirstAsync(cancellationToken);
-
-            //
-            // Create the invoice
-            //
-            decimal subtotal = eventCharges.Sum(ec => ec.extendedAmount);
-            decimal taxAmount = eventCharges.Sum(ec => ec.taxAmount);
-            decimal totalAmount = eventCharges.Sum(ec => ec.totalAmount);
-
-            var invoice = new Database.Invoice
-            {
-                tenantGuid = tenantGuid,
-                invoiceNumber = invoiceNumber,
-                scheduledEventId = eventId,
-                invoiceStatusId = draftStatus.id,
-                currencyId = currencyId,
-                invoiceDate = DateTime.UtcNow,
-                dueDate = DateTime.UtcNow.AddDays(30),
-                subtotal = subtotal,
-                taxAmount = taxAmount,
-                totalAmount = totalAmount,
-                amountPaid = 0,
-                active = true,
-                deleted = false,
-                versionNumber = 1,
-                objectGuid = Guid.NewGuid()
-            };
-
-            //
-            // Copy client from event if available
-            //
-            if (scheduledEvent.clientId.HasValue)
-            {
-                invoice.clientId = scheduledEvent.clientId.Value;
-            }
-
-            _context.Invoices.Add(invoice);
-            await _context.SaveChangesAsync(cancellationToken);
-
-            //
-            // Create line items from charges
-            //
-            int sequence = 1;
-            foreach (var charge in eventCharges)
-            {
-                var lineItem = new Database.InvoiceLineItem
-                {
-                    tenantGuid = tenantGuid,
-                    invoiceId = invoice.id,
-                    eventChargeId = charge.id,
-                    description = charge.description ?? "Event Charge",
-                    quantity = charge.quantity ?? 1,
-                    unitPrice = charge.unitPrice ?? charge.extendedAmount,
-                    amount = charge.extendedAmount,
-                    taxAmount = charge.taxAmount,
-                    totalAmount = charge.totalAmount,
-                    sequence = sequence++,
-                    active = true,
-                    deleted = false,
-                    objectGuid = Guid.NewGuid()
-                };
-
-                _context.InvoiceLineItems.Add(lineItem);
-            }
-
-            await _context.SaveChangesAsync(cancellationToken);
 
             await CreateAuditEventAsync(AuditType.CreateEntity,
-                $"Invoice {invoiceNumber} created from event {eventId} with {eventCharges.Count} line items. Total: {totalAmount:C}");
+                $"Invoice {result.Data["invoiceNumber"]} created from event {eventId} via FinancialManagementService.");
 
-            return Ok(new { invoiceId = invoice.id, invoiceNumber });
+            return Ok(new
+            {
+                invoiceId = result.Data["invoiceId"],
+                invoiceNumber = result.Data["invoiceNumber"]
+            });
         }
 
 
@@ -214,7 +142,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 .Where(tp => tp.tenantGuid == tenantGuid && tp.active == true && tp.deleted == false)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            string nextNumber = await GenerateNextInvoiceNumberAsync(tenantGuid, tenantProfile, cancellationToken);
+            string nextNumber;
+            lock (invoicePutSyncRoot)
+            {
+                nextNumber = GenerateNextInvoiceNumber(tenantGuid, tenantProfile);
+            }
 
             return Ok(new { invoiceNumber = nextNumber });
         }
@@ -364,6 +296,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 _context.Documents.Add(document);
                 await _context.SaveChangesAsync(cancellationToken);
             }
+            else
+            {
+                //
+                // DocumentType "Invoice" is not configured — log a warning so the administrator knows
+                // the PDF is not being persisted in the Document table.
+                //
+                await CreateAuditEventAsync(AuditType.Error,
+                    $"Invoice PDF for {invoice.invoiceNumber} was generated but NOT stored in the Document table because no DocumentType named 'Invoice' exists. Please create this DocumentType to enable PDF archival.");
+            }
 
             await CreateAuditEventAsync(AuditType.ReadEntity,
                 $"Invoice PDF generated for {invoice.invoiceNumber}");
@@ -376,43 +317,58 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         // ── Private helpers ──
         //
 
-        private async Task<string> GenerateNextInvoiceNumberAsync(
+        /// <summary>
+        /// Generates the next sequential invoice number for the given tenant.
+        ///
+        /// IMPORTANT: This method must be called inside the invoicePutSyncRoot lock
+        /// to prevent concurrent requests from generating the same number.
+        ///
+        /// The method filters existing invoices by the year-specific prefix,
+        /// extracts the trailing numeric sequence, and returns the next value
+        /// formatted according to the tenant's invoiceNumberMask.
+        /// </summary>
+        private string GenerateNextInvoiceNumber(
             Guid tenantGuid,
-            Database.TenantProfile tenantProfile,
-            CancellationToken cancellationToken)
+            Database.TenantProfile tenantProfile)
         {
             string mask = tenantProfile?.invoiceNumberMask ?? "INV-{YYYY}-{NNNN}";
             int year = DateTime.UtcNow.Year;
 
             //
-            // Find the highest existing invoice number for this tenant and year
+            // Build the prefix by applying year tokens but leaving the sequence placeholder.
+            // This lets us filter invoices that match *this year's* prefix.
             //
-            string yearPrefix = $"INV-{year}-";
+            string prefixBeforeSequence = mask;
+            prefixBeforeSequence = prefixBeforeSequence.Replace("{YYYY}", year.ToString(CultureInfo.InvariantCulture));
+            prefixBeforeSequence = prefixBeforeSequence.Replace("{YY}", (year % 100).ToString("D2", CultureInfo.InvariantCulture));
 
+            // Determine where the sequence placeholder starts
+            int seqStart = prefixBeforeSequence.IndexOf("{N", StringComparison.Ordinal);
+            string yearPrefix = seqStart >= 0 ? prefixBeforeSequence.Substring(0, seqStart) : prefixBeforeSequence;
+
+            //
+            // Query only invoices that match this year's prefix using a DB-level StartsWith filter
+            //
             int maxSequence = 0;
-            var existingInvoices = await _context.Invoices
-                .Where(i => i.tenantGuid == tenantGuid && i.active == true && i.deleted == false)
+            var matchingNumbers = _context.Invoices
+                .Where(i => i.tenantGuid == tenantGuid && i.invoiceNumber.StartsWith(yearPrefix))
                 .Select(i => i.invoiceNumber)
-                .ToListAsync(cancellationToken);
+                .ToList();
 
-            foreach (string num in existingInvoices)
+            foreach (string num in matchingNumbers)
             {
-                //
-                // Try to extract the numeric portion from the existing invoice number
-                //
-                if (num != null)
+                if (num != null && num.Length > yearPrefix.Length)
                 {
-                    string digits = new string(num.Where(char.IsDigit).ToArray());
-                    if (digits.Length > 0)
+                    //
+                    // Extract the trailing portion after the prefix and parse as integer
+                    //
+                    string trailing = num.Substring(yearPrefix.Length);
+                    string digits = new string(trailing.Where(char.IsDigit).ToArray());
+                    if (digits.Length > 0 && int.TryParse(digits, out int seq))
                     {
-                        // Take the last 4+ digits as the sequence
-                        string lastDigits = digits.Length > 4 ? digits.Substring(digits.Length - 4) : digits;
-                        if (int.TryParse(lastDigits, out int seq))
+                        if (seq > maxSequence)
                         {
-                            if (seq > maxSequence)
-                            {
-                                maxSequence = seq;
-                            }
+                            maxSequence = seq;
                         }
                     }
                 }

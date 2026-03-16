@@ -3,15 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 using Foundation.Security;
 using Foundation.Security.Database;
 using Foundation.Controllers;
+using Foundation.ChangeHistory;
+using Foundation.Scheduler.Database;
 using static Foundation.Auditor.AuditEngine;
 
 using Scheduler.Server.Services;
@@ -38,6 +42,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         ///
         /// Creates a receipt from a payment transaction.
         /// Populates receipt fields from the payment transaction details.
+        ///
+        /// Wrapped in a DB transaction with change history and full audit state.
         ///
         /// </summary>
         [HttpPost]
@@ -90,11 +96,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 .FirstOrDefaultAsync(cancellationToken);
 
             //
-            // Generate receipt number
-            //
-            string receiptNumber = await GenerateNextReceiptNumberAsync(tenantGuid, tenantProfile, cancellationToken);
-
-            //
             // Get default ReceiptType (first active one)
             //
             var receiptType = await _context.ReceiptTypes
@@ -108,40 +109,106 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             }
 
             //
-            // Create the receipt
+            // Use the static lock to safely generate the receipt number and create the receipt
             //
-            var receipt = new Database.Receipt
+            Database.Receipt receipt;
+
+            lock (receiptPutSyncRoot)
             {
-                tenantGuid = tenantGuid,
-                receiptNumber = receiptNumber,
-                receiptTypeId = receiptType.id,
-                paymentTransactionId = paymentTransactionId,
-                financialTransactionId = payment.financialTransactionId,
-                currencyId = payment.currencyId,
-                receiptDate = DateTime.UtcNow,
-                amount = payment.amount,
-                paymentMethod = payment.paymentMethod?.name,
-                description = $"Payment received on {payment.transactionDate:MMM dd, yyyy}",
-                notes = payment.notes,
-                active = true,
-                deleted = false,
-                versionNumber = 1,
-                objectGuid = Guid.NewGuid()
-            };
+                string receiptNumber = GenerateNextReceiptNumber(tenantGuid, tenantProfile);
 
-            _context.Receipts.Add(receipt);
-            await _context.SaveChangesAsync(cancellationToken);
+                receipt = new Database.Receipt
+                {
+                    tenantGuid = tenantGuid,
+                    receiptNumber = receiptNumber,
+                    receiptTypeId = receiptType.id,
+                    paymentTransactionId = paymentTransactionId,
+                    financialTransactionId = payment.financialTransactionId,
+                    currencyId = payment.currencyId,
+                    receiptDate = DateTime.UtcNow,
+                    amount = payment.amount,
+                    paymentMethod = payment.paymentMethod?.name,
+                    description = $"Payment received on {payment.transactionDate:MMM dd, yyyy}",
+                    notes = payment.notes,
+                    active = true,
+                    deleted = false,
+                    versionNumber = 1,
+                    objectGuid = Guid.NewGuid()
+                };
 
-            await CreateAuditEventAsync(AuditType.CreateEntity,
-                $"Receipt {receiptNumber} created from payment transaction {paymentTransactionId}. Amount: {payment.amount:C}");
+                _context.Receipts.Add(receipt);
 
-            return Ok(new { receiptId = receipt.id, receiptNumber });
+                using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
+                {
+                    try
+                    {
+                        _context.SaveChanges();
+
+                        //
+                        // Write change history record (following the auto-generated pattern)
+                        //
+                        _context.Entry(receipt).State = EntityState.Detached;
+                        receipt.Documents = null;
+                        receipt.ReceiptChangeHistories = null;
+                        receipt.client = null;
+                        receipt.contact = null;
+                        receipt.currency = null;
+                        receipt.financialTransaction = null;
+                        receipt.invoice = null;
+                        receipt.paymentTransaction = null;
+                        receipt.receiptType = null;
+
+                        ReceiptChangeHistory receiptChangeHistory = new ReceiptChangeHistory();
+                        receiptChangeHistory.receiptId = receipt.id;
+                        receiptChangeHistory.versionNumber = receipt.versionNumber;
+                        receiptChangeHistory.timeStamp = DateTime.UtcNow;
+                        receiptChangeHistory.userId = securityUser.id;
+                        receiptChangeHistory.tenantGuid = tenantGuid;
+                        receiptChangeHistory.data = JsonSerializer.Serialize(Database.Receipt.CreateAnonymousWithFirstLevelSubObjects(receipt));
+                        _context.ReceiptChangeHistories.Add(receiptChangeHistory);
+
+                        _context.SaveChanges();
+
+                        transaction.Commit();
+
+                        //
+                        // Audit event with full after-state
+                        //
+                        CreateAuditEvent(AuditType.CreateEntity,
+                            $"Receipt {receipt.receiptNumber} created from payment transaction {paymentTransactionId}. Amount: {payment.amount:C}",
+                            true,
+                            receipt.id.ToString(),
+                            "",
+                            JsonSerializer.Serialize(Database.Receipt.CreateAnonymousWithFirstLevelSubObjects(receipt)),
+                            null);
+                    }
+                    catch (Exception ex)
+                    {
+                        CreateAuditEvent(AuditType.CreateEntity,
+                            $"Receipt creation from payment {paymentTransactionId} failed.",
+                            false,
+                            receipt.id.ToString(),
+                            "",
+                            "",
+                            ex);
+
+                        return Problem(ex.Message);
+                    }
+                }
+            }
+
+            return Ok(new { receiptId = receipt.id, receiptNumber = receipt.receiptNumber });
         }
 
 
         /// <summary>
         ///
         /// Creates a receipt when an invoice payment is recorded.
+        ///
+        /// Validates that the payment amount is positive and does not exceed
+        /// the remaining balance on the invoice.
+        ///
+        /// Wrapped in a DB transaction with change history and full audit state.
         ///
         /// </summary>
         [HttpPost]
@@ -160,61 +227,56 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             }
 
             SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-            Guid tenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            Guid tenantGuid;
 
-            //
-            // Load the invoice
-            //
-            var invoice = await _context.Invoices
-                .Where(i => i.id == invoiceId && i.tenantGuid == tenantGuid && i.active == true && i.deleted == false)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (invoice == null)
+            try
             {
-                return NotFound("Invoice not found.");
+                tenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "Attempt to create receipt from invoice payment by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
             }
 
-            var tenantProfile = await _context.TenantProfiles
-                .Where(tp => tp.tenantGuid == tenantGuid && tp.active == true && tp.deleted == false)
-                .FirstOrDefaultAsync(cancellationToken);
+            //
+            // Resolve the FinancialManagementService from DI
+            // (cannot constructor-inject because this is a partial class extension of auto-generated code)
+            //
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
 
-            string receiptNumber = await GenerateNextReceiptNumberAsync(tenantGuid, tenantProfile, cancellationToken);
-
-            var receiptType = await _context.ReceiptTypes
-                .Where(rt => rt.tenantGuid == tenantGuid && rt.active == true && rt.deleted == false)
-                .OrderBy(rt => rt.sequence)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (receiptType == null)
+            if (financialService == null)
             {
-                return BadRequest("No receipt types configured for this tenant.");
+                return Problem("Financial Management Service is not available.");
             }
 
-            var receipt = new Database.Receipt
-            {
-                tenantGuid = tenantGuid,
-                receiptNumber = receiptNumber,
-                receiptTypeId = receiptType.id,
-                invoiceId = invoiceId,
-                clientId = invoice.clientId,
-                contactId = invoice.contactId,
-                currencyId = invoice.currencyId,
-                receiptDate = DateTime.UtcNow,
-                amount = amount,
-                description = $"Payment for Invoice {invoice.invoiceNumber}",
-                active = true,
-                deleted = false,
-                versionNumber = 1,
-                objectGuid = Guid.NewGuid()
-            };
+            var result = await financialService.RecordInvoicePaymentAsync(
+                tenantGuid, invoiceId, amount, securityUser.id,
+                cancellationToken: cancellationToken);
 
-            _context.Receipts.Add(receipt);
-            await _context.SaveChangesAsync(cancellationToken);
+            if (!result.Success)
+            {
+                await CreateAuditEventAsync(AuditType.Miscellaneous,
+                    $"Invoice payment for invoice {invoiceId} failed: {result.ErrorMessage}");
+                return BadRequest(result.ErrorMessage);
+            }
 
             await CreateAuditEventAsync(AuditType.CreateEntity,
-                $"Receipt {receiptNumber} created for invoice {invoice.invoiceNumber}. Amount: {amount:C}");
+                $"Receipt {result.Data["receiptNumber"]} created for invoice {invoiceId}. " +
+                $"Amount: {amount:C}. Balance: {result.Data["invoiceBalance"]:C}. " +
+                $"Via FinancialManagementService.");
 
-            return Ok(new { receiptId = receipt.id, receiptNumber });
+            return Ok(new
+            {
+                receiptId = result.Data["receiptId"],
+                receiptNumber = result.Data["receiptNumber"],
+                invoiceAmountPaid = result.Data["invoiceAmountPaid"],
+                invoiceBalance = result.Data["invoiceBalance"]
+            });
         }
 
 
@@ -243,7 +305,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 .Where(tp => tp.tenantGuid == tenantGuid && tp.active == true && tp.deleted == false)
                 .FirstOrDefaultAsync(cancellationToken);
 
-            string nextNumber = await GenerateNextReceiptNumberAsync(tenantGuid, tenantProfile, cancellationToken);
+            string nextNumber;
+            lock (receiptPutSyncRoot)
+            {
+                nextNumber = GenerateNextReceiptNumber(tenantGuid, tenantProfile);
+            }
 
             return Ok(new { receiptNumber = nextNumber });
         }
@@ -386,6 +452,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 _context.Documents.Add(document);
                 await _context.SaveChangesAsync(cancellationToken);
             }
+            else
+            {
+                //
+                // DocumentType "Receipt" is not configured — log a warning so the administrator knows
+                // the PDF is not being persisted in the Document table.
+                //
+                await CreateAuditEventAsync(AuditType.Error,
+                    $"Receipt PDF for {receipt.receiptNumber} was generated but NOT stored in the Document table because no DocumentType named 'Receipt' exists. Please create this DocumentType to enable PDF archival.");
+            }
 
             await CreateAuditEventAsync(AuditType.ReadEntity,
                 $"Receipt PDF generated for {receipt.receiptNumber}");
@@ -398,37 +473,54 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         // ── Private helpers ──
         //
 
-        private async Task<string> GenerateNextReceiptNumberAsync(
+        /// <summary>
+        /// Generates the next sequential receipt number for the given tenant.
+        ///
+        /// IMPORTANT: This method must be called inside the receiptPutSyncRoot lock
+        /// to prevent concurrent requests from generating the same number.
+        ///
+        /// The method filters existing receipts by the year-specific prefix,
+        /// extracts the trailing numeric sequence, and returns the next value
+        /// formatted according to the tenant's receiptNumberMask.
+        /// </summary>
+        private string GenerateNextReceiptNumber(
             Guid tenantGuid,
-            Database.TenantProfile tenantProfile,
-            CancellationToken cancellationToken)
+            Database.TenantProfile tenantProfile)
         {
             string mask = tenantProfile?.receiptNumberMask ?? "REC-{YYYY}-{NNNN}";
             int year = DateTime.UtcNow.Year;
 
             //
-            // Find the highest existing receipt number for this tenant
+            // Build the prefix by applying year tokens but leaving the sequence placeholder.
+            //
+            string prefixBeforeSequence = mask;
+            prefixBeforeSequence = prefixBeforeSequence.Replace("{YYYY}", year.ToString(CultureInfo.InvariantCulture));
+            prefixBeforeSequence = prefixBeforeSequence.Replace("{YY}", (year % 100).ToString("D2", CultureInfo.InvariantCulture));
+
+            // Determine where the sequence placeholder starts
+            int seqStart = prefixBeforeSequence.IndexOf("{N", StringComparison.Ordinal);
+            string yearPrefix = seqStart >= 0 ? prefixBeforeSequence.Substring(0, seqStart) : prefixBeforeSequence;
+
+            //
+            // Query only receipts that match this year's prefix using a DB-level StartsWith filter
             //
             int maxSequence = 0;
-            var existingReceipts = await _context.Receipts
-                .Where(r => r.tenantGuid == tenantGuid && r.active == true && r.deleted == false)
+            var matchingNumbers = _context.Receipts
+                .Where(r => r.tenantGuid == tenantGuid && r.receiptNumber.StartsWith(yearPrefix))
                 .Select(r => r.receiptNumber)
-                .ToListAsync(cancellationToken);
+                .ToList();
 
-            foreach (string num in existingReceipts)
+            foreach (string num in matchingNumbers)
             {
-                if (num != null)
+                if (num != null && num.Length > yearPrefix.Length)
                 {
-                    string digits = new string(num.Where(char.IsDigit).ToArray());
-                    if (digits.Length > 0)
+                    string trailing = num.Substring(yearPrefix.Length);
+                    string digits = new string(trailing.Where(char.IsDigit).ToArray());
+                    if (digits.Length > 0 && int.TryParse(digits, out int seq))
                     {
-                        string lastDigits = digits.Length > 4 ? digits.Substring(digits.Length - 4) : digits;
-                        if (int.TryParse(lastDigits, out int seq))
+                        if (seq > maxSequence)
                         {
-                            if (seq > maxSequence)
-                            {
-                                maxSequence = seq;
-                            }
+                            maxSequence = seq;
                         }
                     }
                 }

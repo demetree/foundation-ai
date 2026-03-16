@@ -156,15 +156,15 @@ export class FinancialCustomDashboardComponent implements OnInit {
         });
 
         //
-        // Load all transactions for the dashboard.
-        // For a small community deployment, loading all transactions is fine.
+        // Load recent transactions for the dashboard.
+        // Only the most recent entries are needed — summary cards and charts
+        // use server-side aggregation endpoints (Summary, CategoryBreakdown, MonthlyBreakdown).
         //
         this.transactionService.GetFinancialTransactionList({
             active: true,
             deleted: false,
             includeRelations: true,
-            // TODO: Replace with server-side aggregation/pagination when transaction volume grows
-            pageSize: 10000
+            pageSize: 50
         }).subscribe({
             next: (transactions) => {
                 if (transactions) {

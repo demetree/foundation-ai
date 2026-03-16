@@ -123,6 +123,9 @@ namespace Foundation.Scheduler
                 // Register Donor Journey Calculator
                 builder.Services.AddScoped<Foundation.Scheduler.Services.DonorJourneyCalculator>();
 
+                // Register Financial Management Service (centralized financial operations layer)
+                builder.Services.AddScoped<Foundation.Scheduler.Services.FinancialManagementService>();
+
                 // Register Recurrence Expansion Service (for server-side expansion of recurring events)
                 builder.Services.AddScoped<global::Scheduler.Server.Services.RecurrenceExpansionService>();
 
