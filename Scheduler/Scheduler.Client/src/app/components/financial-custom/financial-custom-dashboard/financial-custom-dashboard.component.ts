@@ -375,6 +375,26 @@ export class FinancialCustomDashboardComponent implements OnInit {
     }
 
 
+    public goToArAging(): void {
+        this.router.navigate(['/finances/ar-aging']);
+    }
+
+
+    public goToRevenueByClient(): void {
+        this.router.navigate(['/finances/revenue-by-client'], { queryParams: this.getFilterQueryParams() });
+    }
+
+
+    public goToGiftEntry(): void {
+        this.router.navigate(['/finances/gift-entry']);
+    }
+
+
+    public goToPledgeDashboard(): void {
+        this.router.navigate(['/finances/pledges']);
+    }
+
+
     /**
      * Builds query params object from current dashboard filter state.
      */

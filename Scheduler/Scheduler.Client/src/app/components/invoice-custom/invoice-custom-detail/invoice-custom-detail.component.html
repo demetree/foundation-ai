@@ -20,13 +20,110 @@
                 </div>
             </div>
             <div class="header-actions">
-                <button class="btn btn-sm btn-action btn-edit" (click)="openEditModal()" title="Edit Invoice">
+
+                <!-- Record Payment -->
+                <button class="btn btn-sm btn-action btn-record-payment" *ngIf="canRecordPayment"
+                    (click)="recordPayment()" title="Record a payment against this invoice">
+                    <i class="fa-solid fa-money-bill-wave me-1"></i> Record Payment
+                </button>
+
+                <!-- Issue Refund -->
+                <button class="btn btn-sm btn-action btn-refund" *ngIf="canRefund"
+                    (click)="promptRefund()" title="Issue a refund">
+                    <i class="fa-solid fa-rotate-left me-1"></i> Refund
+                </button>
+
+                <!-- Void Invoice -->
+                <button class="btn btn-sm btn-action btn-void" *ngIf="canVoid"
+                    (click)="promptVoid()" title="Void this invoice">
+                    <i class="fa-solid fa-ban me-1"></i> Void
+                </button>
+
+                <!-- Divider -->
+                <span class="action-divider" *ngIf="!isVoidOrCancelled"></span>
+
+                <!-- Edit -->
+                <button class="btn btn-sm btn-action btn-edit" (click)="openEditModal()" title="Edit Invoice"
+                    *ngIf="!isVoidOrCancelled">
                     <i class="fa-solid fa-pen-to-square me-1"></i> Edit
                 </button>
+
+                <!-- PDF -->
                 <button class="btn btn-sm btn-action btn-pdf" (click)="generatePdf()" [disabled]="isGeneratingPdf"
                     title="Download PDF">
                     <i class="fa-solid fa-file-pdf me-1"></i>
                     {{ isGeneratingPdf ? 'Generating...' : 'PDF' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- VOID CONFIRMATION OVERLAY                   -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="action-overlay" *ngIf="showVoidConfirm">
+        <div class="action-dialog">
+            <div class="dialog-icon void-icon">
+                <i class="fa-solid fa-ban"></i>
+            </div>
+            <h5>Void Invoice {{ invoice.invoiceNumber }}?</h5>
+            <p class="text-muted">
+                This will reverse the ledger entry and reset any linked event charge statuses.
+                This action cannot be undone.
+            </p>
+            <div class="mb-3">
+                <label class="form-label">Reason (optional)</label>
+                <textarea class="form-control" rows="2" [(ngModel)]="voidReason"
+                    placeholder="e.g. Client cancelled booking"></textarea>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn btn-sm btn-outline-secondary" (click)="cancelVoid()" [disabled]="isVoiding">
+                    Cancel
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="confirmVoid()" [disabled]="isVoiding">
+                    <i class="fa-solid fa-ban me-1" *ngIf="!isVoiding"></i>
+                    <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="isVoiding"></i>
+                    {{ isVoiding ? 'Voiding...' : 'Void Invoice' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- REFUND DIALOG OVERLAY                       -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="action-overlay" *ngIf="showRefundDialog">
+        <div class="action-dialog">
+            <div class="dialog-icon refund-icon">
+                <i class="fa-solid fa-rotate-left"></i>
+            </div>
+            <h5>Issue Refund for {{ invoice.invoiceNumber }}</h5>
+            <p class="text-muted">
+                Amount paid: <strong>{{ formatCurrency(invoice.amountPaid) }}</strong>
+            </p>
+            <div class="mb-3">
+                <label class="form-label">Refund Amount *</label>
+                <div class="input-group">
+                    <span class="input-group-text">$</span>
+                    <input type="number" class="form-control" [(ngModel)]="refundAmount"
+                        [max]="invoice.amountPaid" min="0.01" step="0.01">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Reason (optional)</label>
+                <textarea class="form-control" rows="2" [(ngModel)]="refundReason"
+                    placeholder="e.g. Overpayment"></textarea>
+            </div>
+            <div class="dialog-actions">
+                <button class="btn btn-sm btn-outline-secondary" (click)="cancelRefund()" [disabled]="isRefunding">
+                    Cancel
+                </button>
+                <button class="btn btn-sm btn-warning" (click)="confirmRefund()" [disabled]="isRefunding || !refundAmount || refundAmount <= 0">
+                    <i class="fa-solid fa-rotate-left me-1" *ngIf="!isRefunding"></i>
+                    <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="isRefunding"></i>
+                    {{ isRefunding ? 'Processing...' : 'Issue Refund' }}
                 </button>
             </div>
         </div>

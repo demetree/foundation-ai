@@ -1,0 +1,145 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="gift-entry-container">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="screen-header">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                </button>
+                <h3 class="mb-0"><i class="fa-solid fa-hand-holding-heart me-2"></i>Record Gift</h3>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══ LOADING ═══ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+
+    <!-- ═══ FORM ═══ -->
+    <div class="gift-form-card" *ngIf="!isLoading">
+
+        <!-- Constituent Picker -->
+        <div class="form-section">
+            <h6 class="section-title"><i class="fa-solid fa-user me-2"></i>Donor</h6>
+            <div class="mb-3 position-relative">
+                <label class="form-label">Constituent *</label>
+                <div class="input-group" *ngIf="!constituentId">
+                    <span class="input-group-text"><i class="fa-solid fa-search"></i></span>
+                    <input type="text" class="form-control" [(ngModel)]="constituentSearch"
+                        (input)="onConstituentSearch()" placeholder="Search by name..."
+                        (focus)="onConstituentSearch()">
+                </div>
+                <div class="selected-constituent" *ngIf="constituentId">
+                    <span class="constituent-name">
+                        <i class="fa-solid fa-user-check me-2 text-success"></i>{{ selectedConstituentName }}
+                    </span>
+                    <button class="btn btn-sm btn-link text-danger" (click)="clearConstituent()">
+                        <i class="fa-solid fa-xmark"></i> Change
+                    </button>
+                </div>
+                <div class="constituent-dropdown" *ngIf="showConstituentDropdown">
+                    <div class="dropdown-item" *ngFor="let c of filteredConstituents" (click)="selectConstituent(c)">
+                        {{ c.name }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gift Details -->
+        <div class="form-section">
+            <h6 class="section-title"><i class="fa-solid fa-gift me-2"></i>Gift Details</h6>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Amount *</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" [(ngModel)]="amount" min="0.01" step="0.01"
+                            placeholder="0.00">
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Date Received *</label>
+                    <input type="date" class="form-control" [(ngModel)]="receivedDate">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Payment Type *</label>
+                    <select class="form-select" [(ngModel)]="paymentTypeId">
+                        <option [ngValue]="null">Select...</option>
+                        <option *ngFor="let pt of paymentTypes" [ngValue]="pt.id">{{ pt.name }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Designation -->
+        <div class="form-section">
+            <h6 class="section-title"><i class="fa-solid fa-tags me-2"></i>Designation</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Fund *</label>
+                    <select class="form-select" [(ngModel)]="fundId">
+                        <option [ngValue]="null">Select fund...</option>
+                        <option *ngFor="let f of funds" [ngValue]="f.id">{{ f.name }}</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Campaign</label>
+                    <select class="form-select" [(ngModel)]="campaignId">
+                        <option [ngValue]="null">None</option>
+                        <option *ngFor="let c of campaigns" [ngValue]="c.id">{{ c.name }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pledge Matching -->
+        <div class="form-section" *ngIf="matchingPledges.length > 0">
+            <h6 class="section-title"><i class="fa-solid fa-handshake me-2"></i>Pledge Matching</h6>
+            <p class="text-muted small mb-2">
+                {{ selectedConstituentName }} has active pledges. Apply this gift to a pledge?
+            </p>
+            <select class="form-select" [(ngModel)]="pledgeId">
+                <option [ngValue]="null">No pledge — standalone gift</option>
+                <option *ngFor="let p of matchingPledges" [ngValue]="p.id">
+                    {{ p.fund?.name || 'Fund' }} — {{ formatCurrency(p.totalAmount) }} pledged
+                </option>
+            </select>
+        </div>
+
+        <!-- Reference / Notes -->
+        <div class="form-section">
+            <h6 class="section-title"><i class="fa-solid fa-note-sticky me-2"></i>Additional Info</h6>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Reference #</label>
+                    <input type="text" class="form-control" [(ngModel)]="referenceNumber"
+                        placeholder="e.g. Check #1234">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea class="form-control" rows="2" [(ngModel)]="notes"
+                        placeholder="Optional notes..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-actions">
+            <button class="btn btn-outline-secondary" (click)="resetForm()">
+                <i class="fa-solid fa-rotate-left me-1"></i> Reset
+            </button>
+            <button class="btn btn-success btn-save" (click)="save()" [disabled]="!isValid || isSaving">
+                <i class="fa-solid fa-hand-holding-heart me-1" *ngIf="!isSaving"></i>
+                <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="isSaving"></i>
+                {{ isSaving ? 'Recording...' : 'Record Gift' }}
+            </button>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,145 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="report-container">
+
+    <!-- ═══ SCREEN HEADER ═══ -->
+    <div class="screen-header no-print">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                </button>
+                <h3 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>A/R Aging Report</h3>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-sm btn-glass me-1" (click)="printReport()">
+                    <i class="fa-solid fa-print me-1"></i> Print
+                </button>
+                <button class="btn btn-sm btn-glass" (click)="exportCsv()">
+                    <i class="fa-solid fa-file-csv me-1"></i> CSV
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══ LOADING ═══ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+
+    <!-- ═══ REPORT BODY ═══ -->
+    <div class="report-body" *ngIf="!isLoading">
+
+        <!-- Print Header -->
+        <div class="print-header print-only">
+            <h2>Accounts Receivable Aging Report</h2>
+            <div class="report-meta">As of {{ reportDate }}</div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5" *ngIf="clientRows.length === 0">
+            <i class="fa-solid fa-circle-check fa-3x text-success opacity-50 mb-3"></i>
+            <p class="text-muted fs-5">No outstanding receivables — all invoices are paid!</p>
+        </div>
+
+        <!-- ═══ AGING TABLE ═══ -->
+        <div class="aging-table-wrapper" *ngIf="clientRows.length > 0">
+
+            <!-- Summary Cards -->
+            <div class="aging-summary-cards">
+                <div class="aging-card current-card">
+                    <div class="card-label">Current</div>
+                    <div class="card-amount">{{ formatCurrency(totalCurrent) }}</div>
+                </div>
+                <div class="aging-card" [class.has-value]="total1to30 > 0">
+                    <div class="card-label">1–30 Days</div>
+                    <div class="card-amount">{{ formatCurrency(total1to30) }}</div>
+                </div>
+                <div class="aging-card" [class.has-value]="total31to60 > 0">
+                    <div class="card-label">31–60 Days</div>
+                    <div class="card-amount">{{ formatCurrency(total31to60) }}</div>
+                </div>
+                <div class="aging-card" [class.has-value]="total61to90 > 0">
+                    <div class="card-label">61–90 Days</div>
+                    <div class="card-amount">{{ formatCurrency(total61to90) }}</div>
+                </div>
+                <div class="aging-card overdue-card" [class.has-value]="total90plus > 0">
+                    <div class="card-label">90+ Days</div>
+                    <div class="card-amount">{{ formatCurrency(total90plus) }}</div>
+                </div>
+            </div>
+
+            <!-- Main Table -->
+            <table class="table aging-table">
+                <thead>
+                    <tr>
+                        <th class="client-col">Client</th>
+                        <th class="text-end">Current</th>
+                        <th class="text-end">1–30 Days</th>
+                        <th class="text-end">31–60 Days</th>
+                        <th class="text-end">61–90 Days</th>
+                        <th class="text-end">90+ Days</th>
+                        <th class="text-end fw-bold">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let row of clientRows">
+                        <!-- Client Summary Row -->
+                        <tr class="client-row" (click)="toggleClient(row)">
+                            <td class="client-name">
+                                <i class="fa-solid me-2"
+                                    [ngClass]="row.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                                {{ row.clientName }}
+                                <span class="invoice-count">{{ row.invoices.length }}</span>
+                            </td>
+                            <td class="text-end">{{ row.current > 0 ? formatCurrency(row.current) : '—' }}</td>
+                            <td class="text-end">{{ row.days1to30 > 0 ? formatCurrency(row.days1to30) : '—' }}</td>
+                            <td class="text-end" [class.text-warning]="row.days31to60 > 0">
+                                {{ row.days31to60 > 0 ? formatCurrency(row.days31to60) : '—' }}
+                            </td>
+                            <td class="text-end" [class.text-warning]="row.days61to90 > 0">
+                                {{ row.days61to90 > 0 ? formatCurrency(row.days61to90) : '—' }}
+                            </td>
+                            <td class="text-end" [class.text-danger]="row.days90plus > 0">
+                                {{ row.days90plus > 0 ? formatCurrency(row.days90plus) : '—' }}
+                            </td>
+                            <td class="text-end fw-bold">{{ formatCurrency(row.total) }}</td>
+                        </tr>
+
+                        <!-- Invoice Detail Rows (expanded) -->
+                        <tr *ngFor="let inv of row.invoices" class="invoice-row" [class.d-none]="!row.expanded">
+                            <td class="ps-5">
+                                <a class="invoice-link" (click)="goToInvoice(inv.invoiceId); $event.stopPropagation()">
+                                    {{ inv.invoiceNumber }}
+                                </a>
+                                <small class="text-muted ms-2">Due: {{ formatDate(inv.dueDate) }}</small>
+                            </td>
+                            <td class="text-end text-muted" colspan="5">
+                                <span *ngIf="inv.daysOverdue > 0" class="days-badge"
+                                    [ngClass]="inv.daysOverdue > 90 ? 'severe' : inv.daysOverdue > 60 ? 'warning' : 'mild'">
+                                    {{ inv.daysOverdue }}d overdue
+                                </span>
+                                <span *ngIf="inv.daysOverdue === 0" class="days-badge current">Current</span>
+                            </td>
+                            <td class="text-end fw-semibold">{{ formatCurrency(inv.balanceDue) }}</td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td class="fw-bold">TOTAL ({{ clientRows.length }} clients)</td>
+                        <td class="text-end fw-bold">{{ formatCurrency(totalCurrent) }}</td>
+                        <td class="text-end fw-bold">{{ formatCurrency(total1to30) }}</td>
+                        <td class="text-end fw-bold">{{ formatCurrency(total31to60) }}</td>
+                        <td class="text-end fw-bold">{{ formatCurrency(total61to90) }}</td>
+                        <td class="text-end fw-bold">{{ formatCurrency(total90plus) }}</td>
+                        <td class="text-end fw-bold fs-5">{{ formatCurrency(grandTotal) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>

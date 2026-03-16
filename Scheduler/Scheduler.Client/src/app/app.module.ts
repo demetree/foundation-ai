@@ -207,6 +207,10 @@ import { PaymentCustomAddEditComponent } from './components/payment-custom/payme
 import { BudgetReportComponent } from './components/financial-custom/budget-report/budget-report.component';
 import { DepositManagerComponent } from './components/financial-custom/deposit-manager/deposit-manager.component';
 import { PnlReportComponent } from './components/financial-custom/pnl-report/pnl-report.component';
+import { ArAgingReportComponent } from './components/financial-custom/ar-aging-report/ar-aging-report.component';
+import { RevenueByClientReportComponent } from './components/financial-custom/revenue-by-client-report/revenue-by-client-report.component';
+import { GiftEntryComponent } from './components/financial-custom/gift-entry/gift-entry.component';
+import { PledgeDashboardComponent } from './components/financial-custom/pledge-dashboard/pledge-dashboard.component';
 import { AccountantReportsComponent } from './components/financial-custom/accountant-reports/accountant-reports.component';
 import { RentalAgreementTrackerComponent } from './components/scheduler-custom/rental-agreement-tracker/rental-agreement-tracker.component';
 import { FiscalPeriodCloseComponent } from './components/financial-custom/fiscal-period-close/fiscal-period-close.component';
@@ -1337,6 +1341,10 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     PnlReportComponent,
     AccountantReportsComponent,
+    ArAgingReportComponent,
+    RevenueByClientReportComponent,
+    GiftEntryComponent,
+    PledgeDashboardComponent,
 
     //
     // P3 Nice-to-Haves

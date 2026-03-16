@@ -93,4 +93,32 @@ export class InvoiceHelperService extends SecureEndpointBase {
         link.click();
         window.URL.revokeObjectURL(url);
     }
+
+
+    /**
+     * Voids an invoice. Server reverses the ledger entry and resets event charge statuses.
+     */
+    public voidInvoice(invoiceId: number, reason?: string): Observable<{ success: boolean; message: string }> {
+        const url = `${this.baseUrl}api/Invoices/${invoiceId}/Void`;
+
+        return this.http.post<{ success: boolean; message: string }>(url, { reason }, {
+            headers: this.getAuthHeaders()
+        }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.voidInvoice(invoiceId, reason)))
+        );
+    }
+
+
+    /**
+     * Issues a partial or full refund against an invoice.
+     */
+    public issueRefund(invoiceId: number, amount: number, reason?: string): Observable<{ success: boolean; message: string }> {
+        const url = `${this.baseUrl}api/Invoices/${invoiceId}/Refund`;
+
+        return this.http.post<{ success: boolean; message: string }>(url, { amount, reason }, {
+            headers: this.getAuthHeaders()
+        }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.issueRefund(invoiceId, amount, reason)))
+        );
+    }
 }

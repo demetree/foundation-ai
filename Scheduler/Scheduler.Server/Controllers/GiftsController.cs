@@ -1,4 +1,4 @@
-﻿using Foundation;
+using Foundation;
 using Foundation.Auditor;
 using Foundation.Controllers;
 using Foundation.Scheduler.Database;
@@ -407,9 +407,110 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             }
 
 
+
             BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "Gift", gift.id, gift.referenceNumber));
 
             return CreatedAtRoute("Gift", new { id = gift.id }, Database.Gift.CreateAnonymousWithFirstLevelSubObjects(gift));
+        }
+
+
+        /// <summary>
+        ///
+        /// Records a gift through the FinancialManagementService, which handles:
+        ///   - Gift creation inside a DB transaction
+        ///   - FinancialTransaction ledger entry
+        ///   - Pledge reconciliation (if pledgeId provided)
+        ///   - Fiscal period validation
+        ///   - Change history
+        ///
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/Gifts/RecordGift")]
+        public async Task<IActionResult> RecordGiftAsync(
+            [FromBody] RecordGiftRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (request == null)
+            {
+                return BadRequest("Request body is required.");
+            }
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid tenantGuid;
+
+            try
+            {
+                tenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Error,
+                    "Attempt to record gift by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial Management Service is not available.");
+            }
+
+            var result = await financialService.RecordGiftAsync(
+                tenantGuid,
+                request.ConstituentId,
+                request.Amount,
+                request.FundId,
+                request.PaymentTypeId,
+                request.ReceivedDate,
+                request.PledgeId,
+                request.CampaignId,
+                request.AppealId,
+                request.OfficeId,
+                request.BatchId,
+                request.ReferenceNumber,
+                request.Notes,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous,
+                    $"Gift recording failed: {result.ErrorMessage}");
+                return BadRequest(result.ErrorMessage);
+            }
+
+            await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+                $"Gift of {request.Amount:C} recorded for constituent {request.ConstituentId} via FinancialManagementService.");
+
+            return Ok(new { success = true, message = "Gift recorded successfully.", data = result.Data });
+        }
+
+
+        public class RecordGiftRequest
+        {
+            public int ConstituentId { get; set; }
+            public decimal Amount { get; set; }
+            public int FundId { get; set; }
+            public int PaymentTypeId { get; set; }
+            public DateTime ReceivedDate { get; set; }
+            public int? PledgeId { get; set; }
+            public int? CampaignId { get; set; }
+            public int? AppealId { get; set; }
+            public int? OfficeId { get; set; }
+            public int? BatchId { get; set; }
+            public string ReferenceNumber { get; set; }
+            public string Notes { get; set; }
         }
     }
 }

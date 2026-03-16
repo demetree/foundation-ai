@@ -313,6 +313,151 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         }
 
 
+        /// <summary>
+        ///
+        /// Voids an invoice, reversing its ledger entry and resetting event charge statuses.
+        /// Delegates to FinancialManagementService.VoidInvoiceAsync.
+        ///
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/Invoices/{id}/Void")]
+        public async Task<IActionResult> VoidInvoiceAsync(
+            int id,
+            [FromBody] VoidRefundRequest request = null,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid tenantGuid;
+
+            try
+            {
+                tenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "Attempt to void invoice by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial Management Service is not available.");
+            }
+
+            var result = await financialService.VoidInvoiceAsync(
+                tenantGuid, id, securityUser.id, request?.Reason, cancellationToken);
+
+            if (!result.Success)
+            {
+                await CreateAuditEventAsync(AuditType.Miscellaneous,
+                    $"Invoice void for {id} failed: {result.ErrorMessage}");
+                return BadRequest(result.ErrorMessage);
+            }
+
+            await CreateAuditEventAsync(AuditType.UpdateEntity,
+                $"Invoice {id} voided via FinancialManagementService. Reason: {request?.Reason ?? "N/A"}");
+
+            return Ok(new { success = true, message = "Invoice voided successfully." });
+        }
+
+
+        /// <summary>
+        ///
+        /// Issues a partial or full refund against an invoice.
+        /// Delegates to FinancialManagementService.IssueRefundAsync.
+        ///
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/Invoices/{id}/Refund")]
+        public async Task<IActionResult> IssueRefundAsync(
+            int id,
+            [FromBody] RefundRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (request == null || request.Amount <= 0)
+            {
+                return BadRequest("Refund amount is required and must be greater than zero.");
+            }
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid tenantGuid;
+
+            try
+            {
+                tenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "Attempt to refund invoice by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial Management Service is not available.");
+            }
+
+            var result = await financialService.IssueRefundAsync(
+                tenantGuid, id, request.Amount, securityUser.id, request.Reason, cancellationToken);
+
+            if (!result.Success)
+            {
+                await CreateAuditEventAsync(AuditType.Miscellaneous,
+                    $"Invoice refund for {id} failed: {result.ErrorMessage}");
+                return BadRequest(result.ErrorMessage);
+            }
+
+            await CreateAuditEventAsync(AuditType.UpdateEntity,
+                $"Refund of {request.Amount:C} issued for invoice {id} via FinancialManagementService.");
+
+            return Ok(new { success = true, message = $"Refund of {request.Amount:C} issued successfully." });
+        }
+
+
+        //
+        // ── Request DTOs ──
+        //
+
+        public class VoidRefundRequest
+        {
+            public string Reason { get; set; }
+        }
+
+        public class RefundRequest
+        {
+            public decimal Amount { get; set; }
+            public string Reason { get; set; }
+        }
+
+
         //
         // ── Private helpers ──
         //

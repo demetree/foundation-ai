@@ -509,6 +509,40 @@
                         </button>
                     </div>
                 </div>
+                <div class="row g-3 mt-1" style="flex-wrap: nowrap;">
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToArAging()">
+                            <i class="fa-solid fa-hourglass-half fa-2x mb-2"></i>
+                            <span class="fw-semibold">A/R Aging</span>
+                            <small class="text-muted">Receivables aging buckets</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToRevenueByClient()">
+                            <i class="fa-solid fa-users-rectangle fa-2x mb-2"></i>
+                            <span class="fw-semibold">Revenue by Client</span>
+                            <small class="text-muted">Client revenue breakdown</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-success w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToGiftEntry()">
+                            <i class="fa-solid fa-hand-holding-heart fa-2x mb-2"></i>
+                            <span class="fw-semibold">Record Gift</span>
+                            <small class="text-muted">Enter a donation</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center"
+                            (click)="goToPledgeDashboard()">
+                            <i class="fa-solid fa-handshake fa-2x mb-2"></i>
+                            <span class="fw-semibold">Pledge Dashboard</span>
+                            <small class="text-muted">Pledge tracking &amp; fulfillment</small>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 

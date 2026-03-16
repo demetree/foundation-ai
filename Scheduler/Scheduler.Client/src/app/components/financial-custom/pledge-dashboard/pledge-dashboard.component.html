@@ -1,0 +1,116 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
+<div class="report-container">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="screen-header no-print">
+        <div class="header-content">
+            <div class="header-left">
+                <button class="btn btn-sm btn-back" (click)="goBack()">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                </button>
+                <h3 class="mb-0"><i class="fa-solid fa-handshake me-2"></i>Pledge Dashboard</h3>
+            </div>
+            <div class="header-right">
+                <select class="form-select form-select-sm glass-select me-2" *ngIf="campaigns.length > 1"
+                    [(ngModel)]="selectedCampaignId" (ngModelChange)="onFilterChange()">
+                    <option [ngValue]="null">All Campaigns</option>
+                    <option *ngFor="let c of campaigns" [ngValue]="c.id">{{ c.name }}</option>
+                </select>
+                <select class="form-select form-select-sm glass-select me-2" *ngIf="funds.length > 1"
+                    [(ngModel)]="selectedFundId" (ngModelChange)="onFilterChange()">
+                    <option [ngValue]="null">All Funds</option>
+                    <option *ngFor="let f of funds" [ngValue]="f.id">{{ f.name }}</option>
+                </select>
+                <select class="form-select form-select-sm glass-select"
+                    [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+                    <option value="all">All Pledges</option>
+                    <option value="active">Active (Outstanding)</option>
+                    <option value="fulfilled">Fulfilled</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═══ LOADING ═══ -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- ═══ DASHBOARD ═══ -->
+    <div class="report-body" *ngIf="!isLoading">
+
+        <!-- Summary Cards -->
+        <div class="pledge-summary-cards">
+            <div class="pledge-card">
+                <div class="card-label">Total Pledged</div>
+                <div class="card-amount text-primary">{{ formatCurrency(totalPledged) }}</div>
+            </div>
+            <div class="pledge-card">
+                <div class="card-label">Total Fulfilled</div>
+                <div class="card-amount text-success">{{ formatCurrency(totalGifted) }}</div>
+            </div>
+            <div class="pledge-card">
+                <div class="card-label">Outstanding</div>
+                <div class="card-amount" [class.text-danger]="totalBalance > 0">{{ formatCurrency(totalBalance) }}</div>
+            </div>
+            <div class="pledge-card">
+                <div class="card-label">Overall Progress</div>
+                <div class="card-amount text-info">{{ overallPercent | number:'1.0-0' }}%</div>
+                <div class="progress mt-2" style="height: 6px;">
+                    <div class="progress-bar" [ngClass]="getProgressClass(overallPercent)"
+                        [style.width.%]="overallPercent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="text-center py-5" *ngIf="filteredRows.length === 0">
+            <p class="text-muted">No pledges match the current filters.</p>
+        </div>
+
+        <!-- Pledge Table -->
+        <div class="pledge-table-wrapper" *ngIf="filteredRows.length > 0">
+            <table class="table pledge-table">
+                <thead>
+                    <tr>
+                        <th>Donor</th>
+                        <th>Fund</th>
+                        <th>Campaign</th>
+                        <th class="text-end">Pledged</th>
+                        <th class="text-end">Fulfilled</th>
+                        <th class="text-end">Balance</th>
+                        <th style="min-width: 120px;">Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of filteredRows">
+                        <td class="fw-semibold">{{ row.constituentName }}</td>
+                        <td class="text-muted">{{ row.fundName }}</td>
+                        <td class="text-muted">{{ row.campaignName }}</td>
+                        <td class="text-end">{{ formatCurrency(row.totalPledged) }}</td>
+                        <td class="text-end text-success">{{ formatCurrency(row.totalGifted) }}</td>
+                        <td class="text-end" [class.text-danger]="row.balance > 0"
+                            [class.fw-semibold]="row.balance > 0">
+                            {{ formatCurrency(row.balance) }}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress-bar"
+                                        [ngClass]="getProgressClass(row.percentFulfilled)"
+                                        [style.width.%]="row.percentFulfilled"></div>
+                                </div>
+                                <small class="text-muted" style="min-width: 35px;">
+                                    {{ row.percentFulfilled | number:'1.0-0' }}%
+                                </small>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

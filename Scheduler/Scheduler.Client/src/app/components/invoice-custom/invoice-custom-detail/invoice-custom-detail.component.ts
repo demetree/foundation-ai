@@ -28,6 +28,15 @@ export class InvoiceCustomDetailComponent implements OnInit, OnDestroy {
     public activeTab = 'details';
     public isGeneratingPdf = false;
 
+    // Action bar state
+    public isVoiding = false;
+    public isRefunding = false;
+    public showVoidConfirm = false;
+    public showRefundDialog = false;
+    public voidReason = '';
+    public refundAmount: number | null = null;
+    public refundReason = '';
+
     private destroy$ = new Subject<void>();
 
     constructor(
@@ -112,6 +121,113 @@ export class InvoiceCustomDetailComponent implements OnInit, OnDestroy {
             case 'void': return 'badge-void';
             default: return 'badge-draft';
         }
+    }
+
+
+    //
+    // Status-based visibility for action buttons
+    //
+    get statusName(): string {
+        return (this.invoice?.invoiceStatus as any)?.name?.toLowerCase() || 'draft';
+    }
+
+    get canVoid(): boolean {
+        return ['draft', 'sent', 'overdue'].includes(this.statusName);
+    }
+
+    get canRefund(): boolean {
+        return (this.invoice?.amountPaid || 0) > 0 && this.statusName !== 'void';
+    }
+
+    get canRecordPayment(): boolean {
+        return this.balanceDue > 0 && !['void', 'cancelled'].includes(this.statusName);
+    }
+
+    get isVoidOrCancelled(): boolean {
+        return ['void', 'cancelled'].includes(this.statusName);
+    }
+
+
+    //
+    // Void Invoice
+    //
+    promptVoid(): void {
+        this.showVoidConfirm = true;
+        this.voidReason = '';
+    }
+
+    cancelVoid(): void {
+        this.showVoidConfirm = false;
+        this.voidReason = '';
+    }
+
+    confirmVoid(): void {
+        if (!this.invoice || this.isVoiding) return;
+        this.isVoiding = true;
+
+        this.invoiceHelper.voidInvoice(Number(this.invoice.id), this.voidReason || undefined).subscribe({
+            next: (res) => {
+                this.alertService.showMessage('Invoice Voided', res.message, MessageSeverity.success);
+                this.showVoidConfirm = false;
+                this.isVoiding = false;
+                this.loadData();
+            },
+            error: (err) => {
+                const msg = err?.error || err?.message || 'Failed to void invoice';
+                this.alertService.showMessage('Void Failed', msg, MessageSeverity.error);
+                this.isVoiding = false;
+            }
+        });
+    }
+
+
+    //
+    // Issue Refund
+    //
+    promptRefund(): void {
+        this.showRefundDialog = true;
+        this.refundAmount = this.invoice?.amountPaid || 0;
+        this.refundReason = '';
+    }
+
+    cancelRefund(): void {
+        this.showRefundDialog = false;
+        this.refundAmount = null;
+        this.refundReason = '';
+    }
+
+    confirmRefund(): void {
+        if (!this.invoice || this.isRefunding || !this.refundAmount || this.refundAmount <= 0) return;
+        this.isRefunding = true;
+
+        this.invoiceHelper.issueRefund(
+            Number(this.invoice.id),
+            this.refundAmount,
+            this.refundReason || undefined
+        ).subscribe({
+            next: (res) => {
+                this.alertService.showMessage('Refund Issued', res.message, MessageSeverity.success);
+                this.showRefundDialog = false;
+                this.isRefunding = false;
+                this.loadData();
+            },
+            error: (err) => {
+                const msg = err?.error || err?.message || 'Failed to issue refund';
+                this.alertService.showMessage('Refund Failed', msg, MessageSeverity.error);
+                this.isRefunding = false;
+            }
+        });
+    }
+
+
+    //
+    // Record Payment — navigate to receipt creation pre-seeded with invoice
+    //
+    recordPayment(): void {
+        if (!this.invoice) return;
+        this.router.navigate(['/finances/receipts/new'], {
+            queryParams: { invoiceId: this.invoice.id }
+        });
     }
 
 
