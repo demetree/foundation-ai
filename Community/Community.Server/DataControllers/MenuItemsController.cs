@@ -42,7 +42,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -62,18 +62,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/MenuItems")]
 		public async Task<IActionResult> GetMenuItems(
-			int? Id = null,
-			int? MenuId = null,
-			string Label = null,
-			string Url = null,
-			int? PageId = null,
-			int? ParentMenuItemId = null,
-			string IconClass = null,
-			bool? OpenInNewTab = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? menuId = null,
+			string label = null,
+			string url = null,
+			int? pageId = null,
+			int? parentMenuItemId = null,
+			string iconClass = null,
+			bool? openInNewTab = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -96,6 +95,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -109,53 +120,68 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.MenuItem> query = (from mi in _context.MenuItems select mi);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (menuId.HasValue == true)
 			{
-				query = query.Where(mi => mi.Id == Id.Value);
+				query = query.Where(mi => mi.menuId == menuId.Value);
 			}
-			if (MenuId.HasValue == true)
+			if (string.IsNullOrEmpty(label) == false)
 			{
-				query = query.Where(mi => mi.MenuId == MenuId.Value);
+				query = query.Where(mi => mi.label == label);
 			}
-			if (string.IsNullOrEmpty(Label) == false)
+			if (string.IsNullOrEmpty(url) == false)
 			{
-				query = query.Where(mi => mi.Label == Label);
+				query = query.Where(mi => mi.url == url);
 			}
-			if (string.IsNullOrEmpty(Url) == false)
+			if (pageId.HasValue == true)
 			{
-				query = query.Where(mi => mi.Url == Url);
+				query = query.Where(mi => mi.pageId == pageId.Value);
 			}
-			if (PageId.HasValue == true)
+			if (parentMenuItemId.HasValue == true)
 			{
-				query = query.Where(mi => mi.PageId == PageId.Value);
+				query = query.Where(mi => mi.parentMenuItemId == parentMenuItemId.Value);
 			}
-			if (ParentMenuItemId.HasValue == true)
+			if (string.IsNullOrEmpty(iconClass) == false)
 			{
-				query = query.Where(mi => mi.ParentMenuItemId == ParentMenuItemId.Value);
+				query = query.Where(mi => mi.iconClass == iconClass);
 			}
-			if (string.IsNullOrEmpty(IconClass) == false)
+			if (openInNewTab.HasValue == true)
 			{
-				query = query.Where(mi => mi.IconClass == IconClass);
+				query = query.Where(mi => mi.openInNewTab == openInNewTab.Value);
 			}
-			if (OpenInNewTab.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(mi => mi.OpenInNewTab == OpenInNewTab.Value);
+				query = query.Where(mi => mi.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(mi => mi.Sequence == Sequence.Value);
+				query = query.Where(mi => mi.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(mi => mi.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(mi => mi.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(mi => mi.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(mi => mi.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(mi => mi.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(mi => mi.Deleted == Deleted.Value);
+				query = query.Where(mi => mi.active == true);
+				query = query.Where(mi => mi.deleted == false);
 			}
 
 			query = query.OrderBy(mi => mi.sequence).ThenBy(mi => mi.label).ThenBy(mi => mi.url).ThenBy(mi => mi.iconClass);
@@ -169,27 +195,27 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Label.Contains(anyStringContains)
-			       || x.Url.Contains(anyStringContains)
-			       || x.IconClass.Contains(anyStringContains)
-			       || (includeRelations == true && x.Menu.Name.Contains(anyStringContains))
-			       || (includeRelations == true && x.Menu.Location.Contains(anyStringContains))
-			       || (includeRelations == true && x.Page.Title.Contains(anyStringContains))
-			       || (includeRelations == true && x.Page.Slug.Contains(anyStringContains))
-			       || (includeRelations == true && x.Page.Body.Contains(anyStringContains))
-			       || (includeRelations == true && x.Page.MetaDescription.Contains(anyStringContains))
-			       || (includeRelations == true && x.Page.FeaturedImageUrl.Contains(anyStringContains))
-			       || (includeRelations == true && x.ParentMenuItem.Label.Contains(anyStringContains))
-			       || (includeRelations == true && x.ParentMenuItem.Url.Contains(anyStringContains))
-			       || (includeRelations == true && x.ParentMenuItem.IconClass.Contains(anyStringContains))
+			       x.label.Contains(anyStringContains)
+			       || x.url.Contains(anyStringContains)
+			       || x.iconClass.Contains(anyStringContains)
+			       || (includeRelations == true && x.menu.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.menu.location.Contains(anyStringContains))
+			       || (includeRelations == true && x.page.title.Contains(anyStringContains))
+			       || (includeRelations == true && x.page.slug.Contains(anyStringContains))
+			       || (includeRelations == true && x.page.body.Contains(anyStringContains))
+			       || (includeRelations == true && x.page.metaDescription.Contains(anyStringContains))
+			       || (includeRelations == true && x.page.featuredImageUrl.Contains(anyStringContains))
+			       || (includeRelations == true && x.parentMenuItem.label.Contains(anyStringContains))
+			       || (includeRelations == true && x.parentMenuItem.url.Contains(anyStringContains))
+			       || (includeRelations == true && x.parentMenuItem.iconClass.Contains(anyStringContains))
 			   );
 			}
 
 			if (includeRelations == true)
 			{
-				query = query.Include(x => x.Menu);
-				query = query.Include(x => x.Page);
-				query = query.Include(x => x.ParentMenuItem);
+				query = query.Include(x => x.menu);
+				query = query.Include(x => x.page);
+				query = query.Include(x => x.parentMenuItem);
 				query = query.AsSplitQuery();
 			}
 
@@ -238,18 +264,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/MenuItems/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			int? MenuId = null,
-			string Label = null,
-			string Url = null,
-			int? PageId = null,
-			int? ParentMenuItemId = null,
-			string IconClass = null,
-			bool? OpenInNewTab = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? menuId = null,
+			string label = null,
+			string url = null,
+			int? pageId = null,
+			int? parentMenuItemId = null,
+			string iconClass = null,
+			bool? openInNewTab = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -265,55 +290,80 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			IQueryable<Database.MenuItem> query = (from mi in _context.MenuItems select mi);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (menuId.HasValue == true)
 			{
-				query = query.Where(mi => mi.Id == Id.Value);
+				query = query.Where(mi => mi.menuId == menuId.Value);
 			}
-			if (MenuId.HasValue == true)
+			if (label != null)
 			{
-				query = query.Where(mi => mi.MenuId == MenuId.Value);
+				query = query.Where(mi => mi.label == label);
 			}
-			if (Label != null)
+			if (url != null)
 			{
-				query = query.Where(mi => mi.Label == Label);
+				query = query.Where(mi => mi.url == url);
 			}
-			if (Url != null)
+			if (pageId.HasValue == true)
 			{
-				query = query.Where(mi => mi.Url == Url);
+				query = query.Where(mi => mi.pageId == pageId.Value);
 			}
-			if (PageId.HasValue == true)
+			if (parentMenuItemId.HasValue == true)
 			{
-				query = query.Where(mi => mi.PageId == PageId.Value);
+				query = query.Where(mi => mi.parentMenuItemId == parentMenuItemId.Value);
 			}
-			if (ParentMenuItemId.HasValue == true)
+			if (iconClass != null)
 			{
-				query = query.Where(mi => mi.ParentMenuItemId == ParentMenuItemId.Value);
+				query = query.Where(mi => mi.iconClass == iconClass);
 			}
-			if (IconClass != null)
+			if (openInNewTab.HasValue == true)
 			{
-				query = query.Where(mi => mi.IconClass == IconClass);
+				query = query.Where(mi => mi.openInNewTab == openInNewTab.Value);
 			}
-			if (OpenInNewTab.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(mi => mi.OpenInNewTab == OpenInNewTab.Value);
+				query = query.Where(mi => mi.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(mi => mi.Sequence == Sequence.Value);
+				query = query.Where(mi => mi.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(mi => mi.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(mi => mi.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(mi => mi.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(mi => mi.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(mi => mi.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(mi => mi.Deleted == Deleted.Value);
+				query = query.Where(mi => mi.active == true);
+				query = query.Where(mi => mi.deleted == false);
 			}
 
 			//
@@ -324,19 +374,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Label.Contains(anyStringContains)
-			       || x.Url.Contains(anyStringContains)
-			       || x.IconClass.Contains(anyStringContains)
-			       || x.Menu.Name.Contains(anyStringContains)
-			       || x.Menu.Location.Contains(anyStringContains)
-			       || x.Page.Title.Contains(anyStringContains)
-			       || x.Page.Slug.Contains(anyStringContains)
-			       || x.Page.Body.Contains(anyStringContains)
-			       || x.Page.MetaDescription.Contains(anyStringContains)
-			       || x.Page.FeaturedImageUrl.Contains(anyStringContains)
-			       || x.ParentMenuItem.Label.Contains(anyStringContains)
-			       || x.ParentMenuItem.Url.Contains(anyStringContains)
-			       || x.ParentMenuItem.IconClass.Contains(anyStringContains)
+			       x.label.Contains(anyStringContains)
+			       || x.url.Contains(anyStringContains)
+			       || x.iconClass.Contains(anyStringContains)
+			       || x.menu.name.Contains(anyStringContains)
+			       || x.menu.location.Contains(anyStringContains)
+			       || x.page.title.Contains(anyStringContains)
+			       || x.page.slug.Contains(anyStringContains)
+			       || x.page.body.Contains(anyStringContains)
+			       || x.page.metaDescription.Contains(anyStringContains)
+			       || x.page.featuredImageUrl.Contains(anyStringContains)
+			       || x.parentMenuItem.label.Contains(anyStringContains)
+			       || x.parentMenuItem.url.Contains(anyStringContains)
+			       || x.parentMenuItem.iconClass.Contains(anyStringContains)
 			   );
 			}
 
@@ -374,18 +424,35 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.MenuItem> query = (from mi in _context.MenuItems where
-				(mi.id == id)
+							(mi.id == id) &&
+							(userIsAdmin == true || mi.deleted == false) &&
+							(userIsWriter == true || mi.active == true)
 					select mi);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
-					query = query.Include(x => x.Menu);
-					query = query.Include(x => x.Page);
-					query = query.Include(x => x.ParentMenuItem);
+					query = query.Include(x => x.menu);
+					query = query.Include(x => x.page);
+					query = query.Include(x => x.parentMenuItem);
 					query = query.AsSplitQuery();
 				}
 
@@ -465,11 +532,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.MenuItem> query = (from x in _context.MenuItems
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.MenuItem existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -502,7 +583,44 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.MenuItem menuItem = (Database.MenuItem)_context.Entry(existing).GetDatabaseValues().ToObject();
 			menuItem.ApplyDTO(menuItemDTO);
+			//
+			// The tenant guid for any MenuItem being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the MenuItem because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				menuItem.tenantGuid = existing.tenantGuid;
+			}
 
+
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (menuItem.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.MenuItem record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
+
+			if (menuItem.label != null && menuItem.label.Length > 250)
+			{
+				menuItem.label = menuItem.label.Substring(0, 250);
+			}
+
+			if (menuItem.url != null && menuItem.url.Length > 500)
+			{
+				menuItem.url = menuItem.url.Substring(0, 500);
+			}
+
+			if (menuItem.iconClass != null && menuItem.iconClass.Length > 50)
+			{
+				menuItem.iconClass = menuItem.iconClass.Substring(0, 50);
+			}
 
 			EntityEntry<Database.MenuItem> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(menuItem);
@@ -568,6 +686,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new MenuItem object using the data from the DTO
 			//
@@ -575,6 +706,27 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				menuItem.tenantGuid = userTenantGuid;
+
+				if (menuItem.label != null && menuItem.label.Length > 250)
+				{
+					menuItem.label = menuItem.label.Substring(0, 250);
+				}
+
+				if (menuItem.url != null && menuItem.url.Length > 500)
+				{
+					menuItem.url = menuItem.url.Substring(0, 500);
+				}
+
+				if (menuItem.iconClass != null && menuItem.iconClass.Length > 50)
+				{
+					menuItem.iconClass = menuItem.iconClass.Substring(0, 50);
+				}
+
+				menuItem.objectGuid = Guid.NewGuid();
 				_context.MenuItems.Add(menuItem);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -628,11 +780,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.MenuItem> query = (from x in _context.MenuItems
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.MenuItem menuItem = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -646,7 +813,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.MenuItems.Remove(menuItem);
+				menuItem.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -687,18 +854,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			int? MenuId = null,
-			string Label = null,
-			string Url = null,
-			int? PageId = null,
-			int? ParentMenuItemId = null,
-			string IconClass = null,
-			bool? OpenInNewTab = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? menuId = null,
+			string label = null,
+			string url = null,
+			int? pageId = null,
+			int? parentMenuItemId = null,
+			string iconClass = null,
+			bool? openInNewTab = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -719,6 +885,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -732,53 +911,68 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.MenuItem> query = (from mi in _context.MenuItems select mi);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (menuId.HasValue == true)
 			{
-				query = query.Where(mi => mi.Id == Id.Value);
+				query = query.Where(mi => mi.menuId == menuId.Value);
 			}
-			if (MenuId.HasValue == true)
+			if (string.IsNullOrEmpty(label) == false)
 			{
-				query = query.Where(mi => mi.MenuId == MenuId.Value);
+				query = query.Where(mi => mi.label == label);
 			}
-			if (string.IsNullOrEmpty(Label) == false)
+			if (string.IsNullOrEmpty(url) == false)
 			{
-				query = query.Where(mi => mi.Label == Label);
+				query = query.Where(mi => mi.url == url);
 			}
-			if (string.IsNullOrEmpty(Url) == false)
+			if (pageId.HasValue == true)
 			{
-				query = query.Where(mi => mi.Url == Url);
+				query = query.Where(mi => mi.pageId == pageId.Value);
 			}
-			if (PageId.HasValue == true)
+			if (parentMenuItemId.HasValue == true)
 			{
-				query = query.Where(mi => mi.PageId == PageId.Value);
+				query = query.Where(mi => mi.parentMenuItemId == parentMenuItemId.Value);
 			}
-			if (ParentMenuItemId.HasValue == true)
+			if (string.IsNullOrEmpty(iconClass) == false)
 			{
-				query = query.Where(mi => mi.ParentMenuItemId == ParentMenuItemId.Value);
+				query = query.Where(mi => mi.iconClass == iconClass);
 			}
-			if (string.IsNullOrEmpty(IconClass) == false)
+			if (openInNewTab.HasValue == true)
 			{
-				query = query.Where(mi => mi.IconClass == IconClass);
+				query = query.Where(mi => mi.openInNewTab == openInNewTab.Value);
 			}
-			if (OpenInNewTab.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(mi => mi.OpenInNewTab == OpenInNewTab.Value);
+				query = query.Where(mi => mi.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(mi => mi.Sequence == Sequence.Value);
+				query = query.Where(mi => mi.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(mi => mi.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(mi => mi.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(mi => mi.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(mi => mi.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(mi => mi.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(mi => mi.Deleted == Deleted.Value);
+				query = query.Where(mi => mi.active == true);
+				query = query.Where(mi => mi.deleted == false);
 			}
 
 
@@ -790,21 +984,24 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Label.Contains(anyStringContains)
-			       || x.Url.Contains(anyStringContains)
-			       || x.IconClass.Contains(anyStringContains)
-			       || x.Menu.Name.Contains(anyStringContains)
-			       || x.Menu.Location.Contains(anyStringContains)
-			       || x.Page.Title.Contains(anyStringContains)
-			       || x.Page.Slug.Contains(anyStringContains)
-			       || x.Page.Body.Contains(anyStringContains)
-			       || x.Page.MetaDescription.Contains(anyStringContains)
-			       || x.Page.FeaturedImageUrl.Contains(anyStringContains)
-			       || x.ParentMenuItem.Label.Contains(anyStringContains)
-			       || x.ParentMenuItem.Url.Contains(anyStringContains)
-			       || x.ParentMenuItem.IconClass.Contains(anyStringContains)
+			       x.label.Contains(anyStringContains)
+			       || x.url.Contains(anyStringContains)
+			       || x.iconClass.Contains(anyStringContains)
+			       || x.menu.name.Contains(anyStringContains)
+			       || x.menu.location.Contains(anyStringContains)
+			       || x.page.title.Contains(anyStringContains)
+			       || x.page.slug.Contains(anyStringContains)
+			       || x.page.body.Contains(anyStringContains)
+			       || x.page.metaDescription.Contains(anyStringContains)
+			       || x.page.featuredImageUrl.Contains(anyStringContains)
+			       || x.parentMenuItem.label.Contains(anyStringContains)
+			       || x.parentMenuItem.url.Contains(anyStringContains)
+			       || x.parentMenuItem.iconClass.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.sequence).ThenBy(x => x.label).ThenBy(x => x.url).ThenBy(x => x.iconClass);

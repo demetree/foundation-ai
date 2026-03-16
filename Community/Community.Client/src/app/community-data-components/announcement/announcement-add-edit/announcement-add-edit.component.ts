@@ -34,6 +34,15 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface AnnouncementFormValues {
+  title: string,
+  body: string | null,
+  severity: string,
+  startDate: string,
+  endDate: string | null,
+  isPinned: boolean,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -64,6 +73,15 @@ export class AnnouncementAddEditComponent {
 
 
   public announcementForm: FormGroup = this.fb.group({
+        title: ['', Validators.required],
+        body: [''],
+        severity: ['', Validators.required],
+        startDate: ['', Validators.required],
+        endDate: [''],
+        isPinned: [false],
+        versionNumber: [''],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -98,6 +116,7 @@ export class AnnouncementAddEditComponent {
       }
       this.announcementSubmitData = this.announcementService.ConvertToAnnouncementSubmitData(announcementData);
       this.isEditMode = true;
+      this.objectGuid = announcementData.objectGuid;
 
       this.buildFormValues(announcementData);
 
@@ -196,6 +215,15 @@ export class AnnouncementAddEditComponent {
     //
     const announcementSubmitData: AnnouncementSubmitData = {
         id: this.announcementSubmitData?.id || 0,
+        title: formValue.title!.trim(),
+        body: formValue.body?.trim() || null,
+        severity: formValue.severity!.trim(),
+        startDate: dateTimeLocalToIsoUtc(formValue.startDate!.trim())!,
+        endDate: formValue.endDate ? dateTimeLocalToIsoUtc(formValue.endDate.trim()) : null,
+        isPinned: !!formValue.isPinned,
+        versionNumber: this.announcementSubmitData?.versionNumber ?? 0,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -322,6 +350,13 @@ export class AnnouncementAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.announcementForm.reset({
+        title: '',
+        body: '',
+        severity: '',
+        startDate: '',
+        endDate: '',
+        isPinned: false,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -333,6 +368,15 @@ export class AnnouncementAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.announcementForm.reset({
+        title: announcementData.title ?? '',
+        body: announcementData.body ?? '',
+        severity: announcementData.severity ?? '',
+        startDate: isoUtcStringToDateTimeLocal(announcementData.startDate) ?? '',
+        endDate: isoUtcStringToDateTimeLocal(announcementData.endDate) ?? '',
+        isPinned: announcementData.isPinned ?? false,
+        versionNumber: announcementData.versionNumber?.toString() ?? '',
+        active: announcementData.active ?? true,
+        deleted: announcementData.deleted ?? false,
       }, { emitEvent: false});
     }
 

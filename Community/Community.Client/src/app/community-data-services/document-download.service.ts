@@ -27,20 +27,19 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class DocumentDownloadQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    Title: string | null | undefined = null;
-    Description: string | null | undefined = null;
-    FilePath: string | null | undefined = null;
-    FileName: string | null | undefined = null;
-    MimeType: string | null | undefined = null;
-    FileSizeBytes: bigint | number | null | undefined = null;
-    CategoryName: string | null | undefined = null;
-    DocumentDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    IsPublished: boolean | null | undefined = null;
-    Sequence: bigint | number | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    title: string | null | undefined = null;
+    description: string | null | undefined = null;
+    filePath: string | null | undefined = null;
+    fileName: string | null | undefined = null;
+    mimeType: string | null | undefined = null;
+    fileSizeBytes: bigint | number | null | undefined = null;
+    categoryName: string | null | undefined = null;
+    documentDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    isPublished: boolean | null | undefined = null;
+    sequence: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -52,19 +51,19 @@ export class DocumentDownloadQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class DocumentDownloadSubmitData {
-    Id: bigint | number | null = null;
-    Title: string | null = null;
-    Description: string | null = null;
-    FilePath: string | null = null;
-    FileName: string | null = null;
-    MimeType: string | null = null;
-    FileSizeBytes: bigint | number | null = null;
-    CategoryName: string | null = null;
-    DocumentDate: string | null = null;     // ISO 8601 (full datetime)
-    IsPublished: boolean | null = null;
-    Sequence: bigint | number | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    title!: string;
+    description: string | null = null;
+    filePath!: string;
+    fileName!: string;
+    mimeType: string | null = null;
+    fileSizeBytes: bigint | number | null = null;
+    categoryName: string | null = null;
+    documentDate: string | null = null;     // ISO 8601 (full datetime)
+    isPublished!: boolean;
+    sequence: bigint | number | null = null;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -111,20 +110,20 @@ export class DocumentDownloadBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class DocumentDownloadData {
-    Id!: bigint | number;
-    Title!: string | null;
-    Description!: string | null;
-    FilePath!: string | null;
-    FileName!: string | null;
-    MimeType!: string | null;
-    FileSizeBytes!: bigint | number;
-    CategoryName!: string | null;
-    DocumentDate!: string | null;   // ISO 8601 (full datetime)
-    IsPublished!: boolean | null;
-    Sequence!: bigint | number;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
+    id!: bigint | number;
+    title!: string;
+    description!: string | null;
+    filePath!: string;
+    fileName!: string;
+    mimeType!: string | null;
+    fileSizeBytes!: bigint | number;
+    categoryName!: string | null;
+    documentDate!: string | null;   // ISO 8601 (full datetime)
+    isPublished!: boolean;
+    sequence!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
 
     //
     // Private lazy-loading caches for related collections
@@ -271,19 +270,19 @@ export class DocumentDownloadService extends SecureEndpointBase {
 
         let output = new DocumentDownloadSubmitData();
 
-        output.Id = data.Id;
-        output.Title = data.Title;
-        output.Description = data.Description;
-        output.FilePath = data.FilePath;
-        output.FileName = data.FileName;
-        output.MimeType = data.MimeType;
-        output.FileSizeBytes = data.FileSizeBytes;
-        output.CategoryName = data.CategoryName;
-        output.DocumentDate = data.DocumentDate;
-        output.IsPublished = data.IsPublished;
-        output.Sequence = data.Sequence;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.title = data.title;
+        output.description = data.description;
+        output.filePath = data.filePath;
+        output.fileName = data.fileName;
+        output.mimeType = data.mimeType;
+        output.fileSizeBytes = data.fileSizeBytes;
+        output.categoryName = data.categoryName;
+        output.documentDate = data.documentDate;
+        output.isPublished = data.isPublished;
+        output.sequence = data.sequence;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

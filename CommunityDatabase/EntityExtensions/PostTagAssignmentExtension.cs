@@ -20,12 +20,15 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PostTagAssignmentDTO
 		{
-			public Int32 Id { get; set; }
-			public Int32 PostId { get; set; }
-			public Int32 PostTagId { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public Int32 postId { get; set; }
+			[Required]
+			public Int32 postTagId { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -36,8 +39,8 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PostTagAssignmentOutputDTO : PostTagAssignmentDTO
 		{
-			public Post.PostDTO Post { get; set; }
-			public PostTag.PostTagDTO PostTag { get; set; }
+			public Post.PostDTO post { get; set; }
+			public PostTag.PostTagDTO postTag { get; set; }
 		}
 
 
@@ -52,12 +55,12 @@ namespace Foundation.Community.Database
 		{
 			return new PostTagAssignmentDTO
 			{
-				Id = this.Id,
-				PostId = this.PostId,
-				PostTagId = this.PostTagId,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				postId = this.postId,
+				postTagId = this.postTagId,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -96,14 +99,14 @@ namespace Foundation.Community.Database
 		{
 			return new PostTagAssignmentOutputDTO
 			{
-				Id = this.Id,
-				PostId = this.PostId,
-				PostTagId = this.PostTagId,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
-				Post = this.Post?.ToDTO(),
-				PostTag = this.PostTag?.ToDTO()
+				id = this.id,
+				postId = this.postId,
+				postTagId = this.postTagId,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
+				post = this.post?.ToDTO(),
+				postTag = this.postTag?.ToDTO()
 			};
 		}
 
@@ -142,12 +145,12 @@ namespace Foundation.Community.Database
 		{
 			return new Database.PostTagAssignment
 			{
-				Id = dto.Id,
-				PostId = dto.PostId,
-				PostTagId = dto.PostTagId,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				postId = dto.postId,
+				postTagId = dto.postTagId,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -164,16 +167,16 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.PostId = dto.PostId;
-			this.PostTagId = dto.PostTagId;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.postId = dto.postId;
+			this.postTagId = dto.postTagId;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -189,12 +192,12 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new PostTagAssignment{
-				Id = this.Id,
-				PostId = this.PostId,
-				PostTagId = this.PostTagId,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				postId = this.postId,
+				postTagId = this.postTagId,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -247,12 +250,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postTagAssignment.Id,
-				PostId = postTagAssignment.PostId,
-				PostTagId = postTagAssignment.PostTagId,
-				ObjectGuid = postTagAssignment.ObjectGuid,
-				Active = postTagAssignment.Active,
-				Deleted = postTagAssignment.Deleted,
+				id = postTagAssignment.id,
+				postId = postTagAssignment.postId,
+				postTagId = postTagAssignment.postTagId,
+				objectGuid = postTagAssignment.objectGuid,
+				active = postTagAssignment.active,
+				deleted = postTagAssignment.deleted,
 			 };
 		}
 
@@ -272,14 +275,14 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postTagAssignment.Id,
-				PostId = postTagAssignment.PostId,
-				PostTagId = postTagAssignment.PostTagId,
-				ObjectGuid = postTagAssignment.ObjectGuid,
-				Active = postTagAssignment.Active,
-				Deleted = postTagAssignment.Deleted,
-				Post = Post.CreateMinimalAnonymous(postTagAssignment.Post),
-				PostTag = PostTag.CreateMinimalAnonymous(postTagAssignment.PostTag)
+				id = postTagAssignment.id,
+				postId = postTagAssignment.postId,
+				postTagId = postTagAssignment.postTagId,
+				objectGuid = postTagAssignment.objectGuid,
+				active = postTagAssignment.active,
+				deleted = postTagAssignment.deleted,
+				post = Post.CreateMinimalAnonymous(postTagAssignment.post),
+				postTag = PostTag.CreateMinimalAnonymous(postTagAssignment.postTag)
 			 };
 		}
 
@@ -299,6 +302,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = postTagAssignment.id,
 				name = postTagAssignment.id,
 				description = postTagAssignment.id
 			 };

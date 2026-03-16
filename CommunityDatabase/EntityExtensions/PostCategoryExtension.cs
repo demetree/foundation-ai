@@ -20,14 +20,17 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PostCategoryDTO
 		{
-			public Int32 Id { get; set; }
-			public String Name { get; set; }
-			public String Description { get; set; }
-			public String Slug { get; set; }
-			public Int32? Sequence { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String name { get; set; }
+			public String description { get; set; }
+			[Required]
+			public String slug { get; set; }
+			public Int32? sequence { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -52,14 +55,14 @@ namespace Foundation.Community.Database
 		{
 			return new PostCategoryDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Description = this.Description,
-				Slug = this.Slug,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				description = this.description,
+				slug = this.slug,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -98,14 +101,14 @@ namespace Foundation.Community.Database
 		{
 			return new PostCategoryOutputDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Description = this.Description,
-				Slug = this.Slug,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				description = this.description,
+				slug = this.slug,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -144,14 +147,14 @@ namespace Foundation.Community.Database
 		{
 			return new Database.PostCategory
 			{
-				Id = dto.Id,
-				Name = dto.Name,
-				Description = dto.Description,
-				Slug = dto.Slug,
-				Sequence = dto.Sequence,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				name = dto.name,
+				description = dto.description,
+				slug = dto.slug,
+				sequence = dto.sequence,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -168,18 +171,18 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Name = dto.Name;
-			this.Description = dto.Description;
-			this.Slug = dto.Slug;
-			this.Sequence = dto.Sequence;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.name = dto.name;
+			this.description = dto.description;
+			this.slug = dto.slug;
+			this.sequence = dto.sequence;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -195,14 +198,14 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new PostCategory{
-				Id = this.Id,
-				Name = this.Name,
-				Description = this.Description,
-				Slug = this.Slug,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				name = this.name,
+				description = this.description,
+				slug = this.slug,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -255,14 +258,14 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postCategory.Id,
-				Name = postCategory.Name,
-				Description = postCategory.Description,
-				Slug = postCategory.Slug,
-				Sequence = postCategory.Sequence,
-				ObjectGuid = postCategory.ObjectGuid,
-				Active = postCategory.Active,
-				Deleted = postCategory.Deleted,
+				id = postCategory.id,
+				name = postCategory.name,
+				description = postCategory.description,
+				slug = postCategory.slug,
+				sequence = postCategory.sequence,
+				objectGuid = postCategory.objectGuid,
+				active = postCategory.active,
+				deleted = postCategory.deleted,
 			 };
 		}
 
@@ -282,14 +285,14 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postCategory.Id,
-				Name = postCategory.Name,
-				Description = postCategory.Description,
-				Slug = postCategory.Slug,
-				Sequence = postCategory.Sequence,
-				ObjectGuid = postCategory.ObjectGuid,
-				Active = postCategory.Active,
-				Deleted = postCategory.Deleted,
+				id = postCategory.id,
+				name = postCategory.name,
+				description = postCategory.description,
+				slug = postCategory.slug,
+				sequence = postCategory.sequence,
+				objectGuid = postCategory.objectGuid,
+				active = postCategory.active,
+				deleted = postCategory.deleted,
 			 };
 		}
 
@@ -309,8 +312,9 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = postCategory.id,
 				name = postCategory.name,
-				description = string.Join(", ", new[] { postCategory.name, postCategory.description, postCategory.slug}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				description = postCategory.description,
 			 };
 		}
 	}

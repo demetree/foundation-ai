@@ -17,6 +17,43 @@
                 <div class="col m-2 gallery-image-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="galleryImageForm" (ngSubmit)="submitForm()" class="gallery-image-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('galleryAlbumId')">
+                                <label for="GalleryImage-galleryAlbumId" id="label-GalleryImage-galleryAlbumId"><span class="text-danger">*</span>Gallery Album</label>
+                                <select id="GalleryImage-galleryAlbumId" formControlName="galleryAlbumId" class="form-select gallery-image-select" [disabled]="!userIsCommunityGalleryImageWriter()">
+                                    <option [ngValue]="null">Select Gallery Album</option>
+                                    <option *ngFor="let galleryAlbum of galleryAlbums$ | async" [ngValue]="galleryAlbum.id">{{galleryAlbum.title}}</option>
+                                </select>
+                                <div *ngIf="galleryImageForm.get('galleryAlbumId')?.invalid && galleryImageForm.get('galleryAlbumId')?.touched" class="text-danger">
+                                    Gallery Album is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('imageUrl')">
+                                <label for="GalleryImage-imageUrl" id="label-GalleryImage-imageUrl"><span class="text-danger">*</span>Image Url</label>
+                                <textarea id="GalleryImage-imageUrl" formControlName="imageUrl" placeholder="Enter Image Url" class="form-control gallery-image-input" [disabled]="!userIsCommunityGalleryImageWriter()"></textarea>
+                                <div *ngIf="galleryImageForm.get('imageUrl')?.invalid && galleryImageForm.get('imageUrl')?.touched" class="text-danger">
+                                    Image Url is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('caption')">
+                                <label for="GalleryImage-caption" id="label-GalleryImage-caption">Caption</label>
+                                <textarea id="GalleryImage-caption" formControlName="caption" placeholder="Enter Caption" class="form-control gallery-image-input" [disabled]="!userIsCommunityGalleryImageWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('altText')">
+                                <label for="GalleryImage-altText" id="label-GalleryImage-altText">Alt Text</label>
+                                <input type="text" id="GalleryImage-altText" formControlName="altText" placeholder="Enter Alt Text" class="form-control gallery-image-input" [disabled]="!userIsCommunityGalleryImageWriter()" aria-labelledby="label-altText" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="GalleryImage-sequence" id="label-GalleryImage-sequence">Sequence</label>
+                                <input type="number" id="GalleryImage-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control gallery-image-input" [disabled]="!userIsCommunityGalleryImageWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="GalleryImage-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityGalleryImageWriter()" />
+                                <label for="GalleryImage-active" class="form-check-label" id="label-GalleryImage-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="GalleryImage-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityGalleryImageWriter()" />
+                                <label for="GalleryImage-deleted" class="form-check-label" id="label-GalleryImage-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
                             <div class="gallery-image-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="galleryImageForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Gallery Image">Reset</button>
                                 <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !galleryImageForm.valid || !galleryImageForm.dirty || galleryImageForm.pristine  || userIsCommunityGalleryImageWriter() == false " ngbTooltip="Save the Gallery Image changes">

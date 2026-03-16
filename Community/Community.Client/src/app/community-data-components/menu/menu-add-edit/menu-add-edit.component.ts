@@ -34,6 +34,10 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface MenuFormValues {
+  name: string,
+  location: string,
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -64,6 +68,10 @@ export class MenuAddEditComponent {
 
 
   public menuForm: FormGroup = this.fb.group({
+        name: ['', Validators.required],
+        location: ['', Validators.required],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -98,6 +106,7 @@ export class MenuAddEditComponent {
       }
       this.menuSubmitData = this.menuService.ConvertToMenuSubmitData(menuData);
       this.isEditMode = true;
+      this.objectGuid = menuData.objectGuid;
 
       this.buildFormValues(menuData);
 
@@ -196,6 +205,10 @@ export class MenuAddEditComponent {
     //
     const menuSubmitData: MenuSubmitData = {
         id: this.menuSubmitData?.id || 0,
+        name: formValue.name!.trim(),
+        location: formValue.location!.trim(),
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -321,6 +334,8 @@ export class MenuAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.menuForm.reset({
+        name: '',
+        location: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -332,6 +347,10 @@ export class MenuAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.menuForm.reset({
+        name: menuData.name ?? '',
+        location: menuData.location ?? '',
+        active: menuData.active ?? true,
+        deleted: menuData.deleted ?? false,
       }, { emitEvent: false});
     }
 

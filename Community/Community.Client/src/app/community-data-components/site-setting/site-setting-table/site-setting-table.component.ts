@@ -175,6 +175,10 @@ export class SiteSettingTableComponent implements OnInit, OnChanges, AfterViewIn
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'settingKey', label: 'Setting Key', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/sitesetting', 'id']  },
+    { key: 'settingValue', label: 'Setting Value', width: undefined },
+    { key: 'description', label: 'Description', width: undefined },
+    { key: 'settingGroup', label: 'Setting Group', width: undefined },
 
     ];
 
@@ -186,6 +190,8 @@ export class SiteSettingTableComponent implements OnInit, OnChanges, AfterViewIn
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +324,10 @@ export class SiteSettingTableComponent implements OnInit, OnChanges, AfterViewIn
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'settingKey',
+                      'settingValue',
+                      'description',
+                      'settingGroup',
         ];
 
         result = result.filter((siteSetting) =>

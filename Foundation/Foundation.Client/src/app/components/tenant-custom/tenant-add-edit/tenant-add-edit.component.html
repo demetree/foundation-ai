@@ -42,6 +42,19 @@
                         placeholder="Enter description (optional)"></textarea>
                 </div>
 
+                <!-- Host Name -->
+                <div class="mb-3">
+                    <label for="tenantHostName" class="form-label">
+                        <i class="fa-solid fa-globe me-1"></i>Host Name
+                    </label>
+                    <input type="text" id="tenantHostName" formControlName="hostName" class="form-control"
+                        placeholder="e.g. pettyharbour.example.com">
+                    <small class="form-text text-muted">
+                        The domain name used to resolve this tenant from incoming HTTP requests.
+                        Used by Community CMS and other public-facing apps.
+                    </small>
+                </div>
+
                 <!-- Active Toggle -->
                 <div class="mb-3">
                     <div class="form-check form-switch">

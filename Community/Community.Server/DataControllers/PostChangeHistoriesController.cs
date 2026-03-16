@@ -42,7 +42,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -62,12 +62,11 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/PostChangeHistories")]
 		public async Task<IActionResult> GetPostChangeHistories(
-			int? Id = null,
-			int? PostId = null,
-			int? VersionNumber = null,
-			DateTime? TimeStamp = null,
-			int? UserId = null,
-			string Data = null,
+			int? postId = null,
+			int? versionNumber = null,
+			DateTime? timeStamp = null,
+			int? userId = null,
+			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			bool includeRelations = true,
@@ -89,6 +88,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -104,42 +115,41 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (TimeStamp.HasValue == true && TimeStamp.Value.Kind != DateTimeKind.Utc)
+			if (timeStamp.HasValue == true && timeStamp.Value.Kind != DateTimeKind.Utc)
 			{
-				TimeStamp = TimeStamp.Value.ToUniversalTime();
+				timeStamp = timeStamp.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.PostChangeHistory> query = (from pch in _context.PostChangeHistories select pch);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (postId.HasValue == true)
 			{
-				query = query.Where(pch => pch.Id == Id.Value);
+				query = query.Where(pch => pch.postId == postId.Value);
 			}
-			if (PostId.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(pch => pch.PostId == PostId.Value);
+				query = query.Where(pch => pch.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (timeStamp.HasValue == true)
 			{
-				query = query.Where(pch => pch.VersionNumber == VersionNumber.Value);
+				query = query.Where(pch => pch.timeStamp == timeStamp.Value);
 			}
-			if (TimeStamp.HasValue == true)
+			if (userId.HasValue == true)
 			{
-				query = query.Where(pch => pch.TimeStamp == TimeStamp.Value);
+				query = query.Where(pch => pch.userId == userId.Value);
 			}
-			if (UserId.HasValue == true)
+			if (string.IsNullOrEmpty(data) == false)
 			{
-				query = query.Where(pch => pch.UserId == UserId.Value);
-			}
-			if (string.IsNullOrEmpty(Data) == false)
-			{
-				query = query.Where(pch => pch.Data == Data);
+				query = query.Where(pch => pch.data == data);
 			}
 
 			query = query.OrderByDescending(pch => pch.id);
 
 			if (includeRelations == true)
 			{
-				query = query.Include(x => x.Post);
+				query = query.Include(x => x.post);
 				query = query.AsSplitQuery();
 			}
 
@@ -188,12 +198,11 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/PostChangeHistories/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			int? PostId = null,
-			int? VersionNumber = null,
-			DateTime? TimeStamp = null,
-			int? UserId = null,
-			string Data = null,
+			int? postId = null,
+			int? versionNumber = null,
+			DateTime? timeStamp = null,
+			int? userId = null,
+			string data = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -208,39 +217,48 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			//
 			// Fix any non-UTC date parameters that come in.
 			//
-			if (TimeStamp.HasValue == true && TimeStamp.Value.Kind != DateTimeKind.Utc)
+			if (timeStamp.HasValue == true && timeStamp.Value.Kind != DateTimeKind.Utc)
 			{
-				TimeStamp = TimeStamp.Value.ToUniversalTime();
+				timeStamp = timeStamp.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.PostChangeHistory> query = (from pch in _context.PostChangeHistories select pch);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (postId.HasValue == true)
 			{
-				query = query.Where(pch => pch.Id == Id.Value);
+				query = query.Where(pch => pch.postId == postId.Value);
 			}
-			if (PostId.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(pch => pch.PostId == PostId.Value);
+				query = query.Where(pch => pch.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (timeStamp.HasValue == true)
 			{
-				query = query.Where(pch => pch.VersionNumber == VersionNumber.Value);
+				query = query.Where(pch => pch.timeStamp == timeStamp.Value);
 			}
-			if (TimeStamp.HasValue == true)
+			if (userId.HasValue == true)
 			{
-				query = query.Where(pch => pch.TimeStamp == TimeStamp.Value);
+				query = query.Where(pch => pch.userId == userId.Value);
 			}
-			if (UserId.HasValue == true)
+			if (data != null)
 			{
-				query = query.Where(pch => pch.UserId == UserId.Value);
-			}
-			if (Data != null)
-			{
-				query = query.Where(pch => pch.Data == Data);
+				query = query.Where(pch => pch.data == data);
 			}
 
 			int output = await query.CountAsync(cancellationToken);
@@ -276,6 +294,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
@@ -283,9 +314,11 @@ namespace Foundation.Community.Controllers.WebAPI
 				(pch.id == id)
 					select pch);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
-					query = query.Include(x => x.Post);
+					query = query.Include(x => x.post);
 					query = query.AsSplitQuery();
 				}
 
@@ -363,11 +396,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.PostChangeHistory> query = (from x in _context.PostChangeHistories
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.PostChangeHistory existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -385,11 +432,25 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.PostChangeHistory postChangeHistory = (Database.PostChangeHistory)_context.Entry(existing).GetDatabaseValues().ToObject();
 			postChangeHistory.ApplyDTO(postChangeHistoryDTO);
-
-
-			if (postChangeHistory.TimeStamp.Kind != DateTimeKind.Utc)
+			//
+			// The tenant guid for any PostChangeHistory being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
 			{
-				postChangeHistory.TimeStamp = postChangeHistory.TimeStamp.ToUniversalTime();
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the PostChangeHistory because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				postChangeHistory.tenantGuid = existing.tenantGuid;
+			}
+
+
+
+			if (postChangeHistory.timeStamp.Kind != DateTimeKind.Utc)
+			{
+				postChangeHistory.timeStamp = postChangeHistory.timeStamp.ToUniversalTime();
 			}
 
 			EntityEntry<Database.PostChangeHistory> attached = _context.Entry(existing);
@@ -458,6 +519,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new PostChangeHistory object using the data from the DTO
 			//
@@ -465,9 +539,14 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				if (postChangeHistory.TimeStamp.Kind != DateTimeKind.Utc)
+				//
+				// Ensure that the tenant data is correct.
+				//
+				postChangeHistory.tenantGuid = userTenantGuid;
+
+				if (postChangeHistory.timeStamp.Kind != DateTimeKind.Utc)
 				{
-					postChangeHistory.TimeStamp = postChangeHistory.TimeStamp.ToUniversalTime();
+					postChangeHistory.timeStamp = postChangeHistory.timeStamp.ToUniversalTime();
 				}
 
 				_context.PostChangeHistories.Add(postChangeHistory);
@@ -523,11 +602,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.PostChangeHistory> query = (from x in _context.PostChangeHistories
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.PostChangeHistory postChangeHistory = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -583,12 +677,11 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			int? PostId = null,
-			int? VersionNumber = null,
-			DateTime? TimeStamp = null,
-			int? UserId = null,
-			string Data = null,
+			int? postId = null,
+			int? versionNumber = null,
+			DateTime? timeStamp = null,
+			int? userId = null,
+			string data = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -608,6 +701,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -623,36 +729,38 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (TimeStamp.HasValue == true && TimeStamp.Value.Kind != DateTimeKind.Utc)
+			if (timeStamp.HasValue == true && timeStamp.Value.Kind != DateTimeKind.Utc)
 			{
-				TimeStamp = TimeStamp.Value.ToUniversalTime();
+				timeStamp = timeStamp.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.PostChangeHistory> query = (from pch in _context.PostChangeHistories select pch);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (postId.HasValue == true)
 			{
-				query = query.Where(pch => pch.Id == Id.Value);
+				query = query.Where(pch => pch.postId == postId.Value);
 			}
-			if (PostId.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(pch => pch.PostId == PostId.Value);
+				query = query.Where(pch => pch.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (timeStamp.HasValue == true)
 			{
-				query = query.Where(pch => pch.VersionNumber == VersionNumber.Value);
+				query = query.Where(pch => pch.timeStamp == timeStamp.Value);
 			}
-			if (TimeStamp.HasValue == true)
+			if (userId.HasValue == true)
 			{
-				query = query.Where(pch => pch.TimeStamp == TimeStamp.Value);
+				query = query.Where(pch => pch.userId == userId.Value);
 			}
-			if (UserId.HasValue == true)
+			if (string.IsNullOrEmpty(data) == false)
 			{
-				query = query.Where(pch => pch.UserId == UserId.Value);
+				query = query.Where(pch => pch.data == data);
 			}
-			if (string.IsNullOrEmpty(Data) == false)
-			{
-				query = query.Where(pch => pch.Data == Data);
-			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderByDescending (x => x.id);

@@ -7,21 +7,21 @@ namespace Foundation.Community.Database;
 
 public partial class PostCategory
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string Name { get; set; }
+    public string name { get; set; }
 
-    public string Description { get; set; }
+    public string description { get; set; }
 
-    public string Slug { get; set; }
+    public string slug { get; set; }
 
-    public int? Sequence { get; set; }
+    public int? sequence { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Active { get; set; }
+    public bool active { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool deleted { get; set; }
 
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 }

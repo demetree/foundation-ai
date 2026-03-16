@@ -20,6 +20,28 @@
    </div>
    <div class="modal-body post-tag-modal-body">
       <form [formGroup]="postTagForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="PostTag-name" id="label-PostTag-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="PostTag-name" formControlName="name" placeholder="Enter Name" class="form-control post-tag-input" [disabled]="!userIsCommunityPostTagWriter()" aria-labelledby="label-name" />
+                <div *ngIf="postTagForm.get('name')?.invalid && postTagForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('slug')">
+                <label for="PostTag-slug" id="label-PostTag-slug"><span class="text-danger">*</span>Slug</label>
+                <input type="text" id="PostTag-slug" formControlName="slug" placeholder="Enter Slug" class="form-control post-tag-input" [disabled]="!userIsCommunityPostTagWriter()" aria-labelledby="label-slug" />
+                <div *ngIf="postTagForm.get('slug')?.invalid && postTagForm.get('slug')?.touched" class="text-danger">
+                    Slug is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PostTag-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityPostTagWriter()" />
+                <label for="PostTag-active" class="form-check-label" id="label-PostTag-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PostTag-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityPostTagWriter()" />
+                <label for="PostTag-deleted" class="form-check-label" id="label-PostTag-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
          <div class="modal-footer post-tag-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Post Tag changes and Close">Cancel</button>
             <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !postTagForm.valid || postTagForm.pristine  || userIsCommunityPostTagWriter() == false " ngbTooltip="Save the Post Tag changes and Close">

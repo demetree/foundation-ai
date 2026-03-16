@@ -32,6 +32,10 @@
                                 <label for="SecurityTenant-settings" id="label-SecurityTenant-settings">Settings</label>
                                 <textarea id="SecurityTenant-settings" formControlName="settings" placeholder="Enter Settings" class="form-control security-tenant-input" [disabled]="!userIsSecuritySecurityTenantWriter()"></textarea>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('hostName')">
+                                <label for="SecurityTenant-hostName" id="label-SecurityTenant-hostName">Host Name</label>
+                                <input type="text" id="SecurityTenant-hostName" formControlName="hostName" placeholder="Enter Host Name" class="form-control security-tenant-input" [disabled]="!userIsSecuritySecurityTenantWriter()" aria-labelledby="label-hostName" />
+                            </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="SecurityTenant-active" formControlName="active" class="form-check-input" [disabled]="!userIsSecuritySecurityTenantWriter()" />
                                 <label for="SecurityTenant-active" class="form-check-label" id="label-SecurityTenant-active"><span class="text-danger">*</span>Active</label>

@@ -25,6 +25,7 @@ namespace Foundation.Security.Database
 			public String name { get; set; }
 			public String description { get; set; }
 			public String settings { get; set; }
+			public String hostName { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -57,6 +58,7 @@ namespace Foundation.Security.Database
 				name = this.name,
 				description = this.description,
 				settings = this.settings,
+				hostName = this.hostName,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -102,6 +104,7 @@ namespace Foundation.Security.Database
 				name = this.name,
 				description = this.description,
 				settings = this.settings,
+				hostName = this.hostName,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -147,6 +150,7 @@ namespace Foundation.Security.Database
 				name = dto.name,
 				description = dto.description,
 				settings = dto.settings,
+				hostName = dto.hostName,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -169,6 +173,7 @@ namespace Foundation.Security.Database
 			this.name = dto.name;
 			this.description = dto.description;
 			this.settings = dto.settings;
+			this.hostName = dto.hostName;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -196,6 +201,7 @@ namespace Foundation.Security.Database
 				name = this.name,
 				description = this.description,
 				settings = this.settings,
+				hostName = this.hostName,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -255,6 +261,7 @@ namespace Foundation.Security.Database
 				name = securityTenant.name,
 				description = securityTenant.description,
 				settings = securityTenant.settings,
+				hostName = securityTenant.hostName,
 				objectGuid = securityTenant.objectGuid,
 				active = securityTenant.active,
 				deleted = securityTenant.deleted,
@@ -281,6 +288,7 @@ namespace Foundation.Security.Database
 				name = securityTenant.name,
 				description = securityTenant.description,
 				settings = securityTenant.settings,
+				hostName = securityTenant.hostName,
 				objectGuid = securityTenant.objectGuid,
 				active = securityTenant.active,
 				deleted = securityTenant.deleted,

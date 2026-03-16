@@ -35,6 +35,11 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface AnnouncementChangeHistoryFormValues {
+  announcementId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  timeStamp: string,
+  userId: string,     // Stored as string for form input, converted to number on submit.
+  data: string,
 };
 
 
@@ -62,6 +67,11 @@ export class AnnouncementChangeHistoryDetailComponent implements OnInit, CanComp
 
 
   public announcementChangeHistoryForm: FormGroup = this.fb.group({
+        announcementId: [null, Validators.required],
+        versionNumber: [''],
+        timeStamp: ['', Validators.required],
+        userId: ['', Validators.required],
+        data: ['', Validators.required],
       });
 
 
@@ -364,6 +374,11 @@ export class AnnouncementChangeHistoryDetailComponent implements OnInit, CanComp
       // Reset the form group to null state, but don't change the form instance.
       //
       this.announcementChangeHistoryForm.reset({
+        announcementId: null,
+        versionNumber: '',
+        timeStamp: '',
+        userId: '',
+        data: '',
    }, { emitEvent: false});
 
     }
@@ -373,6 +388,11 @@ export class AnnouncementChangeHistoryDetailComponent implements OnInit, CanComp
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.announcementChangeHistoryForm.reset({
+        announcementId: announcementChangeHistoryData.announcementId,
+        versionNumber: announcementChangeHistoryData.versionNumber?.toString() ?? '',
+        timeStamp: isoUtcStringToDateTimeLocal(announcementChangeHistoryData.timeStamp) ?? '',
+        userId: announcementChangeHistoryData.userId?.toString() ?? '',
+        data: announcementChangeHistoryData.data ?? '',
       }, { emitEvent: false});
     }
 
@@ -432,6 +452,11 @@ export class AnnouncementChangeHistoryDetailComponent implements OnInit, CanComp
     //
     const announcementChangeHistorySubmitData: AnnouncementChangeHistorySubmitData = {
         id: this.announcementChangeHistoryData?.id || 0,
+        announcementId: Number(formValue.announcementId),
+        versionNumber: this.announcementChangeHistoryData?.versionNumber ?? 0,
+        timeStamp: dateTimeLocalToIsoUtc(formValue.timeStamp!.trim())!,
+        userId: Number(formValue.userId),
+        data: formValue.data!.trim(),
    };
 
 

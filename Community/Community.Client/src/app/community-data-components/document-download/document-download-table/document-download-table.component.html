@@ -27,6 +27,46 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('title')">
+                Title
+                <span *ngIf="sortColumn === 'title'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('filePath')">
+                File  Path
+                <span *ngIf="sortColumn === 'filePath'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileName')">
+                File  Name
+                <span *ngIf="sortColumn === 'fileName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('mimeType')">
+                Mime  Type
+                <span *ngIf="sortColumn === 'mimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('fileSizeBytes')">
+                File  Size  Bytes
+                <span *ngIf="sortColumn === 'fileSizeBytes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('categoryName')">
+                Category  Name
+                <span *ngIf="sortColumn === 'categoryName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('documentDate')">
+                Document  Date
+                <span *ngIf="sortColumn === 'documentDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isPublished')">
+                Is  Published
+                <span *ngIf="sortColumn === 'isPublished'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +152,16 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/documentdownload', documentDownload.id]" class="btn btn-link text-left" ngbTooltip="Open Document Download details">{{documentDownload.title}}</a></td>
+            <td class="text-truncate">{{documentDownload.description}}</td>
+            <td class="text-truncate">{{documentDownload.filePath}}</td>
+            <td class="text-truncate">{{documentDownload.fileName}}</td>
+            <td class="text-truncate">{{documentDownload.mimeType}}</td>
+            <td class="text-truncate">{{documentDownload.fileSizeBytes | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{documentDownload.categoryName}}</td>
+            <td class="text-truncate">{{documentDownload.documentDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="documentDownload.isPublished"/></td>
+            <td class="text-truncate">{{documentDownload.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -258,6 +308,46 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="document-download-info" *ngIf="documentDownload.title != null">
+              <strong>Title: </strong>
+              {{documentDownload.title}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.description != null">
+              <strong>Description: </strong>
+              {{documentDownload.description}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.filePath != null">
+              <strong>File Path: </strong>
+              {{documentDownload.filePath}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.fileName != null">
+              <strong>File Name: </strong>
+              {{documentDownload.fileName}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.mimeType != null">
+              <strong>Mime Type: </strong>
+              {{documentDownload.mimeType}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.fileSizeBytes != null">
+              <strong>File Size Bytes: </strong>
+              {{documentDownload.fileSizeBytes | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.categoryName != null">
+              <strong>Category Name: </strong>
+              {{documentDownload.categoryName}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.documentDate != null">
+              <strong>Document Date: </strong>
+              {{documentDownload.documentDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.isPublished != null">
+              <strong>Is Published: </strong>
+              <boolean-icon [value]="documentDownload.isPublished"/>
+            </p>
+            <p class="document-download-info" *ngIf="documentDownload.sequence != null">
+              <strong>Sequence: </strong>
+              {{documentDownload.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

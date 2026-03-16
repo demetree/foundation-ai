@@ -7097,7 +7097,7 @@ namespace Foundation.CodeGeneration
 
                 public UniqueConstraint AddUniqueConstraint(Field field, bool ignoreNullSanityCheck = false)
                 {
-                    if (field.nullable == true)
+                    if (field.nullable == true && ignoreNullSanityCheck == false)
                     {
                         throw new Exception("Adding unique constraint on a nullable field is a bad idea.");
                     }
@@ -7220,7 +7220,7 @@ namespace Foundation.CodeGeneration
                         {
                             if (field.nullable == true)
                             {
-                                throw new Exception($"Adding unique constraint on a nullable field is generally a bad idea.  This can be overridden if you know that this is what you want.  Field is {field.name} and table is {field.table.name}");
+                                throw new Exception($"Adding unique constraint on a nullable field is generally a bad idea.  This can be overridden if you know that this is what you want.  Field is {field.name} and table is {field.table.name}.");
                             }
                         }
 

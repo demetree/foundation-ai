@@ -61,6 +61,7 @@ export class TenantAddEditComponent implements OnDestroy {
         this.tenantForm = this.fb.group({
             name: ['', Validators.required],
             description: [''],
+            hostName: [''],
             active: [true]
         });
     }
@@ -86,7 +87,7 @@ export class TenantAddEditComponent implements OnDestroy {
 
         this.isEditMode = false;
         this.currentTenant = null;
-        this.tenantForm.reset({ name: '', description: '', active: true });
+        this.tenantForm.reset({ name: '', description: '', hostName: '', active: true });
         this.openModal();
     }
 
@@ -110,6 +111,7 @@ export class TenantAddEditComponent implements OnDestroy {
         this.tenantForm.patchValue({
             name: tenant.name,
             description: tenant.description || '',
+            hostName: tenant.hostName || '',
             active: tenant.active
         });
         this.openModal();
@@ -162,6 +164,7 @@ export class TenantAddEditComponent implements OnDestroy {
         let submitData = new SecurityTenantSubmitData();
         submitData.name = this.tenantForm.value.name.trim();
         submitData.description = this.tenantForm.value.description?.trim() || null;
+        submitData.hostName = this.tenantForm.value.hostName?.trim() || null;
         submitData.active = this.tenantForm.value.active;
         submitData.deleted = false;
 

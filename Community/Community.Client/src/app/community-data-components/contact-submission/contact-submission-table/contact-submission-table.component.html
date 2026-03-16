@@ -27,6 +27,38 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('email')">
+                Email
+                <span *ngIf="sortColumn === 'email'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('subject')">
+                Subject
+                <span *ngIf="sortColumn === 'subject'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('message')">
+                Message
+                <span *ngIf="sortColumn === 'message'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('submittedDate')">
+                Submitted  Date
+                <span *ngIf="sortColumn === 'submittedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isRead')">
+                Is  Read
+                <span *ngIf="sortColumn === 'isRead'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isArchived')">
+                Is  Archived
+                <span *ngIf="sortColumn === 'isArchived'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('adminNotes')">
+                Admin  Notes
+                <span *ngIf="sortColumn === 'adminNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +144,14 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/contactsubmission', contactSubmission.id]" class="btn btn-link text-left" ngbTooltip="Open Contact Submission details">{{contactSubmission.name}}</a></td>
+            <td class="text-truncate"><a href="mailto:{{contactSubmission?.email}}" ngbTooltip="Send Email to {{contactSubmission?.email}}">{{contactSubmission.email}}</a></td>
+            <td class="text-truncate">{{contactSubmission.subject}}</td>
+            <td class="text-truncate">{{contactSubmission.message}}</td>
+            <td class="text-truncate">{{contactSubmission.submittedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="contactSubmission.isRead"/></td>
+            <td class="text-truncate"><boolean-icon [value]="contactSubmission.isArchived"/></td>
+            <td class="text-truncate">{{contactSubmission.adminNotes}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -228,7 +268,7 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
-               <strong>{{contactSubmission.id}}</strong>
+               <strong>{{contactSubmission.name}}</strong>
              </div>
              <div>
                 <button class="action-btn action-view"
@@ -258,6 +298,38 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="contact-submission-info" *ngIf="contactSubmission.name != null">
+              <strong>Name: </strong>
+              {{contactSubmission.name}}
+            </p>
+            <p class="contact-submission-info" *ngIf="contactSubmission.email != null">
+              <strong>Email: </strong>
+              <a href="mailto:{{contactSubmission?.email}}" ngbTooltip="Send Email to {{contactSubmission?.email}}">{{contactSubmission.email}}</a>
+            </p>
+            <p class="contact-submission-info" *ngIf="contactSubmission.subject != null">
+              <strong>Subject: </strong>
+              {{contactSubmission.subject}}
+            </p>
+            <p class="contact-submission-info" *ngIf="contactSubmission.message != null">
+              <strong>Message: </strong>
+              {{contactSubmission.message}}
+            </p>
+            <p class="contact-submission-info" *ngIf="contactSubmission.submittedDate != null">
+              <strong>Submitted Date: </strong>
+              {{contactSubmission.submittedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="contact-submission-info" *ngIf="contactSubmission.isRead != null">
+              <strong>Is Read: </strong>
+              <boolean-icon [value]="contactSubmission.isRead"/>
+            </p>
+            <p class="contact-submission-info" *ngIf="contactSubmission.isArchived != null">
+              <strong>Is Archived: </strong>
+              <boolean-icon [value]="contactSubmission.isArchived"/>
+            </p>
+            <p class="contact-submission-info" *ngIf="contactSubmission.adminNotes != null">
+              <strong>Admin Notes: </strong>
+              {{contactSubmission.adminNotes}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

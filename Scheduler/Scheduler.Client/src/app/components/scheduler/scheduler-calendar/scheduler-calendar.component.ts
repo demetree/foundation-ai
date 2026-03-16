@@ -13,6 +13,7 @@
  */
 
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FullCalendarComponent } from '@fullcalendar/angular';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -134,7 +135,9 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     private assignmentService: EventResourceAssignmentService,
     private resourceAvailabilityService: ResourceAvailabilityService,
     private resourceShiftService: ResourceShiftService,
-    private navigationService: NavigationService
+    private navigationService: NavigationService,
+    private route: ActivatedRoute,
+    private router: Router
   ) { }
 
 
@@ -147,6 +150,27 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     //
     // Initial event load is triggered by FullCalendar's datesSet callback when the view renders.
     //
+
+    //
+    // Deep-link support: if navigated here with ?eventId=N, auto-open that event's edit modal.
+    //
+    this.route.queryParams.subscribe(params => {
+      const eventId = params['eventId'];
+      if (eventId) {
+        // Clear the query param so it doesn't re-trigger on calendar navigation
+        this.router.navigate([], { queryParams: {}, replaceUrl: true });
+
+        // Fetch the event and open the edit modal
+        this.scheduledEventService.GetScheduledEvent(Number(eventId)).subscribe({
+          next: (event: ScheduledEventData) => {
+            this.openEditModal(event);
+          },
+          error: (err: any) => {
+            console.error('Failed to load event for deep-link', err);
+          }
+        });
+      }
+    });
   }
 
 

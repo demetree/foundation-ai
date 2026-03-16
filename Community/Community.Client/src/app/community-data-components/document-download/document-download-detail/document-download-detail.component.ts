@@ -34,6 +34,18 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface DocumentDownloadFormValues {
+  title: string,
+  description: string | null,
+  filePath: string,
+  fileName: string,
+  mimeType: string | null,
+  fileSizeBytes: string | null,     // Stored as string for form input, converted to number on submit.
+  categoryName: string | null,
+  documentDate: string | null,
+  isPublished: boolean,
+  sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -61,6 +73,18 @@ export class DocumentDownloadDetailComponent implements OnInit, CanComponentDeac
 
 
   public documentDownloadForm: FormGroup = this.fb.group({
+        title: ['', Validators.required],
+        description: [''],
+        filePath: ['', Validators.required],
+        fileName: ['', Validators.required],
+        mimeType: [''],
+        fileSizeBytes: [''],
+        categoryName: [''],
+        documentDate: [''],
+        isPublished: [false],
+        sequence: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -361,6 +385,18 @@ export class DocumentDownloadDetailComponent implements OnInit, CanComponentDeac
       // Reset the form group to null state, but don't change the form instance.
       //
       this.documentDownloadForm.reset({
+        title: '',
+        description: '',
+        filePath: '',
+        fileName: '',
+        mimeType: '',
+        fileSizeBytes: '',
+        categoryName: '',
+        documentDate: '',
+        isPublished: false,
+        sequence: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -370,6 +406,18 @@ export class DocumentDownloadDetailComponent implements OnInit, CanComponentDeac
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.documentDownloadForm.reset({
+        title: documentDownloadData.title ?? '',
+        description: documentDownloadData.description ?? '',
+        filePath: documentDownloadData.filePath ?? '',
+        fileName: documentDownloadData.fileName ?? '',
+        mimeType: documentDownloadData.mimeType ?? '',
+        fileSizeBytes: documentDownloadData.fileSizeBytes?.toString() ?? '',
+        categoryName: documentDownloadData.categoryName ?? '',
+        documentDate: isoUtcStringToDateTimeLocal(documentDownloadData.documentDate) ?? '',
+        isPublished: documentDownloadData.isPublished ?? false,
+        sequence: documentDownloadData.sequence?.toString() ?? '',
+        active: documentDownloadData.active ?? true,
+        deleted: documentDownloadData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -429,6 +477,18 @@ export class DocumentDownloadDetailComponent implements OnInit, CanComponentDeac
     //
     const documentDownloadSubmitData: DocumentDownloadSubmitData = {
         id: this.documentDownloadData?.id || 0,
+        title: formValue.title!.trim(),
+        description: formValue.description?.trim() || null,
+        filePath: formValue.filePath!.trim(),
+        fileName: formValue.fileName!.trim(),
+        mimeType: formValue.mimeType?.trim() || null,
+        fileSizeBytes: formValue.fileSizeBytes ? Number(formValue.fileSizeBytes) : null,
+        categoryName: formValue.categoryName?.trim() || null,
+        documentDate: formValue.documentDate ? dateTimeLocalToIsoUtc(formValue.documentDate.trim()) : null,
+        isPublished: !!formValue.isPublished,
+        sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

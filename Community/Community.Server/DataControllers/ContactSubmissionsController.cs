@@ -42,7 +42,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -62,18 +62,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/ContactSubmissions")]
 		public async Task<IActionResult> GetContactSubmissions(
-			int? Id = null,
-			string Name = null,
-			string Email = null,
-			string Subject = null,
-			string Message = null,
-			DateTime? SubmittedDate = null,
-			bool? IsRead = null,
-			bool? IsArchived = null,
-			string AdminNotes = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string name = null,
+			string email = null,
+			string subject = null,
+			string message = null,
+			DateTime? submittedDate = null,
+			bool? isRead = null,
+			bool? isArchived = null,
+			string adminNotes = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -96,6 +95,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -111,59 +122,74 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (SubmittedDate.HasValue == true && SubmittedDate.Value.Kind != DateTimeKind.Utc)
+			if (submittedDate.HasValue == true && submittedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				SubmittedDate = SubmittedDate.Value.ToUniversalTime();
+				submittedDate = submittedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.ContactSubmission> query = (from cs in _context.ContactSubmissions select cs);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(name) == false)
 			{
-				query = query.Where(cs => cs.Id == Id.Value);
+				query = query.Where(cs => cs.name == name);
 			}
-			if (string.IsNullOrEmpty(Name) == false)
+			if (string.IsNullOrEmpty(email) == false)
 			{
-				query = query.Where(cs => cs.Name == Name);
+				query = query.Where(cs => cs.email == email);
 			}
-			if (string.IsNullOrEmpty(Email) == false)
+			if (string.IsNullOrEmpty(subject) == false)
 			{
-				query = query.Where(cs => cs.Email == Email);
+				query = query.Where(cs => cs.subject == subject);
 			}
-			if (string.IsNullOrEmpty(Subject) == false)
+			if (string.IsNullOrEmpty(message) == false)
 			{
-				query = query.Where(cs => cs.Subject == Subject);
+				query = query.Where(cs => cs.message == message);
 			}
-			if (string.IsNullOrEmpty(Message) == false)
+			if (submittedDate.HasValue == true)
 			{
-				query = query.Where(cs => cs.Message == Message);
+				query = query.Where(cs => cs.submittedDate == submittedDate.Value);
 			}
-			if (SubmittedDate.HasValue == true)
+			if (isRead.HasValue == true)
 			{
-				query = query.Where(cs => cs.SubmittedDate == SubmittedDate.Value);
+				query = query.Where(cs => cs.isRead == isRead.Value);
 			}
-			if (IsRead.HasValue == true)
+			if (isArchived.HasValue == true)
 			{
-				query = query.Where(cs => cs.IsRead == IsRead.Value);
+				query = query.Where(cs => cs.isArchived == isArchived.Value);
 			}
-			if (IsArchived.HasValue == true)
+			if (string.IsNullOrEmpty(adminNotes) == false)
 			{
-				query = query.Where(cs => cs.IsArchived == IsArchived.Value);
+				query = query.Where(cs => cs.adminNotes == adminNotes);
 			}
-			if (string.IsNullOrEmpty(AdminNotes) == false)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(cs => cs.AdminNotes == AdminNotes);
+				query = query.Where(cs => cs.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(cs => cs.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(cs => cs.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(cs => cs.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(cs => cs.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(cs => cs.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(cs => cs.Deleted == Deleted.Value);
+				query = query.Where(cs => cs.active == true);
+				query = query.Where(cs => cs.deleted == false);
 			}
 
 			query = query.OrderBy(cs => cs.name).ThenBy(cs => cs.email).ThenBy(cs => cs.subject);
@@ -177,11 +203,11 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Name.Contains(anyStringContains)
-			       || x.Email.Contains(anyStringContains)
-			       || x.Subject.Contains(anyStringContains)
-			       || x.Message.Contains(anyStringContains)
-			       || x.AdminNotes.Contains(anyStringContains)
+			       x.name.Contains(anyStringContains)
+			       || x.email.Contains(anyStringContains)
+			       || x.subject.Contains(anyStringContains)
+			       || x.message.Contains(anyStringContains)
+			       || x.adminNotes.Contains(anyStringContains)
 			   );
 			}
 
@@ -235,18 +261,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/ContactSubmissions/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string Name = null,
-			string Email = null,
-			string Subject = null,
-			string Message = null,
-			DateTime? SubmittedDate = null,
-			bool? IsRead = null,
-			bool? IsArchived = null,
-			string AdminNotes = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string name = null,
+			string email = null,
+			string subject = null,
+			string message = null,
+			DateTime? submittedDate = null,
+			bool? isRead = null,
+			bool? isArchived = null,
+			string adminNotes = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -262,63 +287,88 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			//
 			// Fix any non-UTC date parameters that come in.
 			//
-			if (SubmittedDate.HasValue == true && SubmittedDate.Value.Kind != DateTimeKind.Utc)
+			if (submittedDate.HasValue == true && submittedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				SubmittedDate = SubmittedDate.Value.ToUniversalTime();
+				submittedDate = submittedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.ContactSubmission> query = (from cs in _context.ContactSubmissions select cs);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (name != null)
 			{
-				query = query.Where(cs => cs.Id == Id.Value);
+				query = query.Where(cs => cs.name == name);
 			}
-			if (Name != null)
+			if (email != null)
 			{
-				query = query.Where(cs => cs.Name == Name);
+				query = query.Where(cs => cs.email == email);
 			}
-			if (Email != null)
+			if (subject != null)
 			{
-				query = query.Where(cs => cs.Email == Email);
+				query = query.Where(cs => cs.subject == subject);
 			}
-			if (Subject != null)
+			if (message != null)
 			{
-				query = query.Where(cs => cs.Subject == Subject);
+				query = query.Where(cs => cs.message == message);
 			}
-			if (Message != null)
+			if (submittedDate.HasValue == true)
 			{
-				query = query.Where(cs => cs.Message == Message);
+				query = query.Where(cs => cs.submittedDate == submittedDate.Value);
 			}
-			if (SubmittedDate.HasValue == true)
+			if (isRead.HasValue == true)
 			{
-				query = query.Where(cs => cs.SubmittedDate == SubmittedDate.Value);
+				query = query.Where(cs => cs.isRead == isRead.Value);
 			}
-			if (IsRead.HasValue == true)
+			if (isArchived.HasValue == true)
 			{
-				query = query.Where(cs => cs.IsRead == IsRead.Value);
+				query = query.Where(cs => cs.isArchived == isArchived.Value);
 			}
-			if (IsArchived.HasValue == true)
+			if (adminNotes != null)
 			{
-				query = query.Where(cs => cs.IsArchived == IsArchived.Value);
+				query = query.Where(cs => cs.adminNotes == adminNotes);
 			}
-			if (AdminNotes != null)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(cs => cs.AdminNotes == AdminNotes);
+				query = query.Where(cs => cs.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(cs => cs.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(cs => cs.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(cs => cs.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(cs => cs.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(cs => cs.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(cs => cs.Deleted == Deleted.Value);
+				query = query.Where(cs => cs.active == true);
+				query = query.Where(cs => cs.deleted == false);
 			}
 
 			//
@@ -329,11 +379,11 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Name.Contains(anyStringContains)
-			       || x.Email.Contains(anyStringContains)
-			       || x.Subject.Contains(anyStringContains)
-			       || x.Message.Contains(anyStringContains)
-			       || x.AdminNotes.Contains(anyStringContains)
+			       x.name.Contains(anyStringContains)
+			       || x.email.Contains(anyStringContains)
+			       || x.subject.Contains(anyStringContains)
+			       || x.message.Contains(anyStringContains)
+			       || x.adminNotes.Contains(anyStringContains)
 			   );
 			}
 
@@ -371,13 +421,30 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.ContactSubmission> query = (from cs in _context.ContactSubmissions where
-				(cs.id == id)
+							(cs.id == id) &&
+							(userIsAdmin == true || cs.deleted == false) &&
+							(userIsWriter == true || cs.active == true)
 					select cs);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
 					query = query.AsSplitQuery();
@@ -459,11 +526,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.ContactSubmission> query = (from x in _context.ContactSubmissions
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.ContactSubmission existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -496,11 +577,53 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.ContactSubmission contactSubmission = (Database.ContactSubmission)_context.Entry(existing).GetDatabaseValues().ToObject();
 			contactSubmission.ApplyDTO(contactSubmissionDTO);
-
-
-			if (contactSubmission.SubmittedDate.Kind != DateTimeKind.Utc)
+			//
+			// The tenant guid for any ContactSubmission being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
 			{
-				contactSubmission.SubmittedDate = contactSubmission.SubmittedDate.ToUniversalTime();
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the ContactSubmission because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				contactSubmission.tenantGuid = existing.tenantGuid;
+			}
+
+
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (contactSubmission.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.ContactSubmission record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
+
+			if (contactSubmission.name != null && contactSubmission.name.Length > 100)
+			{
+				contactSubmission.name = contactSubmission.name.Substring(0, 100);
+			}
+
+			if (contactSubmission.email != null && contactSubmission.email.Length > 250)
+			{
+				contactSubmission.email = contactSubmission.email.Substring(0, 250);
+			}
+
+			if (contactSubmission.subject != null && contactSubmission.subject.Length > 250)
+			{
+				contactSubmission.subject = contactSubmission.subject.Substring(0, 250);
+			}
+
+			if (contactSubmission.submittedDate.Kind != DateTimeKind.Utc)
+			{
+				contactSubmission.submittedDate = contactSubmission.submittedDate.ToUniversalTime();
+			}
+
+			if (contactSubmission.adminNotes != null && contactSubmission.adminNotes.Length > 500)
+			{
+				contactSubmission.adminNotes = contactSubmission.adminNotes.Substring(0, 500);
 			}
 
 			EntityEntry<Database.ContactSubmission> attached = _context.Entry(existing);
@@ -567,6 +690,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new ContactSubmission object using the data from the DTO
 			//
@@ -574,11 +710,37 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				if (contactSubmission.SubmittedDate.Kind != DateTimeKind.Utc)
+				//
+				// Ensure that the tenant data is correct.
+				//
+				contactSubmission.tenantGuid = userTenantGuid;
+
+				if (contactSubmission.name != null && contactSubmission.name.Length > 100)
 				{
-					contactSubmission.SubmittedDate = contactSubmission.SubmittedDate.ToUniversalTime();
+					contactSubmission.name = contactSubmission.name.Substring(0, 100);
 				}
 
+				if (contactSubmission.email != null && contactSubmission.email.Length > 250)
+				{
+					contactSubmission.email = contactSubmission.email.Substring(0, 250);
+				}
+
+				if (contactSubmission.subject != null && contactSubmission.subject.Length > 250)
+				{
+					contactSubmission.subject = contactSubmission.subject.Substring(0, 250);
+				}
+
+				if (contactSubmission.submittedDate.Kind != DateTimeKind.Utc)
+				{
+					contactSubmission.submittedDate = contactSubmission.submittedDate.ToUniversalTime();
+				}
+
+				if (contactSubmission.adminNotes != null && contactSubmission.adminNotes.Length > 500)
+				{
+					contactSubmission.adminNotes = contactSubmission.adminNotes.Substring(0, 500);
+				}
+
+				contactSubmission.objectGuid = Guid.NewGuid();
 				_context.ContactSubmissions.Add(contactSubmission);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -632,11 +794,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.ContactSubmission> query = (from x in _context.ContactSubmissions
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.ContactSubmission contactSubmission = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -650,7 +827,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.ContactSubmissions.Remove(contactSubmission);
+				contactSubmission.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -691,18 +868,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string Name = null,
-			string Email = null,
-			string Subject = null,
-			string Message = null,
-			DateTime? SubmittedDate = null,
-			bool? IsRead = null,
-			bool? IsArchived = null,
-			string AdminNotes = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string name = null,
+			string email = null,
+			string subject = null,
+			string message = null,
+			DateTime? submittedDate = null,
+			bool? isRead = null,
+			bool? isArchived = null,
+			string adminNotes = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -723,6 +899,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -738,59 +927,74 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (SubmittedDate.HasValue == true && SubmittedDate.Value.Kind != DateTimeKind.Utc)
+			if (submittedDate.HasValue == true && submittedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				SubmittedDate = SubmittedDate.Value.ToUniversalTime();
+				submittedDate = submittedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.ContactSubmission> query = (from cs in _context.ContactSubmissions select cs);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(name) == false)
 			{
-				query = query.Where(cs => cs.Id == Id.Value);
+				query = query.Where(cs => cs.name == name);
 			}
-			if (string.IsNullOrEmpty(Name) == false)
+			if (string.IsNullOrEmpty(email) == false)
 			{
-				query = query.Where(cs => cs.Name == Name);
+				query = query.Where(cs => cs.email == email);
 			}
-			if (string.IsNullOrEmpty(Email) == false)
+			if (string.IsNullOrEmpty(subject) == false)
 			{
-				query = query.Where(cs => cs.Email == Email);
+				query = query.Where(cs => cs.subject == subject);
 			}
-			if (string.IsNullOrEmpty(Subject) == false)
+			if (string.IsNullOrEmpty(message) == false)
 			{
-				query = query.Where(cs => cs.Subject == Subject);
+				query = query.Where(cs => cs.message == message);
 			}
-			if (string.IsNullOrEmpty(Message) == false)
+			if (submittedDate.HasValue == true)
 			{
-				query = query.Where(cs => cs.Message == Message);
+				query = query.Where(cs => cs.submittedDate == submittedDate.Value);
 			}
-			if (SubmittedDate.HasValue == true)
+			if (isRead.HasValue == true)
 			{
-				query = query.Where(cs => cs.SubmittedDate == SubmittedDate.Value);
+				query = query.Where(cs => cs.isRead == isRead.Value);
 			}
-			if (IsRead.HasValue == true)
+			if (isArchived.HasValue == true)
 			{
-				query = query.Where(cs => cs.IsRead == IsRead.Value);
+				query = query.Where(cs => cs.isArchived == isArchived.Value);
 			}
-			if (IsArchived.HasValue == true)
+			if (string.IsNullOrEmpty(adminNotes) == false)
 			{
-				query = query.Where(cs => cs.IsArchived == IsArchived.Value);
+				query = query.Where(cs => cs.adminNotes == adminNotes);
 			}
-			if (string.IsNullOrEmpty(AdminNotes) == false)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(cs => cs.AdminNotes == AdminNotes);
+				query = query.Where(cs => cs.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(cs => cs.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(cs => cs.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(cs => cs.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(cs => cs.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(cs => cs.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(cs => cs.Deleted == Deleted.Value);
+				query = query.Where(cs => cs.active == true);
+				query = query.Where(cs => cs.deleted == false);
 			}
 
 
@@ -802,13 +1006,16 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Name.Contains(anyStringContains)
-			       || x.Email.Contains(anyStringContains)
-			       || x.Subject.Contains(anyStringContains)
-			       || x.Message.Contains(anyStringContains)
-			       || x.AdminNotes.Contains(anyStringContains)
+			       x.name.Contains(anyStringContains)
+			       || x.email.Contains(anyStringContains)
+			       || x.subject.Contains(anyStringContains)
+			       || x.message.Contains(anyStringContains)
+			       || x.adminNotes.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.name).ThenBy(x => x.email).ThenBy(x => x.subject);

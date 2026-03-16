@@ -42,7 +42,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -62,15 +62,14 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/GalleryImages")]
 		public async Task<IActionResult> GetGalleryImages(
-			int? Id = null,
-			int? GalleryAlbumId = null,
-			string ImageUrl = null,
-			string Caption = null,
-			string AltText = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? galleryAlbumId = null,
+			string imageUrl = null,
+			string caption = null,
+			string altText = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -93,6 +92,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -106,41 +117,56 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.GalleryImage> query = (from gi in _context.GalleryImages select gi);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (galleryAlbumId.HasValue == true)
 			{
-				query = query.Where(gi => gi.Id == Id.Value);
+				query = query.Where(gi => gi.galleryAlbumId == galleryAlbumId.Value);
 			}
-			if (GalleryAlbumId.HasValue == true)
+			if (string.IsNullOrEmpty(imageUrl) == false)
 			{
-				query = query.Where(gi => gi.GalleryAlbumId == GalleryAlbumId.Value);
+				query = query.Where(gi => gi.imageUrl == imageUrl);
 			}
-			if (string.IsNullOrEmpty(ImageUrl) == false)
+			if (string.IsNullOrEmpty(caption) == false)
 			{
-				query = query.Where(gi => gi.ImageUrl == ImageUrl);
+				query = query.Where(gi => gi.caption == caption);
 			}
-			if (string.IsNullOrEmpty(Caption) == false)
+			if (string.IsNullOrEmpty(altText) == false)
 			{
-				query = query.Where(gi => gi.Caption == Caption);
+				query = query.Where(gi => gi.altText == altText);
 			}
-			if (string.IsNullOrEmpty(AltText) == false)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(gi => gi.AltText == AltText);
+				query = query.Where(gi => gi.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(gi => gi.Sequence == Sequence.Value);
+				query = query.Where(gi => gi.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(gi => gi.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(gi => gi.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(gi => gi.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(gi => gi.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(gi => gi.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(gi => gi.Deleted == Deleted.Value);
+				query = query.Where(gi => gi.active == true);
+				query = query.Where(gi => gi.deleted == false);
 			}
 
 			query = query.OrderBy(gi => gi.sequence).ThenBy(gi => gi.imageUrl).ThenBy(gi => gi.caption).ThenBy(gi => gi.altText);
@@ -154,19 +180,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.ImageUrl.Contains(anyStringContains)
-			       || x.Caption.Contains(anyStringContains)
-			       || x.AltText.Contains(anyStringContains)
-			       || (includeRelations == true && x.GalleryAlbum.Title.Contains(anyStringContains))
-			       || (includeRelations == true && x.GalleryAlbum.Slug.Contains(anyStringContains))
-			       || (includeRelations == true && x.GalleryAlbum.Description.Contains(anyStringContains))
-			       || (includeRelations == true && x.GalleryAlbum.CoverImageUrl.Contains(anyStringContains))
+			       x.imageUrl.Contains(anyStringContains)
+			       || x.caption.Contains(anyStringContains)
+			       || x.altText.Contains(anyStringContains)
+			       || (includeRelations == true && x.galleryAlbum.title.Contains(anyStringContains))
+			       || (includeRelations == true && x.galleryAlbum.slug.Contains(anyStringContains))
+			       || (includeRelations == true && x.galleryAlbum.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.galleryAlbum.coverImageUrl.Contains(anyStringContains))
 			   );
 			}
 
 			if (includeRelations == true)
 			{
-				query = query.Include(x => x.GalleryAlbum);
+				query = query.Include(x => x.galleryAlbum);
 				query = query.AsSplitQuery();
 			}
 
@@ -215,15 +241,14 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/GalleryImages/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			int? GalleryAlbumId = null,
-			string ImageUrl = null,
-			string Caption = null,
-			string AltText = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? galleryAlbumId = null,
+			string imageUrl = null,
+			string caption = null,
+			string altText = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -239,43 +264,68 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			IQueryable<Database.GalleryImage> query = (from gi in _context.GalleryImages select gi);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (galleryAlbumId.HasValue == true)
 			{
-				query = query.Where(gi => gi.Id == Id.Value);
+				query = query.Where(gi => gi.galleryAlbumId == galleryAlbumId.Value);
 			}
-			if (GalleryAlbumId.HasValue == true)
+			if (imageUrl != null)
 			{
-				query = query.Where(gi => gi.GalleryAlbumId == GalleryAlbumId.Value);
+				query = query.Where(gi => gi.imageUrl == imageUrl);
 			}
-			if (ImageUrl != null)
+			if (caption != null)
 			{
-				query = query.Where(gi => gi.ImageUrl == ImageUrl);
+				query = query.Where(gi => gi.caption == caption);
 			}
-			if (Caption != null)
+			if (altText != null)
 			{
-				query = query.Where(gi => gi.Caption == Caption);
+				query = query.Where(gi => gi.altText == altText);
 			}
-			if (AltText != null)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(gi => gi.AltText == AltText);
+				query = query.Where(gi => gi.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(gi => gi.Sequence == Sequence.Value);
+				query = query.Where(gi => gi.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(gi => gi.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(gi => gi.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(gi => gi.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(gi => gi.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(gi => gi.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(gi => gi.Deleted == Deleted.Value);
+				query = query.Where(gi => gi.active == true);
+				query = query.Where(gi => gi.deleted == false);
 			}
 
 			//
@@ -286,13 +336,13 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.ImageUrl.Contains(anyStringContains)
-			       || x.Caption.Contains(anyStringContains)
-			       || x.AltText.Contains(anyStringContains)
-			       || x.GalleryAlbum.Title.Contains(anyStringContains)
-			       || x.GalleryAlbum.Slug.Contains(anyStringContains)
-			       || x.GalleryAlbum.Description.Contains(anyStringContains)
-			       || x.GalleryAlbum.CoverImageUrl.Contains(anyStringContains)
+			       x.imageUrl.Contains(anyStringContains)
+			       || x.caption.Contains(anyStringContains)
+			       || x.altText.Contains(anyStringContains)
+			       || x.galleryAlbum.title.Contains(anyStringContains)
+			       || x.galleryAlbum.slug.Contains(anyStringContains)
+			       || x.galleryAlbum.description.Contains(anyStringContains)
+			       || x.galleryAlbum.coverImageUrl.Contains(anyStringContains)
 			   );
 			}
 
@@ -330,16 +380,33 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.GalleryImage> query = (from gi in _context.GalleryImages where
-				(gi.id == id)
+							(gi.id == id) &&
+							(userIsAdmin == true || gi.deleted == false) &&
+							(userIsWriter == true || gi.active == true)
 					select gi);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
-					query = query.Include(x => x.GalleryAlbum);
+					query = query.Include(x => x.galleryAlbum);
 					query = query.AsSplitQuery();
 				}
 
@@ -419,11 +486,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.GalleryImage> query = (from x in _context.GalleryImages
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.GalleryImage existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -456,7 +537,44 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.GalleryImage galleryImage = (Database.GalleryImage)_context.Entry(existing).GetDatabaseValues().ToObject();
 			galleryImage.ApplyDTO(galleryImageDTO);
+			//
+			// The tenant guid for any GalleryImage being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the GalleryImage because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				galleryImage.tenantGuid = existing.tenantGuid;
+			}
 
+
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (galleryImage.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.GalleryImage record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
+
+			if (galleryImage.imageUrl != null && galleryImage.imageUrl.Length > 500)
+			{
+				galleryImage.imageUrl = galleryImage.imageUrl.Substring(0, 500);
+			}
+
+			if (galleryImage.caption != null && galleryImage.caption.Length > 500)
+			{
+				galleryImage.caption = galleryImage.caption.Substring(0, 500);
+			}
+
+			if (galleryImage.altText != null && galleryImage.altText.Length > 250)
+			{
+				galleryImage.altText = galleryImage.altText.Substring(0, 250);
+			}
 
 			EntityEntry<Database.GalleryImage> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(galleryImage);
@@ -522,6 +640,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new GalleryImage object using the data from the DTO
 			//
@@ -529,6 +660,27 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				galleryImage.tenantGuid = userTenantGuid;
+
+				if (galleryImage.imageUrl != null && galleryImage.imageUrl.Length > 500)
+				{
+					galleryImage.imageUrl = galleryImage.imageUrl.Substring(0, 500);
+				}
+
+				if (galleryImage.caption != null && galleryImage.caption.Length > 500)
+				{
+					galleryImage.caption = galleryImage.caption.Substring(0, 500);
+				}
+
+				if (galleryImage.altText != null && galleryImage.altText.Length > 250)
+				{
+					galleryImage.altText = galleryImage.altText.Substring(0, 250);
+				}
+
+				galleryImage.objectGuid = Guid.NewGuid();
 				_context.GalleryImages.Add(galleryImage);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -582,11 +734,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.GalleryImage> query = (from x in _context.GalleryImages
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.GalleryImage galleryImage = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -600,7 +767,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.GalleryImages.Remove(galleryImage);
+				galleryImage.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -641,15 +808,14 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			int? GalleryAlbumId = null,
-			string ImageUrl = null,
-			string Caption = null,
-			string AltText = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? galleryAlbumId = null,
+			string imageUrl = null,
+			string caption = null,
+			string altText = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -670,6 +836,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -683,41 +862,56 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.GalleryImage> query = (from gi in _context.GalleryImages select gi);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (galleryAlbumId.HasValue == true)
 			{
-				query = query.Where(gi => gi.Id == Id.Value);
+				query = query.Where(gi => gi.galleryAlbumId == galleryAlbumId.Value);
 			}
-			if (GalleryAlbumId.HasValue == true)
+			if (string.IsNullOrEmpty(imageUrl) == false)
 			{
-				query = query.Where(gi => gi.GalleryAlbumId == GalleryAlbumId.Value);
+				query = query.Where(gi => gi.imageUrl == imageUrl);
 			}
-			if (string.IsNullOrEmpty(ImageUrl) == false)
+			if (string.IsNullOrEmpty(caption) == false)
 			{
-				query = query.Where(gi => gi.ImageUrl == ImageUrl);
+				query = query.Where(gi => gi.caption == caption);
 			}
-			if (string.IsNullOrEmpty(Caption) == false)
+			if (string.IsNullOrEmpty(altText) == false)
 			{
-				query = query.Where(gi => gi.Caption == Caption);
+				query = query.Where(gi => gi.altText == altText);
 			}
-			if (string.IsNullOrEmpty(AltText) == false)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(gi => gi.AltText == AltText);
+				query = query.Where(gi => gi.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(gi => gi.Sequence == Sequence.Value);
+				query = query.Where(gi => gi.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(gi => gi.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(gi => gi.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(gi => gi.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(gi => gi.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(gi => gi.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(gi => gi.Deleted == Deleted.Value);
+				query = query.Where(gi => gi.active == true);
+				query = query.Where(gi => gi.deleted == false);
 			}
 
 
@@ -729,15 +923,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.ImageUrl.Contains(anyStringContains)
-			       || x.Caption.Contains(anyStringContains)
-			       || x.AltText.Contains(anyStringContains)
-			       || x.GalleryAlbum.Title.Contains(anyStringContains)
-			       || x.GalleryAlbum.Slug.Contains(anyStringContains)
-			       || x.GalleryAlbum.Description.Contains(anyStringContains)
-			       || x.GalleryAlbum.CoverImageUrl.Contains(anyStringContains)
+			       x.imageUrl.Contains(anyStringContains)
+			       || x.caption.Contains(anyStringContains)
+			       || x.altText.Contains(anyStringContains)
+			       || x.galleryAlbum.title.Contains(anyStringContains)
+			       || x.galleryAlbum.slug.Contains(anyStringContains)
+			       || x.galleryAlbum.description.Contains(anyStringContains)
+			       || x.galleryAlbum.coverImageUrl.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.sequence).ThenBy(x => x.imageUrl).ThenBy(x => x.caption).ThenBy(x => x.altText);

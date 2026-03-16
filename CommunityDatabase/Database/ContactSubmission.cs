@@ -7,27 +7,29 @@ namespace Foundation.Community.Database;
 
 public partial class ContactSubmission
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string Name { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string Email { get; set; }
+    public string name { get; set; }
 
-    public string Subject { get; set; }
+    public string email { get; set; }
 
-    public string Message { get; set; }
+    public string subject { get; set; }
 
-    public DateTime SubmittedDate { get; set; }
+    public string message { get; set; }
 
-    public bool IsRead { get; set; }
+    public DateTime submittedDate { get; set; }
 
-    public bool IsArchived { get; set; }
+    public bool isRead { get; set; }
 
-    public string AdminNotes { get; set; }
+    public bool isArchived { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public string adminNotes { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
+
+    public bool deleted { get; set; }
 }

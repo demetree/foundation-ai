@@ -35,6 +35,11 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostChangeHistoryFormValues {
+  postId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  timeStamp: string,
+  userId: string,     // Stored as string for form input, converted to number on submit.
+  data: string,
 };
 
 @Component({
@@ -65,6 +70,11 @@ export class PostChangeHistoryAddEditComponent {
 
 
   public postChangeHistoryForm: FormGroup = this.fb.group({
+        postId: [null, Validators.required],
+        versionNumber: [''],
+        timeStamp: ['', Validators.required],
+        userId: ['', Validators.required],
+        data: ['', Validators.required],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -199,6 +209,11 @@ export class PostChangeHistoryAddEditComponent {
     //
     const postChangeHistorySubmitData: PostChangeHistorySubmitData = {
         id: this.postChangeHistorySubmitData?.id || 0,
+        postId: Number(formValue.postId),
+        versionNumber: this.postChangeHistorySubmitData?.versionNumber ?? 0,
+        timeStamp: dateTimeLocalToIsoUtc(formValue.timeStamp!.trim())!,
+        userId: Number(formValue.userId),
+        data: formValue.data!.trim(),
    };
 
       if (this.isEditMode) {
@@ -323,6 +338,11 @@ export class PostChangeHistoryAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postChangeHistoryForm.reset({
+        postId: null,
+        versionNumber: '',
+        timeStamp: '',
+        userId: '',
+        data: '',
    }, { emitEvent: false});
 
     }
@@ -332,6 +352,11 @@ export class PostChangeHistoryAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postChangeHistoryForm.reset({
+        postId: postChangeHistoryData.postId,
+        versionNumber: postChangeHistoryData.versionNumber?.toString() ?? '',
+        timeStamp: isoUtcStringToDateTimeLocal(postChangeHistoryData.timeStamp) ?? '',
+        userId: postChangeHistoryData.userId?.toString() ?? '',
+        data: postChangeHistoryData.data ?? '',
       }, { emitEvent: false});
     }
 

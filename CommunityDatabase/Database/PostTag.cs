@@ -7,17 +7,19 @@ namespace Foundation.Community.Database;
 
 public partial class PostTag
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string Name { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string Slug { get; set; }
+    public string name { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public string slug { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
+
+    public bool deleted { get; set; }
 
     public virtual ICollection<PostTagAssignment> PostTagAssignments { get; set; } = new List<PostTagAssignment>();
 }

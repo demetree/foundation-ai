@@ -29,18 +29,17 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class MenuItemQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    MenuId: bigint | number | null | undefined = null;
-    Label: string | null | undefined = null;
-    Url: string | null | undefined = null;
-    PageId: bigint | number | null | undefined = null;
-    ParentMenuItemId: bigint | number | null | undefined = null;
-    IconClass: string | null | undefined = null;
-    OpenInNewTab: boolean | null | undefined = null;
-    Sequence: bigint | number | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    menuId: bigint | number | null | undefined = null;
+    label: string | null | undefined = null;
+    url: string | null | undefined = null;
+    pageId: bigint | number | null | undefined = null;
+    parentMenuItemId: bigint | number | null | undefined = null;
+    iconClass: string | null | undefined = null;
+    openInNewTab: boolean | null | undefined = null;
+    sequence: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -52,17 +51,17 @@ export class MenuItemQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class MenuItemSubmitData {
-    Id: bigint | number | null = null;
-    MenuId: bigint | number | null = null;
-    Label: string | null = null;
-    Url: string | null = null;
-    PageId: bigint | number | null = null;
-    ParentMenuItemId: bigint | number | null = null;
-    IconClass: string | null = null;
-    OpenInNewTab: boolean | null = null;
-    Sequence: bigint | number | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    menuId!: bigint | number;
+    label!: string;
+    url: string | null = null;
+    pageId: bigint | number | null = null;
+    parentMenuItemId: bigint | number | null = null;
+    iconClass: string | null = null;
+    openInNewTab!: boolean;
+    sequence: bigint | number | null = null;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -109,20 +108,20 @@ export class MenuItemBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class MenuItemData {
-    Id!: bigint | number;
-    MenuId!: bigint | number;
-    Label!: string | null;
-    Url!: string | null;
-    PageId!: bigint | number;
-    ParentMenuItemId!: bigint | number;
-    IconClass!: string | null;
-    OpenInNewTab!: boolean | null;
-    Sequence!: bigint | number;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
-    Menu: MenuData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
-    Page: PageData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    id!: bigint | number;
+    menuId!: bigint | number;
+    label!: string;
+    url!: string | null;
+    pageId!: bigint | number;
+    parentMenuItemId!: bigint | number;
+    iconClass!: string | null;
+    openInNewTab!: boolean;
+    sequence!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
+    menu: MenuData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    page: PageData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     parentMenuItem: MenuItemData | null | undefined = null;            // Self referencing navigation property (populated when includeRelations=true)
 
     //
@@ -270,17 +269,17 @@ export class MenuItemService extends SecureEndpointBase {
 
         let output = new MenuItemSubmitData();
 
-        output.Id = data.Id;
-        output.MenuId = data.MenuId;
-        output.Label = data.Label;
-        output.Url = data.Url;
-        output.PageId = data.PageId;
-        output.ParentMenuItemId = data.ParentMenuItemId;
-        output.IconClass = data.IconClass;
-        output.OpenInNewTab = data.OpenInNewTab;
-        output.Sequence = data.Sequence;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.menuId = data.menuId;
+        output.label = data.label;
+        output.url = data.url;
+        output.pageId = data.pageId;
+        output.parentMenuItemId = data.parentMenuItemId;
+        output.iconClass = data.iconClass;
+        output.openInNewTab = data.openInNewTab;
+        output.sequence = data.sequence;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

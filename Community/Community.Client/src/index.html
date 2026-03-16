@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Petty Harbour-Maddox Cove</title>
+  <base href="/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Official website for the Town of Petty Harbour-Maddox Cove, Newfoundland and Labrador.">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Google Fonts: Inter + Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ================================================================
+       Pre-Bootstrap Loading Screen — Community Site
+       ================================================================ */
+
+    #pre-bootstrap {
+      background: linear-gradient(135deg, #0c2d48 0%, #145374 50%, #0c2d48 100%);
+      bottom: 0;
+      left: 0;
+      position: fixed;
+      right: 0;
+      top: 0;
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    .loading-title {
+      color: white;
+      font-family: 'Outfit', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .loading-subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #2ec4b6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .loading-spinner {
+        animation: none;
+        border-top-color: rgba(255, 255, 255, 0.4);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <app-root>
+    <div id="pre-bootstrap">
+      <div class="loading-title">Petty Harbour-Maddox Cove</div>
+      <div class="loading-subtitle">Loading community site…</div>
+      <div class="loading-spinner"></div>
+    </div>
+  </app-root>
+</body>
+
+</html>

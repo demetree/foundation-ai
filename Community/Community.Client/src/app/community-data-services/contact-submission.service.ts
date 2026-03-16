@@ -27,18 +27,17 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class ContactSubmissionQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    Name: string | null | undefined = null;
-    Email: string | null | undefined = null;
-    Subject: string | null | undefined = null;
-    Message: string | null | undefined = null;
-    SubmittedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    IsRead: boolean | null | undefined = null;
-    IsArchived: boolean | null | undefined = null;
-    AdminNotes: string | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    name: string | null | undefined = null;
+    email: string | null | undefined = null;
+    subject: string | null | undefined = null;
+    message: string | null | undefined = null;
+    submittedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    isRead: boolean | null | undefined = null;
+    isArchived: boolean | null | undefined = null;
+    adminNotes: string | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -50,17 +49,17 @@ export class ContactSubmissionQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class ContactSubmissionSubmitData {
-    Id: bigint | number | null = null;
-    Name: string | null = null;
-    Email: string | null = null;
-    Subject: string | null = null;
-    Message: string | null = null;
-    SubmittedDate: string | null = null;     // ISO 8601 (full datetime)
-    IsRead: boolean | null = null;
-    IsArchived: boolean | null = null;
-    AdminNotes: string | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    name!: string;
+    email!: string;
+    subject: string | null = null;
+    message!: string;
+    submittedDate!: string;      // ISO 8601 (full datetime)
+    isRead!: boolean;
+    isArchived!: boolean;
+    adminNotes: string | null = null;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -107,18 +106,18 @@ export class ContactSubmissionBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class ContactSubmissionData {
-    Id!: bigint | number;
-    Name!: string | null;
-    Email!: string | null;
-    Subject!: string | null;
-    Message!: string | null;
-    SubmittedDate!: string | null;   // ISO 8601 (full datetime)
-    IsRead!: boolean | null;
-    IsArchived!: boolean | null;
-    AdminNotes!: string | null;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
+    id!: bigint | number;
+    name!: string;
+    email!: string;
+    subject!: string | null;
+    message!: string;
+    submittedDate!: string;      // ISO 8601 (full datetime)
+    isRead!: boolean;
+    isArchived!: boolean;
+    adminNotes!: string | null;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
 
     //
     // Private lazy-loading caches for related collections
@@ -265,17 +264,17 @@ export class ContactSubmissionService extends SecureEndpointBase {
 
         let output = new ContactSubmissionSubmitData();
 
-        output.Id = data.Id;
-        output.Name = data.Name;
-        output.Email = data.Email;
-        output.Subject = data.Subject;
-        output.Message = data.Message;
-        output.SubmittedDate = data.SubmittedDate;
-        output.IsRead = data.IsRead;
-        output.IsArchived = data.IsArchived;
-        output.AdminNotes = data.AdminNotes;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.name = data.name;
+        output.email = data.email;
+        output.subject = data.subject;
+        output.message = data.message;
+        output.submittedDate = data.submittedDate;
+        output.isRead = data.isRead;
+        output.isArchived = data.isArchived;
+        output.adminNotes = data.adminNotes;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

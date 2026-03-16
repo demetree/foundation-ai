@@ -20,6 +20,71 @@
    </div>
    <div class="modal-body post-modal-body">
       <form [formGroup]="postForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('title')">
+                <label for="Post-title" id="label-Post-title"><span class="text-danger">*</span>Title</label>
+                <input type="text" id="Post-title" formControlName="title" placeholder="Enter Title" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()" aria-labelledby="label-title" />
+                <div *ngIf="postForm.get('title')?.invalid && postForm.get('title')?.touched" class="text-danger">
+                    Title is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('slug')">
+                <label for="Post-slug" id="label-Post-slug"><span class="text-danger">*</span>Slug</label>
+                <input type="text" id="Post-slug" formControlName="slug" placeholder="Enter Slug" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()" aria-labelledby="label-slug" />
+                <div *ngIf="postForm.get('slug')?.invalid && postForm.get('slug')?.touched" class="text-danger">
+                    Slug is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('body')">
+                <label for="Post-body" id="label-Post-body">Body</label>
+                <textarea id="Post-body" formControlName="body" placeholder="Enter Body" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('excerpt')">
+                <label for="Post-excerpt" id="label-Post-excerpt">Excerpt</label>
+                <textarea id="Post-excerpt" formControlName="excerpt" placeholder="Enter Excerpt" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('authorName')">
+                <label for="Post-authorName" id="label-Post-authorName">Author Name</label>
+                <input type="text" id="Post-authorName" formControlName="authorName" placeholder="Enter Author Name" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()" aria-labelledby="label-authorName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('postCategoryId')">
+                <label for="Post-postCategoryId" id="label-Post-postCategoryId">Post Category</label>
+                <select id="Post-postCategoryId" formControlName="postCategoryId" class="form-select post-select" [disabled]="!userIsCommunityPostWriter()">
+                    <option [ngValue]="null">Select Post Category</option>
+                    <option *ngFor="let postCategory of postCategories$ | async" [ngValue]="postCategory.id">{{postCategory.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('featuredImageUrl')">
+                <label for="Post-featuredImageUrl" id="label-Post-featuredImageUrl">Featured Image Url</label>
+                <textarea id="Post-featuredImageUrl" formControlName="featuredImageUrl" placeholder="Enter Featured Image Url" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('metaDescription')">
+                <label for="Post-metaDescription" id="label-Post-metaDescription">Meta Description</label>
+                <textarea id="Post-metaDescription" formControlName="metaDescription" placeholder="Enter Meta Description" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPublished')">
+                <input type="checkbox" id="Post-isPublished" formControlName="isPublished" class="form-check-input" [disabled]="!userIsCommunityPostWriter()" />
+                <label for="Post-isPublished" class="form-check-label" id="label-Post-isPublished"><span class="text-danger">*</span>Is Published</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('publishedDate')">
+                <label for="Post-publishedDate" id="label-Post-publishedDate">Published Date</label>
+                <input type="datetime-local" id="Post-publishedDate" formControlName="publishedDate" placeholder="Enter Published Date" class="form-control post-input" [disabled]="!userIsCommunityPostWriter()" aria-labelledby="label-publishedDate" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isFeatured')">
+                <input type="checkbox" id="Post-isFeatured" formControlName="isFeatured" class="form-check-input" [disabled]="!userIsCommunityPostWriter()" />
+                <label for="Post-isFeatured" class="form-check-label" id="label-Post-isFeatured"><span class="text-danger">*</span>Is Featured</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="Post-versionNumber" id="label-Post-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="Post-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control post-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Post-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityPostWriter()" />
+                <label for="Post-active" class="form-check-label" id="label-Post-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="Post-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityPostWriter()" />
+                <label for="Post-deleted" class="form-check-label" id="label-Post-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
          <div class="modal-footer post-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Post changes and Close">Cancel</button>
             <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !postForm.valid || postForm.pristine  || userIsCommunityPostWriter() == false " ngbTooltip="Save the Post changes and Close">

@@ -17,6 +17,61 @@
                 <div class="col m-2 menu-item-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="menuItemForm" (ngSubmit)="submitForm()" class="menu-item-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('menuId')">
+                                <label for="MenuItem-menuId" id="label-MenuItem-menuId"><span class="text-danger">*</span>Menu</label>
+                                <select id="MenuItem-menuId" formControlName="menuId" class="form-select menu-item-select" [disabled]="!userIsCommunityMenuItemWriter()">
+                                    <option [ngValue]="null">Select Menu</option>
+                                    <option *ngFor="let menu of menus$ | async" [ngValue]="menu.id">{{menu.name}}</option>
+                                </select>
+                                <div *ngIf="menuItemForm.get('menuId')?.invalid && menuItemForm.get('menuId')?.touched" class="text-danger">
+                                    Menu is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('label')">
+                                <label for="MenuItem-label" id="label-MenuItem-label"><span class="text-danger">*</span>Label</label>
+                                <input type="text" id="MenuItem-label" formControlName="label" placeholder="Enter Label" class="form-control menu-item-input" [disabled]="!userIsCommunityMenuItemWriter()" aria-labelledby="label-label" />
+                                <div *ngIf="menuItemForm.get('label')?.invalid && menuItemForm.get('label')?.touched" class="text-danger">
+                                    Label is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('url')">
+                                <label for="MenuItem-url" id="label-MenuItem-url">Url</label>
+                                <textarea id="MenuItem-url" formControlName="url" placeholder="Enter Url" class="form-control menu-item-input" [disabled]="!userIsCommunityMenuItemWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('pageId')">
+                                <label for="MenuItem-pageId" id="label-MenuItem-pageId">Page</label>
+                                <select id="MenuItem-pageId" formControlName="pageId" class="form-select menu-item-select" [disabled]="!userIsCommunityMenuItemWriter()">
+                                    <option [ngValue]="null">Select Page</option>
+                                    <option *ngFor="let page of pages$ | async" [ngValue]="page.id">{{page.title}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('parentMenuItemId')">
+                                <label for="MenuItem-parentMenuItemId" id="label-MenuItem-parentMenuItemId">Parent Menu Item</label>
+                                <select id="MenuItem-parentMenuItemId" formControlName="parentMenuItemId" class="form-select menu-item-select" [disabled]="!userIsCommunityMenuItemWriter()">
+                                    <option [ngValue]="null">Select Menu Item</option>
+                                    <option *ngFor="let menuItem of menuItems$ | async" [ngValue]="menuItem.id">{{menuItem.label}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('iconClass')">
+                                <label for="MenuItem-iconClass" id="label-MenuItem-iconClass">Icon Class</label>
+                                <input type="text" id="MenuItem-iconClass" formControlName="iconClass" placeholder="Enter Icon Class" class="form-control menu-item-input" [disabled]="!userIsCommunityMenuItemWriter()" aria-labelledby="label-iconClass" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('openInNewTab')">
+                                <input type="checkbox" id="MenuItem-openInNewTab" formControlName="openInNewTab" class="form-check-input" [disabled]="!userIsCommunityMenuItemWriter()" />
+                                <label for="MenuItem-openInNewTab" class="form-check-label" id="label-MenuItem-openInNewTab"><span class="text-danger">*</span>Open In New Tab</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="MenuItem-sequence" id="label-MenuItem-sequence">Sequence</label>
+                                <input type="number" id="MenuItem-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control menu-item-input" [disabled]="!userIsCommunityMenuItemWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MenuItem-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityMenuItemWriter()" />
+                                <label for="MenuItem-active" class="form-check-label" id="label-MenuItem-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MenuItem-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityMenuItemWriter()" />
+                                <label for="MenuItem-deleted" class="form-check-label" id="label-MenuItem-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
                             <div class="menu-item-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="menuItemForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Menu Item">Reset</button>
                                 <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !menuItemForm.valid || !menuItemForm.dirty || menuItemForm.pristine  || userIsCommunityMenuItemWriter() == false " ngbTooltip="Save the Menu Item changes">

@@ -109,6 +109,7 @@ CREATE TABLE [Security].[SecurityTenant]
 	[name] NVARCHAR(100) NOT NULL UNIQUE,
 	[description] NVARCHAR(500) NULL,
 	[settings] NVARCHAR(MAX) NULL,		-- To store a JSON object containing arbitrary tenant settings.
+	[hostName] NVARCHAR(250) NULL,		-- The host name used for HTTP Host header tenant resolution. E.g. 'pettyharbour.example.com'. Used by multi-tenant public-facing apps like Community CMS to determine which tenant's data to serve.
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -118,6 +119,11 @@ GO
 
 -- Index on the SecurityTenant table's name field.
 CREATE INDEX [I_SecurityTenant_name] ON [Security].[SecurityTenant] ([name])
+GO
+
+-- Index on the SecurityTenant table's hostName field.
+CREATE UNIQUE INDEX [I_SecurityTenant_hostName] ON [Security].[SecurityTenant] ([hostName])
+ WHERE [hostName] IS NOT NULL
 GO
 
 -- Index on the SecurityTenant table's active field.

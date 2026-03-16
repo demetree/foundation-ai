@@ -249,7 +249,8 @@
 
                         <!-- Transaction List -->
                         <div class="recent-list" *ngIf="!loadingRecent && recentTransactions.length > 0">
-                            <div class="recent-item" *ngFor="let tx of recentTransactions">
+                            <div class="recent-item" *ngFor="let tx of recentTransactions"
+                                [routerLink]="['/financialtransactions', tx.id]" style="cursor: pointer;">
                                 <div class="d-flex align-items-center">
                                     <div class="tx-icon me-3" [ngClass]="tx.isRevenue ? 'tx-income' : 'tx-expense'">
                                         <i
@@ -264,11 +265,12 @@
                                             </span>
                                         </small>
                                     </div>
-                                    <div class="text-end ms-2">
+                                    <div class="text-end ms-2 d-flex align-items-center gap-2">
                                         <span class="fw-bold" [ngClass]="tx.isRevenue ? 'text-success' : 'text-danger'">
                                             {{ tx.isRevenue ? '+' : '-' }}{{ tx.totalAmount |
                                             currency:'CAD':'symbol':'1.2-2' }}
                                         </span>
+                                        <i class="fa-solid fa-chevron-right text-muted" style="font-size: 0.65rem; opacity: 0.4;"></i>
                                     </div>
                                 </div>
                             </div>

@@ -39,6 +39,10 @@
                 Settings
                 <span *ngIf="sortColumn === 'settings'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('hostName')">
+                Host  Name
+                <span *ngIf="sortColumn === 'hostName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -127,6 +131,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/securitytenant', securityTenant.id]" class="btn btn-link text-left" ngbTooltip="Open Security Tenant details">{{securityTenant.name}}</a></td>
             <td class="text-truncate">{{securityTenant.description}}</td>
             <td class="text-truncate">{{securityTenant.settings}}</td>
+            <td class="text-truncate">{{securityTenant.hostName}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -284,6 +289,10 @@ End of commented block for alternate definition option -->
             <p class="security-tenant-info" *ngIf="securityTenant.settings != null">
               <strong>Settings: </strong>
               {{securityTenant.settings}}
+            </p>
+            <p class="security-tenant-info" *ngIf="securityTenant.hostName != null">
+              <strong>Host Name: </strong>
+              {{securityTenant.hostName}}
             </p>
             </div>
          </div>

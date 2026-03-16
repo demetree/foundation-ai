@@ -64,6 +64,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string settings = null,
+			string hostName = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -114,6 +115,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(st => st.settings == settings);
 			}
+			if (string.IsNullOrEmpty(hostName) == false)
+			{
+				query = query.Where(st => st.hostName == hostName);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(st => st.objectGuid == objectGuid);
@@ -143,7 +148,7 @@ namespace Foundation.Security.Controllers.WebAPI
 				query = query.Where(st => st.deleted == false);
 			}
 
-			query = query.OrderBy(st => st.name).ThenBy(st => st.description);
+			query = query.OrderBy(st => st.name).ThenBy(st => st.description).ThenBy(st => st.hostName);
 
 
 			//
@@ -157,6 +162,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.settings.Contains(anyStringContains)
+			       || x.hostName.Contains(anyStringContains)
 			   );
 			}
 
@@ -213,6 +219,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string settings = null,
+			string hostName = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -244,6 +251,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			if (settings != null)
 			{
 				query = query.Where(st => st.settings == settings);
+			}
+			if (hostName != null)
+			{
+				query = query.Where(st => st.hostName == hostName);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -285,6 +296,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.settings.Contains(anyStringContains)
+			       || x.hostName.Contains(anyStringContains)
 			   );
 			}
 
@@ -469,6 +481,11 @@ namespace Foundation.Security.Controllers.WebAPI
 				securityTenant.description = securityTenant.description.Substring(0, 500);
 			}
 
+			if (securityTenant.hostName != null && securityTenant.hostName.Length > 250)
+			{
+				securityTenant.hostName = securityTenant.hostName.Substring(0, 250);
+			}
+
 			EntityEntry<Database.SecurityTenant> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(securityTenant);
 
@@ -548,6 +565,11 @@ namespace Foundation.Security.Controllers.WebAPI
 				if (securityTenant.description != null && securityTenant.description.Length > 500)
 				{
 					securityTenant.description = securityTenant.description.Substring(0, 500);
+				}
+
+				if (securityTenant.hostName != null && securityTenant.hostName.Length > 250)
+				{
+					securityTenant.hostName = securityTenant.hostName.Substring(0, 250);
 				}
 
 				securityTenant.objectGuid = Guid.NewGuid();
@@ -666,6 +688,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			string name = null,
 			string description = null,
 			string settings = null,
+			string hostName = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -714,6 +737,10 @@ namespace Foundation.Security.Controllers.WebAPI
 			{
 				query = query.Where(st => st.settings == settings);
 			}
+			if (string.IsNullOrEmpty(hostName) == false)
+			{
+				query = query.Where(st => st.hostName == hostName);
+			}
 			if (objectGuid.HasValue == true)
 			{
 				query = query.Where(st => st.objectGuid == objectGuid);
@@ -755,11 +782,12 @@ namespace Foundation.Security.Controllers.WebAPI
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
 			       || x.settings.Contains(anyStringContains)
+			       || x.hostName.Contains(anyStringContains)
 			   );
 			}
 
 
-			query = query.OrderBy(x => x.name).ThenBy(x => x.description);
+			query = query.OrderBy(x => x.name).ThenBy(x => x.description).ThenBy(x => x.hostName);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

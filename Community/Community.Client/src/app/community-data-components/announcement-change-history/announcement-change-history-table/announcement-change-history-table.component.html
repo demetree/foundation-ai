@@ -27,6 +27,22 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('announcement.name')">
+                Announcement
+                <span *ngIf="sortColumn === 'announcement.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeStamp')">
+                Time  Stamp
+                <span *ngIf="sortColumn === 'timeStamp'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userId')">
+                User  Id
+                <span *ngIf="sortColumn === 'userId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('data')">
+                Data
+                <span *ngIf="sortColumn === 'data'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -99,6 +115,10 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/announcement', announcementChangeHistory.announcementId]" class="btn btn-link text-left" ngbTooltip="Open Announcement details">{{announcementChangeHistory.announcement?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/announcementchangehistory', announcementChangeHistory.id]" class="btn btn-link text-left" ngbTooltip="Open Announcement Change History details">{{announcementChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{announcementChangeHistory.userId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{announcementChangeHistory.data}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -231,6 +251,22 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="announcement-change-history-info" *ngIf="announcementChangeHistory.announcementId != null">
+              <strong>Announcement: </strong>
+              <a [routerLink]="['/announcement', announcementChangeHistory.announcementId]" class="text-left p-0 m-0" ngbTooltip="Open Announcement details">{{announcementChangeHistory.announcement?.name}}</a>
+            </p>
+            <p class="announcement-change-history-info" *ngIf="announcementChangeHistory.timeStamp != null">
+              <strong>Time Stamp: </strong>
+              {{announcementChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="announcement-change-history-info" *ngIf="announcementChangeHistory.userId != null">
+              <strong>User Id: </strong>
+              {{announcementChangeHistory.userId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="announcement-change-history-info" *ngIf="announcementChangeHistory.data != null">
+              <strong>Data: </strong>
+              {{announcementChangeHistory.data}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

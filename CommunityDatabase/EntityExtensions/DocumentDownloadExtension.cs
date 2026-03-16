@@ -20,20 +20,25 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class DocumentDownloadDTO
 		{
-			public Int32 Id { get; set; }
-			public String Title { get; set; }
-			public String Description { get; set; }
-			public String FilePath { get; set; }
-			public String FileName { get; set; }
-			public String MimeType { get; set; }
-			public Int64? FileSizeBytes { get; set; }
-			public String CategoryName { get; set; }
-			public DateTime? DocumentDate { get; set; }
-			public Boolean IsPublished { get; set; }
-			public Int32? Sequence { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String title { get; set; }
+			public String description { get; set; }
+			[Required]
+			public String filePath { get; set; }
+			[Required]
+			public String fileName { get; set; }
+			public String mimeType { get; set; }
+			public Int64? fileSizeBytes { get; set; }
+			public String categoryName { get; set; }
+			public DateTime? documentDate { get; set; }
+			[Required]
+			public Boolean isPublished { get; set; }
+			public Int32? sequence { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -58,20 +63,20 @@ namespace Foundation.Community.Database
 		{
 			return new DocumentDownloadDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Description = this.Description,
-				FilePath = this.FilePath,
-				FileName = this.FileName,
-				MimeType = this.MimeType,
-				FileSizeBytes = this.FileSizeBytes,
-				CategoryName = this.CategoryName,
-				DocumentDate = this.DocumentDate,
-				IsPublished = this.IsPublished,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				description = this.description,
+				filePath = this.filePath,
+				fileName = this.fileName,
+				mimeType = this.mimeType,
+				fileSizeBytes = this.fileSizeBytes,
+				categoryName = this.categoryName,
+				documentDate = this.documentDate,
+				isPublished = this.isPublished,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -110,20 +115,20 @@ namespace Foundation.Community.Database
 		{
 			return new DocumentDownloadOutputDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Description = this.Description,
-				FilePath = this.FilePath,
-				FileName = this.FileName,
-				MimeType = this.MimeType,
-				FileSizeBytes = this.FileSizeBytes,
-				CategoryName = this.CategoryName,
-				DocumentDate = this.DocumentDate,
-				IsPublished = this.IsPublished,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				description = this.description,
+				filePath = this.filePath,
+				fileName = this.fileName,
+				mimeType = this.mimeType,
+				fileSizeBytes = this.fileSizeBytes,
+				categoryName = this.categoryName,
+				documentDate = this.documentDate,
+				isPublished = this.isPublished,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -162,20 +167,20 @@ namespace Foundation.Community.Database
 		{
 			return new Database.DocumentDownload
 			{
-				Id = dto.Id,
-				Title = dto.Title,
-				Description = dto.Description,
-				FilePath = dto.FilePath,
-				FileName = dto.FileName,
-				MimeType = dto.MimeType,
-				FileSizeBytes = dto.FileSizeBytes,
-				CategoryName = dto.CategoryName,
-				DocumentDate = dto.DocumentDate,
-				IsPublished = dto.IsPublished,
-				Sequence = dto.Sequence,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				title = dto.title,
+				description = dto.description,
+				filePath = dto.filePath,
+				fileName = dto.fileName,
+				mimeType = dto.mimeType,
+				fileSizeBytes = dto.fileSizeBytes,
+				categoryName = dto.categoryName,
+				documentDate = dto.documentDate,
+				isPublished = dto.isPublished,
+				sequence = dto.sequence,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -192,24 +197,24 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Title = dto.Title;
-			this.Description = dto.Description;
-			this.FilePath = dto.FilePath;
-			this.FileName = dto.FileName;
-			this.MimeType = dto.MimeType;
-			this.FileSizeBytes = dto.FileSizeBytes;
-			this.CategoryName = dto.CategoryName;
-			this.DocumentDate = dto.DocumentDate;
-			this.IsPublished = dto.IsPublished;
-			this.Sequence = dto.Sequence;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.title = dto.title;
+			this.description = dto.description;
+			this.filePath = dto.filePath;
+			this.fileName = dto.fileName;
+			this.mimeType = dto.mimeType;
+			this.fileSizeBytes = dto.fileSizeBytes;
+			this.categoryName = dto.categoryName;
+			this.documentDate = dto.documentDate;
+			this.isPublished = dto.isPublished;
+			this.sequence = dto.sequence;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -225,20 +230,21 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new DocumentDownload{
-				Id = this.Id,
-				Title = this.Title,
-				Description = this.Description,
-				FilePath = this.FilePath,
-				FileName = this.FileName,
-				MimeType = this.MimeType,
-				FileSizeBytes = this.FileSizeBytes,
-				CategoryName = this.CategoryName,
-				DocumentDate = this.DocumentDate,
-				IsPublished = this.IsPublished,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				title = this.title,
+				description = this.description,
+				filePath = this.filePath,
+				fileName = this.fileName,
+				mimeType = this.mimeType,
+				fileSizeBytes = this.fileSizeBytes,
+				categoryName = this.categoryName,
+				documentDate = this.documentDate,
+				isPublished = this.isPublished,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			 };
 		}
 
@@ -291,20 +297,20 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = documentDownload.Id,
-				Title = documentDownload.Title,
-				Description = documentDownload.Description,
-				FilePath = documentDownload.FilePath,
-				FileName = documentDownload.FileName,
-				MimeType = documentDownload.MimeType,
-				FileSizeBytes = documentDownload.FileSizeBytes,
-				CategoryName = documentDownload.CategoryName,
-				DocumentDate = documentDownload.DocumentDate,
-				IsPublished = documentDownload.IsPublished,
-				Sequence = documentDownload.Sequence,
-				ObjectGuid = documentDownload.ObjectGuid,
-				Active = documentDownload.Active,
-				Deleted = documentDownload.Deleted
+				id = documentDownload.id,
+				title = documentDownload.title,
+				description = documentDownload.description,
+				filePath = documentDownload.filePath,
+				fileName = documentDownload.fileName,
+				mimeType = documentDownload.mimeType,
+				fileSizeBytes = documentDownload.fileSizeBytes,
+				categoryName = documentDownload.categoryName,
+				documentDate = documentDownload.documentDate,
+				isPublished = documentDownload.isPublished,
+				sequence = documentDownload.sequence,
+				objectGuid = documentDownload.objectGuid,
+				active = documentDownload.active,
+				deleted = documentDownload.deleted
 			 };
 		}
 
@@ -324,20 +330,20 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = documentDownload.Id,
-				Title = documentDownload.Title,
-				Description = documentDownload.Description,
-				FilePath = documentDownload.FilePath,
-				FileName = documentDownload.FileName,
-				MimeType = documentDownload.MimeType,
-				FileSizeBytes = documentDownload.FileSizeBytes,
-				CategoryName = documentDownload.CategoryName,
-				DocumentDate = documentDownload.DocumentDate,
-				IsPublished = documentDownload.IsPublished,
-				Sequence = documentDownload.Sequence,
-				ObjectGuid = documentDownload.ObjectGuid,
-				Active = documentDownload.Active,
-				Deleted = documentDownload.Deleted
+				id = documentDownload.id,
+				title = documentDownload.title,
+				description = documentDownload.description,
+				filePath = documentDownload.filePath,
+				fileName = documentDownload.fileName,
+				mimeType = documentDownload.mimeType,
+				fileSizeBytes = documentDownload.fileSizeBytes,
+				categoryName = documentDownload.categoryName,
+				documentDate = documentDownload.documentDate,
+				isPublished = documentDownload.isPublished,
+				sequence = documentDownload.sequence,
+				objectGuid = documentDownload.objectGuid,
+				active = documentDownload.active,
+				deleted = documentDownload.deleted
 			 };
 		}
 
@@ -357,8 +363,9 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				name = documentDownload.title,
-				description = string.Join(", ", new[] { documentDownload.title, documentDownload.filePath, documentDownload.fileName}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				id = documentDownload.id,
+				description = documentDownload.description,
+				name = documentDownload.title
 			 };
 		}
 	}

@@ -7,41 +7,43 @@ namespace Foundation.Community.Database;
 
 public partial class Post
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string Title { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string Slug { get; set; }
+    public string title { get; set; }
 
-    public string Body { get; set; }
+    public string slug { get; set; }
 
-    public string Excerpt { get; set; }
+    public string body { get; set; }
 
-    public string AuthorName { get; set; }
+    public string excerpt { get; set; }
 
-    public int? PostCategoryId { get; set; }
+    public string authorName { get; set; }
 
-    public string FeaturedImageUrl { get; set; }
+    public int? postCategoryId { get; set; }
 
-    public string MetaDescription { get; set; }
+    public string featuredImageUrl { get; set; }
 
-    public bool IsPublished { get; set; }
+    public string metaDescription { get; set; }
 
-    public DateTime? PublishedDate { get; set; }
+    public bool isPublished { get; set; }
 
-    public bool IsFeatured { get; set; }
+    public DateTime? publishedDate { get; set; }
 
-    public int VersionNumber { get; set; }
+    public bool isFeatured { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public int versionNumber { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
 
-    public virtual PostCategory PostCategory { get; set; }
+    public bool deleted { get; set; }
 
     public virtual ICollection<PostChangeHistory> PostChangeHistories { get; set; } = new List<PostChangeHistory>();
 
     public virtual ICollection<PostTagAssignment> PostTagAssignments { get; set; } = new List<PostTagAssignment>();
+
+    public virtual PostCategory postCategory { get; set; }
 }

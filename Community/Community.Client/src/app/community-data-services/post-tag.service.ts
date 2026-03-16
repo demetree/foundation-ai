@@ -28,12 +28,11 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class PostTagQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    Name: string | null | undefined = null;
-    Slug: string | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    name: string | null | undefined = null;
+    slug: string | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -45,11 +44,11 @@ export class PostTagQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class PostTagSubmitData {
-    Id: bigint | number | null = null;
-    Name: string | null = null;
-    Slug: string | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    name!: string;
+    slug!: string;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -96,12 +95,12 @@ export class PostTagBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class PostTagData {
-    Id!: bigint | number;
-    Name!: string | null;
-    Slug!: string | null;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
+    id!: bigint | number;
+    name!: string;
+    slug!: string;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
 
     //
     // Private lazy-loading caches for related collections
@@ -349,11 +348,11 @@ export class PostTagService extends SecureEndpointBase {
 
         let output = new PostTagSubmitData();
 
-        output.Id = data.Id;
-        output.Name = data.Name;
-        output.Slug = data.Slug;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.name = data.name;
+        output.slug = data.slug;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

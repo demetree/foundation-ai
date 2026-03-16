@@ -1,0 +1,106 @@
+<!-- Community Home Page — Premium Design -->
+<div class="page-enter">
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">{{ settings['heroTitle'] || 'Welcome to Our Community' }}</h1>
+      <p class="hero-subtitle">{{ settings['heroSubtitle'] || 'A place where heritage meets the sea' }}</p>
+      <div class="hero-actions">
+        <a routerLink="/news" class="btn-accent">
+          <i class="bi bi-newspaper"></i> Latest News
+        </a>
+        <a routerLink="/contact" class="btn-hero-outline">
+          <i class="bi bi-envelope"></i> Contact Us
+        </a>
+      </div>
+    </div>
+    <div class="hero-wave">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path d="M0,64 C288,120 576,0 864,64 C1152,128 1440,32 1440,32 L1440,120 L0,120 Z" fill="var(--color-background)"/>
+      </svg>
+    </div>
+  </section>
+
+
+  <!-- Announcements Banner -->
+  <section class="announcements-section" *ngIf="announcements.length > 0">
+    <div class="container-site">
+      <div class="announcement-card" *ngFor="let ann of announcements"
+           [class.pinned]="ann.isPinned"
+           [attr.data-severity]="ann.severity">
+        <div class="announcement-icon">
+          <i class="bi" [ngClass]="{
+            'bi-megaphone-fill': ann.severity === 'info',
+            'bi-exclamation-triangle-fill': ann.severity === 'warning',
+            'bi-exclamation-circle-fill': ann.severity === 'urgent'
+          }"></i>
+        </div>
+        <div class="announcement-body">
+          <strong>{{ ann.title }}</strong>
+          <span [innerHTML]="ann.body"></span>
+        </div>
+        <i class="bi bi-pin-angle-fill pin-badge" *ngIf="ann.isPinned"></i>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Latest News Section -->
+  <section class="section latest-news-section">
+    <div class="container-site">
+      <div class="section-header">
+        <h2>Latest News & Updates</h2>
+        <p>Stay informed about what's happening in our community.</p>
+      </div>
+
+      <div class="posts-grid" *ngIf="latestPosts.length > 0">
+        <a *ngFor="let post of latestPosts" [routerLink]="['/news', post.slug]" class="card-community post-card">
+          <div class="post-card__image" *ngIf="post.featuredImageUrl"
+               [style.backgroundImage]="'url(' + post.featuredImageUrl + ')'">
+          </div>
+          <div class="card-community__body">
+            <div class="card-community__meta">
+              <i class="bi bi-calendar3 me-1"></i>
+              {{ post.publishedDate | date:'mediumDate' }}
+              <span *ngIf="post.category" class="post-category-badge ms-2">
+                {{ post.category.name }}
+              </span>
+            </div>
+            <h3 class="card-community__title">{{ post.title }}</h3>
+            <p class="post-excerpt">{{ post.excerpt }}</p>
+          </div>
+        </a>
+      </div>
+
+      <div class="no-content" *ngIf="!loading && latestPosts.length === 0">
+        <i class="bi bi-newspaper"></i>
+        <p>No news posts yet. Check back soon!</p>
+      </div>
+
+      <div class="section-footer" *ngIf="latestPosts.length > 0">
+        <a routerLink="/news" class="btn-outline">
+          View All News <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Community CTA Section -->
+  <section class="cta-section">
+    <div class="container-site">
+      <div class="cta-card">
+        <div class="cta-content">
+          <h2>Have a question or suggestion?</h2>
+          <p>We'd love to hear from you. Reach out to our town office.</p>
+        </div>
+        <a routerLink="/contact" class="btn-accent">
+          <i class="bi bi-chat-dots"></i> Get in Touch
+        </a>
+      </div>
+    </div>
+  </section>
+
+</div>

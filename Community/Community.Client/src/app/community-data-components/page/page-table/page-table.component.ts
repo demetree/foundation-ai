@@ -175,6 +175,14 @@ export class PageTableComponent implements OnInit, OnChanges, AfterViewInit {
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'title', label: 'Title', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/page', 'id']  },
+    { key: 'slug', label: 'Slug', width: undefined },
+    { key: 'body', label: 'Body', width: undefined },
+    { key: 'metaDescription', label: 'Meta Description', width: undefined },
+    { key: 'featuredImageUrl', label: 'Featured Image Url', width: undefined },
+    { key: 'isPublished', label: 'Is Published', width: '120px', template: 'boolean' },
+    { key: 'publishedDate', label: 'Published Date', width: undefined, template: 'date' },
+    { key: 'sortOrder', label: 'Sort Order', width: undefined },
 
     ];
 
@@ -186,9 +194,13 @@ export class PageTableComponent implements OnInit, OnChanges, AfterViewInit {
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -318,6 +330,14 @@ export class PageTableComponent implements OnInit, OnChanges, AfterViewInit {
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'title',
+                      'slug',
+                      'body',
+                      'metaDescription',
+                      'featuredImageUrl',
+                      'isPublished',
+                      'publishedDate',
+                      'sortOrder',
         ];
 
         result = result.filter((page) =>

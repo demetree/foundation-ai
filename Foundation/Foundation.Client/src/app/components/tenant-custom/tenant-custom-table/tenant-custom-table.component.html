@@ -33,6 +33,7 @@
                 <tr>
                     <th class="col-name">Tenant Name</th>
                     <th class="col-description">Description</th>
+                    <th class="col-hostname">Host Name</th>
                     <th class="col-users text-center">Users</th>
                     <th class="col-orgs text-center">Organizations</th>
                     <th class="col-status text-center">Status</th>
@@ -55,6 +56,12 @@
                         <span class="description-text" [title]="tenant.description || ''">
                             {{ tenant.description || '—' }}
                         </span>
+                    </td>
+
+                    <!-- Host Name -->
+                    <td class="col-hostname">
+                        <span *ngIf="tenant.hostName" class="hostname-text">{{ tenant.hostName }}</span>
+                        <span *ngIf="!tenant.hostName" class="text-muted">—</span>
                     </td>
 
                     <!-- Users Count -->

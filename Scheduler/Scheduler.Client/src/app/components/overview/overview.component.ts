@@ -529,11 +529,19 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   navigateToEntity(entity: string, id: number): void {
     //
+    // Scheduled Events navigate to the custom schedule calendar with eventId query param.
+    // There is no custom ScheduledEvent detail component, so the calendar is the custom destination.
+    //
+    if (entity === 'ScheduledEvent') {
+      this.router.navigate(['/schedule'], { queryParams: { eventId: id } });
+      return;
+    }
+
+    //
     // Route based on entity type
     //
     const routeMap: Record<string, string> = {
       'Contact': '/contacts',
-      'ScheduledEvent': '/scheduledevents',
       'Resource': '/resources',
       'Client': '/clients',
       'Office': '/offices',

@@ -20,18 +20,22 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class MenuItemDTO
 		{
-			public Int32 Id { get; set; }
-			public Int32 MenuId { get; set; }
-			public String Label { get; set; }
-			public String Url { get; set; }
-			public Int32? PageId { get; set; }
-			public Int32? ParentMenuItemId { get; set; }
-			public String IconClass { get; set; }
-			public Boolean OpenInNewTab { get; set; }
-			public Int32? Sequence { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public Int32 menuId { get; set; }
+			[Required]
+			public String label { get; set; }
+			public String url { get; set; }
+			public Int32? pageId { get; set; }
+			public Int32? parentMenuItemId { get; set; }
+			public String iconClass { get; set; }
+			[Required]
+			public Boolean openInNewTab { get; set; }
+			public Int32? sequence { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -42,9 +46,9 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class MenuItemOutputDTO : MenuItemDTO
 		{
-			public Menu.MenuDTO Menu { get; set; }
-			public Page.PageDTO Page { get; set; }
-			public MenuItem.MenuItemDTO ParentMenuItem { get; set; }
+			public Menu.MenuDTO menu { get; set; }
+			public Page.PageDTO page { get; set; }
+			public MenuItem.MenuItemDTO parentMenuItem { get; set; }
 		}
 
 
@@ -59,18 +63,18 @@ namespace Foundation.Community.Database
 		{
 			return new MenuItemDTO
 			{
-				Id = this.Id,
-				MenuId = this.MenuId,
-				Label = this.Label,
-				Url = this.Url,
-				PageId = this.PageId,
-				ParentMenuItemId = this.ParentMenuItemId,
-				IconClass = this.IconClass,
-				OpenInNewTab = this.OpenInNewTab,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				menuId = this.menuId,
+				label = this.label,
+				url = this.url,
+				pageId = this.pageId,
+				parentMenuItemId = this.parentMenuItemId,
+				iconClass = this.iconClass,
+				openInNewTab = this.openInNewTab,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -109,21 +113,21 @@ namespace Foundation.Community.Database
 		{
 			return new MenuItemOutputDTO
 			{
-				Id = this.Id,
-				MenuId = this.MenuId,
-				Label = this.Label,
-				Url = this.Url,
-				PageId = this.PageId,
-				ParentMenuItemId = this.ParentMenuItemId,
-				IconClass = this.IconClass,
-				OpenInNewTab = this.OpenInNewTab,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
-				Menu = this.Menu?.ToDTO(),
-				Page = this.Page?.ToDTO(),
-				ParentMenuItem = this.ParentMenuItem?.ToDTO()
+				id = this.id,
+				menuId = this.menuId,
+				label = this.label,
+				url = this.url,
+				pageId = this.pageId,
+				parentMenuItemId = this.parentMenuItemId,
+				iconClass = this.iconClass,
+				openInNewTab = this.openInNewTab,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
+				menu = this.menu?.ToDTO(),
+				page = this.page?.ToDTO(),
+				parentMenuItem = this.parentMenuItem?.ToDTO()
 			};
 		}
 
@@ -162,18 +166,18 @@ namespace Foundation.Community.Database
 		{
 			return new Database.MenuItem
 			{
-				Id = dto.Id,
-				MenuId = dto.MenuId,
-				Label = dto.Label,
-				Url = dto.Url,
-				PageId = dto.PageId,
-				ParentMenuItemId = dto.ParentMenuItemId,
-				IconClass = dto.IconClass,
-				OpenInNewTab = dto.OpenInNewTab,
-				Sequence = dto.Sequence,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				menuId = dto.menuId,
+				label = dto.label,
+				url = dto.url,
+				pageId = dto.pageId,
+				parentMenuItemId = dto.parentMenuItemId,
+				iconClass = dto.iconClass,
+				openInNewTab = dto.openInNewTab,
+				sequence = dto.sequence,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -190,22 +194,22 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.MenuId = dto.MenuId;
-			this.Label = dto.Label;
-			this.Url = dto.Url;
-			this.PageId = dto.PageId;
-			this.ParentMenuItemId = dto.ParentMenuItemId;
-			this.IconClass = dto.IconClass;
-			this.OpenInNewTab = dto.OpenInNewTab;
-			this.Sequence = dto.Sequence;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.menuId = dto.menuId;
+			this.label = dto.label;
+			this.url = dto.url;
+			this.pageId = dto.pageId;
+			this.parentMenuItemId = dto.parentMenuItemId;
+			this.iconClass = dto.iconClass;
+			this.openInNewTab = dto.openInNewTab;
+			this.sequence = dto.sequence;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -221,18 +225,19 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new MenuItem{
-				Id = this.Id,
-				MenuId = this.MenuId,
-				Label = this.Label,
-				Url = this.Url,
-				PageId = this.PageId,
-				ParentMenuItemId = this.ParentMenuItemId,
-				IconClass = this.IconClass,
-				OpenInNewTab = this.OpenInNewTab,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				menuId = this.menuId,
+				label = this.label,
+				url = this.url,
+				pageId = this.pageId,
+				parentMenuItemId = this.parentMenuItemId,
+				iconClass = this.iconClass,
+				openInNewTab = this.openInNewTab,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -285,18 +290,18 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = menuItem.Id,
-				MenuId = menuItem.MenuId,
-				Label = menuItem.Label,
-				Url = menuItem.Url,
-				PageId = menuItem.PageId,
-				ParentMenuItemId = menuItem.ParentMenuItemId,
-				IconClass = menuItem.IconClass,
-				OpenInNewTab = menuItem.OpenInNewTab,
-				Sequence = menuItem.Sequence,
-				ObjectGuid = menuItem.ObjectGuid,
-				Active = menuItem.Active,
-				Deleted = menuItem.Deleted,
+				id = menuItem.id,
+				menuId = menuItem.menuId,
+				label = menuItem.label,
+				url = menuItem.url,
+				pageId = menuItem.pageId,
+				parentMenuItemId = menuItem.parentMenuItemId,
+				iconClass = menuItem.iconClass,
+				openInNewTab = menuItem.openInNewTab,
+				sequence = menuItem.sequence,
+				objectGuid = menuItem.objectGuid,
+				active = menuItem.active,
+				deleted = menuItem.deleted,
 			 };
 		}
 
@@ -316,21 +321,21 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = menuItem.Id,
-				MenuId = menuItem.MenuId,
-				Label = menuItem.Label,
-				Url = menuItem.Url,
-				PageId = menuItem.PageId,
-				ParentMenuItemId = menuItem.ParentMenuItemId,
-				IconClass = menuItem.IconClass,
-				OpenInNewTab = menuItem.OpenInNewTab,
-				Sequence = menuItem.Sequence,
-				ObjectGuid = menuItem.ObjectGuid,
-				Active = menuItem.Active,
-				Deleted = menuItem.Deleted,
-				Menu = Menu.CreateMinimalAnonymous(menuItem.Menu),
-				Page = Page.CreateMinimalAnonymous(menuItem.Page),
-				ParentMenuItem = MenuItem.CreateMinimalAnonymous(menuItem.ParentMenuItem)
+				id = menuItem.id,
+				menuId = menuItem.menuId,
+				label = menuItem.label,
+				url = menuItem.url,
+				pageId = menuItem.pageId,
+				parentMenuItemId = menuItem.parentMenuItemId,
+				iconClass = menuItem.iconClass,
+				openInNewTab = menuItem.openInNewTab,
+				sequence = menuItem.sequence,
+				objectGuid = menuItem.objectGuid,
+				active = menuItem.active,
+				deleted = menuItem.deleted,
+				menu = Menu.CreateMinimalAnonymous(menuItem.menu),
+				page = Page.CreateMinimalAnonymous(menuItem.page),
+				parentMenuItem = MenuItem.CreateMinimalAnonymous(menuItem.parentMenuItem)
 			 };
 		}
 
@@ -350,6 +355,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = menuItem.id,
 				name = menuItem.label,
 				description = string.Join(", ", new[] { menuItem.label, menuItem.url, menuItem.iconClass}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

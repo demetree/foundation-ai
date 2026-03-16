@@ -1,0 +1,43 @@
+<!-- Community Site Header — Premium Navigation -->
+<header class="site-header" [class.scrolled]="isScrolled" [class.menu-open]="mobileMenuOpen">
+  <div class="header-inner">
+
+    <!-- Logo / Site Name -->
+    <a class="site-logo" routerLink="/">
+      <i class="bi bi-water"></i>
+      <span class="logo-text">{{ siteName }}</span>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="desktop-nav">
+      <a *ngFor="let item of menuItems"
+         [routerLink]="getItemUrl(item)"
+         class="nav-link"
+         [class.active]="isActive(item)">
+        {{ item.label }}
+      </a>
+      <a routerLink="/news" class="nav-link" [class.active]="currentUrl.startsWith('/news')">News</a>
+      <a routerLink="/contact" class="nav-link" [class.active]="currentUrl === '/contact'">Contact</a>
+    </nav>
+
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-toggle" (click)="toggleMobileMenu()" [attr.aria-expanded]="mobileMenuOpen"
+            aria-label="Toggle navigation menu">
+      <span class="toggle-bar"></span>
+      <span class="toggle-bar"></span>
+      <span class="toggle-bar"></span>
+    </button>
+  </div>
+
+  <!-- Mobile Navigation -->
+  <nav class="mobile-nav" *ngIf="mobileMenuOpen">
+    <a *ngFor="let item of menuItems"
+       [routerLink]="getItemUrl(item)"
+       class="mobile-link"
+       [class.active]="isActive(item)">
+      {{ item.label }}
+    </a>
+    <a routerLink="/news" class="mobile-link" [class.active]="currentUrl.startsWith('/news')">News</a>
+    <a routerLink="/contact" class="mobile-link" [class.active]="currentUrl === '/contact'">Contact</a>
+  </nav>
+</header>

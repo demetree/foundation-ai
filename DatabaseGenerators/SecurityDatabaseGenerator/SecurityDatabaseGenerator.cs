@@ -1,4 +1,4 @@
-﻿using Foundation.CodeGeneration;
+using Foundation.CodeGeneration;
 using System;
 using System.Collections.Generic;
 
@@ -29,12 +29,18 @@ namespace Foundation.Security.Database
             securityTenantTable.AddIdField();
             securityTenantTable.AddNameAndDescriptionFields(true, true);
             securityTenantTable.AddTextField("settings").AddScriptComments("To store a JSON object containing arbitrary tenant settings.");
+            Database.Table.Field hostNameField = securityTenantTable.AddString250Field("hostName").AddScriptComments("The host name used for HTTP Host header tenant resolution. E.g. 'pettyharbour.example.com'. Used by multi-tenant public-facing apps like Community CMS to determine which tenant's data to serve.");
+            securityTenantTable.CreateIndexForField(hostNameField, true, false);            // This will built with an exception to WHERE out null values from the unique requirement constraint.
+
             securityTenantTable.AddControlFields(true);
+
 
             Database.Table.Index securityTenantIdActiveDeletedIndex = securityTenantTable.CreateIndex("I_SecurityTenant_id_active_deleted");
             securityTenantIdActiveDeletedIndex.AddField("id");
             securityTenantIdActiveDeletedIndex.AddField("active");
             securityTenantIdActiveDeletedIndex.AddField("deleted");
+
+            
 
 
             securityTenantTable.AddData(new Dictionary<string, string> { { "name", "System Service" },

@@ -7,17 +7,19 @@ namespace Foundation.Community.Database;
 
 public partial class PostChangeHistory
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public int PostId { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public int VersionNumber { get; set; }
+    public int postId { get; set; }
 
-    public DateTime TimeStamp { get; set; }
+    public int versionNumber { get; set; }
 
-    public int UserId { get; set; }
+    public DateTime timeStamp { get; set; }
 
-    public string Data { get; set; }
+    public int userId { get; set; }
 
-    public virtual Post Post { get; set; }
+    public string data { get; set; }
+
+    public virtual Post post { get; set; }
 }

@@ -30,22 +30,21 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class PostQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    Title: string | null | undefined = null;
-    Slug: string | null | undefined = null;
-    Body: string | null | undefined = null;
-    Excerpt: string | null | undefined = null;
-    AuthorName: string | null | undefined = null;
-    PostCategoryId: bigint | number | null | undefined = null;
-    FeaturedImageUrl: string | null | undefined = null;
-    MetaDescription: string | null | undefined = null;
-    IsPublished: boolean | null | undefined = null;
-    PublishedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    IsFeatured: boolean | null | undefined = null;
-    VersionNumber: bigint | number | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    title: string | null | undefined = null;
+    slug: string | null | undefined = null;
+    body: string | null | undefined = null;
+    excerpt: string | null | undefined = null;
+    authorName: string | null | undefined = null;
+    postCategoryId: bigint | number | null | undefined = null;
+    featuredImageUrl: string | null | undefined = null;
+    metaDescription: string | null | undefined = null;
+    isPublished: boolean | null | undefined = null;
+    publishedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    isFeatured: boolean | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -57,21 +56,21 @@ export class PostQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class PostSubmitData {
-    Id: bigint | number | null = null;
-    Title: string | null = null;
-    Slug: string | null = null;
-    Body: string | null = null;
-    Excerpt: string | null = null;
-    AuthorName: string | null = null;
-    PostCategoryId: bigint | number | null = null;
-    FeaturedImageUrl: string | null = null;
-    MetaDescription: string | null = null;
-    IsPublished: boolean | null = null;
-    PublishedDate: string | null = null;     // ISO 8601 (full datetime)
-    IsFeatured: boolean | null = null;
-    VersionNumber: bigint | number | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    title!: string;
+    slug!: string;
+    body: string | null = null;
+    excerpt: string | null = null;
+    authorName: string | null = null;
+    postCategoryId: bigint | number | null = null;
+    featuredImageUrl: string | null = null;
+    metaDescription: string | null = null;
+    isPublished!: boolean;
+    publishedDate: string | null = null;     // ISO 8601 (full datetime)
+    isFeatured!: boolean;
+    versionNumber!: bigint | number;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -138,23 +137,23 @@ export class PostBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class PostData {
-    Id!: bigint | number;
-    Title!: string | null;
-    Slug!: string | null;
-    Body!: string | null;
-    Excerpt!: string | null;
-    AuthorName!: string | null;
-    PostCategoryId!: bigint | number;
-    FeaturedImageUrl!: string | null;
-    MetaDescription!: string | null;
-    IsPublished!: boolean | null;
-    PublishedDate!: string | null;   // ISO 8601 (full datetime)
-    IsFeatured!: boolean | null;
-    VersionNumber!: bigint | number;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
-    PostCategory: PostCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    id!: bigint | number;
+    title!: string;
+    slug!: string;
+    body!: string | null;
+    excerpt!: string | null;
+    authorName!: string | null;
+    postCategoryId!: bigint | number;
+    featuredImageUrl!: string | null;
+    metaDescription!: string | null;
+    isPublished!: boolean;
+    publishedDate!: string | null;   // ISO 8601 (full datetime)
+    isFeatured!: boolean;
+    versionNumber!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
+    postCategory: PostCategoryData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -558,21 +557,21 @@ export class PostService extends SecureEndpointBase {
 
         let output = new PostSubmitData();
 
-        output.Id = data.Id;
-        output.Title = data.Title;
-        output.Slug = data.Slug;
-        output.Body = data.Body;
-        output.Excerpt = data.Excerpt;
-        output.AuthorName = data.AuthorName;
-        output.PostCategoryId = data.PostCategoryId;
-        output.FeaturedImageUrl = data.FeaturedImageUrl;
-        output.MetaDescription = data.MetaDescription;
-        output.IsPublished = data.IsPublished;
-        output.PublishedDate = data.PublishedDate;
-        output.IsFeatured = data.IsFeatured;
-        output.VersionNumber = data.VersionNumber;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.title = data.title;
+        output.slug = data.slug;
+        output.body = data.body;
+        output.excerpt = data.excerpt;
+        output.authorName = data.authorName;
+        output.postCategoryId = data.postCategoryId;
+        output.featuredImageUrl = data.featuredImageUrl;
+        output.metaDescription = data.metaDescription;
+        output.isPublished = data.isPublished;
+        output.publishedDate = data.publishedDate;
+        output.isFeatured = data.isFeatured;
+        output.versionNumber = data.versionNumber;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

@@ -34,6 +34,16 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface ContactSubmissionFormValues {
+  name: string,
+  email: string,
+  subject: string | null,
+  message: string,
+  submittedDate: string,
+  isRead: boolean,
+  isArchived: boolean,
+  adminNotes: string | null,
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -64,6 +74,16 @@ export class ContactSubmissionAddEditComponent {
 
 
   public contactSubmissionForm: FormGroup = this.fb.group({
+        name: ['', Validators.required],
+        email: ['', Validators.required],
+        subject: [''],
+        message: ['', Validators.required],
+        submittedDate: ['', Validators.required],
+        isRead: [false],
+        isArchived: [false],
+        adminNotes: [''],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -98,6 +118,7 @@ export class ContactSubmissionAddEditComponent {
       }
       this.contactSubmissionSubmitData = this.contactSubmissionService.ConvertToContactSubmissionSubmitData(contactSubmissionData);
       this.isEditMode = true;
+      this.objectGuid = contactSubmissionData.objectGuid;
 
       this.buildFormValues(contactSubmissionData);
 
@@ -196,6 +217,16 @@ export class ContactSubmissionAddEditComponent {
     //
     const contactSubmissionSubmitData: ContactSubmissionSubmitData = {
         id: this.contactSubmissionSubmitData?.id || 0,
+        name: formValue.name!.trim(),
+        email: formValue.email!.trim(),
+        subject: formValue.subject?.trim() || null,
+        message: formValue.message!.trim(),
+        submittedDate: dateTimeLocalToIsoUtc(formValue.submittedDate!.trim())!,
+        isRead: !!formValue.isRead,
+        isArchived: !!formValue.isArchived,
+        adminNotes: formValue.adminNotes?.trim() || null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -321,6 +352,14 @@ export class ContactSubmissionAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.contactSubmissionForm.reset({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+        submittedDate: '',
+        isRead: false,
+        isArchived: false,
+        adminNotes: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -332,6 +371,16 @@ export class ContactSubmissionAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.contactSubmissionForm.reset({
+        name: contactSubmissionData.name ?? '',
+        email: contactSubmissionData.email ?? '',
+        subject: contactSubmissionData.subject ?? '',
+        message: contactSubmissionData.message ?? '',
+        submittedDate: isoUtcStringToDateTimeLocal(contactSubmissionData.submittedDate) ?? '',
+        isRead: contactSubmissionData.isRead ?? false,
+        isArchived: contactSubmissionData.isArchived ?? false,
+        adminNotes: contactSubmissionData.adminNotes ?? '',
+        active: contactSubmissionData.active ?? true,
+        deleted: contactSubmissionData.deleted ?? false,
       }, { emitEvent: false});
     }
 

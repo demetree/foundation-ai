@@ -35,6 +35,15 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface AnnouncementFormValues {
+  title: string,
+  body: string | null,
+  severity: string,
+  startDate: string,
+  endDate: string | null,
+  isPinned: boolean,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -62,6 +71,15 @@ export class AnnouncementDetailComponent implements OnInit, CanComponentDeactiva
 
 
   public announcementForm: FormGroup = this.fb.group({
+        title: ['', Validators.required],
+        body: [''],
+        severity: ['', Validators.required],
+        startDate: ['', Validators.required],
+        endDate: [''],
+        isPinned: [false],
+        versionNumber: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -364,6 +382,15 @@ export class AnnouncementDetailComponent implements OnInit, CanComponentDeactiva
       // Reset the form group to null state, but don't change the form instance.
       //
       this.announcementForm.reset({
+        title: '',
+        body: '',
+        severity: '',
+        startDate: '',
+        endDate: '',
+        isPinned: false,
+        versionNumber: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -373,6 +400,15 @@ export class AnnouncementDetailComponent implements OnInit, CanComponentDeactiva
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.announcementForm.reset({
+        title: announcementData.title ?? '',
+        body: announcementData.body ?? '',
+        severity: announcementData.severity ?? '',
+        startDate: isoUtcStringToDateTimeLocal(announcementData.startDate) ?? '',
+        endDate: isoUtcStringToDateTimeLocal(announcementData.endDate) ?? '',
+        isPinned: announcementData.isPinned ?? false,
+        versionNumber: announcementData.versionNumber?.toString() ?? '',
+        active: announcementData.active ?? true,
+        deleted: announcementData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -432,6 +468,15 @@ export class AnnouncementDetailComponent implements OnInit, CanComponentDeactiva
     //
     const announcementSubmitData: AnnouncementSubmitData = {
         id: this.announcementData?.id || 0,
+        title: formValue.title!.trim(),
+        body: formValue.body?.trim() || null,
+        severity: formValue.severity!.trim(),
+        startDate: dateTimeLocalToIsoUtc(formValue.startDate!.trim())!,
+        endDate: formValue.endDate ? dateTimeLocalToIsoUtc(formValue.endDate.trim()) : null,
+        isPinned: !!formValue.isPinned,
+        versionNumber: this.announcementData?.versionNumber ?? 0,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

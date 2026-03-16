@@ -27,6 +27,22 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('settingKey')">
+                Setting  Key
+                <span *ngIf="sortColumn === 'settingKey'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('settingValue')">
+                Setting  Value
+                <span *ngIf="sortColumn === 'settingValue'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('settingGroup')">
+                Setting  Group
+                <span *ngIf="sortColumn === 'settingGroup'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +128,10 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/sitesetting', siteSetting.id]" class="btn btn-link text-left" ngbTooltip="Open Site Setting details">{{siteSetting.settingKey}}</a></td>
+            <td class="text-truncate">{{siteSetting.settingValue}}</td>
+            <td class="text-truncate">{{siteSetting.description}}</td>
+            <td class="text-truncate">{{siteSetting.settingGroup}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -258,6 +278,22 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="site-setting-info" *ngIf="siteSetting.settingKey != null">
+              <strong>Setting Key: </strong>
+              {{siteSetting.settingKey}}
+            </p>
+            <p class="site-setting-info" *ngIf="siteSetting.settingValue != null">
+              <strong>Setting Value: </strong>
+              {{siteSetting.settingValue}}
+            </p>
+            <p class="site-setting-info" *ngIf="siteSetting.description != null">
+              <strong>Description: </strong>
+              {{siteSetting.description}}
+            </p>
+            <p class="site-setting-info" *ngIf="siteSetting.settingGroup != null">
+              <strong>Setting Group: </strong>
+              {{siteSetting.settingGroup}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

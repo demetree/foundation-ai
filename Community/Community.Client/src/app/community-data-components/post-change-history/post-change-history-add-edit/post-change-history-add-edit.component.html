@@ -20,6 +20,41 @@
    </div>
    <div class="modal-body post-change-history-modal-body">
       <form [formGroup]="postChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('postId')">
+                <label for="PostChangeHistory-postId" id="label-PostChangeHistory-postId"><span class="text-danger">*</span>Post</label>
+                <select id="PostChangeHistory-postId" formControlName="postId" class="form-select post-change-history-select" [disabled]="!userIsCommunityPostChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Post</option>
+                    <option *ngFor="let post of posts$ | async" [ngValue]="post.id">{{post.title}}</option>
+                </select>
+                <div *ngIf="postChangeHistoryForm.get('postId')?.invalid && postChangeHistoryForm.get('postId')?.touched" class="text-danger">
+                    Post is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="PostChangeHistory-versionNumber" id="label-PostChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="PostChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control post-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="PostChangeHistory-timeStamp" id="label-PostChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="PostChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control post-change-history-input" [disabled]="!userIsCommunityPostChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="postChangeHistoryForm.get('timeStamp')?.invalid && postChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="PostChangeHistory-userId" id="label-PostChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="PostChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control post-change-history-input" [disabled]="!userIsCommunityPostChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="postChangeHistoryForm.get('userId')?.invalid && postChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="PostChangeHistory-data" id="label-PostChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="PostChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control post-change-history-input" [disabled]="!userIsCommunityPostChangeHistoryWriter()"></textarea>
+                <div *ngIf="postChangeHistoryForm.get('data')?.invalid && postChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
          <div class="modal-footer post-change-history-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Post Change History changes and Close">Cancel</button>
             <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !postChangeHistoryForm.valid || postChangeHistoryForm.pristine  || userIsCommunityPostChangeHistoryWriter() == false " ngbTooltip="Save the Post Change History changes and Close">

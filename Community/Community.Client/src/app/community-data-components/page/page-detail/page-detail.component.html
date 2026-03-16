@@ -17,6 +17,56 @@
                 <div class="col m-2 page-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="pageForm" (ngSubmit)="submitForm()" class="page-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('title')">
+                                <label for="Page-title" id="label-Page-title"><span class="text-danger">*</span>Title</label>
+                                <input type="text" id="Page-title" formControlName="title" placeholder="Enter Title" class="form-control page-input" [disabled]="!userIsCommunityPageWriter()" aria-labelledby="label-title" />
+                                <div *ngIf="pageForm.get('title')?.invalid && pageForm.get('title')?.touched" class="text-danger">
+                                    Title is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('slug')">
+                                <label for="Page-slug" id="label-Page-slug"><span class="text-danger">*</span>Slug</label>
+                                <input type="text" id="Page-slug" formControlName="slug" placeholder="Enter Slug" class="form-control page-input" [disabled]="!userIsCommunityPageWriter()" aria-labelledby="label-slug" />
+                                <div *ngIf="pageForm.get('slug')?.invalid && pageForm.get('slug')?.touched" class="text-danger">
+                                    Slug is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('body')">
+                                <label for="Page-body" id="label-Page-body">Body</label>
+                                <textarea id="Page-body" formControlName="body" placeholder="Enter Body" class="form-control page-input" [disabled]="!userIsCommunityPageWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('metaDescription')">
+                                <label for="Page-metaDescription" id="label-Page-metaDescription">Meta Description</label>
+                                <textarea id="Page-metaDescription" formControlName="metaDescription" placeholder="Enter Meta Description" class="form-control page-input" [disabled]="!userIsCommunityPageWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('featuredImageUrl')">
+                                <label for="Page-featuredImageUrl" id="label-Page-featuredImageUrl">Featured Image Url</label>
+                                <textarea id="Page-featuredImageUrl" formControlName="featuredImageUrl" placeholder="Enter Featured Image Url" class="form-control page-input" [disabled]="!userIsCommunityPageWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPublished')">
+                                <input type="checkbox" id="Page-isPublished" formControlName="isPublished" class="form-check-input" [disabled]="!userIsCommunityPageWriter()" />
+                                <label for="Page-isPublished" class="form-check-label" id="label-Page-isPublished"><span class="text-danger">*</span>Is Published</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('publishedDate')">
+                                <label for="Page-publishedDate" id="label-Page-publishedDate">Published Date</label>
+                                <input type="datetime-local" id="Page-publishedDate" formControlName="publishedDate" placeholder="Enter Published Date" class="form-control page-input" [disabled]="!userIsCommunityPageWriter()" aria-labelledby="label-publishedDate" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sortOrder')">
+                                <label for="Page-sortOrder" id="label-Page-sortOrder">Sort Order</label>
+                                <input type="number" id="Page-sortOrder" formControlName="sortOrder" placeholder="Enter Sort Order" class="form-control page-input" [disabled]="!userIsCommunityPageWriter()" aria-labelledby="label-sortOrder" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Page-versionNumber" id="label-Page-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Page-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control page-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Page-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityPageWriter()" />
+                                <label for="Page-active" class="form-check-label" id="label-Page-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Page-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityPageWriter()" />
+                                <label for="Page-deleted" class="form-check-label" id="label-Page-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
                             <div class="page-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="pageForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Page">Reset</button>
                                 <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !pageForm.valid || !pageForm.dirty || pageForm.pristine  || userIsCommunityPageWriter() == false " ngbTooltip="Save the Page changes">

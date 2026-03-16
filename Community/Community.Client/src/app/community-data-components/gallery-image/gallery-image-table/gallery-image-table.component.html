@@ -27,6 +27,26 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('galleryAlbum.name')">
+                Gallery  Album
+                <span *ngIf="sortColumn === 'galleryAlbum.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('imageUrl')">
+                Image  Url
+                <span *ngIf="sortColumn === 'imageUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('caption')">
+                Caption
+                <span *ngIf="sortColumn === 'caption'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('altText')">
+                Alt  Text
+                <span *ngIf="sortColumn === 'altText'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +132,11 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/galleryalbum', galleryImage.galleryAlbumId]" class="btn btn-link text-left" ngbTooltip="Open Gallery Album details">{{galleryImage.galleryAlbum?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/galleryimage', galleryImage.id]" class="btn btn-link text-left" ngbTooltip="Open Gallery Image details">{{galleryImage.imageUrl}}</a></td>
+            <td class="text-truncate">{{galleryImage.caption}}</td>
+            <td class="text-truncate">{{galleryImage.altText}}</td>
+            <td class="text-truncate">{{galleryImage.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -259,6 +284,26 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="gallery-image-info" *ngIf="galleryImage.galleryAlbumId != null">
+              <strong>Gallery Album: </strong>
+              <a [routerLink]="['/galleryalbum', galleryImage.galleryAlbumId]" class="text-left p-0 m-0" ngbTooltip="Open Gallery Album details">{{galleryImage.galleryAlbum?.name}}</a>
+            </p>
+            <p class="gallery-image-info" *ngIf="galleryImage.imageUrl != null">
+              <strong>Image Url: </strong>
+              {{galleryImage.imageUrl}}
+            </p>
+            <p class="gallery-image-info" *ngIf="galleryImage.caption != null">
+              <strong>Caption: </strong>
+              {{galleryImage.caption}}
+            </p>
+            <p class="gallery-image-info" *ngIf="galleryImage.altText != null">
+              <strong>Alt Text: </strong>
+              {{galleryImage.altText}}
+            </p>
+            <p class="gallery-image-info" *ngIf="galleryImage.sequence != null">
+              <strong>Sequence: </strong>
+              {{galleryImage.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

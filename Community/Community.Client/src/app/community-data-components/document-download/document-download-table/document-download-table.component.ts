@@ -175,6 +175,16 @@ export class DocumentDownloadTableComponent implements OnInit, OnChanges, AfterV
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'title', label: 'Title', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/documentdownload', 'id']  },
+    { key: 'description', label: 'Description', width: undefined },
+    { key: 'filePath', label: 'File Path', width: undefined },
+    { key: 'fileName', label: 'File Name', width: undefined },
+    { key: 'mimeType', label: 'Mime Type', width: undefined },
+    { key: 'fileSizeBytes', label: 'File Size Bytes', width: undefined },
+    { key: 'categoryName', label: 'Category Name', width: undefined },
+    { key: 'documentDate', label: 'Document Date', width: undefined, template: 'date' },
+    { key: 'isPublished', label: 'Is Published', width: '120px', template: 'boolean' },
+    { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
 
@@ -186,6 +196,8 @@ export class DocumentDownloadTableComponent implements OnInit, OnChanges, AfterV
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +330,16 @@ export class DocumentDownloadTableComponent implements OnInit, OnChanges, AfterV
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'title',
+                      'description',
+                      'filePath',
+                      'fileName',
+                      'mimeType',
+                      'fileSizeBytes',
+                      'categoryName',
+                      'documentDate',
+                      'isPublished',
+                      'sequence',
         ];
 
         result = result.filter((documentDownload) =>

@@ -7,23 +7,25 @@ namespace Foundation.Community.Database;
 
 public partial class GalleryImage
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public int GalleryAlbumId { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string ImageUrl { get; set; }
+    public int galleryAlbumId { get; set; }
 
-    public string Caption { get; set; }
+    public string imageUrl { get; set; }
 
-    public string AltText { get; set; }
+    public string caption { get; set; }
 
-    public int? Sequence { get; set; }
+    public string altText { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public int? sequence { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
 
-    public virtual GalleryAlbum GalleryAlbum { get; set; }
+    public bool deleted { get; set; }
+
+    public virtual GalleryAlbum galleryAlbum { get; set; }
 }

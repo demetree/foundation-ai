@@ -27,6 +27,38 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('menu.name')">
+                Menu
+                <span *ngIf="sortColumn === 'menu.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('label')">
+                Label
+                <span *ngIf="sortColumn === 'label'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('url')">
+                Url
+                <span *ngIf="sortColumn === 'url'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('page.name')">
+                Page
+                <span *ngIf="sortColumn === 'page.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('parentMenuItem.name')">
+                Parent  Menu  Item
+                <span *ngIf="sortColumn === 'parentMenuItem.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('iconClass')">
+                Icon  Class
+                <span *ngIf="sortColumn === 'iconClass'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('openInNewTab')">
+                Open  In  New  Tab
+                <span *ngIf="sortColumn === 'openInNewTab'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +144,14 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/menu', menuItem.menuId]" class="btn btn-link text-left" ngbTooltip="Open Menu details">{{menuItem.menu?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/menuitem', menuItem.id]" class="btn btn-link text-left" ngbTooltip="Open Menu Item details">{{menuItem.label}}</a></td>
+            <td class="text-truncate">{{menuItem.url}}</td>
+            <td class="text-truncate"><a [routerLink]="['/page', menuItem.pageId]" class="btn btn-link text-left" ngbTooltip="Open Page details">{{menuItem.page?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/menuitem', menuItem.parentMenuItemId]" class="btn btn-link text-left" ngbTooltip="Open Menu Item details">{{menuItem.parentMenuItem?.name}}</a></td>
+            <td class="text-truncate">{{menuItem.iconClass}}</td>
+            <td class="text-truncate"><boolean-icon [value]="menuItem.openInNewTab"/></td>
+            <td class="text-truncate">{{menuItem.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -259,6 +299,38 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="menu-item-info" *ngIf="menuItem.menuId != null">
+              <strong>Menu: </strong>
+              <a [routerLink]="['/menu', menuItem.menuId]" class="text-left p-0 m-0" ngbTooltip="Open Menu details">{{menuItem.menu?.name}}</a>
+            </p>
+            <p class="menu-item-info" *ngIf="menuItem.label != null">
+              <strong>Label: </strong>
+              {{menuItem.label}}
+            </p>
+            <p class="menu-item-info" *ngIf="menuItem.url != null">
+              <strong>Url: </strong>
+              {{menuItem.url}}
+            </p>
+            <p class="menu-item-info" *ngIf="menuItem.pageId != null">
+              <strong>Page: </strong>
+              <a [routerLink]="['/page', menuItem.pageId]" class="text-left p-0 m-0" ngbTooltip="Open Page details">{{menuItem.page?.name}}</a>
+            </p>
+            <p class="menu-item-info" *ngIf="menuItem.parentMenuItemId != null">
+              <strong>Parent Menu Item: </strong>
+              <a [routerLink]="['/menuitem', menuItem.parentMenuItemId]" class="text-left p-0 m-0" ngbTooltip="Open Menu Item details">{{menuItem.parentMenuItem?.name}}</a>
+            </p>
+            <p class="menu-item-info" *ngIf="menuItem.iconClass != null">
+              <strong>Icon Class: </strong>
+              {{menuItem.iconClass}}
+            </p>
+            <p class="menu-item-info" *ngIf="menuItem.openInNewTab != null">
+              <strong>Open In New Tab: </strong>
+              <boolean-icon [value]="menuItem.openInNewTab"/>
+            </p>
+            <p class="menu-item-info" *ngIf="menuItem.sequence != null">
+              <strong>Sequence: </strong>
+              {{menuItem.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

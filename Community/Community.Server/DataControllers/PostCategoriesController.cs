@@ -62,14 +62,13 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/PostCategories")]
 		public async Task<IActionResult> GetPostCategories(
-			int? Id = null,
-			string Name = null,
-			string Description = null,
-			string Slug = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string name = null,
+			string description = null,
+			string slug = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -105,37 +104,49 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.PostCategory> query = (from pc in _context.PostCategories select pc);
-			if (Id.HasValue == true)
+			if (string.IsNullOrEmpty(name) == false)
 			{
-				query = query.Where(pc => pc.Id == Id.Value);
+				query = query.Where(pc => pc.name == name);
 			}
-			if (string.IsNullOrEmpty(Name) == false)
+			if (string.IsNullOrEmpty(description) == false)
 			{
-				query = query.Where(pc => pc.Name == Name);
+				query = query.Where(pc => pc.description == description);
 			}
-			if (string.IsNullOrEmpty(Description) == false)
+			if (string.IsNullOrEmpty(slug) == false)
 			{
-				query = query.Where(pc => pc.Description == Description);
+				query = query.Where(pc => pc.slug == slug);
 			}
-			if (string.IsNullOrEmpty(Slug) == false)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(pc => pc.Slug == Slug);
+				query = query.Where(pc => pc.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(pc => pc.Sequence == Sequence.Value);
+				query = query.Where(pc => pc.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(pc => pc.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(pc => pc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(pc => pc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(pc => pc.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(pc => pc.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(pc => pc.Deleted == Deleted.Value);
+				query = query.Where(pc => pc.active == true);
+				query = query.Where(pc => pc.deleted == false);
 			}
 
 			query = query.OrderBy(pc => pc.sequence).ThenBy(pc => pc.name).ThenBy(pc => pc.description).ThenBy(pc => pc.slug);
@@ -149,9 +160,9 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Name.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
+			       x.name.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
 			   );
 			}
 
@@ -205,14 +216,13 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/PostCategories/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string Name = null,
-			string Description = null,
-			string Slug = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string name = null,
+			string description = null,
+			string slug = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -230,37 +240,49 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			IQueryable<Database.PostCategory> query = (from pc in _context.PostCategories select pc);
-			if (Id.HasValue == true)
+			if (name != null)
 			{
-				query = query.Where(pc => pc.Id == Id.Value);
+				query = query.Where(pc => pc.name == name);
 			}
-			if (Name != null)
+			if (description != null)
 			{
-				query = query.Where(pc => pc.Name == Name);
+				query = query.Where(pc => pc.description == description);
 			}
-			if (Description != null)
+			if (slug != null)
 			{
-				query = query.Where(pc => pc.Description == Description);
+				query = query.Where(pc => pc.slug == slug);
 			}
-			if (Slug != null)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(pc => pc.Slug == Slug);
+				query = query.Where(pc => pc.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(pc => pc.Sequence == Sequence.Value);
+				query = query.Where(pc => pc.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(pc => pc.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(pc => pc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(pc => pc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(pc => pc.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(pc => pc.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(pc => pc.Deleted == Deleted.Value);
+				query = query.Where(pc => pc.active == true);
+				query = query.Where(pc => pc.deleted == false);
 			}
 
 			//
@@ -271,9 +293,9 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Name.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
+			       x.name.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
 			   );
 			}
 
@@ -315,7 +337,9 @@ namespace Foundation.Community.Controllers.WebAPI
 			try
 			{
 				IQueryable<Database.PostCategory> query = (from pc in _context.PostCategories where
-				(pc.id == id)
+							(pc.id == id) &&
+							(userIsAdmin == true || pc.deleted == false) &&
+							(userIsWriter == true || pc.active == true)
 					select pc);
 
 				if (includeRelations == true)
@@ -437,6 +461,29 @@ namespace Foundation.Community.Controllers.WebAPI
 			Database.PostCategory postCategory = (Database.PostCategory)_context.Entry(existing).GetDatabaseValues().ToObject();
 			postCategory.ApplyDTO(postCategoryDTO);
 
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (postCategory.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.PostCategory record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
+
+			if (postCategory.name != null && postCategory.name.Length > 100)
+			{
+				postCategory.name = postCategory.name.Substring(0, 100);
+			}
+
+			if (postCategory.description != null && postCategory.description.Length > 500)
+			{
+				postCategory.description = postCategory.description.Substring(0, 500);
+			}
+
+			if (postCategory.slug != null && postCategory.slug.Length > 250)
+			{
+				postCategory.slug = postCategory.slug.Substring(0, 250);
+			}
 
 			EntityEntry<Database.PostCategory> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(postCategory);
@@ -509,6 +556,22 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
+				if (postCategory.name != null && postCategory.name.Length > 100)
+				{
+					postCategory.name = postCategory.name.Substring(0, 100);
+				}
+
+				if (postCategory.description != null && postCategory.description.Length > 500)
+				{
+					postCategory.description = postCategory.description.Substring(0, 500);
+				}
+
+				if (postCategory.slug != null && postCategory.slug.Length > 250)
+				{
+					postCategory.slug = postCategory.slug.Substring(0, 250);
+				}
+
+				postCategory.objectGuid = Guid.NewGuid();
 				_context.PostCategories.Add(postCategory);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -580,7 +643,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.PostCategories.Remove(postCategory);
+				postCategory.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -621,14 +684,13 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string Name = null,
-			string Description = null,
-			string Slug = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string name = null,
+			string description = null,
+			string slug = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -662,37 +724,49 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.PostCategory> query = (from pc in _context.PostCategories select pc);
-			if (Id.HasValue == true)
+			if (string.IsNullOrEmpty(name) == false)
 			{
-				query = query.Where(pc => pc.Id == Id.Value);
+				query = query.Where(pc => pc.name == name);
 			}
-			if (string.IsNullOrEmpty(Name) == false)
+			if (string.IsNullOrEmpty(description) == false)
 			{
-				query = query.Where(pc => pc.Name == Name);
+				query = query.Where(pc => pc.description == description);
 			}
-			if (string.IsNullOrEmpty(Description) == false)
+			if (string.IsNullOrEmpty(slug) == false)
 			{
-				query = query.Where(pc => pc.Description == Description);
+				query = query.Where(pc => pc.slug == slug);
 			}
-			if (string.IsNullOrEmpty(Slug) == false)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(pc => pc.Slug == Slug);
+				query = query.Where(pc => pc.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(pc => pc.Sequence == Sequence.Value);
+				query = query.Where(pc => pc.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(pc => pc.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(pc => pc.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(pc => pc.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(pc => pc.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(pc => pc.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(pc => pc.Deleted == Deleted.Value);
+				query = query.Where(pc => pc.active == true);
+				query = query.Where(pc => pc.deleted == false);
 			}
 
 
@@ -704,9 +778,9 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Name.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
+			       x.name.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
 			   );
 			}
 

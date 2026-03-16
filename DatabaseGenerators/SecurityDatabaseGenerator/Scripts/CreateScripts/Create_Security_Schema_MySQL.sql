@@ -100,6 +100,7 @@ CREATE TABLE `SecurityTenant`(
 	`name` VARCHAR(100) NOT NULL UNIQUE,
 	`description` VARCHAR(500) NULL,
 	`settings` TEXT NULL,		-- To store a JSON object containing arbitrary tenant settings.
+	`hostName` VARCHAR(250) NULL,		-- The host name used for HTTP Host header tenant resolution. E.g. 'pettyharbour.example.com'. Used by multi-tenant public-facing apps like Community CMS to determine which tenant's data to serve.
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
@@ -107,6 +108,10 @@ CREATE TABLE `SecurityTenant`(
 );
 -- Index on the SecurityTenant table's name field.
 CREATE INDEX `I_SecurityTenant_name` ON `SecurityTenant` (`name`);
+
+-- Index on the SecurityTenant table's hostName field.
+CREATE UNIQUE INDEX `I_SecurityTenant_hostName` ON `SecurityTenant` (`hostName`);
+ WHERE `hostName` IS NOT NULL
 
 -- Index on the SecurityTenant table's active field.
 CREATE INDEX `I_SecurityTenant_active` ON `SecurityTenant` (`active`);

@@ -175,6 +175,8 @@ export class PostTagAssignmentTableComponent implements OnInit, OnChanges, After
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'post.name', label: 'Post', width: undefined, template: 'link', linkPath: ['/post', 'postId'] },
+    { key: 'postTag.name', label: 'Post Tag', width: undefined, template: 'link', linkPath: ['/posttag', 'postTagId'] },
 
     ];
 
@@ -186,6 +188,8 @@ export class PostTagAssignmentTableComponent implements OnInit, OnChanges, After
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +322,8 @@ export class PostTagAssignmentTableComponent implements OnInit, OnChanges, After
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'post.name',
+                      'postTag.name',
         ];
 
         result = result.filter((postTagAssignment) =>

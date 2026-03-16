@@ -28,17 +28,16 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class AnnouncementQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    Title: string | null | undefined = null;
-    Body: string | null | undefined = null;
-    Severity: string | null | undefined = null;
-    StartDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    EndDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    IsPinned: boolean | null | undefined = null;
-    VersionNumber: bigint | number | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    title: string | null | undefined = null;
+    body: string | null | undefined = null;
+    severity: string | null | undefined = null;
+    startDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    endDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    isPinned: boolean | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -50,16 +49,16 @@ export class AnnouncementQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class AnnouncementSubmitData {
-    Id: bigint | number | null = null;
-    Title: string | null = null;
-    Body: string | null = null;
-    Severity: string | null = null;
-    StartDate: string | null = null;     // ISO 8601 (full datetime)
-    EndDate: string | null = null;     // ISO 8601 (full datetime)
-    IsPinned: boolean | null = null;
-    VersionNumber: bigint | number | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    title!: string;
+    body: string | null = null;
+    severity!: string;
+    startDate!: string;      // ISO 8601 (full datetime)
+    endDate: string | null = null;     // ISO 8601 (full datetime)
+    isPinned!: boolean;
+    versionNumber!: bigint | number;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -126,17 +125,17 @@ export class AnnouncementBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class AnnouncementData {
-    Id!: bigint | number;
-    Title!: string | null;
-    Body!: string | null;
-    Severity!: string | null;
-    StartDate!: string | null;   // ISO 8601 (full datetime)
-    EndDate!: string | null;   // ISO 8601 (full datetime)
-    IsPinned!: boolean | null;
-    VersionNumber!: bigint | number;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
+    id!: bigint | number;
+    title!: string;
+    body!: string | null;
+    severity!: string;
+    startDate!: string;      // ISO 8601 (full datetime)
+    endDate!: string | null;   // ISO 8601 (full datetime)
+    isPinned!: boolean;
+    versionNumber!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
 
     //
     // Private lazy-loading caches for related collections
@@ -439,16 +438,16 @@ export class AnnouncementService extends SecureEndpointBase {
 
         let output = new AnnouncementSubmitData();
 
-        output.Id = data.Id;
-        output.Title = data.Title;
-        output.Body = data.Body;
-        output.Severity = data.Severity;
-        output.StartDate = data.StartDate;
-        output.EndDate = data.EndDate;
-        output.IsPinned = data.IsPinned;
-        output.VersionNumber = data.VersionNumber;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.title = data.title;
+        output.body = data.body;
+        output.severity = data.severity;
+        output.startDate = data.startDate;
+        output.endDate = data.endDate;
+        output.isPinned = data.isPinned;
+        output.versionNumber = data.versionNumber;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

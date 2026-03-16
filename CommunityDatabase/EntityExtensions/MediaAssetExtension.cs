@@ -20,18 +20,22 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class MediaAssetDTO
 		{
-			public Int32 Id { get; set; }
-			public String FileName { get; set; }
-			public String FilePath { get; set; }
-			public String MimeType { get; set; }
-			public String AltText { get; set; }
-			public String Caption { get; set; }
-			public Int64? FileSizeBytes { get; set; }
-			public Int32? ImageWidth { get; set; }
-			public Int32? ImageHeight { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String fileName { get; set; }
+			[Required]
+			public String filePath { get; set; }
+			[Required]
+			public String mimeType { get; set; }
+			public String altText { get; set; }
+			public String caption { get; set; }
+			public Int64? fileSizeBytes { get; set; }
+			public Int32? imageWidth { get; set; }
+			public Int32? imageHeight { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -56,18 +60,18 @@ namespace Foundation.Community.Database
 		{
 			return new MediaAssetDTO
 			{
-				Id = this.Id,
-				FileName = this.FileName,
-				FilePath = this.FilePath,
-				MimeType = this.MimeType,
-				AltText = this.AltText,
-				Caption = this.Caption,
-				FileSizeBytes = this.FileSizeBytes,
-				ImageWidth = this.ImageWidth,
-				ImageHeight = this.ImageHeight,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				fileName = this.fileName,
+				filePath = this.filePath,
+				mimeType = this.mimeType,
+				altText = this.altText,
+				caption = this.caption,
+				fileSizeBytes = this.fileSizeBytes,
+				imageWidth = this.imageWidth,
+				imageHeight = this.imageHeight,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -106,18 +110,18 @@ namespace Foundation.Community.Database
 		{
 			return new MediaAssetOutputDTO
 			{
-				Id = this.Id,
-				FileName = this.FileName,
-				FilePath = this.FilePath,
-				MimeType = this.MimeType,
-				AltText = this.AltText,
-				Caption = this.Caption,
-				FileSizeBytes = this.FileSizeBytes,
-				ImageWidth = this.ImageWidth,
-				ImageHeight = this.ImageHeight,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				fileName = this.fileName,
+				filePath = this.filePath,
+				mimeType = this.mimeType,
+				altText = this.altText,
+				caption = this.caption,
+				fileSizeBytes = this.fileSizeBytes,
+				imageWidth = this.imageWidth,
+				imageHeight = this.imageHeight,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -156,18 +160,18 @@ namespace Foundation.Community.Database
 		{
 			return new Database.MediaAsset
 			{
-				Id = dto.Id,
-				FileName = dto.FileName,
-				FilePath = dto.FilePath,
-				MimeType = dto.MimeType,
-				AltText = dto.AltText,
-				Caption = dto.Caption,
-				FileSizeBytes = dto.FileSizeBytes,
-				ImageWidth = dto.ImageWidth,
-				ImageHeight = dto.ImageHeight,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				fileName = dto.fileName,
+				filePath = dto.filePath,
+				mimeType = dto.mimeType,
+				altText = dto.altText,
+				caption = dto.caption,
+				fileSizeBytes = dto.fileSizeBytes,
+				imageWidth = dto.imageWidth,
+				imageHeight = dto.imageHeight,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -184,22 +188,22 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.FileName = dto.FileName;
-			this.FilePath = dto.FilePath;
-			this.MimeType = dto.MimeType;
-			this.AltText = dto.AltText;
-			this.Caption = dto.Caption;
-			this.FileSizeBytes = dto.FileSizeBytes;
-			this.ImageWidth = dto.ImageWidth;
-			this.ImageHeight = dto.ImageHeight;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.fileName = dto.fileName;
+			this.filePath = dto.filePath;
+			this.mimeType = dto.mimeType;
+			this.altText = dto.altText;
+			this.caption = dto.caption;
+			this.fileSizeBytes = dto.fileSizeBytes;
+			this.imageWidth = dto.imageWidth;
+			this.imageHeight = dto.imageHeight;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -215,18 +219,19 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new MediaAsset{
-				Id = this.Id,
-				FileName = this.FileName,
-				FilePath = this.FilePath,
-				MimeType = this.MimeType,
-				AltText = this.AltText,
-				Caption = this.Caption,
-				FileSizeBytes = this.FileSizeBytes,
-				ImageWidth = this.ImageWidth,
-				ImageHeight = this.ImageHeight,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				fileName = this.fileName,
+				filePath = this.filePath,
+				mimeType = this.mimeType,
+				altText = this.altText,
+				caption = this.caption,
+				fileSizeBytes = this.fileSizeBytes,
+				imageWidth = this.imageWidth,
+				imageHeight = this.imageHeight,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			 };
 		}
 
@@ -279,18 +284,18 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = mediaAsset.Id,
-				FileName = mediaAsset.FileName,
-				FilePath = mediaAsset.FilePath,
-				MimeType = mediaAsset.MimeType,
-				AltText = mediaAsset.AltText,
-				Caption = mediaAsset.Caption,
-				FileSizeBytes = mediaAsset.FileSizeBytes,
-				ImageWidth = mediaAsset.ImageWidth,
-				ImageHeight = mediaAsset.ImageHeight,
-				ObjectGuid = mediaAsset.ObjectGuid,
-				Active = mediaAsset.Active,
-				Deleted = mediaAsset.Deleted
+				id = mediaAsset.id,
+				fileName = mediaAsset.fileName,
+				filePath = mediaAsset.filePath,
+				mimeType = mediaAsset.mimeType,
+				altText = mediaAsset.altText,
+				caption = mediaAsset.caption,
+				fileSizeBytes = mediaAsset.fileSizeBytes,
+				imageWidth = mediaAsset.imageWidth,
+				imageHeight = mediaAsset.imageHeight,
+				objectGuid = mediaAsset.objectGuid,
+				active = mediaAsset.active,
+				deleted = mediaAsset.deleted
 			 };
 		}
 
@@ -310,18 +315,18 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = mediaAsset.Id,
-				FileName = mediaAsset.FileName,
-				FilePath = mediaAsset.FilePath,
-				MimeType = mediaAsset.MimeType,
-				AltText = mediaAsset.AltText,
-				Caption = mediaAsset.Caption,
-				FileSizeBytes = mediaAsset.FileSizeBytes,
-				ImageWidth = mediaAsset.ImageWidth,
-				ImageHeight = mediaAsset.ImageHeight,
-				ObjectGuid = mediaAsset.ObjectGuid,
-				Active = mediaAsset.Active,
-				Deleted = mediaAsset.Deleted
+				id = mediaAsset.id,
+				fileName = mediaAsset.fileName,
+				filePath = mediaAsset.filePath,
+				mimeType = mediaAsset.mimeType,
+				altText = mediaAsset.altText,
+				caption = mediaAsset.caption,
+				fileSizeBytes = mediaAsset.fileSizeBytes,
+				imageWidth = mediaAsset.imageWidth,
+				imageHeight = mediaAsset.imageHeight,
+				objectGuid = mediaAsset.objectGuid,
+				active = mediaAsset.active,
+				deleted = mediaAsset.deleted
 			 };
 		}
 
@@ -341,6 +346,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = mediaAsset.id,
 				name = mediaAsset.fileName,
 				description = string.Join(", ", new[] { mediaAsset.fileName, mediaAsset.filePath, mediaAsset.mimeType}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

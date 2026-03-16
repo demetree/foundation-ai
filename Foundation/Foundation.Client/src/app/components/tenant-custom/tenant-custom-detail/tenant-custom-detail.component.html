@@ -50,6 +50,10 @@
 
                     <!-- Quick Actions -->
                     <div class="quick-actions" *ngIf="canEdit()">
+                        <button class="btn btn-sm btn-glass action-btn" (click)="openEditModal()"
+                            ngbTooltip="Edit Tenant">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
                         <button class="btn btn-sm btn-glass action-btn" (click)="toggleActive()" [disabled]="isToggling"
                             [ngbTooltip]="tenantData.active ? 'Deactivate Tenant' : 'Activate Tenant'">
                             <span *ngIf="isToggling" class="spinner-border spinner-border-sm"></span>
@@ -120,5 +124,8 @@
         </div>
 
     </ng-container>
+
+    <!-- Add/Edit Modal (rendered but hidden until opened) -->
+    <app-tenant-add-edit (saved)="onTenantSaved($event)"></app-tenant-add-edit>
 
 </div>

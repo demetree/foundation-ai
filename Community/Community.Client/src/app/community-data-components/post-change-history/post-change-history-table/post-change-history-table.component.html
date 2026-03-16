@@ -27,6 +27,22 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('post.name')">
+                Post
+                <span *ngIf="sortColumn === 'post.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeStamp')">
+                Time  Stamp
+                <span *ngIf="sortColumn === 'timeStamp'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userId')">
+                User  Id
+                <span *ngIf="sortColumn === 'userId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('data')">
+                Data
+                <span *ngIf="sortColumn === 'data'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -99,6 +115,10 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/post', postChangeHistory.postId]" class="btn btn-link text-left" ngbTooltip="Open Post details">{{postChangeHistory.post?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/postchangehistory', postChangeHistory.id]" class="btn btn-link text-left" ngbTooltip="Open Post Change History details">{{postChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{postChangeHistory.userId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{postChangeHistory.data}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -231,6 +251,22 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="post-change-history-info" *ngIf="postChangeHistory.postId != null">
+              <strong>Post: </strong>
+              <a [routerLink]="['/post', postChangeHistory.postId]" class="text-left p-0 m-0" ngbTooltip="Open Post details">{{postChangeHistory.post?.name}}</a>
+            </p>
+            <p class="post-change-history-info" *ngIf="postChangeHistory.timeStamp != null">
+              <strong>Time Stamp: </strong>
+              {{postChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="post-change-history-info" *ngIf="postChangeHistory.userId != null">
+              <strong>User Id: </strong>
+              {{postChangeHistory.userId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="post-change-history-info" *ngIf="postChangeHistory.data != null">
+              <strong>Data: </strong>
+              {{postChangeHistory.data}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

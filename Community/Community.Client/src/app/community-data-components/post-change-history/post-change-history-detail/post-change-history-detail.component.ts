@@ -35,6 +35,11 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostChangeHistoryFormValues {
+  postId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  timeStamp: string,
+  userId: string,     // Stored as string for form input, converted to number on submit.
+  data: string,
 };
 
 
@@ -62,6 +67,11 @@ export class PostChangeHistoryDetailComponent implements OnInit, CanComponentDea
 
 
   public postChangeHistoryForm: FormGroup = this.fb.group({
+        postId: [null, Validators.required],
+        versionNumber: [''],
+        timeStamp: ['', Validators.required],
+        userId: ['', Validators.required],
+        data: ['', Validators.required],
       });
 
 
@@ -364,6 +374,11 @@ export class PostChangeHistoryDetailComponent implements OnInit, CanComponentDea
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postChangeHistoryForm.reset({
+        postId: null,
+        versionNumber: '',
+        timeStamp: '',
+        userId: '',
+        data: '',
    }, { emitEvent: false});
 
     }
@@ -373,6 +388,11 @@ export class PostChangeHistoryDetailComponent implements OnInit, CanComponentDea
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postChangeHistoryForm.reset({
+        postId: postChangeHistoryData.postId,
+        versionNumber: postChangeHistoryData.versionNumber?.toString() ?? '',
+        timeStamp: isoUtcStringToDateTimeLocal(postChangeHistoryData.timeStamp) ?? '',
+        userId: postChangeHistoryData.userId?.toString() ?? '',
+        data: postChangeHistoryData.data ?? '',
       }, { emitEvent: false});
     }
 
@@ -432,6 +452,11 @@ export class PostChangeHistoryDetailComponent implements OnInit, CanComponentDea
     //
     const postChangeHistorySubmitData: PostChangeHistorySubmitData = {
         id: this.postChangeHistoryData?.id || 0,
+        postId: Number(formValue.postId),
+        versionNumber: this.postChangeHistoryData?.versionNumber ?? 0,
+        timeStamp: dateTimeLocalToIsoUtc(formValue.timeStamp!.trim())!,
+        userId: Number(formValue.userId),
+        data: formValue.data!.trim(),
    };
 
 

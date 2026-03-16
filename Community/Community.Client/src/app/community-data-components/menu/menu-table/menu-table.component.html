@@ -27,6 +27,14 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('location')">
+                Location
+                <span *ngIf="sortColumn === 'location'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +120,8 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/menu', menu.id]" class="btn btn-link text-left" ngbTooltip="Open Menu details">{{menu.name}}</a></td>
+            <td class="text-truncate">{{menu.location}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -228,7 +238,7 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
-               <strong>{{menu.id}}</strong>
+               <strong>{{menu.name}}</strong>
              </div>
              <div>
                 <button class="action-btn action-view"
@@ -258,6 +268,14 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="menu-info" *ngIf="menu.name != null">
+              <strong>Name: </strong>
+              {{menu.name}}
+            </p>
+            <p class="menu-info" *ngIf="menu.location != null">
+              <strong>Location: </strong>
+              {{menu.location}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

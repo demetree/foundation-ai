@@ -17,6 +17,58 @@
                 <div class="col m-2 contact-submission-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="contactSubmissionForm" (ngSubmit)="submitForm()" class="contact-submission-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ContactSubmission-name" id="label-ContactSubmission-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ContactSubmission-name" formControlName="name" placeholder="Enter Name" class="form-control contact-submission-input" [disabled]="!userIsCommunityContactSubmissionWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="contactSubmissionForm.get('name')?.invalid && contactSubmissionForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('email')">
+<label for="ContactSubmission-email" id="label-ContactSubmission-email"><a href="mailto:{{contactSubmissionData?.email}}" ngbTooltip="Send Email to {{contactSubmissionData?.email}}"><span class="text-danger">*</span>Email</a></label>
+                                <input type="text" id="ContactSubmission-email" formControlName="email" placeholder="Enter Email" class="form-control contact-submission-input" [disabled]="!userIsCommunityContactSubmissionWriter()" aria-labelledby="label-email" />
+                                <div *ngIf="contactSubmissionForm.get('email')?.invalid && contactSubmissionForm.get('email')?.touched" class="text-danger">
+                                    Email is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('subject')">
+                                <label for="ContactSubmission-subject" id="label-ContactSubmission-subject">Subject</label>
+                                <input type="text" id="ContactSubmission-subject" formControlName="subject" placeholder="Enter Subject" class="form-control contact-submission-input" [disabled]="!userIsCommunityContactSubmissionWriter()" aria-labelledby="label-subject" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('message')">
+                                <label for="ContactSubmission-message" id="label-ContactSubmission-message"><span class="text-danger">*</span>Message</label>
+                                <textarea id="ContactSubmission-message" formControlName="message" placeholder="Enter Message" class="form-control contact-submission-input" [disabled]="!userIsCommunityContactSubmissionWriter()"></textarea>
+                                <div *ngIf="contactSubmissionForm.get('message')?.invalid && contactSubmissionForm.get('message')?.touched" class="text-danger">
+                                    Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('submittedDate')">
+                                <label for="ContactSubmission-submittedDate" id="label-ContactSubmission-submittedDate"><span class="text-danger">*</span>Submitted Date</label>
+                                <input type="datetime-local" id="ContactSubmission-submittedDate" formControlName="submittedDate" placeholder="Enter Submitted Date" class="form-control contact-submission-input" [disabled]="!userIsCommunityContactSubmissionWriter()" aria-labelledby="label-submittedDate" />
+                                <div *ngIf="contactSubmissionForm.get('submittedDate')?.invalid && contactSubmissionForm.get('submittedDate')?.touched" class="text-danger">
+                                    Submitted Date is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isRead')">
+                                <input type="checkbox" id="ContactSubmission-isRead" formControlName="isRead" class="form-check-input" [disabled]="!userIsCommunityContactSubmissionWriter()" />
+                                <label for="ContactSubmission-isRead" class="form-check-label" id="label-ContactSubmission-isRead"><span class="text-danger">*</span>Is Read</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isArchived')">
+                                <input type="checkbox" id="ContactSubmission-isArchived" formControlName="isArchived" class="form-check-input" [disabled]="!userIsCommunityContactSubmissionWriter()" />
+                                <label for="ContactSubmission-isArchived" class="form-check-label" id="label-ContactSubmission-isArchived"><span class="text-danger">*</span>Is Archived</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('adminNotes')">
+                                <label for="ContactSubmission-adminNotes" id="label-ContactSubmission-adminNotes">Admin Notes</label>
+                                <textarea id="ContactSubmission-adminNotes" formControlName="adminNotes" placeholder="Enter Admin Notes" class="form-control contact-submission-input" [disabled]="!userIsCommunityContactSubmissionWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ContactSubmission-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityContactSubmissionWriter()" />
+                                <label for="ContactSubmission-active" class="form-check-label" id="label-ContactSubmission-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ContactSubmission-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityContactSubmissionWriter()" />
+                                <label for="ContactSubmission-deleted" class="form-check-label" id="label-ContactSubmission-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
                             <div class="contact-submission-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="contactSubmissionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Contact Submission">Reset</button>
                                 <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !contactSubmissionForm.valid || !contactSubmissionForm.dirty || contactSubmissionForm.pristine  || userIsCommunityContactSubmissionWriter() == false " ngbTooltip="Save the Contact Submission changes">

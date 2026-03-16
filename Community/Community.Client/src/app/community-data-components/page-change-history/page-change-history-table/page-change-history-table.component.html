@@ -27,6 +27,22 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('page.name')">
+                Page
+                <span *ngIf="sortColumn === 'page.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('timeStamp')">
+                Time  Stamp
+                <span *ngIf="sortColumn === 'timeStamp'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userId')">
+                User  Id
+                <span *ngIf="sortColumn === 'userId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('data')">
+                Data
+                <span *ngIf="sortColumn === 'data'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -99,6 +115,10 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/page', pageChangeHistory.pageId]" class="btn btn-link text-left" ngbTooltip="Open Page details">{{pageChangeHistory.page?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/pagechangehistory', pageChangeHistory.id]" class="btn btn-link text-left" ngbTooltip="Open Page Change History details">{{pageChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</a></td>
+            <td class="text-truncate">{{pageChangeHistory.userId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{pageChangeHistory.data}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -231,6 +251,22 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="page-change-history-info" *ngIf="pageChangeHistory.pageId != null">
+              <strong>Page: </strong>
+              <a [routerLink]="['/page', pageChangeHistory.pageId]" class="text-left p-0 m-0" ngbTooltip="Open Page details">{{pageChangeHistory.page?.name}}</a>
+            </p>
+            <p class="page-change-history-info" *ngIf="pageChangeHistory.timeStamp != null">
+              <strong>Time Stamp: </strong>
+              {{pageChangeHistory.timeStamp | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="page-change-history-info" *ngIf="pageChangeHistory.userId != null">
+              <strong>User Id: </strong>
+              {{pageChangeHistory.userId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="page-change-history-info" *ngIf="pageChangeHistory.data != null">
+              <strong>Data: </strong>
+              {{pageChangeHistory.data}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

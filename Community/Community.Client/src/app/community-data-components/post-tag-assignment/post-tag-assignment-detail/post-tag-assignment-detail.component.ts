@@ -36,6 +36,10 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostTagAssignmentFormValues {
+  postId: number | bigint,       // For FK link number
+  postTagId: number | bigint,       // For FK link number
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -63,6 +67,10 @@ export class PostTagAssignmentDetailComponent implements OnInit, CanComponentDea
 
 
   public postTagAssignmentForm: FormGroup = this.fb.group({
+        postId: [null, Validators.required],
+        postTagId: [null, Validators.required],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -367,6 +375,10 @@ export class PostTagAssignmentDetailComponent implements OnInit, CanComponentDea
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postTagAssignmentForm.reset({
+        postId: null,
+        postTagId: null,
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -376,6 +388,10 @@ export class PostTagAssignmentDetailComponent implements OnInit, CanComponentDea
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postTagAssignmentForm.reset({
+        postId: postTagAssignmentData.postId,
+        postTagId: postTagAssignmentData.postTagId,
+        active: postTagAssignmentData.active ?? true,
+        deleted: postTagAssignmentData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -435,6 +451,10 @@ export class PostTagAssignmentDetailComponent implements OnInit, CanComponentDea
     //
     const postTagAssignmentSubmitData: PostTagAssignmentSubmitData = {
         id: this.postTagAssignmentData?.id || 0,
+        postId: Number(formValue.postId),
+        postTagId: Number(formValue.postTagId),
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

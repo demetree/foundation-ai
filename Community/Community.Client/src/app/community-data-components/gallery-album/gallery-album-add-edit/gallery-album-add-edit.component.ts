@@ -34,6 +34,14 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface GalleryAlbumFormValues {
+  title: string,
+  slug: string,
+  description: string | null,
+  coverImageUrl: string | null,
+  isPublished: boolean,
+  sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -64,6 +72,14 @@ export class GalleryAlbumAddEditComponent {
 
 
   public galleryAlbumForm: FormGroup = this.fb.group({
+        title: ['', Validators.required],
+        slug: ['', Validators.required],
+        description: [''],
+        coverImageUrl: [''],
+        isPublished: [false],
+        sequence: [''],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -98,6 +114,7 @@ export class GalleryAlbumAddEditComponent {
       }
       this.galleryAlbumSubmitData = this.galleryAlbumService.ConvertToGalleryAlbumSubmitData(galleryAlbumData);
       this.isEditMode = true;
+      this.objectGuid = galleryAlbumData.objectGuid;
 
       this.buildFormValues(galleryAlbumData);
 
@@ -196,6 +213,14 @@ export class GalleryAlbumAddEditComponent {
     //
     const galleryAlbumSubmitData: GalleryAlbumSubmitData = {
         id: this.galleryAlbumSubmitData?.id || 0,
+        title: formValue.title!.trim(),
+        slug: formValue.slug!.trim(),
+        description: formValue.description?.trim() || null,
+        coverImageUrl: formValue.coverImageUrl?.trim() || null,
+        isPublished: !!formValue.isPublished,
+        sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -321,6 +346,12 @@ export class GalleryAlbumAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.galleryAlbumForm.reset({
+        title: '',
+        slug: '',
+        description: '',
+        coverImageUrl: '',
+        isPublished: false,
+        sequence: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -332,6 +363,14 @@ export class GalleryAlbumAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.galleryAlbumForm.reset({
+        title: galleryAlbumData.title ?? '',
+        slug: galleryAlbumData.slug ?? '',
+        description: galleryAlbumData.description ?? '',
+        coverImageUrl: galleryAlbumData.coverImageUrl ?? '',
+        isPublished: galleryAlbumData.isPublished ?? false,
+        sequence: galleryAlbumData.sequence?.toString() ?? '',
+        active: galleryAlbumData.active ?? true,
+        deleted: galleryAlbumData.deleted ?? false,
       }, { emitEvent: false});
     }
 

@@ -46,7 +46,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -66,17 +66,16 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Announcements")]
 		public async Task<IActionResult> GetAnnouncements(
-			int? Id = null,
-			string Title = null,
-			string Body = null,
-			string Severity = null,
-			DateTime? StartDate = null,
-			DateTime? EndDate = null,
-			bool? IsPinned = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string body = null,
+			string severity = null,
+			DateTime? startDate = null,
+			DateTime? endDate = null,
+			bool? isPinned = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -99,6 +98,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -114,60 +125,75 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (StartDate.HasValue == true && StartDate.Value.Kind != DateTimeKind.Utc)
+			if (startDate.HasValue == true && startDate.Value.Kind != DateTimeKind.Utc)
 			{
-				StartDate = StartDate.Value.ToUniversalTime();
+				startDate = startDate.Value.ToUniversalTime();
 			}
 
-			if (EndDate.HasValue == true && EndDate.Value.Kind != DateTimeKind.Utc)
+			if (endDate.HasValue == true && endDate.Value.Kind != DateTimeKind.Utc)
 			{
-				EndDate = EndDate.Value.ToUniversalTime();
+				endDate = endDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Announcement> query = (from a in _context.Announcements select a);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(a => a.Id == Id.Value);
+				query = query.Where(a => a.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(body) == false)
 			{
-				query = query.Where(a => a.Title == Title);
+				query = query.Where(a => a.body == body);
 			}
-			if (string.IsNullOrEmpty(Body) == false)
+			if (string.IsNullOrEmpty(severity) == false)
 			{
-				query = query.Where(a => a.Body == Body);
+				query = query.Where(a => a.severity == severity);
 			}
-			if (string.IsNullOrEmpty(Severity) == false)
+			if (startDate.HasValue == true)
 			{
-				query = query.Where(a => a.Severity == Severity);
+				query = query.Where(a => a.startDate == startDate.Value);
 			}
-			if (StartDate.HasValue == true)
+			if (endDate.HasValue == true)
 			{
-				query = query.Where(a => a.StartDate == StartDate.Value);
+				query = query.Where(a => a.endDate == endDate.Value);
 			}
-			if (EndDate.HasValue == true)
+			if (isPinned.HasValue == true)
 			{
-				query = query.Where(a => a.EndDate == EndDate.Value);
+				query = query.Where(a => a.isPinned == isPinned.Value);
 			}
-			if (IsPinned.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(a => a.IsPinned == IsPinned.Value);
+				query = query.Where(a => a.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(a => a.VersionNumber == VersionNumber.Value);
+				query = query.Where(a => a.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(a => a.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(a => a.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(a => a.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(a => a.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(a => a.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(a => a.Deleted == Deleted.Value);
+				query = query.Where(a => a.active == true);
+				query = query.Where(a => a.deleted == false);
 			}
 
 			query = query.OrderBy(a => a.title).ThenBy(a => a.severity);
@@ -181,9 +207,9 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.Severity.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.severity.Contains(anyStringContains)
 			   );
 			}
 
@@ -237,17 +263,16 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Announcements/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string Title = null,
-			string Body = null,
-			string Severity = null,
-			DateTime? StartDate = null,
-			DateTime? EndDate = null,
-			bool? IsPinned = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string body = null,
+			string severity = null,
+			DateTime? startDate = null,
+			DateTime? endDate = null,
+			bool? isPinned = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -263,64 +288,89 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			//
 			// Fix any non-UTC date parameters that come in.
 			//
-			if (StartDate.HasValue == true && StartDate.Value.Kind != DateTimeKind.Utc)
+			if (startDate.HasValue == true && startDate.Value.Kind != DateTimeKind.Utc)
 			{
-				StartDate = StartDate.Value.ToUniversalTime();
+				startDate = startDate.Value.ToUniversalTime();
 			}
 
-			if (EndDate.HasValue == true && EndDate.Value.Kind != DateTimeKind.Utc)
+			if (endDate.HasValue == true && endDate.Value.Kind != DateTimeKind.Utc)
 			{
-				EndDate = EndDate.Value.ToUniversalTime();
+				endDate = endDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Announcement> query = (from a in _context.Announcements select a);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (title != null)
 			{
-				query = query.Where(a => a.Id == Id.Value);
+				query = query.Where(a => a.title == title);
 			}
-			if (Title != null)
+			if (body != null)
 			{
-				query = query.Where(a => a.Title == Title);
+				query = query.Where(a => a.body == body);
 			}
-			if (Body != null)
+			if (severity != null)
 			{
-				query = query.Where(a => a.Body == Body);
+				query = query.Where(a => a.severity == severity);
 			}
-			if (Severity != null)
+			if (startDate.HasValue == true)
 			{
-				query = query.Where(a => a.Severity == Severity);
+				query = query.Where(a => a.startDate == startDate.Value);
 			}
-			if (StartDate.HasValue == true)
+			if (endDate.HasValue == true)
 			{
-				query = query.Where(a => a.StartDate == StartDate.Value);
+				query = query.Where(a => a.endDate == endDate.Value);
 			}
-			if (EndDate.HasValue == true)
+			if (isPinned.HasValue == true)
 			{
-				query = query.Where(a => a.EndDate == EndDate.Value);
+				query = query.Where(a => a.isPinned == isPinned.Value);
 			}
-			if (IsPinned.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(a => a.IsPinned == IsPinned.Value);
+				query = query.Where(a => a.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(a => a.VersionNumber == VersionNumber.Value);
+				query = query.Where(a => a.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(a => a.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(a => a.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(a => a.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(a => a.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(a => a.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(a => a.Deleted == Deleted.Value);
+				query = query.Where(a => a.active == true);
+				query = query.Where(a => a.deleted == false);
 			}
 
 			//
@@ -331,9 +381,9 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.Severity.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.severity.Contains(anyStringContains)
 			   );
 			}
 
@@ -371,13 +421,30 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.Announcement> query = (from a in _context.Announcements where
-				(a.id == id)
+							(a.id == id) &&
+							(userIsAdmin == true || a.deleted == false) &&
+							(userIsWriter == true || a.active == true)
 					select a);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
 					query = query.AsSplitQuery();
@@ -459,11 +526,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.Announcement> query = (from x in _context.Announcements
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.Announcement existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -496,6 +577,20 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.Announcement announcement = (Database.Announcement)_context.Entry(existing).GetDatabaseValues().ToObject();
 			announcement.ApplyDTO(announcementDTO);
+			//
+			// The tenant guid for any Announcement being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the Announcement because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				announcement.tenantGuid = existing.tenantGuid;
+			}
+
 			lock (announcementPutSyncRoot)
 			{
 				//
@@ -514,15 +609,33 @@ namespace Foundation.Community.Controllers.WebAPI
 				}
 
 
-
-				if (announcement.StartDate.Kind != DateTimeKind.Utc)
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (announcement.deleted == true || existing.deleted == true))
 				{
-					announcement.StartDate = announcement.StartDate.ToUniversalTime();
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.Announcement record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
 				}
 
-				if (announcement.EndDate.HasValue == true && announcement.EndDate.Value.Kind != DateTimeKind.Utc)
+				if (announcement.title != null && announcement.title.Length > 250)
 				{
-					announcement.EndDate = announcement.EndDate.Value.ToUniversalTime();
+					announcement.title = announcement.title.Substring(0, 250);
+				}
+
+				if (announcement.severity != null && announcement.severity.Length > 50)
+				{
+					announcement.severity = announcement.severity.Substring(0, 50);
+				}
+
+				if (announcement.startDate.Kind != DateTimeKind.Utc)
+				{
+					announcement.startDate = announcement.startDate.ToUniversalTime();
+				}
+
+				if (announcement.endDate.HasValue == true && announcement.endDate.Value.Kind != DateTimeKind.Utc)
+				{
+					announcement.endDate = announcement.endDate.Value.ToUniversalTime();
 				}
 
 				try
@@ -542,6 +655,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				        announcementChangeHistory.versionNumber = announcement.versionNumber;
 				        announcementChangeHistory.timeStamp = DateTime.UtcNow;
 				        announcementChangeHistory.userId = securityUser.id;
+				        announcementChangeHistory.tenantGuid = userTenantGuid;
 				        announcementChangeHistory.data = JsonSerializer.Serialize(Database.Announcement.CreateAnonymousWithFirstLevelSubObjects(announcement));
 				        _context.AnnouncementChangeHistories.Add(announcementChangeHistory);
 
@@ -607,6 +721,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new Announcement object using the data from the DTO
 			//
@@ -614,16 +741,32 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				if (announcement.StartDate.Kind != DateTimeKind.Utc)
+				//
+				// Ensure that the tenant data is correct.
+				//
+				announcement.tenantGuid = userTenantGuid;
+
+				if (announcement.title != null && announcement.title.Length > 250)
 				{
-					announcement.StartDate = announcement.StartDate.ToUniversalTime();
+					announcement.title = announcement.title.Substring(0, 250);
 				}
 
-				if (announcement.EndDate.HasValue == true && announcement.EndDate.Value.Kind != DateTimeKind.Utc)
+				if (announcement.severity != null && announcement.severity.Length > 50)
 				{
-					announcement.EndDate = announcement.EndDate.Value.ToUniversalTime();
+					announcement.severity = announcement.severity.Substring(0, 50);
 				}
 
+				if (announcement.startDate.Kind != DateTimeKind.Utc)
+				{
+					announcement.startDate = announcement.startDate.ToUniversalTime();
+				}
+
+				if (announcement.endDate.HasValue == true && announcement.endDate.Value.Kind != DateTimeKind.Utc)
+				{
+					announcement.endDate = announcement.endDate.Value.ToUniversalTime();
+				}
+
+				announcement.objectGuid = Guid.NewGuid();
 				announcement.versionNumber = 1;
 
 				_context.Announcements.Add(announcement);
@@ -652,6 +795,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				    announcementChangeHistory.versionNumber = announcement.versionNumber;
 				    announcementChangeHistory.timeStamp = DateTime.UtcNow;
 				    announcementChangeHistory.userId = securityUser.id;
+				    announcementChangeHistory.tenantGuid = userTenantGuid;
 				    announcementChangeHistory.data = JsonSerializer.Serialize(Database.Announcement.CreateAnonymousWithFirstLevelSubObjects(announcement));
 				    _context.AnnouncementChangeHistories.Add(announcementChangeHistory);
 				    await _context.SaveChangesAsync(cancellationToken);
@@ -713,6 +857,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			
 
 			
@@ -720,6 +876,8 @@ namespace Foundation.Community.Controllers.WebAPI
 			        where
 			        (x.id == id)
 			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			//
@@ -755,7 +913,8 @@ namespace Foundation.Community.Controllers.WebAPI
 				AnnouncementChangeHistory announcementChangeHistory = (from x in _context.AnnouncementChangeHistories
 				                                               where
 				                                               x.announcementId == id &&
-				                                               x.versionNumber == versionNumber
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
 				                                               select x)
 				                                               .AsNoTracking()
 				                                               .FirstOrDefault();
@@ -772,17 +931,15 @@ namespace Foundation.Community.Controllers.WebAPI
 				    //
 				    // Put all other fields back the way that they were 
 				    //
-				    announcement.Id = oldAnnouncement.Id;
-				    announcement.Title = oldAnnouncement.Title;
-				    announcement.Body = oldAnnouncement.Body;
-				    announcement.Severity = oldAnnouncement.Severity;
-				    announcement.StartDate = oldAnnouncement.StartDate;
-				    announcement.EndDate = oldAnnouncement.EndDate;
-				    announcement.IsPinned = oldAnnouncement.IsPinned;
-				    announcement.VersionNumber = oldAnnouncement.VersionNumber;
-				    announcement.ObjectGuid = oldAnnouncement.ObjectGuid;
-				    announcement.Active = oldAnnouncement.Active;
-				    announcement.Deleted = oldAnnouncement.Deleted;
+				    announcement.title = oldAnnouncement.title;
+				    announcement.body = oldAnnouncement.body;
+				    announcement.severity = oldAnnouncement.severity;
+				    announcement.startDate = oldAnnouncement.startDate;
+				    announcement.endDate = oldAnnouncement.endDate;
+				    announcement.isPinned = oldAnnouncement.isPinned;
+				    announcement.objectGuid = oldAnnouncement.objectGuid;
+				    announcement.active = oldAnnouncement.active;
+				    announcement.deleted = oldAnnouncement.deleted;
 
 				    string serializedAnnouncement = JsonSerializer.Serialize(announcement);
 
@@ -799,6 +956,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				        newAnnouncementChangeHistory.versionNumber = announcement.versionNumber;
 				        newAnnouncementChangeHistory.timeStamp = DateTime.UtcNow;
 				        newAnnouncementChangeHistory.userId = securityUser.id;
+				        newAnnouncementChangeHistory.tenantGuid = userTenantGuid;
 				        newAnnouncementChangeHistory.data = JsonSerializer.Serialize(Database.Announcement.CreateAnonymousWithFirstLevelSubObjects(announcement));
 				        _context.AnnouncementChangeHistories.Add(newAnnouncementChangeHistory);
 
@@ -856,7 +1014,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Announcement announcement = await _context.Announcements.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (announcement == null)
@@ -866,7 +1038,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				announcement.SetupVersionInquiry(_context, Guid.Empty);
+				announcement.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Announcement> versionInfo = await announcement.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
 
@@ -912,7 +1084,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Announcement announcement = await _context.Announcements.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (announcement == null)
@@ -922,7 +1108,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				announcement.SetupVersionInquiry(_context, Guid.Empty);
+				announcement.SetupVersionInquiry(_context, userTenantGuid);
 
 				List<VersionInformation<Database.Announcement>> versions = await announcement.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
 
@@ -963,7 +1149,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Announcement announcement = await _context.Announcements.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (announcement == null)
@@ -973,7 +1173,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				announcement.SetupVersionInquiry(_context, Guid.Empty);
+				announcement.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Announcement> versionInfo = await announcement.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
 
@@ -1019,7 +1219,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Announcement announcement = await _context.Announcements.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (announcement == null)
@@ -1029,7 +1243,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				announcement.SetupVersionInquiry(_context, Guid.Empty);
+				announcement.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Announcement> versionInfo = await announcement.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
 
@@ -1072,11 +1286,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.Announcement> query = (from x in _context.Announcements
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.Announcement announcement = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -1105,6 +1334,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			        announcementChangeHistory.versionNumber = announcement.versionNumber;
 			        announcementChangeHistory.timeStamp = DateTime.UtcNow;
 			        announcementChangeHistory.userId = securityUser.id;
+			        announcementChangeHistory.tenantGuid = userTenantGuid;
 			        announcementChangeHistory.data = JsonSerializer.Serialize(Database.Announcement.CreateAnonymousWithFirstLevelSubObjects(announcement));
 			        _context.AnnouncementChangeHistories.Add(announcementChangeHistory);
 
@@ -1149,17 +1379,16 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string Title = null,
-			string Body = null,
-			string Severity = null,
-			DateTime? StartDate = null,
-			DateTime? EndDate = null,
-			bool? IsPinned = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string body = null,
+			string severity = null,
+			DateTime? startDate = null,
+			DateTime? endDate = null,
+			bool? isPinned = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -1180,6 +1409,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -1195,60 +1437,75 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (StartDate.HasValue == true && StartDate.Value.Kind != DateTimeKind.Utc)
+			if (startDate.HasValue == true && startDate.Value.Kind != DateTimeKind.Utc)
 			{
-				StartDate = StartDate.Value.ToUniversalTime();
+				startDate = startDate.Value.ToUniversalTime();
 			}
 
-			if (EndDate.HasValue == true && EndDate.Value.Kind != DateTimeKind.Utc)
+			if (endDate.HasValue == true && endDate.Value.Kind != DateTimeKind.Utc)
 			{
-				EndDate = EndDate.Value.ToUniversalTime();
+				endDate = endDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Announcement> query = (from a in _context.Announcements select a);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(a => a.Id == Id.Value);
+				query = query.Where(a => a.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(body) == false)
 			{
-				query = query.Where(a => a.Title == Title);
+				query = query.Where(a => a.body == body);
 			}
-			if (string.IsNullOrEmpty(Body) == false)
+			if (string.IsNullOrEmpty(severity) == false)
 			{
-				query = query.Where(a => a.Body == Body);
+				query = query.Where(a => a.severity == severity);
 			}
-			if (string.IsNullOrEmpty(Severity) == false)
+			if (startDate.HasValue == true)
 			{
-				query = query.Where(a => a.Severity == Severity);
+				query = query.Where(a => a.startDate == startDate.Value);
 			}
-			if (StartDate.HasValue == true)
+			if (endDate.HasValue == true)
 			{
-				query = query.Where(a => a.StartDate == StartDate.Value);
+				query = query.Where(a => a.endDate == endDate.Value);
 			}
-			if (EndDate.HasValue == true)
+			if (isPinned.HasValue == true)
 			{
-				query = query.Where(a => a.EndDate == EndDate.Value);
+				query = query.Where(a => a.isPinned == isPinned.Value);
 			}
-			if (IsPinned.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(a => a.IsPinned == IsPinned.Value);
+				query = query.Where(a => a.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(a => a.VersionNumber == VersionNumber.Value);
+				query = query.Where(a => a.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(a => a.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(a => a.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(a => a.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(a => a.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(a => a.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(a => a.Deleted == Deleted.Value);
+				query = query.Where(a => a.active == true);
+				query = query.Where(a => a.deleted == false);
 			}
 
 
@@ -1260,11 +1517,14 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.Severity.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.severity.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.title).ThenBy(x => x.severity);

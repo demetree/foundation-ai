@@ -20,6 +20,34 @@
    </div>
    <div class="modal-body post-tag-assignment-modal-body">
       <form [formGroup]="postTagAssignmentForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('postId')">
+                <label for="PostTagAssignment-postId" id="label-PostTagAssignment-postId"><span class="text-danger">*</span>Post</label>
+                <select id="PostTagAssignment-postId" formControlName="postId" class="form-select post-tag-assignment-select" [disabled]="!userIsCommunityPostTagAssignmentWriter()">
+                    <option [ngValue]="null">Select Post</option>
+                    <option *ngFor="let post of posts$ | async" [ngValue]="post.id">{{post.title}}</option>
+                </select>
+                <div *ngIf="postTagAssignmentForm.get('postId')?.invalid && postTagAssignmentForm.get('postId')?.touched" class="text-danger">
+                    Post is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('postTagId')">
+                <label for="PostTagAssignment-postTagId" id="label-PostTagAssignment-postTagId"><span class="text-danger">*</span>Post Tag</label>
+                <select id="PostTagAssignment-postTagId" formControlName="postTagId" class="form-select post-tag-assignment-select" [disabled]="!userIsCommunityPostTagAssignmentWriter()">
+                    <option [ngValue]="null">Select Post Tag</option>
+                    <option *ngFor="let postTag of postTags$ | async" [ngValue]="postTag.id">{{postTag.name}}</option>
+                </select>
+                <div *ngIf="postTagAssignmentForm.get('postTagId')?.invalid && postTagAssignmentForm.get('postTagId')?.touched" class="text-danger">
+                    Post Tag is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PostTagAssignment-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityPostTagAssignmentWriter()" />
+                <label for="PostTagAssignment-active" class="form-check-label" id="label-PostTagAssignment-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PostTagAssignment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityPostTagAssignmentWriter()" />
+                <label for="PostTagAssignment-deleted" class="form-check-label" id="label-PostTagAssignment-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
          <div class="modal-footer post-tag-assignment-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Post Tag Assignment changes and Close">Cancel</button>
             <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !postTagAssignmentForm.valid || postTagAssignmentForm.pristine  || userIsCommunityPostTagAssignmentWriter() == false " ngbTooltip="Save the Post Tag Assignment changes and Close">

@@ -23,6 +23,9 @@
     <ProjectReference Include="..\..\CommunityDatabase\CommunityDatabase.csproj" />
     <ProjectReference Include="..\..\SchedulerDatabase\SchedulerDatabase.csproj" />
     <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
+    <ProjectReference Include="..\Community.Client\Community.Client.esproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">

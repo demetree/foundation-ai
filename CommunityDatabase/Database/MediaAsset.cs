@@ -7,27 +7,29 @@ namespace Foundation.Community.Database;
 
 public partial class MediaAsset
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string FileName { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string FilePath { get; set; }
+    public string fileName { get; set; }
 
-    public string MimeType { get; set; }
+    public string filePath { get; set; }
 
-    public string AltText { get; set; }
+    public string mimeType { get; set; }
 
-    public string Caption { get; set; }
+    public string altText { get; set; }
 
-    public long? FileSizeBytes { get; set; }
+    public string caption { get; set; }
 
-    public int? ImageWidth { get; set; }
+    public long? fileSizeBytes { get; set; }
 
-    public int? ImageHeight { get; set; }
+    public int? imageWidth { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public int? imageHeight { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
+
+    public bool deleted { get; set; }
 }

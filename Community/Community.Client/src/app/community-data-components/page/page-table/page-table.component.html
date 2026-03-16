@@ -27,6 +27,38 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('title')">
+                Title
+                <span *ngIf="sortColumn === 'title'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('slug')">
+                Slug
+                <span *ngIf="sortColumn === 'slug'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('body')">
+                Body
+                <span *ngIf="sortColumn === 'body'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('metaDescription')">
+                Meta  Description
+                <span *ngIf="sortColumn === 'metaDescription'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('featuredImageUrl')">
+                Featured  Image  Url
+                <span *ngIf="sortColumn === 'featuredImageUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isPublished')">
+                Is  Published
+                <span *ngIf="sortColumn === 'isPublished'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('publishedDate')">
+                Published  Date
+                <span *ngIf="sortColumn === 'publishedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sortOrder')">
+                Sort  Order
+                <span *ngIf="sortColumn === 'sortOrder'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +144,14 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/page', page.id]" class="btn btn-link text-left" ngbTooltip="Open Page details">{{page.title}}</a></td>
+            <td class="text-truncate">{{page.slug}}</td>
+            <td class="text-truncate">{{page.body}}</td>
+            <td class="text-truncate">{{page.metaDescription}}</td>
+            <td class="text-truncate">{{page.featuredImageUrl}}</td>
+            <td class="text-truncate"><boolean-icon [value]="page.isPublished"/></td>
+            <td class="text-truncate">{{page.publishedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{page.sortOrder | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -258,6 +298,38 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="page-info" *ngIf="page.title != null">
+              <strong>Title: </strong>
+              {{page.title}}
+            </p>
+            <p class="page-info" *ngIf="page.slug != null">
+              <strong>Slug: </strong>
+              {{page.slug}}
+            </p>
+            <p class="page-info" *ngIf="page.body != null">
+              <strong>Body: </strong>
+              {{page.body}}
+            </p>
+            <p class="page-info" *ngIf="page.metaDescription != null">
+              <strong>Meta Description: </strong>
+              {{page.metaDescription}}
+            </p>
+            <p class="page-info" *ngIf="page.featuredImageUrl != null">
+              <strong>Featured Image Url: </strong>
+              {{page.featuredImageUrl}}
+            </p>
+            <p class="page-info" *ngIf="page.isPublished != null">
+              <strong>Is Published: </strong>
+              <boolean-icon [value]="page.isPublished"/>
+            </p>
+            <p class="page-info" *ngIf="page.publishedDate != null">
+              <strong>Published Date: </strong>
+              {{page.publishedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="page-info" *ngIf="page.sortOrder != null">
+              <strong>Sort Order: </strong>
+              {{page.sortOrder | bigNumberFormat : '1.0-2'}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

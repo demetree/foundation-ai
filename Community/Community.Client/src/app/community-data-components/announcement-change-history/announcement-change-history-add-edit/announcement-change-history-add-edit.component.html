@@ -20,6 +20,41 @@
    </div>
    <div class="modal-body announcement-change-history-modal-body">
       <form [formGroup]="announcementChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('announcementId')">
+                <label for="AnnouncementChangeHistory-announcementId" id="label-AnnouncementChangeHistory-announcementId"><span class="text-danger">*</span>Announcement</label>
+                <select id="AnnouncementChangeHistory-announcementId" formControlName="announcementId" class="form-select announcement-change-history-select" [disabled]="!userIsCommunityAnnouncementChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Announcement</option>
+                    <option *ngFor="let announcement of announcements$ | async" [ngValue]="announcement.id">{{announcement.title}}</option>
+                </select>
+                <div *ngIf="announcementChangeHistoryForm.get('announcementId')?.invalid && announcementChangeHistoryForm.get('announcementId')?.touched" class="text-danger">
+                    Announcement is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="AnnouncementChangeHistory-versionNumber" id="label-AnnouncementChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="AnnouncementChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control announcement-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="AnnouncementChangeHistory-timeStamp" id="label-AnnouncementChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="AnnouncementChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control announcement-change-history-input" [disabled]="!userIsCommunityAnnouncementChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="announcementChangeHistoryForm.get('timeStamp')?.invalid && announcementChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="AnnouncementChangeHistory-userId" id="label-AnnouncementChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="AnnouncementChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control announcement-change-history-input" [disabled]="!userIsCommunityAnnouncementChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="announcementChangeHistoryForm.get('userId')?.invalid && announcementChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="AnnouncementChangeHistory-data" id="label-AnnouncementChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="AnnouncementChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control announcement-change-history-input" [disabled]="!userIsCommunityAnnouncementChangeHistoryWriter()"></textarea>
+                <div *ngIf="announcementChangeHistoryForm.get('data')?.invalid && announcementChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
          <div class="modal-footer announcement-change-history-modal-footer">
             <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Announcement Change History changes and Close">Cancel</button>
             <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !announcementChangeHistoryForm.valid || announcementChangeHistoryForm.pristine  || userIsCommunityAnnouncementChangeHistoryWriter() == false " ngbTooltip="Save the Announcement Change History changes and Close">

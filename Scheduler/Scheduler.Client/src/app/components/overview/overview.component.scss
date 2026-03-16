@@ -295,14 +295,7 @@
 }
 
 
-//
-// Loading Spinner
-//
-.loading-spinner {
-  .spinner-border {
-    animation: spinner-grow 1s ease-in-out infinite;
-  }
-}
+// (loading-spinner override removed — using standard Bootstrap spinner)
 
 
 //

@@ -20,12 +20,15 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PostTagDTO
 		{
-			public Int32 Id { get; set; }
-			public String Name { get; set; }
-			public String Slug { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String name { get; set; }
+			[Required]
+			public String slug { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -50,12 +53,12 @@ namespace Foundation.Community.Database
 		{
 			return new PostTagDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Slug = this.Slug,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				slug = this.slug,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -94,12 +97,12 @@ namespace Foundation.Community.Database
 		{
 			return new PostTagOutputDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Slug = this.Slug,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				slug = this.slug,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -138,12 +141,12 @@ namespace Foundation.Community.Database
 		{
 			return new Database.PostTag
 			{
-				Id = dto.Id,
-				Name = dto.Name,
-				Slug = dto.Slug,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				name = dto.name,
+				slug = dto.slug,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -160,16 +163,16 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Name = dto.Name;
-			this.Slug = dto.Slug;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.name = dto.name;
+			this.slug = dto.slug;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -185,12 +188,13 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new PostTag{
-				Id = this.Id,
-				Name = this.Name,
-				Slug = this.Slug,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				name = this.name,
+				slug = this.slug,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -243,12 +247,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postTag.Id,
-				Name = postTag.Name,
-				Slug = postTag.Slug,
-				ObjectGuid = postTag.ObjectGuid,
-				Active = postTag.Active,
-				Deleted = postTag.Deleted,
+				id = postTag.id,
+				name = postTag.name,
+				slug = postTag.slug,
+				objectGuid = postTag.objectGuid,
+				active = postTag.active,
+				deleted = postTag.deleted,
 			 };
 		}
 
@@ -268,12 +272,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postTag.Id,
-				Name = postTag.Name,
-				Slug = postTag.Slug,
-				ObjectGuid = postTag.ObjectGuid,
-				Active = postTag.Active,
-				Deleted = postTag.Deleted,
+				id = postTag.id,
+				name = postTag.name,
+				slug = postTag.slug,
+				objectGuid = postTag.objectGuid,
+				active = postTag.active,
+				deleted = postTag.deleted,
 			 };
 		}
 
@@ -293,6 +297,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = postTag.id,
 				name = postTag.name,
 				description = string.Join(", ", new[] { postTag.name, postTag.slug}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

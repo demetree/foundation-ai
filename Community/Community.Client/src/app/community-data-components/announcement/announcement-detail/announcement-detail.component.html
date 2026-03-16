@@ -17,6 +17,51 @@
                 <div class="col m-2 announcement-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="announcementForm" (ngSubmit)="submitForm()" class="announcement-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('title')">
+                                <label for="Announcement-title" id="label-Announcement-title"><span class="text-danger">*</span>Title</label>
+                                <input type="text" id="Announcement-title" formControlName="title" placeholder="Enter Title" class="form-control announcement-input" [disabled]="!userIsCommunityAnnouncementWriter()" aria-labelledby="label-title" />
+                                <div *ngIf="announcementForm.get('title')?.invalid && announcementForm.get('title')?.touched" class="text-danger">
+                                    Title is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('body')">
+                                <label for="Announcement-body" id="label-Announcement-body">Body</label>
+                                <textarea id="Announcement-body" formControlName="body" placeholder="Enter Body" class="form-control announcement-input" [disabled]="!userIsCommunityAnnouncementWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('severity')">
+                                <label for="Announcement-severity" id="label-Announcement-severity"><span class="text-danger">*</span>Severity</label>
+                                <input type="text" id="Announcement-severity" formControlName="severity" placeholder="Enter Severity" class="form-control announcement-input" [disabled]="!userIsCommunityAnnouncementWriter()" aria-labelledby="label-severity" />
+                                <div *ngIf="announcementForm.get('severity')?.invalid && announcementForm.get('severity')?.touched" class="text-danger">
+                                    Severity is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('startDate')">
+                                <label for="Announcement-startDate" id="label-Announcement-startDate"><span class="text-danger">*</span>Start Date</label>
+                                <input type="datetime-local" id="Announcement-startDate" formControlName="startDate" placeholder="Enter Start Date" class="form-control announcement-input" [disabled]="!userIsCommunityAnnouncementWriter()" aria-labelledby="label-startDate" />
+                                <div *ngIf="announcementForm.get('startDate')?.invalid && announcementForm.get('startDate')?.touched" class="text-danger">
+                                    Start Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('endDate')">
+                                <label for="Announcement-endDate" id="label-Announcement-endDate">End Date</label>
+                                <input type="datetime-local" id="Announcement-endDate" formControlName="endDate" placeholder="Enter End Date" class="form-control announcement-input" [disabled]="!userIsCommunityAnnouncementWriter()" aria-labelledby="label-endDate" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPinned')">
+                                <input type="checkbox" id="Announcement-isPinned" formControlName="isPinned" class="form-check-input" [disabled]="!userIsCommunityAnnouncementWriter()" />
+                                <label for="Announcement-isPinned" class="form-check-label" id="label-Announcement-isPinned"><span class="text-danger">*</span>Is Pinned</label>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Announcement-versionNumber" id="label-Announcement-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Announcement-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control announcement-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Announcement-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityAnnouncementWriter()" />
+                                <label for="Announcement-active" class="form-check-label" id="label-Announcement-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Announcement-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityAnnouncementWriter()" />
+                                <label for="Announcement-deleted" class="form-check-label" id="label-Announcement-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
                             <div class="announcement-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="announcementForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Announcement">Reset</button>
                                 <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !announcementForm.valid || !announcementForm.dirty || announcementForm.pristine  || userIsCommunityAnnouncementWriter() == false " ngbTooltip="Save the Announcement changes">

@@ -27,14 +27,13 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class SiteSettingQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    SettingKey: string | null | undefined = null;
-    SettingValue: string | null | undefined = null;
-    Description: string | null | undefined = null;
-    SettingGroup: string | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    settingKey: string | null | undefined = null;
+    settingValue: string | null | undefined = null;
+    description: string | null | undefined = null;
+    settingGroup: string | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -46,13 +45,13 @@ export class SiteSettingQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class SiteSettingSubmitData {
-    Id: bigint | number | null = null;
-    SettingKey: string | null = null;
-    SettingValue: string | null = null;
-    Description: string | null = null;
-    SettingGroup: string | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    settingKey!: string;
+    settingValue: string | null = null;
+    description: string | null = null;
+    settingGroup: string | null = null;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -99,14 +98,14 @@ export class SiteSettingBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class SiteSettingData {
-    Id!: bigint | number;
-    SettingKey!: string | null;
-    SettingValue!: string | null;
-    Description!: string | null;
-    SettingGroup!: string | null;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
+    id!: bigint | number;
+    settingKey!: string;
+    settingValue!: string | null;
+    description!: string | null;
+    settingGroup!: string | null;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
 
     //
     // Private lazy-loading caches for related collections
@@ -253,13 +252,13 @@ export class SiteSettingService extends SecureEndpointBase {
 
         let output = new SiteSettingSubmitData();
 
-        output.Id = data.Id;
-        output.SettingKey = data.SettingKey;
-        output.SettingValue = data.SettingValue;
-        output.Description = data.Description;
-        output.SettingGroup = data.SettingGroup;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.settingKey = data.settingKey;
+        output.settingValue = data.settingValue;
+        output.description = data.description;
+        output.settingGroup = data.settingGroup;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

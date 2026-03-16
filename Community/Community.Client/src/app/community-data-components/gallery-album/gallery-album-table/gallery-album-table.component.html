@@ -27,6 +27,30 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('title')">
+                Title
+                <span *ngIf="sortColumn === 'title'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('slug')">
+                Slug
+                <span *ngIf="sortColumn === 'slug'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('coverImageUrl')">
+                Cover  Image  Url
+                <span *ngIf="sortColumn === 'coverImageUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isPublished')">
+                Is  Published
+                <span *ngIf="sortColumn === 'isPublished'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +136,12 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/galleryalbum', galleryAlbum.id]" class="btn btn-link text-left" ngbTooltip="Open Gallery Album details">{{galleryAlbum.title}}</a></td>
+            <td class="text-truncate">{{galleryAlbum.slug}}</td>
+            <td class="text-truncate">{{galleryAlbum.description}}</td>
+            <td class="text-truncate">{{galleryAlbum.coverImageUrl}}</td>
+            <td class="text-truncate"><boolean-icon [value]="galleryAlbum.isPublished"/></td>
+            <td class="text-truncate">{{galleryAlbum.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -258,6 +288,30 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="gallery-album-info" *ngIf="galleryAlbum.title != null">
+              <strong>Title: </strong>
+              {{galleryAlbum.title}}
+            </p>
+            <p class="gallery-album-info" *ngIf="galleryAlbum.slug != null">
+              <strong>Slug: </strong>
+              {{galleryAlbum.slug}}
+            </p>
+            <p class="gallery-album-info" *ngIf="galleryAlbum.description != null">
+              <strong>Description: </strong>
+              {{galleryAlbum.description}}
+            </p>
+            <p class="gallery-album-info" *ngIf="galleryAlbum.coverImageUrl != null">
+              <strong>Cover Image Url: </strong>
+              {{galleryAlbum.coverImageUrl}}
+            </p>
+            <p class="gallery-album-info" *ngIf="galleryAlbum.isPublished != null">
+              <strong>Is Published: </strong>
+              <boolean-icon [value]="galleryAlbum.isPublished"/>
+            </p>
+            <p class="gallery-album-info" *ngIf="galleryAlbum.sequence != null">
+              <strong>Sequence: </strong>
+              {{galleryAlbum.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

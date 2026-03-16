@@ -175,6 +175,14 @@ export class MenuItemTableComponent implements OnInit, OnChanges, AfterViewInit 
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'menu.name', label: 'Menu', width: undefined, template: 'link', linkPath: ['/menu', 'menuId'] },
+    { key: 'label', label: 'Label', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/menuitem', 'id']  },
+    { key: 'url', label: 'Url', width: undefined },
+    { key: 'page.name', label: 'Page', width: undefined, template: 'link', linkPath: ['/page', 'pageId'] },
+    { key: 'parentMenuItem.name', label: 'Menu Item', width: undefined, template: 'link', linkPath: ['/menuitem', 'parentMenuItemId'] },
+    { key: 'iconClass', label: 'Icon Class', width: undefined },
+    { key: 'openInNewTab', label: 'Open In New Tab', width: '120px', template: 'boolean' },
+    { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
 
@@ -186,6 +194,8 @@ export class MenuItemTableComponent implements OnInit, OnChanges, AfterViewInit 
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +328,14 @@ export class MenuItemTableComponent implements OnInit, OnChanges, AfterViewInit 
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'menu.name',
+                      'label',
+                      'url',
+                      'page.name',
+                      'parentMenuItem.name',
+                      'iconClass',
+                      'openInNewTab',
+                      'sequence',
         ];
 
         result = result.filter((menuItem) =>

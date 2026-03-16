@@ -175,6 +175,14 @@ export class MediaAssetTableComponent implements OnInit, OnChanges, AfterViewIni
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'fileName', label: 'File Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/mediaasset', 'id']  },
+    { key: 'filePath', label: 'File Path', width: undefined },
+    { key: 'mimeType', label: 'Mime Type', width: undefined },
+    { key: 'altText', label: 'Alt Text', width: undefined },
+    { key: 'caption', label: 'Caption', width: undefined },
+    { key: 'fileSizeBytes', label: 'File Size Bytes', width: undefined },
+    { key: 'imageWidth', label: 'Image Width', width: undefined },
+    { key: 'imageHeight', label: 'Image Height', width: undefined },
 
     ];
 
@@ -186,6 +194,8 @@ export class MediaAssetTableComponent implements OnInit, OnChanges, AfterViewIni
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +328,14 @@ export class MediaAssetTableComponent implements OnInit, OnChanges, AfterViewIni
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'fileName',
+                      'filePath',
+                      'mimeType',
+                      'altText',
+                      'caption',
+                      'fileSizeBytes',
+                      'imageWidth',
+                      'imageHeight',
         ];
 
         result = result.filter((mediaAsset) =>

@@ -35,6 +35,13 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface GalleryImageFormValues {
+  galleryAlbumId: number | bigint,       // For FK link number
+  imageUrl: string,
+  caption: string | null,
+  altText: string | null,
+  sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -62,6 +69,13 @@ export class GalleryImageDetailComponent implements OnInit, CanComponentDeactiva
 
 
   public galleryImageForm: FormGroup = this.fb.group({
+        galleryAlbumId: [null, Validators.required],
+        imageUrl: ['', Validators.required],
+        caption: [''],
+        altText: [''],
+        sequence: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -364,6 +378,13 @@ export class GalleryImageDetailComponent implements OnInit, CanComponentDeactiva
       // Reset the form group to null state, but don't change the form instance.
       //
       this.galleryImageForm.reset({
+        galleryAlbumId: null,
+        imageUrl: '',
+        caption: '',
+        altText: '',
+        sequence: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -373,6 +394,13 @@ export class GalleryImageDetailComponent implements OnInit, CanComponentDeactiva
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.galleryImageForm.reset({
+        galleryAlbumId: galleryImageData.galleryAlbumId,
+        imageUrl: galleryImageData.imageUrl ?? '',
+        caption: galleryImageData.caption ?? '',
+        altText: galleryImageData.altText ?? '',
+        sequence: galleryImageData.sequence?.toString() ?? '',
+        active: galleryImageData.active ?? true,
+        deleted: galleryImageData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -432,6 +460,13 @@ export class GalleryImageDetailComponent implements OnInit, CanComponentDeactiva
     //
     const galleryImageSubmitData: GalleryImageSubmitData = {
         id: this.galleryImageData?.id || 0,
+        galleryAlbumId: Number(formValue.galleryAlbumId),
+        imageUrl: formValue.imageUrl!.trim(),
+        caption: formValue.caption?.trim() || null,
+        altText: formValue.altText?.trim() || null,
+        sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

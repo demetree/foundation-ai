@@ -46,7 +46,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -66,19 +66,18 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Pages")]
 		public async Task<IActionResult> GetPages(
-			int? Id = null,
-			string Title = null,
-			string Slug = null,
-			string Body = null,
-			string MetaDescription = null,
-			string FeaturedImageUrl = null,
-			bool? IsPublished = null,
-			DateTime? PublishedDate = null,
-			int? SortOrder = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string slug = null,
+			string body = null,
+			string metaDescription = null,
+			string featuredImageUrl = null,
+			bool? isPublished = null,
+			DateTime? publishedDate = null,
+			int? sortOrder = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -101,6 +100,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -116,63 +127,78 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (PublishedDate.HasValue == true && PublishedDate.Value.Kind != DateTimeKind.Utc)
+			if (publishedDate.HasValue == true && publishedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				PublishedDate = PublishedDate.Value.ToUniversalTime();
+				publishedDate = publishedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Page> query = (from p in _context.Pages select p);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(p => p.Id == Id.Value);
+				query = query.Where(p => p.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(slug) == false)
 			{
-				query = query.Where(p => p.Title == Title);
+				query = query.Where(p => p.slug == slug);
 			}
-			if (string.IsNullOrEmpty(Slug) == false)
+			if (string.IsNullOrEmpty(body) == false)
 			{
-				query = query.Where(p => p.Slug == Slug);
+				query = query.Where(p => p.body == body);
 			}
-			if (string.IsNullOrEmpty(Body) == false)
+			if (string.IsNullOrEmpty(metaDescription) == false)
 			{
-				query = query.Where(p => p.Body == Body);
+				query = query.Where(p => p.metaDescription == metaDescription);
 			}
-			if (string.IsNullOrEmpty(MetaDescription) == false)
+			if (string.IsNullOrEmpty(featuredImageUrl) == false)
 			{
-				query = query.Where(p => p.MetaDescription == MetaDescription);
+				query = query.Where(p => p.featuredImageUrl == featuredImageUrl);
 			}
-			if (string.IsNullOrEmpty(FeaturedImageUrl) == false)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(p => p.FeaturedImageUrl == FeaturedImageUrl);
+				query = query.Where(p => p.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (publishedDate.HasValue == true)
 			{
-				query = query.Where(p => p.IsPublished == IsPublished.Value);
+				query = query.Where(p => p.publishedDate == publishedDate.Value);
 			}
-			if (PublishedDate.HasValue == true)
+			if (sortOrder.HasValue == true)
 			{
-				query = query.Where(p => p.PublishedDate == PublishedDate.Value);
+				query = query.Where(p => p.sortOrder == sortOrder.Value);
 			}
-			if (SortOrder.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(p => p.SortOrder == SortOrder.Value);
+				query = query.Where(p => p.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(p => p.VersionNumber == VersionNumber.Value);
+				query = query.Where(p => p.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(p => p.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(p => p.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(p => p.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(p => p.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(p => p.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(p => p.Deleted == Deleted.Value);
+				query = query.Where(p => p.active == true);
+				query = query.Where(p => p.deleted == false);
 			}
 
 			query = query.OrderBy(p => p.title).ThenBy(p => p.slug).ThenBy(p => p.metaDescription);
@@ -186,11 +212,11 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.MetaDescription.Contains(anyStringContains)
-			       || x.FeaturedImageUrl.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.metaDescription.Contains(anyStringContains)
+			       || x.featuredImageUrl.Contains(anyStringContains)
 			   );
 			}
 
@@ -244,19 +270,18 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Pages/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string Title = null,
-			string Slug = null,
-			string Body = null,
-			string MetaDescription = null,
-			string FeaturedImageUrl = null,
-			bool? IsPublished = null,
-			DateTime? PublishedDate = null,
-			int? SortOrder = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string slug = null,
+			string body = null,
+			string metaDescription = null,
+			string featuredImageUrl = null,
+			bool? isPublished = null,
+			DateTime? publishedDate = null,
+			int? sortOrder = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -272,67 +297,92 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			//
 			// Fix any non-UTC date parameters that come in.
 			//
-			if (PublishedDate.HasValue == true && PublishedDate.Value.Kind != DateTimeKind.Utc)
+			if (publishedDate.HasValue == true && publishedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				PublishedDate = PublishedDate.Value.ToUniversalTime();
+				publishedDate = publishedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Page> query = (from p in _context.Pages select p);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (title != null)
 			{
-				query = query.Where(p => p.Id == Id.Value);
+				query = query.Where(p => p.title == title);
 			}
-			if (Title != null)
+			if (slug != null)
 			{
-				query = query.Where(p => p.Title == Title);
+				query = query.Where(p => p.slug == slug);
 			}
-			if (Slug != null)
+			if (body != null)
 			{
-				query = query.Where(p => p.Slug == Slug);
+				query = query.Where(p => p.body == body);
 			}
-			if (Body != null)
+			if (metaDescription != null)
 			{
-				query = query.Where(p => p.Body == Body);
+				query = query.Where(p => p.metaDescription == metaDescription);
 			}
-			if (MetaDescription != null)
+			if (featuredImageUrl != null)
 			{
-				query = query.Where(p => p.MetaDescription == MetaDescription);
+				query = query.Where(p => p.featuredImageUrl == featuredImageUrl);
 			}
-			if (FeaturedImageUrl != null)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(p => p.FeaturedImageUrl == FeaturedImageUrl);
+				query = query.Where(p => p.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (publishedDate.HasValue == true)
 			{
-				query = query.Where(p => p.IsPublished == IsPublished.Value);
+				query = query.Where(p => p.publishedDate == publishedDate.Value);
 			}
-			if (PublishedDate.HasValue == true)
+			if (sortOrder.HasValue == true)
 			{
-				query = query.Where(p => p.PublishedDate == PublishedDate.Value);
+				query = query.Where(p => p.sortOrder == sortOrder.Value);
 			}
-			if (SortOrder.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(p => p.SortOrder == SortOrder.Value);
+				query = query.Where(p => p.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(p => p.VersionNumber == VersionNumber.Value);
+				query = query.Where(p => p.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(p => p.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(p => p.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(p => p.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(p => p.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(p => p.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(p => p.Deleted == Deleted.Value);
+				query = query.Where(p => p.active == true);
+				query = query.Where(p => p.deleted == false);
 			}
 
 			//
@@ -343,11 +393,11 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.MetaDescription.Contains(anyStringContains)
-			       || x.FeaturedImageUrl.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.metaDescription.Contains(anyStringContains)
+			       || x.featuredImageUrl.Contains(anyStringContains)
 			   );
 			}
 
@@ -385,13 +435,30 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.Page> query = (from p in _context.Pages where
-				(p.id == id)
+							(p.id == id) &&
+							(userIsAdmin == true || p.deleted == false) &&
+							(userIsWriter == true || p.active == true)
 					select p);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
 					query = query.AsSplitQuery();
@@ -473,11 +540,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.Page> query = (from x in _context.Pages
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.Page existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -510,6 +591,20 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.Page page = (Database.Page)_context.Entry(existing).GetDatabaseValues().ToObject();
 			page.ApplyDTO(pageDTO);
+			//
+			// The tenant guid for any Page being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the Page because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				page.tenantGuid = existing.tenantGuid;
+			}
+
 			lock (pagePutSyncRoot)
 			{
 				//
@@ -528,10 +623,38 @@ namespace Foundation.Community.Controllers.WebAPI
 				}
 
 
-
-				if (page.PublishedDate.HasValue == true && page.PublishedDate.Value.Kind != DateTimeKind.Utc)
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (page.deleted == true || existing.deleted == true))
 				{
-					page.PublishedDate = page.PublishedDate.Value.ToUniversalTime();
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.Page record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
+
+				if (page.title != null && page.title.Length > 250)
+				{
+					page.title = page.title.Substring(0, 250);
+				}
+
+				if (page.slug != null && page.slug.Length > 250)
+				{
+					page.slug = page.slug.Substring(0, 250);
+				}
+
+				if (page.metaDescription != null && page.metaDescription.Length > 500)
+				{
+					page.metaDescription = page.metaDescription.Substring(0, 500);
+				}
+
+				if (page.featuredImageUrl != null && page.featuredImageUrl.Length > 500)
+				{
+					page.featuredImageUrl = page.featuredImageUrl.Substring(0, 500);
+				}
+
+				if (page.publishedDate.HasValue == true && page.publishedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					page.publishedDate = page.publishedDate.Value.ToUniversalTime();
 				}
 
 				try
@@ -551,6 +674,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				        pageChangeHistory.versionNumber = page.versionNumber;
 				        pageChangeHistory.timeStamp = DateTime.UtcNow;
 				        pageChangeHistory.userId = securityUser.id;
+				        pageChangeHistory.tenantGuid = userTenantGuid;
 				        pageChangeHistory.data = JsonSerializer.Serialize(Database.Page.CreateAnonymousWithFirstLevelSubObjects(page));
 				        _context.PageChangeHistories.Add(pageChangeHistory);
 
@@ -616,6 +740,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new Page object using the data from the DTO
 			//
@@ -623,11 +760,37 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				if (page.PublishedDate.HasValue == true && page.PublishedDate.Value.Kind != DateTimeKind.Utc)
+				//
+				// Ensure that the tenant data is correct.
+				//
+				page.tenantGuid = userTenantGuid;
+
+				if (page.title != null && page.title.Length > 250)
 				{
-					page.PublishedDate = page.PublishedDate.Value.ToUniversalTime();
+					page.title = page.title.Substring(0, 250);
 				}
 
+				if (page.slug != null && page.slug.Length > 250)
+				{
+					page.slug = page.slug.Substring(0, 250);
+				}
+
+				if (page.metaDescription != null && page.metaDescription.Length > 500)
+				{
+					page.metaDescription = page.metaDescription.Substring(0, 500);
+				}
+
+				if (page.featuredImageUrl != null && page.featuredImageUrl.Length > 500)
+				{
+					page.featuredImageUrl = page.featuredImageUrl.Substring(0, 500);
+				}
+
+				if (page.publishedDate.HasValue == true && page.publishedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					page.publishedDate = page.publishedDate.Value.ToUniversalTime();
+				}
+
+				page.objectGuid = Guid.NewGuid();
 				page.versionNumber = 1;
 
 				_context.Pages.Add(page);
@@ -657,6 +820,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				    pageChangeHistory.versionNumber = page.versionNumber;
 				    pageChangeHistory.timeStamp = DateTime.UtcNow;
 				    pageChangeHistory.userId = securityUser.id;
+				    pageChangeHistory.tenantGuid = userTenantGuid;
 				    pageChangeHistory.data = JsonSerializer.Serialize(Database.Page.CreateAnonymousWithFirstLevelSubObjects(page));
 				    _context.PageChangeHistories.Add(pageChangeHistory);
 				    await _context.SaveChangesAsync(cancellationToken);
@@ -718,6 +882,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			
 
 			
@@ -725,6 +901,8 @@ namespace Foundation.Community.Controllers.WebAPI
 			        where
 			        (x.id == id)
 			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			//
@@ -761,7 +939,8 @@ namespace Foundation.Community.Controllers.WebAPI
 				PageChangeHistory pageChangeHistory = (from x in _context.PageChangeHistories
 				                                               where
 				                                               x.pageId == id &&
-				                                               x.versionNumber == versionNumber
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
 				                                               select x)
 				                                               .AsNoTracking()
 				                                               .FirstOrDefault();
@@ -778,19 +957,17 @@ namespace Foundation.Community.Controllers.WebAPI
 				    //
 				    // Put all other fields back the way that they were 
 				    //
-				    page.Id = oldPage.Id;
-				    page.Title = oldPage.Title;
-				    page.Slug = oldPage.Slug;
-				    page.Body = oldPage.Body;
-				    page.MetaDescription = oldPage.MetaDescription;
-				    page.FeaturedImageUrl = oldPage.FeaturedImageUrl;
-				    page.IsPublished = oldPage.IsPublished;
-				    page.PublishedDate = oldPage.PublishedDate;
-				    page.SortOrder = oldPage.SortOrder;
-				    page.VersionNumber = oldPage.VersionNumber;
-				    page.ObjectGuid = oldPage.ObjectGuid;
-				    page.Active = oldPage.Active;
-				    page.Deleted = oldPage.Deleted;
+				    page.title = oldPage.title;
+				    page.slug = oldPage.slug;
+				    page.body = oldPage.body;
+				    page.metaDescription = oldPage.metaDescription;
+				    page.featuredImageUrl = oldPage.featuredImageUrl;
+				    page.isPublished = oldPage.isPublished;
+				    page.publishedDate = oldPage.publishedDate;
+				    page.sortOrder = oldPage.sortOrder;
+				    page.objectGuid = oldPage.objectGuid;
+				    page.active = oldPage.active;
+				    page.deleted = oldPage.deleted;
 
 				    string serializedPage = JsonSerializer.Serialize(page);
 
@@ -807,6 +984,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				        newPageChangeHistory.versionNumber = page.versionNumber;
 				        newPageChangeHistory.timeStamp = DateTime.UtcNow;
 				        newPageChangeHistory.userId = securityUser.id;
+				        newPageChangeHistory.tenantGuid = userTenantGuid;
 				        newPageChangeHistory.data = JsonSerializer.Serialize(Database.Page.CreateAnonymousWithFirstLevelSubObjects(page));
 				        _context.PageChangeHistories.Add(newPageChangeHistory);
 
@@ -864,7 +1042,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Page page = await _context.Pages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (page == null)
@@ -874,7 +1066,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				page.SetupVersionInquiry(_context, Guid.Empty);
+				page.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Page> versionInfo = await page.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
 
@@ -920,7 +1112,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Page page = await _context.Pages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (page == null)
@@ -930,7 +1136,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				page.SetupVersionInquiry(_context, Guid.Empty);
+				page.SetupVersionInquiry(_context, userTenantGuid);
 
 				List<VersionInformation<Database.Page>> versions = await page.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
 
@@ -971,7 +1177,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Page page = await _context.Pages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (page == null)
@@ -981,7 +1201,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				page.SetupVersionInquiry(_context, Guid.Empty);
+				page.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Page> versionInfo = await page.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
 
@@ -1027,7 +1247,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Page page = await _context.Pages.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (page == null)
@@ -1037,7 +1271,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				page.SetupVersionInquiry(_context, Guid.Empty);
+				page.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Page> versionInfo = await page.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
 
@@ -1080,11 +1314,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.Page> query = (from x in _context.Pages
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.Page page = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -1113,6 +1362,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			        pageChangeHistory.versionNumber = page.versionNumber;
 			        pageChangeHistory.timeStamp = DateTime.UtcNow;
 			        pageChangeHistory.userId = securityUser.id;
+			        pageChangeHistory.tenantGuid = userTenantGuid;
 			        pageChangeHistory.data = JsonSerializer.Serialize(Database.Page.CreateAnonymousWithFirstLevelSubObjects(page));
 			        _context.PageChangeHistories.Add(pageChangeHistory);
 
@@ -1157,19 +1407,18 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string Title = null,
-			string Slug = null,
-			string Body = null,
-			string MetaDescription = null,
-			string FeaturedImageUrl = null,
-			bool? IsPublished = null,
-			DateTime? PublishedDate = null,
-			int? SortOrder = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string slug = null,
+			string body = null,
+			string metaDescription = null,
+			string featuredImageUrl = null,
+			bool? isPublished = null,
+			DateTime? publishedDate = null,
+			int? sortOrder = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -1190,6 +1439,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -1205,63 +1467,78 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (PublishedDate.HasValue == true && PublishedDate.Value.Kind != DateTimeKind.Utc)
+			if (publishedDate.HasValue == true && publishedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				PublishedDate = PublishedDate.Value.ToUniversalTime();
+				publishedDate = publishedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Page> query = (from p in _context.Pages select p);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(p => p.Id == Id.Value);
+				query = query.Where(p => p.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(slug) == false)
 			{
-				query = query.Where(p => p.Title == Title);
+				query = query.Where(p => p.slug == slug);
 			}
-			if (string.IsNullOrEmpty(Slug) == false)
+			if (string.IsNullOrEmpty(body) == false)
 			{
-				query = query.Where(p => p.Slug == Slug);
+				query = query.Where(p => p.body == body);
 			}
-			if (string.IsNullOrEmpty(Body) == false)
+			if (string.IsNullOrEmpty(metaDescription) == false)
 			{
-				query = query.Where(p => p.Body == Body);
+				query = query.Where(p => p.metaDescription == metaDescription);
 			}
-			if (string.IsNullOrEmpty(MetaDescription) == false)
+			if (string.IsNullOrEmpty(featuredImageUrl) == false)
 			{
-				query = query.Where(p => p.MetaDescription == MetaDescription);
+				query = query.Where(p => p.featuredImageUrl == featuredImageUrl);
 			}
-			if (string.IsNullOrEmpty(FeaturedImageUrl) == false)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(p => p.FeaturedImageUrl == FeaturedImageUrl);
+				query = query.Where(p => p.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (publishedDate.HasValue == true)
 			{
-				query = query.Where(p => p.IsPublished == IsPublished.Value);
+				query = query.Where(p => p.publishedDate == publishedDate.Value);
 			}
-			if (PublishedDate.HasValue == true)
+			if (sortOrder.HasValue == true)
 			{
-				query = query.Where(p => p.PublishedDate == PublishedDate.Value);
+				query = query.Where(p => p.sortOrder == sortOrder.Value);
 			}
-			if (SortOrder.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(p => p.SortOrder == SortOrder.Value);
+				query = query.Where(p => p.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(p => p.VersionNumber == VersionNumber.Value);
+				query = query.Where(p => p.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(p => p.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(p => p.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(p => p.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(p => p.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(p => p.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(p => p.Deleted == Deleted.Value);
+				query = query.Where(p => p.active == true);
+				query = query.Where(p => p.deleted == false);
 			}
 
 
@@ -1273,13 +1550,16 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.MetaDescription.Contains(anyStringContains)
-			       || x.FeaturedImageUrl.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.metaDescription.Contains(anyStringContains)
+			       || x.featuredImageUrl.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.title).ThenBy(x => x.slug).ThenBy(x => x.metaDescription);

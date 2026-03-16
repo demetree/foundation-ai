@@ -18,6 +18,7 @@ namespace Foundation.Community.Database
         /// This is for setting the context for change history inquiries.
         /// </summary>
         private CommunityContext _contextForVersionInquiry = null;
+        private Guid _tenantGuidForVersionInquiry = Guid.Empty;
 
 
 
@@ -74,9 +75,10 @@ namespace Foundation.Community.Database
         /// </summary>
         /// <param name="context"></param>
         /// <param name="tenantGuid"></param>
-        public void SetupVersionInquiry(CommunityContext context)
+        public void SetupVersionInquiry(CommunityContext context, Guid tenantGuid)
         {
             _contextForVersionInquiry = context;
+            _tenantGuidForVersionInquiry = tenantGuid;
         }
 
 
@@ -173,7 +175,7 @@ namespace Foundation.Community.Database
         /// <exception cref="Exception"></exception>
         public async Task<VersionInformation<Announcement>> GetVersionAsync(int versionNumber, bool includeData = true, CancellationToken cancellationToken = default)
         {
-            if (_contextForVersionInquiry == null)
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
             {
                 throw new Exception("Context for version inquiry is not set.  Please call SetupVersionInquiry() before accessing the GetVersion function.");
             }
@@ -195,8 +197,8 @@ namespace Foundation.Community.Database
 
             if (versionAudit.userId.HasValue == true)
             {
-                // Note that this system is has neither multi tenancy or data visibility enabled, so it gets its change history users from the security module, and gets all users.
-                version.user = await Foundation.Security.ChangeHistory.GetChangeHistoryUserAsync(versionAudit.userId.Value, cancellationToken).ConfigureAwait(false);
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -223,7 +225,7 @@ namespace Foundation.Community.Database
         /// <exception cref="Exception"></exception>
         public async Task<List<VersionInformation<Announcement>>> GetAllVersionsAsync(bool includeData = true, CancellationToken cancellationToken = default)
         {
-            if (_contextForVersionInquiry == null)
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
             {
                 throw new Exception("Context for version inquiry is not set.Please call SetupVersionInquiry() before accessing the GetAllVersions function.");
             }
@@ -248,8 +250,8 @@ namespace Foundation.Community.Database
 
                 if (versionAudit.userId.HasValue == true)
                 {
-                // Note that this system is has neither multi tenancy or data visibility enabled, so it gets its change history users from the security module, and gets all users.
-                version.user = await Foundation.Security.ChangeHistory.GetChangeHistoryUserAsync(versionAudit.userId.Value, cancellationToken).ConfigureAwait(false);
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -278,17 +280,22 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class AnnouncementDTO
 		{
-			public Int32 Id { get; set; }
-			public String Title { get; set; }
-			public String Body { get; set; }
-			public String Severity { get; set; }
-			public DateTime StartDate { get; set; }
-			public DateTime? EndDate { get; set; }
-			public Boolean IsPinned { get; set; }
-			public Int32 VersionNumber { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String title { get; set; }
+			public String body { get; set; }
+			[Required]
+			public String severity { get; set; }
+			[Required]
+			public DateTime startDate { get; set; }
+			public DateTime? endDate { get; set; }
+			[Required]
+			public Boolean isPinned { get; set; }
+			public Int32 versionNumber { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -313,17 +320,17 @@ namespace Foundation.Community.Database
 		{
 			return new AnnouncementDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Body = this.Body,
-				Severity = this.Severity,
-				StartDate = this.StartDate,
-				EndDate = this.EndDate,
-				IsPinned = this.IsPinned,
-				VersionNumber = this.VersionNumber,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				body = this.body,
+				severity = this.severity,
+				startDate = this.startDate,
+				endDate = this.endDate,
+				isPinned = this.isPinned,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -362,17 +369,17 @@ namespace Foundation.Community.Database
 		{
 			return new AnnouncementOutputDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Body = this.Body,
-				Severity = this.Severity,
-				StartDate = this.StartDate,
-				EndDate = this.EndDate,
-				IsPinned = this.IsPinned,
-				VersionNumber = this.VersionNumber,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				body = this.body,
+				severity = this.severity,
+				startDate = this.startDate,
+				endDate = this.endDate,
+				isPinned = this.isPinned,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -411,17 +418,17 @@ namespace Foundation.Community.Database
 		{
 			return new Database.Announcement
 			{
-				Id = dto.Id,
-				Title = dto.Title,
-				Body = dto.Body,
-				Severity = dto.Severity,
-				StartDate = dto.StartDate,
-				EndDate = dto.EndDate,
-				IsPinned = dto.IsPinned,
-				VersionNumber = dto.VersionNumber,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				title = dto.title,
+				body = dto.body,
+				severity = dto.severity,
+				startDate = dto.startDate,
+				endDate = dto.endDate,
+				isPinned = dto.isPinned,
+				versionNumber = dto.versionNumber,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -438,21 +445,21 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Title = dto.Title;
-			this.Body = dto.Body;
-			this.Severity = dto.Severity;
-			this.StartDate = dto.StartDate;
-			this.EndDate = dto.EndDate;
-			this.IsPinned = dto.IsPinned;
-			this.VersionNumber = dto.VersionNumber;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.title = dto.title;
+			this.body = dto.body;
+			this.severity = dto.severity;
+			this.startDate = dto.startDate;
+			this.endDate = dto.endDate;
+			this.isPinned = dto.isPinned;
+			this.versionNumber = dto.versionNumber;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -468,17 +475,18 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new Announcement{
-				Id = this.Id,
-				Title = this.Title,
-				Body = this.Body,
-				Severity = this.Severity,
-				StartDate = this.StartDate,
-				EndDate = this.EndDate,
-				IsPinned = this.IsPinned,
-				VersionNumber = this.VersionNumber,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				title = this.title,
+				body = this.body,
+				severity = this.severity,
+				startDate = this.startDate,
+				endDate = this.endDate,
+				isPinned = this.isPinned,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -531,17 +539,17 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = announcement.Id,
-				Title = announcement.Title,
-				Body = announcement.Body,
-				Severity = announcement.Severity,
-				StartDate = announcement.StartDate,
-				EndDate = announcement.EndDate,
-				IsPinned = announcement.IsPinned,
-				VersionNumber = announcement.VersionNumber,
-				ObjectGuid = announcement.ObjectGuid,
-				Active = announcement.Active,
-				Deleted = announcement.Deleted,
+				id = announcement.id,
+				title = announcement.title,
+				body = announcement.body,
+				severity = announcement.severity,
+				startDate = announcement.startDate,
+				endDate = announcement.endDate,
+				isPinned = announcement.isPinned,
+				versionNumber = announcement.versionNumber,
+				objectGuid = announcement.objectGuid,
+				active = announcement.active,
+				deleted = announcement.deleted,
 			 };
 		}
 
@@ -561,17 +569,17 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = announcement.Id,
-				Title = announcement.Title,
-				Body = announcement.Body,
-				Severity = announcement.Severity,
-				StartDate = announcement.StartDate,
-				EndDate = announcement.EndDate,
-				IsPinned = announcement.IsPinned,
-				VersionNumber = announcement.VersionNumber,
-				ObjectGuid = announcement.ObjectGuid,
-				Active = announcement.Active,
-				Deleted = announcement.Deleted,
+				id = announcement.id,
+				title = announcement.title,
+				body = announcement.body,
+				severity = announcement.severity,
+				startDate = announcement.startDate,
+				endDate = announcement.endDate,
+				isPinned = announcement.isPinned,
+				versionNumber = announcement.versionNumber,
+				objectGuid = announcement.objectGuid,
+				active = announcement.active,
+				deleted = announcement.deleted,
 			 };
 		}
 
@@ -591,6 +599,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = announcement.id,
 				name = announcement.title,
 				description = string.Join(", ", new[] { announcement.title, announcement.severity}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

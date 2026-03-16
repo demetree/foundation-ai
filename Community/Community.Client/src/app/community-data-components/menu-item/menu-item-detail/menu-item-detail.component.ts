@@ -36,6 +36,16 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface MenuItemFormValues {
+  menuId: number | bigint,       // For FK link number
+  label: string,
+  url: string | null,
+  pageId: number | bigint | null,       // For FK link number
+  parentMenuItemId: number | bigint | null,       // For FK link number
+  iconClass: string | null,
+  openInNewTab: boolean,
+  sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -63,6 +73,16 @@ export class MenuItemDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   public menuItemForm: FormGroup = this.fb.group({
+        menuId: [null, Validators.required],
+        label: ['', Validators.required],
+        url: [''],
+        pageId: [null],
+        parentMenuItemId: [null],
+        iconClass: [''],
+        openInNewTab: [false],
+        sequence: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -367,6 +387,16 @@ export class MenuItemDetailComponent implements OnInit, CanComponentDeactivate {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.menuItemForm.reset({
+        menuId: null,
+        label: '',
+        url: '',
+        pageId: null,
+        parentMenuItemId: null,
+        iconClass: '',
+        openInNewTab: false,
+        sequence: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -376,6 +406,16 @@ export class MenuItemDetailComponent implements OnInit, CanComponentDeactivate {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.menuItemForm.reset({
+        menuId: menuItemData.menuId,
+        label: menuItemData.label ?? '',
+        url: menuItemData.url ?? '',
+        pageId: menuItemData.pageId,
+        parentMenuItemId: menuItemData.parentMenuItemId,
+        iconClass: menuItemData.iconClass ?? '',
+        openInNewTab: menuItemData.openInNewTab ?? false,
+        sequence: menuItemData.sequence?.toString() ?? '',
+        active: menuItemData.active ?? true,
+        deleted: menuItemData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -435,6 +475,16 @@ export class MenuItemDetailComponent implements OnInit, CanComponentDeactivate {
     //
     const menuItemSubmitData: MenuItemSubmitData = {
         id: this.menuItemData?.id || 0,
+        menuId: Number(formValue.menuId),
+        label: formValue.label!.trim(),
+        url: formValue.url?.trim() || null,
+        pageId: formValue.pageId ? Number(formValue.pageId) : null,
+        parentMenuItemId: formValue.parentMenuItemId ? Number(formValue.parentMenuItemId) : null,
+        iconClass: formValue.iconClass?.trim() || null,
+        openInNewTab: !!formValue.openInNewTab,
+        sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

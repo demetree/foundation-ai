@@ -35,6 +35,11 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface PageChangeHistoryFormValues {
+  pageId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  timeStamp: string,
+  userId: string,     // Stored as string for form input, converted to number on submit.
+  data: string,
 };
 
 @Component({
@@ -65,6 +70,11 @@ export class PageChangeHistoryAddEditComponent {
 
 
   public pageChangeHistoryForm: FormGroup = this.fb.group({
+        pageId: [null, Validators.required],
+        versionNumber: [''],
+        timeStamp: ['', Validators.required],
+        userId: ['', Validators.required],
+        data: ['', Validators.required],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -199,6 +209,11 @@ export class PageChangeHistoryAddEditComponent {
     //
     const pageChangeHistorySubmitData: PageChangeHistorySubmitData = {
         id: this.pageChangeHistorySubmitData?.id || 0,
+        pageId: Number(formValue.pageId),
+        versionNumber: this.pageChangeHistorySubmitData?.versionNumber ?? 0,
+        timeStamp: dateTimeLocalToIsoUtc(formValue.timeStamp!.trim())!,
+        userId: Number(formValue.userId),
+        data: formValue.data!.trim(),
    };
 
       if (this.isEditMode) {
@@ -323,6 +338,11 @@ export class PageChangeHistoryAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.pageChangeHistoryForm.reset({
+        pageId: null,
+        versionNumber: '',
+        timeStamp: '',
+        userId: '',
+        data: '',
    }, { emitEvent: false});
 
     }
@@ -332,6 +352,11 @@ export class PageChangeHistoryAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.pageChangeHistoryForm.reset({
+        pageId: pageChangeHistoryData.pageId,
+        versionNumber: pageChangeHistoryData.versionNumber?.toString() ?? '',
+        timeStamp: isoUtcStringToDateTimeLocal(pageChangeHistoryData.timeStamp) ?? '',
+        userId: pageChangeHistoryData.userId?.toString() ?? '',
+        data: pageChangeHistoryData.data ?? '',
       }, { emitEvent: false});
     }
 

@@ -175,6 +175,12 @@ export class AnnouncementTableComponent implements OnInit, OnChanges, AfterViewI
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'title', label: 'Title', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/announcement', 'id']  },
+    { key: 'body', label: 'Body', width: undefined },
+    { key: 'severity', label: 'Severity', width: undefined },
+    { key: 'startDate', label: 'Start Date', width: undefined, template: 'date' },
+    { key: 'endDate', label: 'End Date', width: undefined, template: 'date' },
+    { key: 'isPinned', label: 'Is Pinned', width: '120px', template: 'boolean' },
 
     ];
 
@@ -186,9 +192,13 @@ export class AnnouncementTableComponent implements OnInit, OnChanges, AfterViewI
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -318,6 +328,12 @@ export class AnnouncementTableComponent implements OnInit, OnChanges, AfterViewI
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'title',
+                      'body',
+                      'severity',
+                      'startDate',
+                      'endDate',
+                      'isPinned',
         ];
 
         result = result.filter((announcement) =>

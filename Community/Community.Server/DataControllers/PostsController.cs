@@ -46,7 +46,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -66,22 +66,21 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Posts")]
 		public async Task<IActionResult> GetPosts(
-			int? Id = null,
-			string Title = null,
-			string Slug = null,
-			string Body = null,
-			string Excerpt = null,
-			string AuthorName = null,
-			int? PostCategoryId = null,
-			string FeaturedImageUrl = null,
-			string MetaDescription = null,
-			bool? IsPublished = null,
-			DateTime? PublishedDate = null,
-			bool? IsFeatured = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string slug = null,
+			string body = null,
+			string excerpt = null,
+			string authorName = null,
+			int? postCategoryId = null,
+			string featuredImageUrl = null,
+			string metaDescription = null,
+			bool? isPublished = null,
+			DateTime? publishedDate = null,
+			bool? isFeatured = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -104,6 +103,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -119,75 +130,90 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (PublishedDate.HasValue == true && PublishedDate.Value.Kind != DateTimeKind.Utc)
+			if (publishedDate.HasValue == true && publishedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				PublishedDate = PublishedDate.Value.ToUniversalTime();
+				publishedDate = publishedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Post> query = (from p in _context.Posts select p);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(p => p.Id == Id.Value);
+				query = query.Where(p => p.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(slug) == false)
 			{
-				query = query.Where(p => p.Title == Title);
+				query = query.Where(p => p.slug == slug);
 			}
-			if (string.IsNullOrEmpty(Slug) == false)
+			if (string.IsNullOrEmpty(body) == false)
 			{
-				query = query.Where(p => p.Slug == Slug);
+				query = query.Where(p => p.body == body);
 			}
-			if (string.IsNullOrEmpty(Body) == false)
+			if (string.IsNullOrEmpty(excerpt) == false)
 			{
-				query = query.Where(p => p.Body == Body);
+				query = query.Where(p => p.excerpt == excerpt);
 			}
-			if (string.IsNullOrEmpty(Excerpt) == false)
+			if (string.IsNullOrEmpty(authorName) == false)
 			{
-				query = query.Where(p => p.Excerpt == Excerpt);
+				query = query.Where(p => p.authorName == authorName);
 			}
-			if (string.IsNullOrEmpty(AuthorName) == false)
+			if (postCategoryId.HasValue == true)
 			{
-				query = query.Where(p => p.AuthorName == AuthorName);
+				query = query.Where(p => p.postCategoryId == postCategoryId.Value);
 			}
-			if (PostCategoryId.HasValue == true)
+			if (string.IsNullOrEmpty(featuredImageUrl) == false)
 			{
-				query = query.Where(p => p.PostCategoryId == PostCategoryId.Value);
+				query = query.Where(p => p.featuredImageUrl == featuredImageUrl);
 			}
-			if (string.IsNullOrEmpty(FeaturedImageUrl) == false)
+			if (string.IsNullOrEmpty(metaDescription) == false)
 			{
-				query = query.Where(p => p.FeaturedImageUrl == FeaturedImageUrl);
+				query = query.Where(p => p.metaDescription == metaDescription);
 			}
-			if (string.IsNullOrEmpty(MetaDescription) == false)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(p => p.MetaDescription == MetaDescription);
+				query = query.Where(p => p.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (publishedDate.HasValue == true)
 			{
-				query = query.Where(p => p.IsPublished == IsPublished.Value);
+				query = query.Where(p => p.publishedDate == publishedDate.Value);
 			}
-			if (PublishedDate.HasValue == true)
+			if (isFeatured.HasValue == true)
 			{
-				query = query.Where(p => p.PublishedDate == PublishedDate.Value);
+				query = query.Where(p => p.isFeatured == isFeatured.Value);
 			}
-			if (IsFeatured.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(p => p.IsFeatured == IsFeatured.Value);
+				query = query.Where(p => p.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(p => p.VersionNumber == VersionNumber.Value);
+				query = query.Where(p => p.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(p => p.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(p => p.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(p => p.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(p => p.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(p => p.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(p => p.Deleted == Deleted.Value);
+				query = query.Where(p => p.active == true);
+				query = query.Where(p => p.deleted == false);
 			}
 
 			query = query.OrderBy(p => p.title).ThenBy(p => p.slug).ThenBy(p => p.excerpt);
@@ -201,22 +227,22 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.Excerpt.Contains(anyStringContains)
-			       || x.AuthorName.Contains(anyStringContains)
-			       || x.FeaturedImageUrl.Contains(anyStringContains)
-			       || x.MetaDescription.Contains(anyStringContains)
-			       || (includeRelations == true && x.PostCategory.Name.Contains(anyStringContains))
-			       || (includeRelations == true && x.PostCategory.Description.Contains(anyStringContains))
-			       || (includeRelations == true && x.PostCategory.Slug.Contains(anyStringContains))
+			       x.title.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.excerpt.Contains(anyStringContains)
+			       || x.authorName.Contains(anyStringContains)
+			       || x.featuredImageUrl.Contains(anyStringContains)
+			       || x.metaDescription.Contains(anyStringContains)
+			       || (includeRelations == true && x.postCategory.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.postCategory.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.postCategory.slug.Contains(anyStringContains))
 			   );
 			}
 
 			if (includeRelations == true)
 			{
-				query = query.Include(x => x.PostCategory);
+				query = query.Include(x => x.postCategory);
 				query = query.AsSplitQuery();
 			}
 
@@ -265,22 +291,21 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/Posts/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string Title = null,
-			string Slug = null,
-			string Body = null,
-			string Excerpt = null,
-			string AuthorName = null,
-			int? PostCategoryId = null,
-			string FeaturedImageUrl = null,
-			string MetaDescription = null,
-			bool? IsPublished = null,
-			DateTime? PublishedDate = null,
-			bool? IsFeatured = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string slug = null,
+			string body = null,
+			string excerpt = null,
+			string authorName = null,
+			int? postCategoryId = null,
+			string featuredImageUrl = null,
+			string metaDescription = null,
+			bool? isPublished = null,
+			DateTime? publishedDate = null,
+			bool? isFeatured = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -296,79 +321,104 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			//
 			// Fix any non-UTC date parameters that come in.
 			//
-			if (PublishedDate.HasValue == true && PublishedDate.Value.Kind != DateTimeKind.Utc)
+			if (publishedDate.HasValue == true && publishedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				PublishedDate = PublishedDate.Value.ToUniversalTime();
+				publishedDate = publishedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Post> query = (from p in _context.Posts select p);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (title != null)
 			{
-				query = query.Where(p => p.Id == Id.Value);
+				query = query.Where(p => p.title == title);
 			}
-			if (Title != null)
+			if (slug != null)
 			{
-				query = query.Where(p => p.Title == Title);
+				query = query.Where(p => p.slug == slug);
 			}
-			if (Slug != null)
+			if (body != null)
 			{
-				query = query.Where(p => p.Slug == Slug);
+				query = query.Where(p => p.body == body);
 			}
-			if (Body != null)
+			if (excerpt != null)
 			{
-				query = query.Where(p => p.Body == Body);
+				query = query.Where(p => p.excerpt == excerpt);
 			}
-			if (Excerpt != null)
+			if (authorName != null)
 			{
-				query = query.Where(p => p.Excerpt == Excerpt);
+				query = query.Where(p => p.authorName == authorName);
 			}
-			if (AuthorName != null)
+			if (postCategoryId.HasValue == true)
 			{
-				query = query.Where(p => p.AuthorName == AuthorName);
+				query = query.Where(p => p.postCategoryId == postCategoryId.Value);
 			}
-			if (PostCategoryId.HasValue == true)
+			if (featuredImageUrl != null)
 			{
-				query = query.Where(p => p.PostCategoryId == PostCategoryId.Value);
+				query = query.Where(p => p.featuredImageUrl == featuredImageUrl);
 			}
-			if (FeaturedImageUrl != null)
+			if (metaDescription != null)
 			{
-				query = query.Where(p => p.FeaturedImageUrl == FeaturedImageUrl);
+				query = query.Where(p => p.metaDescription == metaDescription);
 			}
-			if (MetaDescription != null)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(p => p.MetaDescription == MetaDescription);
+				query = query.Where(p => p.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (publishedDate.HasValue == true)
 			{
-				query = query.Where(p => p.IsPublished == IsPublished.Value);
+				query = query.Where(p => p.publishedDate == publishedDate.Value);
 			}
-			if (PublishedDate.HasValue == true)
+			if (isFeatured.HasValue == true)
 			{
-				query = query.Where(p => p.PublishedDate == PublishedDate.Value);
+				query = query.Where(p => p.isFeatured == isFeatured.Value);
 			}
-			if (IsFeatured.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(p => p.IsFeatured == IsFeatured.Value);
+				query = query.Where(p => p.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(p => p.VersionNumber == VersionNumber.Value);
+				query = query.Where(p => p.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(p => p.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(p => p.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(p => p.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(p => p.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(p => p.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(p => p.Deleted == Deleted.Value);
+				query = query.Where(p => p.active == true);
+				query = query.Where(p => p.deleted == false);
 			}
 
 			//
@@ -379,16 +429,16 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.Excerpt.Contains(anyStringContains)
-			       || x.AuthorName.Contains(anyStringContains)
-			       || x.FeaturedImageUrl.Contains(anyStringContains)
-			       || x.MetaDescription.Contains(anyStringContains)
-			       || x.PostCategory.Name.Contains(anyStringContains)
-			       || x.PostCategory.Description.Contains(anyStringContains)
-			       || x.PostCategory.Slug.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.excerpt.Contains(anyStringContains)
+			       || x.authorName.Contains(anyStringContains)
+			       || x.featuredImageUrl.Contains(anyStringContains)
+			       || x.metaDescription.Contains(anyStringContains)
+			       || x.postCategory.name.Contains(anyStringContains)
+			       || x.postCategory.description.Contains(anyStringContains)
+			       || x.postCategory.slug.Contains(anyStringContains)
 			   );
 			}
 
@@ -426,16 +476,33 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.Post> query = (from p in _context.Posts where
-				(p.id == id)
+							(p.id == id) &&
+							(userIsAdmin == true || p.deleted == false) &&
+							(userIsWriter == true || p.active == true)
 					select p);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
-					query = query.Include(x => x.PostCategory);
+					query = query.Include(x => x.postCategory);
 					query = query.AsSplitQuery();
 				}
 
@@ -515,11 +582,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.Post> query = (from x in _context.Posts
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.Post existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -552,6 +633,20 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.Post post = (Database.Post)_context.Entry(existing).GetDatabaseValues().ToObject();
 			post.ApplyDTO(postDTO);
+			//
+			// The tenant guid for any Post being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the Post because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				post.tenantGuid = existing.tenantGuid;
+			}
+
 			lock (postPutSyncRoot)
 			{
 				//
@@ -570,10 +665,48 @@ namespace Foundation.Community.Controllers.WebAPI
 				}
 
 
-
-				if (post.PublishedDate.HasValue == true && post.PublishedDate.Value.Kind != DateTimeKind.Utc)
+				// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+				if (userIsAdmin == false && (post.deleted == true || existing.deleted == true))
 				{
-					post.PublishedDate = post.PublishedDate.Value.ToUniversalTime();
+					// we're not recording state here because it is not being changed.
+					CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.Post record.", id.ToString());
+					DestroySessionAndAuthentication();
+					return Forbid();
+				}
+
+				if (post.title != null && post.title.Length > 250)
+				{
+					post.title = post.title.Substring(0, 250);
+				}
+
+				if (post.slug != null && post.slug.Length > 250)
+				{
+					post.slug = post.slug.Substring(0, 250);
+				}
+
+				if (post.excerpt != null && post.excerpt.Length > 500)
+				{
+					post.excerpt = post.excerpt.Substring(0, 500);
+				}
+
+				if (post.authorName != null && post.authorName.Length > 100)
+				{
+					post.authorName = post.authorName.Substring(0, 100);
+				}
+
+				if (post.featuredImageUrl != null && post.featuredImageUrl.Length > 500)
+				{
+					post.featuredImageUrl = post.featuredImageUrl.Substring(0, 500);
+				}
+
+				if (post.metaDescription != null && post.metaDescription.Length > 500)
+				{
+					post.metaDescription = post.metaDescription.Substring(0, 500);
+				}
+
+				if (post.publishedDate.HasValue == true && post.publishedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					post.publishedDate = post.publishedDate.Value.ToUniversalTime();
 				}
 
 				try
@@ -593,6 +726,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				        postChangeHistory.versionNumber = post.versionNumber;
 				        postChangeHistory.timeStamp = DateTime.UtcNow;
 				        postChangeHistory.userId = securityUser.id;
+				        postChangeHistory.tenantGuid = userTenantGuid;
 				        postChangeHistory.data = JsonSerializer.Serialize(Database.Post.CreateAnonymousWithFirstLevelSubObjects(post));
 				        _context.PostChangeHistories.Add(postChangeHistory);
 
@@ -658,6 +792,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new Post object using the data from the DTO
 			//
@@ -665,11 +812,47 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				if (post.PublishedDate.HasValue == true && post.PublishedDate.Value.Kind != DateTimeKind.Utc)
+				//
+				// Ensure that the tenant data is correct.
+				//
+				post.tenantGuid = userTenantGuid;
+
+				if (post.title != null && post.title.Length > 250)
 				{
-					post.PublishedDate = post.PublishedDate.Value.ToUniversalTime();
+					post.title = post.title.Substring(0, 250);
 				}
 
+				if (post.slug != null && post.slug.Length > 250)
+				{
+					post.slug = post.slug.Substring(0, 250);
+				}
+
+				if (post.excerpt != null && post.excerpt.Length > 500)
+				{
+					post.excerpt = post.excerpt.Substring(0, 500);
+				}
+
+				if (post.authorName != null && post.authorName.Length > 100)
+				{
+					post.authorName = post.authorName.Substring(0, 100);
+				}
+
+				if (post.featuredImageUrl != null && post.featuredImageUrl.Length > 500)
+				{
+					post.featuredImageUrl = post.featuredImageUrl.Substring(0, 500);
+				}
+
+				if (post.metaDescription != null && post.metaDescription.Length > 500)
+				{
+					post.metaDescription = post.metaDescription.Substring(0, 500);
+				}
+
+				if (post.publishedDate.HasValue == true && post.publishedDate.Value.Kind != DateTimeKind.Utc)
+				{
+					post.publishedDate = post.publishedDate.Value.ToUniversalTime();
+				}
+
+				post.objectGuid = Guid.NewGuid();
 				post.versionNumber = 1;
 
 				_context.Posts.Add(post);
@@ -690,9 +873,9 @@ namespace Foundation.Community.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
-					post.PostCategory = null;
 					post.PostChangeHistories = null;
 					post.PostTagAssignments = null;
+					post.postCategory = null;
 
 
 				    PostChangeHistory postChangeHistory = new PostChangeHistory();
@@ -700,6 +883,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				    postChangeHistory.versionNumber = post.versionNumber;
 				    postChangeHistory.timeStamp = DateTime.UtcNow;
 				    postChangeHistory.userId = securityUser.id;
+				    postChangeHistory.tenantGuid = userTenantGuid;
 				    postChangeHistory.data = JsonSerializer.Serialize(Database.Post.CreateAnonymousWithFirstLevelSubObjects(post));
 				    _context.PostChangeHistories.Add(postChangeHistory);
 				    await _context.SaveChangesAsync(cancellationToken);
@@ -761,6 +945,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			
 
 			
@@ -768,6 +964,8 @@ namespace Foundation.Community.Controllers.WebAPI
 			        where
 			        (x.id == id)
 			        select x);
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			//
@@ -792,9 +990,9 @@ namespace Foundation.Community.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
-				cloneOfExisting.PostCategory = null;
 				cloneOfExisting.PostChangeHistories = null;
 				cloneOfExisting.PostTagAssignments = null;
+				cloneOfExisting.postCategory = null;
 
 				if (versionNumber >= post.versionNumber)
 				{
@@ -805,7 +1003,8 @@ namespace Foundation.Community.Controllers.WebAPI
 				PostChangeHistory postChangeHistory = (from x in _context.PostChangeHistories
 				                                               where
 				                                               x.postId == id &&
-				                                               x.versionNumber == versionNumber
+				                                               x.versionNumber == versionNumber &&
+				                                               x.tenantGuid == userTenantGuid
 				                                               select x)
 				                                               .AsNoTracking()
 				                                               .FirstOrDefault();
@@ -822,22 +1021,20 @@ namespace Foundation.Community.Controllers.WebAPI
 				    //
 				    // Put all other fields back the way that they were 
 				    //
-				    post.Id = oldPost.Id;
-				    post.Title = oldPost.Title;
-				    post.Slug = oldPost.Slug;
-				    post.Body = oldPost.Body;
-				    post.Excerpt = oldPost.Excerpt;
-				    post.AuthorName = oldPost.AuthorName;
-				    post.PostCategoryId = oldPost.PostCategoryId;
-				    post.FeaturedImageUrl = oldPost.FeaturedImageUrl;
-				    post.MetaDescription = oldPost.MetaDescription;
-				    post.IsPublished = oldPost.IsPublished;
-				    post.PublishedDate = oldPost.PublishedDate;
-				    post.IsFeatured = oldPost.IsFeatured;
-				    post.VersionNumber = oldPost.VersionNumber;
-				    post.ObjectGuid = oldPost.ObjectGuid;
-				    post.Active = oldPost.Active;
-				    post.Deleted = oldPost.Deleted;
+				    post.title = oldPost.title;
+				    post.slug = oldPost.slug;
+				    post.body = oldPost.body;
+				    post.excerpt = oldPost.excerpt;
+				    post.authorName = oldPost.authorName;
+				    post.postCategoryId = oldPost.postCategoryId;
+				    post.featuredImageUrl = oldPost.featuredImageUrl;
+				    post.metaDescription = oldPost.metaDescription;
+				    post.isPublished = oldPost.isPublished;
+				    post.publishedDate = oldPost.publishedDate;
+				    post.isFeatured = oldPost.isFeatured;
+				    post.objectGuid = oldPost.objectGuid;
+				    post.active = oldPost.active;
+				    post.deleted = oldPost.deleted;
 
 				    string serializedPost = JsonSerializer.Serialize(post);
 
@@ -854,6 +1051,7 @@ namespace Foundation.Community.Controllers.WebAPI
 				        newPostChangeHistory.versionNumber = post.versionNumber;
 				        newPostChangeHistory.timeStamp = DateTime.UtcNow;
 				        newPostChangeHistory.userId = securityUser.id;
+				        newPostChangeHistory.tenantGuid = userTenantGuid;
 				        newPostChangeHistory.data = JsonSerializer.Serialize(Database.Post.CreateAnonymousWithFirstLevelSubObjects(post));
 				        _context.PostChangeHistories.Add(newPostChangeHistory);
 
@@ -911,7 +1109,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Post post = await _context.Posts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (post == null)
@@ -921,7 +1133,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				post.SetupVersionInquiry(_context, Guid.Empty);
+				post.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Post> versionInfo = await post.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
 
@@ -967,7 +1179,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Post post = await _context.Posts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (post == null)
@@ -977,7 +1203,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				post.SetupVersionInquiry(_context, Guid.Empty);
+				post.SetupVersionInquiry(_context, userTenantGuid);
 
 				List<VersionInformation<Database.Post>> versions = await post.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
 
@@ -1018,7 +1244,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Post post = await _context.Posts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (post == null)
@@ -1028,7 +1268,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				post.SetupVersionInquiry(_context, Guid.Empty);
+				post.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Post> versionInfo = await post.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
 
@@ -1074,7 +1314,21 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			Database.Post post = await _context.Posts.Where(x => x.id == id
+				&& x.tenantGuid == userTenantGuid
 			).FirstOrDefaultAsync(cancellationToken);
 
 			if (post == null)
@@ -1084,7 +1338,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				post.SetupVersionInquiry(_context, Guid.Empty);
+				post.SetupVersionInquiry(_context, userTenantGuid);
 
 				VersionInformation<Database.Post> versionInfo = await post.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
 
@@ -1127,11 +1381,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.Post> query = (from x in _context.Posts
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.Post post = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -1160,6 +1429,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			        postChangeHistory.versionNumber = post.versionNumber;
 			        postChangeHistory.timeStamp = DateTime.UtcNow;
 			        postChangeHistory.userId = securityUser.id;
+			        postChangeHistory.tenantGuid = userTenantGuid;
 			        postChangeHistory.data = JsonSerializer.Serialize(Database.Post.CreateAnonymousWithFirstLevelSubObjects(post));
 			        _context.PostChangeHistories.Add(postChangeHistory);
 
@@ -1204,22 +1474,21 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string Title = null,
-			string Slug = null,
-			string Body = null,
-			string Excerpt = null,
-			string AuthorName = null,
-			int? PostCategoryId = null,
-			string FeaturedImageUrl = null,
-			string MetaDescription = null,
-			bool? IsPublished = null,
-			DateTime? PublishedDate = null,
-			bool? IsFeatured = null,
-			int? VersionNumber = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string slug = null,
+			string body = null,
+			string excerpt = null,
+			string authorName = null,
+			int? postCategoryId = null,
+			string featuredImageUrl = null,
+			string metaDescription = null,
+			bool? isPublished = null,
+			DateTime? publishedDate = null,
+			bool? isFeatured = null,
+			int? versionNumber = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -1240,6 +1509,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -1255,75 +1537,90 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (PublishedDate.HasValue == true && PublishedDate.Value.Kind != DateTimeKind.Utc)
+			if (publishedDate.HasValue == true && publishedDate.Value.Kind != DateTimeKind.Utc)
 			{
-				PublishedDate = PublishedDate.Value.ToUniversalTime();
+				publishedDate = publishedDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.Post> query = (from p in _context.Posts select p);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(p => p.Id == Id.Value);
+				query = query.Where(p => p.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(slug) == false)
 			{
-				query = query.Where(p => p.Title == Title);
+				query = query.Where(p => p.slug == slug);
 			}
-			if (string.IsNullOrEmpty(Slug) == false)
+			if (string.IsNullOrEmpty(body) == false)
 			{
-				query = query.Where(p => p.Slug == Slug);
+				query = query.Where(p => p.body == body);
 			}
-			if (string.IsNullOrEmpty(Body) == false)
+			if (string.IsNullOrEmpty(excerpt) == false)
 			{
-				query = query.Where(p => p.Body == Body);
+				query = query.Where(p => p.excerpt == excerpt);
 			}
-			if (string.IsNullOrEmpty(Excerpt) == false)
+			if (string.IsNullOrEmpty(authorName) == false)
 			{
-				query = query.Where(p => p.Excerpt == Excerpt);
+				query = query.Where(p => p.authorName == authorName);
 			}
-			if (string.IsNullOrEmpty(AuthorName) == false)
+			if (postCategoryId.HasValue == true)
 			{
-				query = query.Where(p => p.AuthorName == AuthorName);
+				query = query.Where(p => p.postCategoryId == postCategoryId.Value);
 			}
-			if (PostCategoryId.HasValue == true)
+			if (string.IsNullOrEmpty(featuredImageUrl) == false)
 			{
-				query = query.Where(p => p.PostCategoryId == PostCategoryId.Value);
+				query = query.Where(p => p.featuredImageUrl == featuredImageUrl);
 			}
-			if (string.IsNullOrEmpty(FeaturedImageUrl) == false)
+			if (string.IsNullOrEmpty(metaDescription) == false)
 			{
-				query = query.Where(p => p.FeaturedImageUrl == FeaturedImageUrl);
+				query = query.Where(p => p.metaDescription == metaDescription);
 			}
-			if (string.IsNullOrEmpty(MetaDescription) == false)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(p => p.MetaDescription == MetaDescription);
+				query = query.Where(p => p.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (publishedDate.HasValue == true)
 			{
-				query = query.Where(p => p.IsPublished == IsPublished.Value);
+				query = query.Where(p => p.publishedDate == publishedDate.Value);
 			}
-			if (PublishedDate.HasValue == true)
+			if (isFeatured.HasValue == true)
 			{
-				query = query.Where(p => p.PublishedDate == PublishedDate.Value);
+				query = query.Where(p => p.isFeatured == isFeatured.Value);
 			}
-			if (IsFeatured.HasValue == true)
+			if (versionNumber.HasValue == true)
 			{
-				query = query.Where(p => p.IsFeatured == IsFeatured.Value);
+				query = query.Where(p => p.versionNumber == versionNumber.Value);
 			}
-			if (VersionNumber.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(p => p.VersionNumber == VersionNumber.Value);
+				query = query.Where(p => p.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(p => p.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(p => p.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(p => p.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(p => p.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(p => p.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(p => p.Deleted == Deleted.Value);
+				query = query.Where(p => p.active == true);
+				query = query.Where(p => p.deleted == false);
 			}
 
 
@@ -1335,18 +1632,21 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Slug.Contains(anyStringContains)
-			       || x.Body.Contains(anyStringContains)
-			       || x.Excerpt.Contains(anyStringContains)
-			       || x.AuthorName.Contains(anyStringContains)
-			       || x.FeaturedImageUrl.Contains(anyStringContains)
-			       || x.MetaDescription.Contains(anyStringContains)
-			       || x.PostCategory.Name.Contains(anyStringContains)
-			       || x.PostCategory.Description.Contains(anyStringContains)
-			       || x.PostCategory.Slug.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.slug.Contains(anyStringContains)
+			       || x.body.Contains(anyStringContains)
+			       || x.excerpt.Contains(anyStringContains)
+			       || x.authorName.Contains(anyStringContains)
+			       || x.featuredImageUrl.Contains(anyStringContains)
+			       || x.metaDescription.Contains(anyStringContains)
+			       || x.postCategory.name.Contains(anyStringContains)
+			       || x.postCategory.description.Contains(anyStringContains)
+			       || x.postCategory.slug.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.title).ThenBy(x => x.slug).ThenBy(x => x.excerpt);

@@ -16,8 +16,8 @@ namespace Foundation.Community.Database
 		[NotMapped]
 		public long primaryId 
 		{
-			get { return (long)AnnouncementId; }
-			set { AnnouncementId = (int)value; } 
+			get { return (long)announcementId; }
+			set { announcementId = (int)value; } 
 		}
 
 		/// <summary>
@@ -29,12 +29,16 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class AnnouncementChangeHistoryDTO
 		{
-			public Int32 Id { get; set; }
-			public Int32 AnnouncementId { get; set; }
-			public Int32 VersionNumber { get; set; }
-			public DateTime TimeStamp { get; set; }
-			public Int32 UserId { get; set; }
-			public String Data { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public Int32 announcementId { get; set; }
+			public Int32 versionNumber { get; set; }
+			[Required]
+			public DateTime timeStamp { get; set; }
+			[Required]
+			public Int32 userId { get; set; }
+			[Required]
+			public String data { get; set; }
 		}
 
 
@@ -45,7 +49,7 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class AnnouncementChangeHistoryOutputDTO : AnnouncementChangeHistoryDTO
 		{
-			public Announcement.AnnouncementDTO Announcement { get; set; }
+			public Announcement.AnnouncementDTO announcement { get; set; }
 		}
 
 
@@ -60,12 +64,12 @@ namespace Foundation.Community.Database
 		{
 			return new AnnouncementChangeHistoryDTO
 			{
-				Id = this.Id,
-				AnnouncementId = this.AnnouncementId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data
+				id = this.id,
+				announcementId = this.announcementId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data
 			};
 		}
 
@@ -104,13 +108,13 @@ namespace Foundation.Community.Database
 		{
 			return new AnnouncementChangeHistoryOutputDTO
 			{
-				Id = this.Id,
-				AnnouncementId = this.AnnouncementId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data,
-				Announcement = this.Announcement?.ToDTO()
+				id = this.id,
+				announcementId = this.announcementId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data,
+				announcement = this.announcement?.ToDTO()
 			};
 		}
 
@@ -149,12 +153,12 @@ namespace Foundation.Community.Database
 		{
 			return new Database.AnnouncementChangeHistory
 			{
-				Id = dto.Id,
-				AnnouncementId = dto.AnnouncementId,
-				VersionNumber = dto.VersionNumber,
-				TimeStamp = dto.TimeStamp,
-				UserId = dto.UserId,
-				Data = dto.Data
+				id = dto.id,
+				announcementId = dto.announcementId,
+				versionNumber = dto.versionNumber,
+				timeStamp = dto.timeStamp,
+				userId = dto.userId,
+				data = dto.data
 			};
 		}
 
@@ -171,11 +175,11 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.AnnouncementId = dto.AnnouncementId;
-			this.VersionNumber = dto.VersionNumber;
-			this.TimeStamp = dto.TimeStamp;
-			this.UserId = dto.UserId;
-			this.Data = dto.Data;
+			this.announcementId = dto.announcementId;
+			this.versionNumber = dto.versionNumber;
+			this.timeStamp = dto.timeStamp;
+			this.userId = dto.userId;
+			this.data = dto.data;
 		}
 
 
@@ -190,12 +194,13 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new AnnouncementChangeHistory{
-				Id = this.Id,
-				AnnouncementId = this.AnnouncementId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				announcementId = this.announcementId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data,
 			 };
 		}
 
@@ -248,12 +253,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = announcementChangeHistory.Id,
-				AnnouncementId = announcementChangeHistory.AnnouncementId,
-				VersionNumber = announcementChangeHistory.VersionNumber,
-				TimeStamp = announcementChangeHistory.TimeStamp,
-				UserId = announcementChangeHistory.UserId,
-				Data = announcementChangeHistory.Data,
+				id = announcementChangeHistory.id,
+				announcementId = announcementChangeHistory.announcementId,
+				versionNumber = announcementChangeHistory.versionNumber,
+				timeStamp = announcementChangeHistory.timeStamp,
+				userId = announcementChangeHistory.userId,
+				data = announcementChangeHistory.data,
 			 };
 		}
 
@@ -273,13 +278,13 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = announcementChangeHistory.Id,
-				AnnouncementId = announcementChangeHistory.AnnouncementId,
-				VersionNumber = announcementChangeHistory.VersionNumber,
-				TimeStamp = announcementChangeHistory.TimeStamp,
-				UserId = announcementChangeHistory.UserId,
-				Data = announcementChangeHistory.Data,
-				Announcement = Announcement.CreateMinimalAnonymous(announcementChangeHistory.Announcement)
+				id = announcementChangeHistory.id,
+				announcementId = announcementChangeHistory.announcementId,
+				versionNumber = announcementChangeHistory.versionNumber,
+				timeStamp = announcementChangeHistory.timeStamp,
+				userId = announcementChangeHistory.userId,
+				data = announcementChangeHistory.data,
+				announcement = Announcement.CreateMinimalAnonymous(announcementChangeHistory.announcement)
 			 };
 		}
 
@@ -299,6 +304,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = announcementChangeHistory.id,
 				name = announcementChangeHistory.id,
 				description = announcementChangeHistory.id
 			 };

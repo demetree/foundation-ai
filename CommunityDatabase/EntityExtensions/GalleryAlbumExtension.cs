@@ -20,16 +20,20 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class GalleryAlbumDTO
 		{
-			public Int32 Id { get; set; }
-			public String Title { get; set; }
-			public String Slug { get; set; }
-			public String Description { get; set; }
-			public String CoverImageUrl { get; set; }
-			public Boolean IsPublished { get; set; }
-			public Int32? Sequence { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String title { get; set; }
+			[Required]
+			public String slug { get; set; }
+			public String description { get; set; }
+			public String coverImageUrl { get; set; }
+			[Required]
+			public Boolean isPublished { get; set; }
+			public Int32? sequence { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -54,16 +58,16 @@ namespace Foundation.Community.Database
 		{
 			return new GalleryAlbumDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Slug = this.Slug,
-				Description = this.Description,
-				CoverImageUrl = this.CoverImageUrl,
-				IsPublished = this.IsPublished,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				slug = this.slug,
+				description = this.description,
+				coverImageUrl = this.coverImageUrl,
+				isPublished = this.isPublished,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -102,16 +106,16 @@ namespace Foundation.Community.Database
 		{
 			return new GalleryAlbumOutputDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Slug = this.Slug,
-				Description = this.Description,
-				CoverImageUrl = this.CoverImageUrl,
-				IsPublished = this.IsPublished,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				slug = this.slug,
+				description = this.description,
+				coverImageUrl = this.coverImageUrl,
+				isPublished = this.isPublished,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -150,16 +154,16 @@ namespace Foundation.Community.Database
 		{
 			return new Database.GalleryAlbum
 			{
-				Id = dto.Id,
-				Title = dto.Title,
-				Slug = dto.Slug,
-				Description = dto.Description,
-				CoverImageUrl = dto.CoverImageUrl,
-				IsPublished = dto.IsPublished,
-				Sequence = dto.Sequence,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				title = dto.title,
+				slug = dto.slug,
+				description = dto.description,
+				coverImageUrl = dto.coverImageUrl,
+				isPublished = dto.isPublished,
+				sequence = dto.sequence,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -176,20 +180,20 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Title = dto.Title;
-			this.Slug = dto.Slug;
-			this.Description = dto.Description;
-			this.CoverImageUrl = dto.CoverImageUrl;
-			this.IsPublished = dto.IsPublished;
-			this.Sequence = dto.Sequence;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.title = dto.title;
+			this.slug = dto.slug;
+			this.description = dto.description;
+			this.coverImageUrl = dto.coverImageUrl;
+			this.isPublished = dto.isPublished;
+			this.sequence = dto.sequence;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -205,16 +209,17 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new GalleryAlbum{
-				Id = this.Id,
-				Title = this.Title,
-				Slug = this.Slug,
-				Description = this.Description,
-				CoverImageUrl = this.CoverImageUrl,
-				IsPublished = this.IsPublished,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				title = this.title,
+				slug = this.slug,
+				description = this.description,
+				coverImageUrl = this.coverImageUrl,
+				isPublished = this.isPublished,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -267,16 +272,16 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = galleryAlbum.Id,
-				Title = galleryAlbum.Title,
-				Slug = galleryAlbum.Slug,
-				Description = galleryAlbum.Description,
-				CoverImageUrl = galleryAlbum.CoverImageUrl,
-				IsPublished = galleryAlbum.IsPublished,
-				Sequence = galleryAlbum.Sequence,
-				ObjectGuid = galleryAlbum.ObjectGuid,
-				Active = galleryAlbum.Active,
-				Deleted = galleryAlbum.Deleted,
+				id = galleryAlbum.id,
+				title = galleryAlbum.title,
+				slug = galleryAlbum.slug,
+				description = galleryAlbum.description,
+				coverImageUrl = galleryAlbum.coverImageUrl,
+				isPublished = galleryAlbum.isPublished,
+				sequence = galleryAlbum.sequence,
+				objectGuid = galleryAlbum.objectGuid,
+				active = galleryAlbum.active,
+				deleted = galleryAlbum.deleted,
 			 };
 		}
 
@@ -296,16 +301,16 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = galleryAlbum.Id,
-				Title = galleryAlbum.Title,
-				Slug = galleryAlbum.Slug,
-				Description = galleryAlbum.Description,
-				CoverImageUrl = galleryAlbum.CoverImageUrl,
-				IsPublished = galleryAlbum.IsPublished,
-				Sequence = galleryAlbum.Sequence,
-				ObjectGuid = galleryAlbum.ObjectGuid,
-				Active = galleryAlbum.Active,
-				Deleted = galleryAlbum.Deleted,
+				id = galleryAlbum.id,
+				title = galleryAlbum.title,
+				slug = galleryAlbum.slug,
+				description = galleryAlbum.description,
+				coverImageUrl = galleryAlbum.coverImageUrl,
+				isPublished = galleryAlbum.isPublished,
+				sequence = galleryAlbum.sequence,
+				objectGuid = galleryAlbum.objectGuid,
+				active = galleryAlbum.active,
+				deleted = galleryAlbum.deleted,
 			 };
 		}
 
@@ -325,8 +330,9 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				name = galleryAlbum.title,
-				description = string.Join(", ", new[] { galleryAlbum.title, galleryAlbum.slug, galleryAlbum.coverImageUrl}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				id = galleryAlbum.id,
+				description = galleryAlbum.description,
+				name = galleryAlbum.title
 			 };
 		}
 	}

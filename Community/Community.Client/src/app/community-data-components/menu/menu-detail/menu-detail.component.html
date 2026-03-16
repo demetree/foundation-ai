@@ -17,6 +17,28 @@
                 <div class="col m-2 menu-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="menuForm" (ngSubmit)="submitForm()" class="menu-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="Menu-name" id="label-Menu-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="Menu-name" formControlName="name" placeholder="Enter Name" class="form-control menu-input" [disabled]="!userIsCommunityMenuWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="menuForm.get('name')?.invalid && menuForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('location')">
+                                <label for="Menu-location" id="label-Menu-location"><span class="text-danger">*</span>Location</label>
+                                <input type="text" id="Menu-location" formControlName="location" placeholder="Enter Location" class="form-control menu-input" [disabled]="!userIsCommunityMenuWriter()" aria-labelledby="label-location" />
+                                <div *ngIf="menuForm.get('location')?.invalid && menuForm.get('location')?.touched" class="text-danger">
+                                    Location is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Menu-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityMenuWriter()" />
+                                <label for="Menu-active" class="form-check-label" id="label-Menu-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Menu-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityMenuWriter()" />
+                                <label for="Menu-deleted" class="form-check-label" id="label-Menu-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
                             <div class="menu-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="menuForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Menu">Reset</button>
                                 <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !menuForm.valid || !menuForm.dirty || menuForm.pristine  || userIsCommunityMenuWriter() == false " ngbTooltip="Save the Menu changes">

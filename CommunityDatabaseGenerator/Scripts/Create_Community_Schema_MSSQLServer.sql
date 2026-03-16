@@ -79,6 +79,7 @@ GO
 CREATE TABLE [Community].[Page]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[title] NVARCHAR(250) NOT NULL,		-- Display title of the page
 	[slug] NVARCHAR(250) NOT NULL,		-- URL-friendly slug (e.g. 'about', 'history', 'faq')
 	[body] NVARCHAR(MAX) NULL,		-- HTML or Markdown body content of the page
@@ -95,16 +96,20 @@ CREATE TABLE [Community].[Page]
 )
 GO
 
--- Index on the Page table's slug field.
-CREATE UNIQUE INDEX [I_Page_slug] ON [Community].[Page] ([slug])
+-- Index on the Page table's tenantGuid field.
+CREATE INDEX [I_Page_tenantGuid] ON [Community].[Page] ([tenantGuid])
 GO
 
--- Index on the Page table's active field.
-CREATE INDEX [I_Page_active] ON [Community].[Page] ([active])
+-- Index on the Page table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX [I_Page_tenantGuid_slug] ON [Community].[Page] ([tenantGuid], [slug])
 GO
 
--- Index on the Page table's deleted field.
-CREATE INDEX [I_Page_deleted] ON [Community].[Page] ([deleted])
+-- Index on the Page table's tenantGuid,active fields.
+CREATE INDEX [I_Page_tenantGuid_active] ON [Community].[Page] ([tenantGuid], [active])
+GO
+
+-- Index on the Page table's tenantGuid,deleted fields.
+CREATE INDEX [I_Page_tenantGuid_deleted] ON [Community].[Page] ([tenantGuid], [deleted])
 GO
 
 
@@ -112,6 +117,7 @@ GO
 CREATE TABLE [Community].[PageChangeHistory]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[pageId] INT NOT NULL,		-- Link to the Page table.
 	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
 	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
@@ -122,20 +128,24 @@ CREATE TABLE [Community].[PageChangeHistory]
 )
 GO
 
--- Index on the PageChangeHistory table's versionNumber field.
-CREATE INDEX [I_PageChangeHistory_versionNumber] ON [Community].[PageChangeHistory] ([versionNumber])
+-- Index on the PageChangeHistory table's tenantGuid field.
+CREATE INDEX [I_PageChangeHistory_tenantGuid] ON [Community].[PageChangeHistory] ([tenantGuid])
 GO
 
--- Index on the PageChangeHistory table's timeStamp field.
-CREATE INDEX [I_PageChangeHistory_timeStamp] ON [Community].[PageChangeHistory] ([timeStamp])
+-- Index on the PageChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_PageChangeHistory_tenantGuid_versionNumber] ON [Community].[PageChangeHistory] ([tenantGuid], [versionNumber])
 GO
 
--- Index on the PageChangeHistory table's userId field.
-CREATE INDEX [I_PageChangeHistory_userId] ON [Community].[PageChangeHistory] ([userId])
+-- Index on the PageChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_PageChangeHistory_tenantGuid_timeStamp] ON [Community].[PageChangeHistory] ([tenantGuid], [timeStamp])
 GO
 
--- Index on the PageChangeHistory table's pageId field.
-CREATE INDEX [I_PageChangeHistory_pageId] ON [Community].[PageChangeHistory] ([pageId]) INCLUDE ( versionNumber, timeStamp, userId )
+-- Index on the PageChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_PageChangeHistory_tenantGuid_userId] ON [Community].[PageChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the PageChangeHistory table's tenantGuid,pageId fields.
+CREATE INDEX [I_PageChangeHistory_tenantGuid_pageId] ON [Community].[PageChangeHistory] ([tenantGuid], [pageId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -190,6 +200,7 @@ GO
 CREATE TABLE [Community].[Post]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[title] NVARCHAR(250) NOT NULL,		-- Display title of the post
 	[slug] NVARCHAR(250) NOT NULL,		-- URL-friendly slug for the post
 	[body] NVARCHAR(MAX) NULL,		-- Full HTML or Markdown body content of the post
@@ -210,24 +221,28 @@ CREATE TABLE [Community].[Post]
 )
 GO
 
--- Index on the Post table's title field.
-CREATE INDEX [I_Post_title] ON [Community].[Post] ([title])
+-- Index on the Post table's tenantGuid field.
+CREATE INDEX [I_Post_tenantGuid] ON [Community].[Post] ([tenantGuid])
 GO
 
--- Index on the Post table's slug field.
-CREATE UNIQUE INDEX [I_Post_slug] ON [Community].[Post] ([slug])
+-- Index on the Post table's tenantGuid,title fields.
+CREATE INDEX [I_Post_tenantGuid_title] ON [Community].[Post] ([tenantGuid], [title])
 GO
 
--- Index on the Post table's postCategoryId field.
-CREATE INDEX [I_Post_postCategoryId] ON [Community].[Post] ([postCategoryId])
+-- Index on the Post table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX [I_Post_tenantGuid_slug] ON [Community].[Post] ([tenantGuid], [slug])
 GO
 
--- Index on the Post table's active field.
-CREATE INDEX [I_Post_active] ON [Community].[Post] ([active])
+-- Index on the Post table's tenantGuid,postCategoryId fields.
+CREATE INDEX [I_Post_tenantGuid_postCategoryId] ON [Community].[Post] ([tenantGuid], [postCategoryId])
 GO
 
--- Index on the Post table's deleted field.
-CREATE INDEX [I_Post_deleted] ON [Community].[Post] ([deleted])
+-- Index on the Post table's tenantGuid,active fields.
+CREATE INDEX [I_Post_tenantGuid_active] ON [Community].[Post] ([tenantGuid], [active])
+GO
+
+-- Index on the Post table's tenantGuid,deleted fields.
+CREATE INDEX [I_Post_tenantGuid_deleted] ON [Community].[Post] ([tenantGuid], [deleted])
 GO
 
 
@@ -235,6 +250,7 @@ GO
 CREATE TABLE [Community].[PostChangeHistory]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[postId] INT NOT NULL,		-- Link to the Post table.
 	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
 	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
@@ -245,20 +261,24 @@ CREATE TABLE [Community].[PostChangeHistory]
 )
 GO
 
--- Index on the PostChangeHistory table's versionNumber field.
-CREATE INDEX [I_PostChangeHistory_versionNumber] ON [Community].[PostChangeHistory] ([versionNumber])
+-- Index on the PostChangeHistory table's tenantGuid field.
+CREATE INDEX [I_PostChangeHistory_tenantGuid] ON [Community].[PostChangeHistory] ([tenantGuid])
 GO
 
--- Index on the PostChangeHistory table's timeStamp field.
-CREATE INDEX [I_PostChangeHistory_timeStamp] ON [Community].[PostChangeHistory] ([timeStamp])
+-- Index on the PostChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_PostChangeHistory_tenantGuid_versionNumber] ON [Community].[PostChangeHistory] ([tenantGuid], [versionNumber])
 GO
 
--- Index on the PostChangeHistory table's userId field.
-CREATE INDEX [I_PostChangeHistory_userId] ON [Community].[PostChangeHistory] ([userId])
+-- Index on the PostChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_PostChangeHistory_tenantGuid_timeStamp] ON [Community].[PostChangeHistory] ([tenantGuid], [timeStamp])
 GO
 
--- Index on the PostChangeHistory table's postId field.
-CREATE INDEX [I_PostChangeHistory_postId] ON [Community].[PostChangeHistory] ([postId]) INCLUDE ( versionNumber, timeStamp, userId )
+-- Index on the PostChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_PostChangeHistory_tenantGuid_userId] ON [Community].[PostChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the PostChangeHistory table's tenantGuid,postId fields.
+CREATE INDEX [I_PostChangeHistory_tenantGuid_postId] ON [Community].[PostChangeHistory] ([tenantGuid], [postId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -266,29 +286,35 @@ GO
 CREATE TABLE [Community].[PostTag]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
 	[slug] NVARCHAR(250) NOT NULL,		-- URL-friendly slug for the tag
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [UC_PostTag_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the PostTag table's tenantGuid and name fields.
 )
 GO
 
--- Index on the PostTag table's name field.
-CREATE INDEX [I_PostTag_name] ON [Community].[PostTag] ([name])
+-- Index on the PostTag table's tenantGuid field.
+CREATE INDEX [I_PostTag_tenantGuid] ON [Community].[PostTag] ([tenantGuid])
 GO
 
--- Index on the PostTag table's slug field.
-CREATE UNIQUE INDEX [I_PostTag_slug] ON [Community].[PostTag] ([slug])
+-- Index on the PostTag table's tenantGuid,name fields.
+CREATE INDEX [I_PostTag_tenantGuid_name] ON [Community].[PostTag] ([tenantGuid], [name])
 GO
 
--- Index on the PostTag table's active field.
-CREATE INDEX [I_PostTag_active] ON [Community].[PostTag] ([active])
+-- Index on the PostTag table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX [I_PostTag_tenantGuid_slug] ON [Community].[PostTag] ([tenantGuid], [slug])
 GO
 
--- Index on the PostTag table's deleted field.
-CREATE INDEX [I_PostTag_deleted] ON [Community].[PostTag] ([deleted])
+-- Index on the PostTag table's tenantGuid,active fields.
+CREATE INDEX [I_PostTag_tenantGuid_active] ON [Community].[PostTag] ([tenantGuid], [active])
+GO
+
+-- Index on the PostTag table's tenantGuid,deleted fields.
+CREATE INDEX [I_PostTag_tenantGuid_deleted] ON [Community].[PostTag] ([tenantGuid], [deleted])
 GO
 
 
@@ -329,6 +355,7 @@ GO
 CREATE TABLE [Community].[MediaAsset]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[fileName] NVARCHAR(250) NOT NULL,		-- Original filename as uploaded (e.g. 'council-photo-2026.jpg')
 	[filePath] NVARCHAR(500) NOT NULL,		-- Server-relative storage path for the file
 	[mimeType] NVARCHAR(100) NOT NULL,		-- MIME type (e.g. 'image/jpeg', 'application/pdf')
@@ -344,12 +371,16 @@ CREATE TABLE [Community].[MediaAsset]
 )
 GO
 
--- Index on the MediaAsset table's active field.
-CREATE INDEX [I_MediaAsset_active] ON [Community].[MediaAsset] ([active])
+-- Index on the MediaAsset table's tenantGuid field.
+CREATE INDEX [I_MediaAsset_tenantGuid] ON [Community].[MediaAsset] ([tenantGuid])
 GO
 
--- Index on the MediaAsset table's deleted field.
-CREATE INDEX [I_MediaAsset_deleted] ON [Community].[MediaAsset] ([deleted])
+-- Index on the MediaAsset table's tenantGuid,active fields.
+CREATE INDEX [I_MediaAsset_tenantGuid_active] ON [Community].[MediaAsset] ([tenantGuid], [active])
+GO
+
+-- Index on the MediaAsset table's tenantGuid,deleted fields.
+CREATE INDEX [I_MediaAsset_tenantGuid_deleted] ON [Community].[MediaAsset] ([tenantGuid], [deleted])
 GO
 
 
@@ -357,31 +388,37 @@ GO
 CREATE TABLE [Community].[Menu]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
-	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
 	[location] NVARCHAR(50) NOT NULL,		-- Where this menu is displayed: header, footer, sidebar
 	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
+	CONSTRAINT [UC_Menu_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the Menu table's tenantGuid and name fields.
 )
 GO
 
--- Index on the Menu table's name field.
-CREATE INDEX [I_Menu_name] ON [Community].[Menu] ([name])
+-- Index on the Menu table's tenantGuid field.
+CREATE INDEX [I_Menu_tenantGuid] ON [Community].[Menu] ([tenantGuid])
 GO
 
--- Index on the Menu table's active field.
-CREATE INDEX [I_Menu_active] ON [Community].[Menu] ([active])
+-- Index on the Menu table's tenantGuid,name fields.
+CREATE INDEX [I_Menu_tenantGuid_name] ON [Community].[Menu] ([tenantGuid], [name])
 GO
 
--- Index on the Menu table's deleted field.
-CREATE INDEX [I_Menu_deleted] ON [Community].[Menu] ([deleted])
+-- Index on the Menu table's tenantGuid,active fields.
+CREATE INDEX [I_Menu_tenantGuid_active] ON [Community].[Menu] ([tenantGuid], [active])
 GO
 
-INSERT INTO [Community].[Menu] ( [name], [location], [objectGuid] ) VALUES  ( 'Main Navigation', 'header', 'c0b10001-0001-4000-8000-000000000001' )
+-- Index on the Menu table's tenantGuid,deleted fields.
+CREATE INDEX [I_Menu_tenantGuid_deleted] ON [Community].[Menu] ([tenantGuid], [deleted])
 GO
 
-INSERT INTO [Community].[Menu] ( [name], [location], [objectGuid] ) VALUES  ( 'Footer Links', 'footer', 'c0b10001-0001-4000-8000-000000000002' )
+INSERT INTO [Community].[Menu] ( [tenantGuid], [name], [location], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'Main Navigation', 'header', 'c0b10001-0001-4000-8000-000000000001' )
+GO
+
+INSERT INTO [Community].[Menu] ( [tenantGuid], [name], [location], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'Footer Links', 'footer', 'c0b10001-0001-4000-8000-000000000002' )
 GO
 
 
@@ -389,6 +426,7 @@ GO
 CREATE TABLE [Community].[MenuItem]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[menuId] INT NOT NULL,		-- The menu this item belongs to
 	[label] NVARCHAR(250) NOT NULL,		-- Display text for the menu item
 	[url] NVARCHAR(500) NULL,		-- External or absolute URL (used if pageId is null)
@@ -407,24 +445,28 @@ CREATE TABLE [Community].[MenuItem]
 )
 GO
 
--- Index on the MenuItem table's menuId field.
-CREATE INDEX [I_MenuItem_menuId] ON [Community].[MenuItem] ([menuId])
+-- Index on the MenuItem table's tenantGuid field.
+CREATE INDEX [I_MenuItem_tenantGuid] ON [Community].[MenuItem] ([tenantGuid])
 GO
 
--- Index on the MenuItem table's pageId field.
-CREATE INDEX [I_MenuItem_pageId] ON [Community].[MenuItem] ([pageId])
+-- Index on the MenuItem table's tenantGuid,menuId fields.
+CREATE INDEX [I_MenuItem_tenantGuid_menuId] ON [Community].[MenuItem] ([tenantGuid], [menuId])
 GO
 
--- Index on the MenuItem table's parentMenuItemId field.
-CREATE INDEX [I_MenuItem_parentMenuItemId] ON [Community].[MenuItem] ([parentMenuItemId])
+-- Index on the MenuItem table's tenantGuid,pageId fields.
+CREATE INDEX [I_MenuItem_tenantGuid_pageId] ON [Community].[MenuItem] ([tenantGuid], [pageId])
 GO
 
--- Index on the MenuItem table's active field.
-CREATE INDEX [I_MenuItem_active] ON [Community].[MenuItem] ([active])
+-- Index on the MenuItem table's tenantGuid,parentMenuItemId fields.
+CREATE INDEX [I_MenuItem_tenantGuid_parentMenuItemId] ON [Community].[MenuItem] ([tenantGuid], [parentMenuItemId])
 GO
 
--- Index on the MenuItem table's deleted field.
-CREATE INDEX [I_MenuItem_deleted] ON [Community].[MenuItem] ([deleted])
+-- Index on the MenuItem table's tenantGuid,active fields.
+CREATE INDEX [I_MenuItem_tenantGuid_active] ON [Community].[MenuItem] ([tenantGuid], [active])
+GO
+
+-- Index on the MenuItem table's tenantGuid,deleted fields.
+CREATE INDEX [I_MenuItem_tenantGuid_deleted] ON [Community].[MenuItem] ([tenantGuid], [deleted])
 GO
 
 
@@ -432,6 +474,7 @@ GO
 CREATE TABLE [Community].[SiteSetting]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[settingKey] NVARCHAR(100) NOT NULL,		-- Unique setting identifier (e.g. 'siteName', 'tagline', 'logoUrl')
 	[settingValue] NVARCHAR(MAX) NULL,		-- The value for this setting
 	[description] NVARCHAR(250) NULL,		-- Human-readable description of what this setting controls
@@ -443,52 +486,56 @@ CREATE TABLE [Community].[SiteSetting]
 )
 GO
 
--- Index on the SiteSetting table's settingKey field.
-CREATE UNIQUE INDEX [I_SiteSetting_settingKey] ON [Community].[SiteSetting] ([settingKey])
+-- Index on the SiteSetting table's tenantGuid field.
+CREATE INDEX [I_SiteSetting_tenantGuid] ON [Community].[SiteSetting] ([tenantGuid])
 GO
 
--- Index on the SiteSetting table's active field.
-CREATE INDEX [I_SiteSetting_active] ON [Community].[SiteSetting] ([active])
+-- Index on the SiteSetting table's tenantGuid,settingKey fields.
+CREATE UNIQUE INDEX [I_SiteSetting_tenantGuid_settingKey] ON [Community].[SiteSetting] ([tenantGuid], [settingKey])
 GO
 
--- Index on the SiteSetting table's deleted field.
-CREATE INDEX [I_SiteSetting_deleted] ON [Community].[SiteSetting] ([deleted])
+-- Index on the SiteSetting table's tenantGuid,active fields.
+CREATE INDEX [I_SiteSetting_tenantGuid_active] ON [Community].[SiteSetting] ([tenantGuid], [active])
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'siteName', 'Community', 'The name of the site displayed in the header and browser tab', 'General', 'c0c10001-0001-4000-8000-000000000001' )
+-- Index on the SiteSetting table's tenantGuid,deleted fields.
+CREATE INDEX [I_SiteSetting_tenantGuid_deleted] ON [Community].[SiteSetting] ([tenantGuid], [deleted])
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'tagline', 'Welcome to our community', 'Site tagline displayed below the site name', 'General', 'c0c10001-0001-4000-8000-000000000002' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'siteName', 'Community', 'The name of the site displayed in the header and browser tab', 'General', 'c0c10001-0001-4000-8000-000000000001' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'logoUrl', '', 'URL to the site logo image', 'General', 'c0c10001-0001-4000-8000-000000000003' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'tagline', 'Welcome to our community', 'Site tagline displayed below the site name', 'General', 'c0c10001-0001-4000-8000-000000000002' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'footerText', '© 2026 K2 Research. All rights reserved.', 'Copyright text displayed in the site footer', 'General', 'c0c10001-0001-4000-8000-000000000004' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'logoUrl', '', 'URL to the site logo image', 'General', 'c0c10001-0001-4000-8000-000000000003' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'contactEmail', '', 'Primary contact email address', 'General', 'c0c10001-0001-4000-8000-000000000005' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'footerText', '© 2026 K2 Research. All rights reserved.', 'Copyright text displayed in the site footer', 'General', 'c0c10001-0001-4000-8000-000000000004' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'contactPhone', '', 'Primary contact phone number', 'General', 'c0c10001-0001-4000-8000-000000000006' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'contactEmail', '', 'Primary contact email address', 'General', 'c0c10001-0001-4000-8000-000000000005' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'facebookUrl', '', 'Facebook page URL', 'Social', 'c0c10001-0001-4000-8000-000000000010' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'contactPhone', '', 'Primary contact phone number', 'General', 'c0c10001-0001-4000-8000-000000000006' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'twitterUrl', '', 'Twitter/X profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000011' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'facebookUrl', '', 'Facebook page URL', 'Social', 'c0c10001-0001-4000-8000-000000000010' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'instagramUrl', '', 'Instagram profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000012' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'twitterUrl', '', 'Twitter/X profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000011' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'heroTitle', 'Welcome', 'Hero section title on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000020' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'instagramUrl', '', 'Instagram profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000012' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'heroSubtitle', '', 'Hero section subtitle on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000021' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'heroTitle', 'Welcome', 'Hero section title on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000020' )
 GO
 
-INSERT INTO [Community].[SiteSetting] ( [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'heroImageUrl', '', 'Hero section background image URL', 'HomePage', 'c0c10001-0001-4000-8000-000000000022' )
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'heroSubtitle', '', 'Hero section subtitle on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000021' )
+GO
+
+INSERT INTO [Community].[SiteSetting] ( [tenantGuid], [settingKey], [settingValue], [description], [settingGroup], [objectGuid] ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'heroImageUrl', '', 'Hero section background image URL', 'HomePage', 'c0c10001-0001-4000-8000-000000000022' )
 GO
 
 
@@ -496,6 +543,7 @@ GO
 CREATE TABLE [Community].[Announcement]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[title] NVARCHAR(250) NOT NULL,		-- Announcement title
 	[body] NVARCHAR(MAX) NULL,		-- Full announcement body content (HTML or Markdown)
 	[severity] NVARCHAR(50) NOT NULL DEFAULT 'info',		-- Severity level: info, warning, urgent
@@ -510,12 +558,16 @@ CREATE TABLE [Community].[Announcement]
 )
 GO
 
--- Index on the Announcement table's active field.
-CREATE INDEX [I_Announcement_active] ON [Community].[Announcement] ([active])
+-- Index on the Announcement table's tenantGuid field.
+CREATE INDEX [I_Announcement_tenantGuid] ON [Community].[Announcement] ([tenantGuid])
 GO
 
--- Index on the Announcement table's deleted field.
-CREATE INDEX [I_Announcement_deleted] ON [Community].[Announcement] ([deleted])
+-- Index on the Announcement table's tenantGuid,active fields.
+CREATE INDEX [I_Announcement_tenantGuid_active] ON [Community].[Announcement] ([tenantGuid], [active])
+GO
+
+-- Index on the Announcement table's tenantGuid,deleted fields.
+CREATE INDEX [I_Announcement_tenantGuid_deleted] ON [Community].[Announcement] ([tenantGuid], [deleted])
 GO
 
 
@@ -523,6 +575,7 @@ GO
 CREATE TABLE [Community].[AnnouncementChangeHistory]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[announcementId] INT NOT NULL,		-- Link to the Announcement table.
 	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
 	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
@@ -533,20 +586,24 @@ CREATE TABLE [Community].[AnnouncementChangeHistory]
 )
 GO
 
--- Index on the AnnouncementChangeHistory table's versionNumber field.
-CREATE INDEX [I_AnnouncementChangeHistory_versionNumber] ON [Community].[AnnouncementChangeHistory] ([versionNumber])
+-- Index on the AnnouncementChangeHistory table's tenantGuid field.
+CREATE INDEX [I_AnnouncementChangeHistory_tenantGuid] ON [Community].[AnnouncementChangeHistory] ([tenantGuid])
 GO
 
--- Index on the AnnouncementChangeHistory table's timeStamp field.
-CREATE INDEX [I_AnnouncementChangeHistory_timeStamp] ON [Community].[AnnouncementChangeHistory] ([timeStamp])
+-- Index on the AnnouncementChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_AnnouncementChangeHistory_tenantGuid_versionNumber] ON [Community].[AnnouncementChangeHistory] ([tenantGuid], [versionNumber])
 GO
 
--- Index on the AnnouncementChangeHistory table's userId field.
-CREATE INDEX [I_AnnouncementChangeHistory_userId] ON [Community].[AnnouncementChangeHistory] ([userId])
+-- Index on the AnnouncementChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_AnnouncementChangeHistory_tenantGuid_timeStamp] ON [Community].[AnnouncementChangeHistory] ([tenantGuid], [timeStamp])
 GO
 
--- Index on the AnnouncementChangeHistory table's announcementId field.
-CREATE INDEX [I_AnnouncementChangeHistory_announcementId] ON [Community].[AnnouncementChangeHistory] ([announcementId]) INCLUDE ( versionNumber, timeStamp, userId )
+-- Index on the AnnouncementChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_AnnouncementChangeHistory_tenantGuid_userId] ON [Community].[AnnouncementChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the AnnouncementChangeHistory table's tenantGuid,announcementId fields.
+CREATE INDEX [I_AnnouncementChangeHistory_tenantGuid_announcementId] ON [Community].[AnnouncementChangeHistory] ([tenantGuid], [announcementId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 
@@ -554,6 +611,7 @@ GO
 CREATE TABLE [Community].[GalleryAlbum]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[title] NVARCHAR(250) NOT NULL,		-- Album title
 	[slug] NVARCHAR(250) NOT NULL,		-- URL-friendly slug for the album
 	[description] NVARCHAR(MAX) NULL,		-- Description of the album
@@ -567,16 +625,20 @@ CREATE TABLE [Community].[GalleryAlbum]
 )
 GO
 
--- Index on the GalleryAlbum table's slug field.
-CREATE UNIQUE INDEX [I_GalleryAlbum_slug] ON [Community].[GalleryAlbum] ([slug])
+-- Index on the GalleryAlbum table's tenantGuid field.
+CREATE INDEX [I_GalleryAlbum_tenantGuid] ON [Community].[GalleryAlbum] ([tenantGuid])
 GO
 
--- Index on the GalleryAlbum table's active field.
-CREATE INDEX [I_GalleryAlbum_active] ON [Community].[GalleryAlbum] ([active])
+-- Index on the GalleryAlbum table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX [I_GalleryAlbum_tenantGuid_slug] ON [Community].[GalleryAlbum] ([tenantGuid], [slug])
 GO
 
--- Index on the GalleryAlbum table's deleted field.
-CREATE INDEX [I_GalleryAlbum_deleted] ON [Community].[GalleryAlbum] ([deleted])
+-- Index on the GalleryAlbum table's tenantGuid,active fields.
+CREATE INDEX [I_GalleryAlbum_tenantGuid_active] ON [Community].[GalleryAlbum] ([tenantGuid], [active])
+GO
+
+-- Index on the GalleryAlbum table's tenantGuid,deleted fields.
+CREATE INDEX [I_GalleryAlbum_tenantGuid_deleted] ON [Community].[GalleryAlbum] ([tenantGuid], [deleted])
 GO
 
 
@@ -584,6 +646,7 @@ GO
 CREATE TABLE [Community].[GalleryImage]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[galleryAlbumId] INT NOT NULL,		-- The album this image belongs to
 	[imageUrl] NVARCHAR(500) NOT NULL,		-- URL or relative path to the image file
 	[caption] NVARCHAR(500) NULL,		-- Display caption for the image
@@ -597,16 +660,20 @@ CREATE TABLE [Community].[GalleryImage]
 )
 GO
 
--- Index on the GalleryImage table's galleryAlbumId field.
-CREATE INDEX [I_GalleryImage_galleryAlbumId] ON [Community].[GalleryImage] ([galleryAlbumId])
+-- Index on the GalleryImage table's tenantGuid field.
+CREATE INDEX [I_GalleryImage_tenantGuid] ON [Community].[GalleryImage] ([tenantGuid])
 GO
 
--- Index on the GalleryImage table's active field.
-CREATE INDEX [I_GalleryImage_active] ON [Community].[GalleryImage] ([active])
+-- Index on the GalleryImage table's tenantGuid,galleryAlbumId fields.
+CREATE INDEX [I_GalleryImage_tenantGuid_galleryAlbumId] ON [Community].[GalleryImage] ([tenantGuid], [galleryAlbumId])
 GO
 
--- Index on the GalleryImage table's deleted field.
-CREATE INDEX [I_GalleryImage_deleted] ON [Community].[GalleryImage] ([deleted])
+-- Index on the GalleryImage table's tenantGuid,active fields.
+CREATE INDEX [I_GalleryImage_tenantGuid_active] ON [Community].[GalleryImage] ([tenantGuid], [active])
+GO
+
+-- Index on the GalleryImage table's tenantGuid,deleted fields.
+CREATE INDEX [I_GalleryImage_tenantGuid_deleted] ON [Community].[GalleryImage] ([tenantGuid], [deleted])
 GO
 
 
@@ -614,6 +681,7 @@ GO
 CREATE TABLE [Community].[DocumentDownload]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[title] NVARCHAR(250) NOT NULL,		-- Display title for the document
 	[description] NVARCHAR(MAX) NULL,		-- Description of what this document contains
 	[filePath] NVARCHAR(500) NOT NULL,		-- Server-relative path to the downloadable file
@@ -631,12 +699,16 @@ CREATE TABLE [Community].[DocumentDownload]
 )
 GO
 
--- Index on the DocumentDownload table's active field.
-CREATE INDEX [I_DocumentDownload_active] ON [Community].[DocumentDownload] ([active])
+-- Index on the DocumentDownload table's tenantGuid field.
+CREATE INDEX [I_DocumentDownload_tenantGuid] ON [Community].[DocumentDownload] ([tenantGuid])
 GO
 
--- Index on the DocumentDownload table's deleted field.
-CREATE INDEX [I_DocumentDownload_deleted] ON [Community].[DocumentDownload] ([deleted])
+-- Index on the DocumentDownload table's tenantGuid,active fields.
+CREATE INDEX [I_DocumentDownload_tenantGuid_active] ON [Community].[DocumentDownload] ([tenantGuid], [active])
+GO
+
+-- Index on the DocumentDownload table's tenantGuid,deleted fields.
+CREATE INDEX [I_DocumentDownload_tenantGuid_deleted] ON [Community].[DocumentDownload] ([tenantGuid], [deleted])
 GO
 
 
@@ -644,6 +716,7 @@ GO
 CREATE TABLE [Community].[ContactSubmission]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[name] NVARCHAR(100) NOT NULL,		-- Name of the person submitting the form
 	[email] NVARCHAR(250) NOT NULL,		-- Email address for reply
 	[subject] NVARCHAR(250) NULL,		-- Subject line of the message
@@ -659,12 +732,16 @@ CREATE TABLE [Community].[ContactSubmission]
 )
 GO
 
--- Index on the ContactSubmission table's active field.
-CREATE INDEX [I_ContactSubmission_active] ON [Community].[ContactSubmission] ([active])
+-- Index on the ContactSubmission table's tenantGuid field.
+CREATE INDEX [I_ContactSubmission_tenantGuid] ON [Community].[ContactSubmission] ([tenantGuid])
 GO
 
--- Index on the ContactSubmission table's deleted field.
-CREATE INDEX [I_ContactSubmission_deleted] ON [Community].[ContactSubmission] ([deleted])
+-- Index on the ContactSubmission table's tenantGuid,active fields.
+CREATE INDEX [I_ContactSubmission_tenantGuid_active] ON [Community].[ContactSubmission] ([tenantGuid], [active])
+GO
+
+-- Index on the ContactSubmission table's tenantGuid,deleted fields.
+CREATE INDEX [I_ContactSubmission_tenantGuid_deleted] ON [Community].[ContactSubmission] ([tenantGuid], [deleted])
 GO
 
 

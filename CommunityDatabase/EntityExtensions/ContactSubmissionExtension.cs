@@ -20,18 +20,25 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class ContactSubmissionDTO
 		{
-			public Int32 Id { get; set; }
-			public String Name { get; set; }
-			public String Email { get; set; }
-			public String Subject { get; set; }
-			public String Message { get; set; }
-			public DateTime SubmittedDate { get; set; }
-			public Boolean IsRead { get; set; }
-			public Boolean IsArchived { get; set; }
-			public String AdminNotes { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String name { get; set; }
+			[Required]
+			public String email { get; set; }
+			public String subject { get; set; }
+			[Required]
+			public String message { get; set; }
+			[Required]
+			public DateTime submittedDate { get; set; }
+			[Required]
+			public Boolean isRead { get; set; }
+			[Required]
+			public Boolean isArchived { get; set; }
+			public String adminNotes { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -56,18 +63,18 @@ namespace Foundation.Community.Database
 		{
 			return new ContactSubmissionDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Email = this.Email,
-				Subject = this.Subject,
-				Message = this.Message,
-				SubmittedDate = this.SubmittedDate,
-				IsRead = this.IsRead,
-				IsArchived = this.IsArchived,
-				AdminNotes = this.AdminNotes,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				email = this.email,
+				subject = this.subject,
+				message = this.message,
+				submittedDate = this.submittedDate,
+				isRead = this.isRead,
+				isArchived = this.isArchived,
+				adminNotes = this.adminNotes,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -106,18 +113,18 @@ namespace Foundation.Community.Database
 		{
 			return new ContactSubmissionOutputDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Email = this.Email,
-				Subject = this.Subject,
-				Message = this.Message,
-				SubmittedDate = this.SubmittedDate,
-				IsRead = this.IsRead,
-				IsArchived = this.IsArchived,
-				AdminNotes = this.AdminNotes,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				email = this.email,
+				subject = this.subject,
+				message = this.message,
+				submittedDate = this.submittedDate,
+				isRead = this.isRead,
+				isArchived = this.isArchived,
+				adminNotes = this.adminNotes,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -156,18 +163,18 @@ namespace Foundation.Community.Database
 		{
 			return new Database.ContactSubmission
 			{
-				Id = dto.Id,
-				Name = dto.Name,
-				Email = dto.Email,
-				Subject = dto.Subject,
-				Message = dto.Message,
-				SubmittedDate = dto.SubmittedDate,
-				IsRead = dto.IsRead,
-				IsArchived = dto.IsArchived,
-				AdminNotes = dto.AdminNotes,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				name = dto.name,
+				email = dto.email,
+				subject = dto.subject,
+				message = dto.message,
+				submittedDate = dto.submittedDate,
+				isRead = dto.isRead,
+				isArchived = dto.isArchived,
+				adminNotes = dto.adminNotes,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -184,22 +191,22 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Name = dto.Name;
-			this.Email = dto.Email;
-			this.Subject = dto.Subject;
-			this.Message = dto.Message;
-			this.SubmittedDate = dto.SubmittedDate;
-			this.IsRead = dto.IsRead;
-			this.IsArchived = dto.IsArchived;
-			this.AdminNotes = dto.AdminNotes;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.name = dto.name;
+			this.email = dto.email;
+			this.subject = dto.subject;
+			this.message = dto.message;
+			this.submittedDate = dto.submittedDate;
+			this.isRead = dto.isRead;
+			this.isArchived = dto.isArchived;
+			this.adminNotes = dto.adminNotes;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -215,18 +222,19 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new ContactSubmission{
-				Id = this.Id,
-				Name = this.Name,
-				Email = this.Email,
-				Subject = this.Subject,
-				Message = this.Message,
-				SubmittedDate = this.SubmittedDate,
-				IsRead = this.IsRead,
-				IsArchived = this.IsArchived,
-				AdminNotes = this.AdminNotes,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				name = this.name,
+				email = this.email,
+				subject = this.subject,
+				message = this.message,
+				submittedDate = this.submittedDate,
+				isRead = this.isRead,
+				isArchived = this.isArchived,
+				adminNotes = this.adminNotes,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			 };
 		}
 
@@ -279,18 +287,18 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = contactSubmission.Id,
-				Name = contactSubmission.Name,
-				Email = contactSubmission.Email,
-				Subject = contactSubmission.Subject,
-				Message = contactSubmission.Message,
-				SubmittedDate = contactSubmission.SubmittedDate,
-				IsRead = contactSubmission.IsRead,
-				IsArchived = contactSubmission.IsArchived,
-				AdminNotes = contactSubmission.AdminNotes,
-				ObjectGuid = contactSubmission.ObjectGuid,
-				Active = contactSubmission.Active,
-				Deleted = contactSubmission.Deleted
+				id = contactSubmission.id,
+				name = contactSubmission.name,
+				email = contactSubmission.email,
+				subject = contactSubmission.subject,
+				message = contactSubmission.message,
+				submittedDate = contactSubmission.submittedDate,
+				isRead = contactSubmission.isRead,
+				isArchived = contactSubmission.isArchived,
+				adminNotes = contactSubmission.adminNotes,
+				objectGuid = contactSubmission.objectGuid,
+				active = contactSubmission.active,
+				deleted = contactSubmission.deleted
 			 };
 		}
 
@@ -310,18 +318,18 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = contactSubmission.Id,
-				Name = contactSubmission.Name,
-				Email = contactSubmission.Email,
-				Subject = contactSubmission.Subject,
-				Message = contactSubmission.Message,
-				SubmittedDate = contactSubmission.SubmittedDate,
-				IsRead = contactSubmission.IsRead,
-				IsArchived = contactSubmission.IsArchived,
-				AdminNotes = contactSubmission.AdminNotes,
-				ObjectGuid = contactSubmission.ObjectGuid,
-				Active = contactSubmission.Active,
-				Deleted = contactSubmission.Deleted
+				id = contactSubmission.id,
+				name = contactSubmission.name,
+				email = contactSubmission.email,
+				subject = contactSubmission.subject,
+				message = contactSubmission.message,
+				submittedDate = contactSubmission.submittedDate,
+				isRead = contactSubmission.isRead,
+				isArchived = contactSubmission.isArchived,
+				adminNotes = contactSubmission.adminNotes,
+				objectGuid = contactSubmission.objectGuid,
+				active = contactSubmission.active,
+				deleted = contactSubmission.deleted
 			 };
 		}
 
@@ -341,6 +349,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = contactSubmission.id,
 				name = contactSubmission.name,
 				description = string.Join(", ", new[] { contactSubmission.name, contactSubmission.email, contactSubmission.subject}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

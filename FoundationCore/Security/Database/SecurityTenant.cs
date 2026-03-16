@@ -15,6 +15,8 @@ public partial class SecurityTenant
 
     public string settings { get; set; }
 
+    public string hostName { get; set; }
+
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }

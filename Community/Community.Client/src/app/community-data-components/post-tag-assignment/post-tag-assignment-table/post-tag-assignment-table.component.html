@@ -27,6 +27,14 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('post.name')">
+                Post
+                <span *ngIf="sortColumn === 'post.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('postTag.name')">
+                Post  Tag
+                <span *ngIf="sortColumn === 'postTag.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +120,8 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/post', postTagAssignment.postId]" class="btn btn-link text-left" ngbTooltip="Open Post details">{{postTagAssignment.post?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/posttag', postTagAssignment.postTagId]" class="btn btn-link text-left" ngbTooltip="Open Post Tag details">{{postTagAssignment.postTag?.name}}</a></td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -259,6 +269,14 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="post-tag-assignment-info" *ngIf="postTagAssignment.postId != null">
+              <strong>Post: </strong>
+              <a [routerLink]="['/post', postTagAssignment.postId]" class="text-left p-0 m-0" ngbTooltip="Open Post details">{{postTagAssignment.post?.name}}</a>
+            </p>
+            <p class="post-tag-assignment-info" *ngIf="postTagAssignment.postTagId != null">
+              <strong>Post Tag: </strong>
+              <a [routerLink]="['/posttag', postTagAssignment.postTagId]" class="text-left p-0 m-0" ngbTooltip="Open Post Tag details">{{postTagAssignment.postTag?.name}}</a>
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

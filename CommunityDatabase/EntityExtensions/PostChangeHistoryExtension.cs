@@ -16,8 +16,8 @@ namespace Foundation.Community.Database
 		[NotMapped]
 		public long primaryId 
 		{
-			get { return (long)PostId; }
-			set { PostId = (int)value; } 
+			get { return (long)postId; }
+			set { postId = (int)value; } 
 		}
 
 		/// <summary>
@@ -29,12 +29,16 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PostChangeHistoryDTO
 		{
-			public Int32 Id { get; set; }
-			public Int32 PostId { get; set; }
-			public Int32 VersionNumber { get; set; }
-			public DateTime TimeStamp { get; set; }
-			public Int32 UserId { get; set; }
-			public String Data { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public Int32 postId { get; set; }
+			public Int32 versionNumber { get; set; }
+			[Required]
+			public DateTime timeStamp { get; set; }
+			[Required]
+			public Int32 userId { get; set; }
+			[Required]
+			public String data { get; set; }
 		}
 
 
@@ -45,7 +49,7 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PostChangeHistoryOutputDTO : PostChangeHistoryDTO
 		{
-			public Post.PostDTO Post { get; set; }
+			public Post.PostDTO post { get; set; }
 		}
 
 
@@ -60,12 +64,12 @@ namespace Foundation.Community.Database
 		{
 			return new PostChangeHistoryDTO
 			{
-				Id = this.Id,
-				PostId = this.PostId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data
+				id = this.id,
+				postId = this.postId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data
 			};
 		}
 
@@ -104,13 +108,13 @@ namespace Foundation.Community.Database
 		{
 			return new PostChangeHistoryOutputDTO
 			{
-				Id = this.Id,
-				PostId = this.PostId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data,
-				Post = this.Post?.ToDTO()
+				id = this.id,
+				postId = this.postId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data,
+				post = this.post?.ToDTO()
 			};
 		}
 
@@ -149,12 +153,12 @@ namespace Foundation.Community.Database
 		{
 			return new Database.PostChangeHistory
 			{
-				Id = dto.Id,
-				PostId = dto.PostId,
-				VersionNumber = dto.VersionNumber,
-				TimeStamp = dto.TimeStamp,
-				UserId = dto.UserId,
-				Data = dto.Data
+				id = dto.id,
+				postId = dto.postId,
+				versionNumber = dto.versionNumber,
+				timeStamp = dto.timeStamp,
+				userId = dto.userId,
+				data = dto.data
 			};
 		}
 
@@ -171,11 +175,11 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.PostId = dto.PostId;
-			this.VersionNumber = dto.VersionNumber;
-			this.TimeStamp = dto.TimeStamp;
-			this.UserId = dto.UserId;
-			this.Data = dto.Data;
+			this.postId = dto.postId;
+			this.versionNumber = dto.versionNumber;
+			this.timeStamp = dto.timeStamp;
+			this.userId = dto.userId;
+			this.data = dto.data;
 		}
 
 
@@ -190,12 +194,13 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new PostChangeHistory{
-				Id = this.Id,
-				PostId = this.PostId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				postId = this.postId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data,
 			 };
 		}
 
@@ -248,12 +253,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postChangeHistory.Id,
-				PostId = postChangeHistory.PostId,
-				VersionNumber = postChangeHistory.VersionNumber,
-				TimeStamp = postChangeHistory.TimeStamp,
-				UserId = postChangeHistory.UserId,
-				Data = postChangeHistory.Data,
+				id = postChangeHistory.id,
+				postId = postChangeHistory.postId,
+				versionNumber = postChangeHistory.versionNumber,
+				timeStamp = postChangeHistory.timeStamp,
+				userId = postChangeHistory.userId,
+				data = postChangeHistory.data,
 			 };
 		}
 
@@ -273,13 +278,13 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = postChangeHistory.Id,
-				PostId = postChangeHistory.PostId,
-				VersionNumber = postChangeHistory.VersionNumber,
-				TimeStamp = postChangeHistory.TimeStamp,
-				UserId = postChangeHistory.UserId,
-				Data = postChangeHistory.Data,
-				Post = Post.CreateMinimalAnonymous(postChangeHistory.Post)
+				id = postChangeHistory.id,
+				postId = postChangeHistory.postId,
+				versionNumber = postChangeHistory.versionNumber,
+				timeStamp = postChangeHistory.timeStamp,
+				userId = postChangeHistory.userId,
+				data = postChangeHistory.data,
+				post = Post.CreateMinimalAnonymous(postChangeHistory.post)
 			 };
 		}
 
@@ -299,6 +304,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = postChangeHistory.id,
 				name = postChangeHistory.id,
 				description = postChangeHistory.id
 			 };

@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
 using Foundation.Web.Services;
+using Foundation.Community.Controllers.WebAPI;
+using Foundation.Community.Middleware;
 
 
 namespace Foundation.Community
@@ -110,6 +112,12 @@ namespace Foundation.Community
                 builder.Services.AddSessionCache();
                 builder.Services.AddAuditBuffer();
 
+                //
+                // Add memory cache for tenant resolution and scoped tenant context
+                //
+                builder.Services.AddMemoryCache();
+                builder.Services.AddScoped<TenantContext>();
+
 
                 //
                 // Add the Community Database context
@@ -175,14 +183,25 @@ namespace Foundation.Community
 
 
                 //
-                // Code generated controllers will be added here after EF Core Power Tools reverse engineering
+                // Code generated controllers for Community module
                 //
-                //
-                // Start of code generated controller list for Community module
-                //
-                //
-                // End of code generated controller list for Community module
-                //
+                controllers.Add(typeof(AnnouncementsController));
+                controllers.Add(typeof(AnnouncementChangeHistoriesController));
+                controllers.Add(typeof(ContactSubmissionsController));
+                controllers.Add(typeof(DocumentDownloadsController));
+                controllers.Add(typeof(GalleryAlbumsController));
+                controllers.Add(typeof(GalleryImagesController));
+                controllers.Add(typeof(MediaAssetsController));
+                controllers.Add(typeof(MenuItemsController));
+                controllers.Add(typeof(MenusController));
+                controllers.Add(typeof(PageChangeHistoriesController));
+                controllers.Add(typeof(PagesController));
+                controllers.Add(typeof(PostCategoriesController));
+                controllers.Add(typeof(PostChangeHistoriesController));
+                controllers.Add(typeof(PostTagAssignmentsController));
+                controllers.Add(typeof(PostTagsController));
+                controllers.Add(typeof(PostsController));
+                controllers.Add(typeof(SiteSettingsController));
 
 
                 logger.LogInformation("Controllers have been configured.");
@@ -248,6 +267,12 @@ namespace Foundation.Community
                 app.UseDefaultFiles();
                 app.UseStaticFiles();
                 app.UseRouting();
+
+                //
+                // Tenant resolution from Host header — resolves SecurityTenant.hostName
+                // and populates the scoped TenantContext for downstream use.
+                //
+                app.UseMiddleware<TenantResolutionMiddleware>();
 
                 //
                 // CORS configuration

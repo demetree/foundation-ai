@@ -36,6 +36,17 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface PageFormValues {
+  title: string,
+  slug: string,
+  body: string | null,
+  metaDescription: string | null,
+  featuredImageUrl: string | null,
+  isPublished: boolean,
+  publishedDate: string | null,
+  sortOrder: string | null,     // Stored as string for form input, converted to number on submit.
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -63,6 +74,17 @@ export class PageDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   public pageForm: FormGroup = this.fb.group({
+        title: ['', Validators.required],
+        slug: ['', Validators.required],
+        body: [''],
+        metaDescription: [''],
+        featuredImageUrl: [''],
+        isPublished: [false],
+        publishedDate: [''],
+        sortOrder: [''],
+        versionNumber: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -367,6 +389,17 @@ export class PageDetailComponent implements OnInit, CanComponentDeactivate {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.pageForm.reset({
+        title: '',
+        slug: '',
+        body: '',
+        metaDescription: '',
+        featuredImageUrl: '',
+        isPublished: false,
+        publishedDate: '',
+        sortOrder: '',
+        versionNumber: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -376,6 +409,17 @@ export class PageDetailComponent implements OnInit, CanComponentDeactivate {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.pageForm.reset({
+        title: pageData.title ?? '',
+        slug: pageData.slug ?? '',
+        body: pageData.body ?? '',
+        metaDescription: pageData.metaDescription ?? '',
+        featuredImageUrl: pageData.featuredImageUrl ?? '',
+        isPublished: pageData.isPublished ?? false,
+        publishedDate: isoUtcStringToDateTimeLocal(pageData.publishedDate) ?? '',
+        sortOrder: pageData.sortOrder?.toString() ?? '',
+        versionNumber: pageData.versionNumber?.toString() ?? '',
+        active: pageData.active ?? true,
+        deleted: pageData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -435,6 +479,17 @@ export class PageDetailComponent implements OnInit, CanComponentDeactivate {
     //
     const pageSubmitData: PageSubmitData = {
         id: this.pageData?.id || 0,
+        title: formValue.title!.trim(),
+        slug: formValue.slug!.trim(),
+        body: formValue.body?.trim() || null,
+        metaDescription: formValue.metaDescription?.trim() || null,
+        featuredImageUrl: formValue.featuredImageUrl?.trim() || null,
+        isPublished: !!formValue.isPublished,
+        publishedDate: formValue.publishedDate ? dateTimeLocalToIsoUtc(formValue.publishedDate.trim()) : null,
+        sortOrder: formValue.sortOrder ? Number(formValue.sortOrder) : null,
+        versionNumber: this.pageData?.versionNumber ?? 0,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

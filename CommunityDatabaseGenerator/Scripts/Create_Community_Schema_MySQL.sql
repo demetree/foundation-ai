@@ -70,6 +70,7 @@ USE `Community`;
 -- Static content pages for the public website (e.g. About, History, FAQ, Contact, Regulations).
 CREATE TABLE `Page`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`title` VARCHAR(250) NOT NULL,		-- Display title of the page
 	`slug` VARCHAR(250) NOT NULL,		-- URL-friendly slug (e.g. 'about', 'history', 'faq')
 	`body` TEXT NULL,		-- HTML or Markdown body content of the page
@@ -84,19 +85,23 @@ CREATE TABLE `Page`(
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the Page table's slug field.
-CREATE UNIQUE INDEX `I_Page_slug` ON `Page` (`slug`);
+-- Index on the Page table's tenantGuid field.
+CREATE INDEX `I_Page_tenantGuid` ON `Page` (`tenantGuid`);
 
--- Index on the Page table's active field.
-CREATE INDEX `I_Page_active` ON `Page` (`active`);
+-- Index on the Page table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX `I_Page_tenantGuid_slug` ON `Page` (`tenantGuid`, `slug`);
 
--- Index on the Page table's deleted field.
-CREATE INDEX `I_Page_deleted` ON `Page` (`deleted`);
+-- Index on the Page table's tenantGuid,active fields.
+CREATE INDEX `I_Page_tenantGuid_active` ON `Page` (`tenantGuid`, `active`);
+
+-- Index on the Page table's tenantGuid,deleted fields.
+CREATE INDEX `I_Page_tenantGuid_deleted` ON `Page` (`tenantGuid`, `deleted`);
 
 
 -- The change history for records from the Page table.
 CREATE TABLE `PageChangeHistory`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`pageId` INT NOT NULL,		-- Link to the Page table.
 	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
 	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
@@ -104,17 +109,20 @@ CREATE TABLE `PageChangeHistory`(
 	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
 	FOREIGN KEY (`pageId`) REFERENCES `Page`(`id`)		-- Foreign key to the Page table.
 );
--- Index on the PageChangeHistory table's versionNumber field.
-CREATE INDEX `I_PageChangeHistory_versionNumber` ON `PageChangeHistory` (`versionNumber`);
+-- Index on the PageChangeHistory table's tenantGuid field.
+CREATE INDEX `I_PageChangeHistory_tenantGuid` ON `PageChangeHistory` (`tenantGuid`);
 
--- Index on the PageChangeHistory table's timeStamp field.
-CREATE INDEX `I_PageChangeHistory_timeStamp` ON `PageChangeHistory` (`timeStamp`);
+-- Index on the PageChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_PageChangeHistory_tenantGuid_versionNumber` ON `PageChangeHistory` (`tenantGuid`, `versionNumber`);
 
--- Index on the PageChangeHistory table's userId field.
-CREATE INDEX `I_PageChangeHistory_userId` ON `PageChangeHistory` (`userId`);
+-- Index on the PageChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_PageChangeHistory_tenantGuid_timeStamp` ON `PageChangeHistory` (`tenantGuid`, `timeStamp`);
 
--- Index on the PageChangeHistory table's pageId field.
-CREATE INDEX `I_PageChangeHistory_pageId` ON `PageChangeHistory` (`pageId`, `versionNumber`, `timeStamp`, `userId`);
+-- Index on the PageChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_PageChangeHistory_tenantGuid_userId` ON `PageChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the PageChangeHistory table's tenantGuid,pageId fields.
+CREATE INDEX `I_PageChangeHistory_tenantGuid_pageId` ON `PageChangeHistory` (`tenantGuid`, `pageId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 -- Category taxonomy for organizing blog/news posts (e.g. News, Council Updates, Community Events).
@@ -155,6 +163,7 @@ INSERT INTO `PostCategory` ( `name`, `description`, `slug`, `sequence`, `objectG
 -- Blog and news articles for the public website. Supports categories, featured images, and publish scheduling.
 CREATE TABLE `Post`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`title` VARCHAR(250) NOT NULL,		-- Display title of the post
 	`slug` VARCHAR(250) NOT NULL,		-- URL-friendly slug for the post
 	`body` TEXT NULL,		-- Full HTML or Markdown body content of the post
@@ -172,25 +181,29 @@ CREATE TABLE `Post`(
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`postCategoryId`) REFERENCES `PostCategory`(`id`)		-- Foreign key to the PostCategory table.
 );
--- Index on the Post table's title field.
-CREATE INDEX `I_Post_title` ON `Post` (`title`);
+-- Index on the Post table's tenantGuid field.
+CREATE INDEX `I_Post_tenantGuid` ON `Post` (`tenantGuid`);
 
--- Index on the Post table's slug field.
-CREATE UNIQUE INDEX `I_Post_slug` ON `Post` (`slug`);
+-- Index on the Post table's tenantGuid,title fields.
+CREATE INDEX `I_Post_tenantGuid_title` ON `Post` (`tenantGuid`, `title`);
 
--- Index on the Post table's postCategoryId field.
-CREATE INDEX `I_Post_postCategoryId` ON `Post` (`postCategoryId`);
+-- Index on the Post table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX `I_Post_tenantGuid_slug` ON `Post` (`tenantGuid`, `slug`);
 
--- Index on the Post table's active field.
-CREATE INDEX `I_Post_active` ON `Post` (`active`);
+-- Index on the Post table's tenantGuid,postCategoryId fields.
+CREATE INDEX `I_Post_tenantGuid_postCategoryId` ON `Post` (`tenantGuid`, `postCategoryId`);
 
--- Index on the Post table's deleted field.
-CREATE INDEX `I_Post_deleted` ON `Post` (`deleted`);
+-- Index on the Post table's tenantGuid,active fields.
+CREATE INDEX `I_Post_tenantGuid_active` ON `Post` (`tenantGuid`, `active`);
+
+-- Index on the Post table's tenantGuid,deleted fields.
+CREATE INDEX `I_Post_tenantGuid_deleted` ON `Post` (`tenantGuid`, `deleted`);
 
 
 -- The change history for records from the Post table.
 CREATE TABLE `PostChangeHistory`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`postId` INT NOT NULL,		-- Link to the Post table.
 	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
 	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
@@ -198,40 +211,47 @@ CREATE TABLE `PostChangeHistory`(
 	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
 	FOREIGN KEY (`postId`) REFERENCES `Post`(`id`)		-- Foreign key to the Post table.
 );
--- Index on the PostChangeHistory table's versionNumber field.
-CREATE INDEX `I_PostChangeHistory_versionNumber` ON `PostChangeHistory` (`versionNumber`);
+-- Index on the PostChangeHistory table's tenantGuid field.
+CREATE INDEX `I_PostChangeHistory_tenantGuid` ON `PostChangeHistory` (`tenantGuid`);
 
--- Index on the PostChangeHistory table's timeStamp field.
-CREATE INDEX `I_PostChangeHistory_timeStamp` ON `PostChangeHistory` (`timeStamp`);
+-- Index on the PostChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_PostChangeHistory_tenantGuid_versionNumber` ON `PostChangeHistory` (`tenantGuid`, `versionNumber`);
 
--- Index on the PostChangeHistory table's userId field.
-CREATE INDEX `I_PostChangeHistory_userId` ON `PostChangeHistory` (`userId`);
+-- Index on the PostChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_PostChangeHistory_tenantGuid_timeStamp` ON `PostChangeHistory` (`tenantGuid`, `timeStamp`);
 
--- Index on the PostChangeHistory table's postId field.
-CREATE INDEX `I_PostChangeHistory_postId` ON `PostChangeHistory` (`postId`, `versionNumber`, `timeStamp`, `userId`);
+-- Index on the PostChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_PostChangeHistory_tenantGuid_userId` ON `PostChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the PostChangeHistory table's tenantGuid,postId fields.
+CREATE INDEX `I_PostChangeHistory_tenantGuid_postId` ON `PostChangeHistory` (`tenantGuid`, `postId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 -- Freeform tags for cross-cutting post categorization (e.g. urgent, budget, recycling).
 CREATE TABLE `PostTag`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(100) NOT NULL,
 	`slug` VARCHAR(250) NOT NULL,		-- URL-friendly slug for the tag
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_PostTag_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the PostTag table's tenantGuid and name fields.
 );
--- Index on the PostTag table's name field.
-CREATE INDEX `I_PostTag_name` ON `PostTag` (`name`);
+-- Index on the PostTag table's tenantGuid field.
+CREATE INDEX `I_PostTag_tenantGuid` ON `PostTag` (`tenantGuid`);
 
--- Index on the PostTag table's slug field.
-CREATE UNIQUE INDEX `I_PostTag_slug` ON `PostTag` (`slug`);
+-- Index on the PostTag table's tenantGuid,name fields.
+CREATE INDEX `I_PostTag_tenantGuid_name` ON `PostTag` (`tenantGuid`, `name`);
 
--- Index on the PostTag table's active field.
-CREATE INDEX `I_PostTag_active` ON `PostTag` (`active`);
+-- Index on the PostTag table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX `I_PostTag_tenantGuid_slug` ON `PostTag` (`tenantGuid`, `slug`);
 
--- Index on the PostTag table's deleted field.
-CREATE INDEX `I_PostTag_deleted` ON `PostTag` (`deleted`);
+-- Index on the PostTag table's tenantGuid,active fields.
+CREATE INDEX `I_PostTag_tenantGuid_active` ON `PostTag` (`tenantGuid`, `active`);
+
+-- Index on the PostTag table's tenantGuid,deleted fields.
+CREATE INDEX `I_PostTag_tenantGuid_deleted` ON `PostTag` (`tenantGuid`, `deleted`);
 
 
 -- Many-to-many mapping between posts and tags.
@@ -262,6 +282,7 @@ CREATE INDEX `I_PostTagAssignment_deleted` ON `PostTagAssignment` (`deleted`);
 -- Centralized media library for uploaded images, documents, and other files used across the CMS.
 CREATE TABLE `MediaAsset`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`fileName` VARCHAR(250) NOT NULL,		-- Original filename as uploaded (e.g. 'council-photo-2026.jpg')
 	`filePath` VARCHAR(500) NOT NULL,		-- Server-relative storage path for the file
 	`mimeType` VARCHAR(100) NOT NULL,		-- MIME type (e.g. 'image/jpeg', 'application/pdf')
@@ -275,40 +296,48 @@ CREATE TABLE `MediaAsset`(
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the MediaAsset table's active field.
-CREATE INDEX `I_MediaAsset_active` ON `MediaAsset` (`active`);
+-- Index on the MediaAsset table's tenantGuid field.
+CREATE INDEX `I_MediaAsset_tenantGuid` ON `MediaAsset` (`tenantGuid`);
 
--- Index on the MediaAsset table's deleted field.
-CREATE INDEX `I_MediaAsset_deleted` ON `MediaAsset` (`deleted`);
+-- Index on the MediaAsset table's tenantGuid,active fields.
+CREATE INDEX `I_MediaAsset_tenantGuid_active` ON `MediaAsset` (`tenantGuid`, `active`);
+
+-- Index on the MediaAsset table's tenantGuid,deleted fields.
+CREATE INDEX `I_MediaAsset_tenantGuid_deleted` ON `MediaAsset` (`tenantGuid`, `deleted`);
 
 
 -- Named navigation menus for different positions on the site (e.g. header, footer, sidebar).
 CREATE TABLE `Menu`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-	`name` VARCHAR(100) NOT NULL UNIQUE,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(100) NOT NULL,
 	`location` VARCHAR(50) NOT NULL,		-- Where this menu is displayed: header, footer, sidebar
 	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_Menu_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the Menu table's tenantGuid and name fields.
 );
--- Index on the Menu table's name field.
-CREATE INDEX `I_Menu_name` ON `Menu` (`name`);
+-- Index on the Menu table's tenantGuid field.
+CREATE INDEX `I_Menu_tenantGuid` ON `Menu` (`tenantGuid`);
 
--- Index on the Menu table's active field.
-CREATE INDEX `I_Menu_active` ON `Menu` (`active`);
+-- Index on the Menu table's tenantGuid,name fields.
+CREATE INDEX `I_Menu_tenantGuid_name` ON `Menu` (`tenantGuid`, `name`);
 
--- Index on the Menu table's deleted field.
-CREATE INDEX `I_Menu_deleted` ON `Menu` (`deleted`);
+-- Index on the Menu table's tenantGuid,active fields.
+CREATE INDEX `I_Menu_tenantGuid_active` ON `Menu` (`tenantGuid`, `active`);
 
-INSERT INTO `Menu` ( `name`, `location`, `objectGuid` ) VALUES  ( 'Main Navigation', 'header', 'c0b10001-0001-4000-8000-000000000001' );
+-- Index on the Menu table's tenantGuid,deleted fields.
+CREATE INDEX `I_Menu_tenantGuid_deleted` ON `Menu` (`tenantGuid`, `deleted`);
 
-INSERT INTO `Menu` ( `name`, `location`, `objectGuid` ) VALUES  ( 'Footer Links', 'footer', 'c0b10001-0001-4000-8000-000000000002' );
+INSERT INTO `Menu` ( `tenantGuid`, `name`, `location`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'Main Navigation', 'header', 'c0b10001-0001-4000-8000-000000000001' );
+
+INSERT INTO `Menu` ( `tenantGuid`, `name`, `location`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'Footer Links', 'footer', 'c0b10001-0001-4000-8000-000000000002' );
 
 
 -- Individual navigation items within a menu. Supports tree hierarchy via self-referencing parent FK.
 CREATE TABLE `MenuItem`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`menuId` INT NOT NULL,		-- The menu this item belongs to
 	`label` VARCHAR(250) NOT NULL,		-- Display text for the menu item
 	`url` VARCHAR(500) NULL,		-- External or absolute URL (used if pageId is null)
@@ -324,25 +353,29 @@ CREATE TABLE `MenuItem`(
 	FOREIGN KEY (`pageId`) REFERENCES `Page`(`id`),		-- Foreign key to the Page table.
 	FOREIGN KEY (`parentMenuItemId`) REFERENCES `MenuItem`(`id`)		-- Foreign key to the MenuItem table.
 );
--- Index on the MenuItem table's menuId field.
-CREATE INDEX `I_MenuItem_menuId` ON `MenuItem` (`menuId`);
+-- Index on the MenuItem table's tenantGuid field.
+CREATE INDEX `I_MenuItem_tenantGuid` ON `MenuItem` (`tenantGuid`);
 
--- Index on the MenuItem table's pageId field.
-CREATE INDEX `I_MenuItem_pageId` ON `MenuItem` (`pageId`);
+-- Index on the MenuItem table's tenantGuid,menuId fields.
+CREATE INDEX `I_MenuItem_tenantGuid_menuId` ON `MenuItem` (`tenantGuid`, `menuId`);
 
--- Index on the MenuItem table's parentMenuItemId field.
-CREATE INDEX `I_MenuItem_parentMenuItemId` ON `MenuItem` (`parentMenuItemId`);
+-- Index on the MenuItem table's tenantGuid,pageId fields.
+CREATE INDEX `I_MenuItem_tenantGuid_pageId` ON `MenuItem` (`tenantGuid`, `pageId`);
 
--- Index on the MenuItem table's active field.
-CREATE INDEX `I_MenuItem_active` ON `MenuItem` (`active`);
+-- Index on the MenuItem table's tenantGuid,parentMenuItemId fields.
+CREATE INDEX `I_MenuItem_tenantGuid_parentMenuItemId` ON `MenuItem` (`tenantGuid`, `parentMenuItemId`);
 
--- Index on the MenuItem table's deleted field.
-CREATE INDEX `I_MenuItem_deleted` ON `MenuItem` (`deleted`);
+-- Index on the MenuItem table's tenantGuid,active fields.
+CREATE INDEX `I_MenuItem_tenantGuid_active` ON `MenuItem` (`tenantGuid`, `active`);
+
+-- Index on the MenuItem table's tenantGuid,deleted fields.
+CREATE INDEX `I_MenuItem_tenantGuid_deleted` ON `MenuItem` (`tenantGuid`, `deleted`);
 
 
 -- Key-value configuration for the public site (site name, tagline, logo URL, social media links, theme settings).
 CREATE TABLE `SiteSetting`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`settingKey` VARCHAR(100) NOT NULL,		-- Unique setting identifier (e.g. 'siteName', 'tagline', 'logoUrl')
 	`settingValue` TEXT NULL,		-- The value for this setting
 	`description` VARCHAR(250) NULL,		-- Human-readable description of what this setting controls
@@ -352,43 +385,47 @@ CREATE TABLE `SiteSetting`(
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the SiteSetting table's settingKey field.
-CREATE UNIQUE INDEX `I_SiteSetting_settingKey` ON `SiteSetting` (`settingKey`);
+-- Index on the SiteSetting table's tenantGuid field.
+CREATE INDEX `I_SiteSetting_tenantGuid` ON `SiteSetting` (`tenantGuid`);
 
--- Index on the SiteSetting table's active field.
-CREATE INDEX `I_SiteSetting_active` ON `SiteSetting` (`active`);
+-- Index on the SiteSetting table's tenantGuid,settingKey fields.
+CREATE UNIQUE INDEX `I_SiteSetting_tenantGuid_settingKey` ON `SiteSetting` (`tenantGuid`, `settingKey`);
 
--- Index on the SiteSetting table's deleted field.
-CREATE INDEX `I_SiteSetting_deleted` ON `SiteSetting` (`deleted`);
+-- Index on the SiteSetting table's tenantGuid,active fields.
+CREATE INDEX `I_SiteSetting_tenantGuid_active` ON `SiteSetting` (`tenantGuid`, `active`);
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'siteName', 'Community', 'The name of the site displayed in the header and browser tab', 'General', 'c0c10001-0001-4000-8000-000000000001' );
+-- Index on the SiteSetting table's tenantGuid,deleted fields.
+CREATE INDEX `I_SiteSetting_tenantGuid_deleted` ON `SiteSetting` (`tenantGuid`, `deleted`);
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'tagline', 'Welcome to our community', 'Site tagline displayed below the site name', 'General', 'c0c10001-0001-4000-8000-000000000002' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'siteName', 'Community', 'The name of the site displayed in the header and browser tab', 'General', 'c0c10001-0001-4000-8000-000000000001' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'logoUrl', '', 'URL to the site logo image', 'General', 'c0c10001-0001-4000-8000-000000000003' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'tagline', 'Welcome to our community', 'Site tagline displayed below the site name', 'General', 'c0c10001-0001-4000-8000-000000000002' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'footerText', '© 2026 K2 Research. All rights reserved.', 'Copyright text displayed in the site footer', 'General', 'c0c10001-0001-4000-8000-000000000004' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'logoUrl', '', 'URL to the site logo image', 'General', 'c0c10001-0001-4000-8000-000000000003' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'contactEmail', '', 'Primary contact email address', 'General', 'c0c10001-0001-4000-8000-000000000005' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'footerText', '© 2026 K2 Research. All rights reserved.', 'Copyright text displayed in the site footer', 'General', 'c0c10001-0001-4000-8000-000000000004' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'contactPhone', '', 'Primary contact phone number', 'General', 'c0c10001-0001-4000-8000-000000000006' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'contactEmail', '', 'Primary contact email address', 'General', 'c0c10001-0001-4000-8000-000000000005' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'facebookUrl', '', 'Facebook page URL', 'Social', 'c0c10001-0001-4000-8000-000000000010' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'contactPhone', '', 'Primary contact phone number', 'General', 'c0c10001-0001-4000-8000-000000000006' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'twitterUrl', '', 'Twitter/X profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000011' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'facebookUrl', '', 'Facebook page URL', 'Social', 'c0c10001-0001-4000-8000-000000000010' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'instagramUrl', '', 'Instagram profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000012' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'twitterUrl', '', 'Twitter/X profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000011' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'heroTitle', 'Welcome', 'Hero section title on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000020' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'instagramUrl', '', 'Instagram profile URL', 'Social', 'c0c10001-0001-4000-8000-000000000012' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'heroSubtitle', '', 'Hero section subtitle on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000021' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'heroTitle', 'Welcome', 'Hero section title on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000020' );
 
-INSERT INTO `SiteSetting` ( `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'heroImageUrl', '', 'Hero section background image URL', 'HomePage', 'c0c10001-0001-4000-8000-000000000022' );
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'heroSubtitle', '', 'Hero section subtitle on the home page', 'HomePage', 'c0c10001-0001-4000-8000-000000000021' );
+
+INSERT INTO `SiteSetting` ( `tenantGuid`, `settingKey`, `settingValue`, `description`, `settingGroup`, `objectGuid` ) VALUES  ( 'd58f56c6-e3fb-4d3b-80b3-7053c66491e3', 'heroImageUrl', '', 'Hero section background image URL', 'HomePage', 'c0c10001-0001-4000-8000-000000000022' );
 
 
 -- Time-bound announcements displayed on the public site (council meeting notices, public consultations, service disruptions).
 CREATE TABLE `Announcement`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`title` VARCHAR(250) NOT NULL,		-- Announcement title
 	`body` TEXT NULL,		-- Full announcement body content (HTML or Markdown)
 	`severity` VARCHAR(50) NOT NULL DEFAULT 'info',		-- Severity level: info, warning, urgent
@@ -401,16 +438,20 @@ CREATE TABLE `Announcement`(
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the Announcement table's active field.
-CREATE INDEX `I_Announcement_active` ON `Announcement` (`active`);
+-- Index on the Announcement table's tenantGuid field.
+CREATE INDEX `I_Announcement_tenantGuid` ON `Announcement` (`tenantGuid`);
 
--- Index on the Announcement table's deleted field.
-CREATE INDEX `I_Announcement_deleted` ON `Announcement` (`deleted`);
+-- Index on the Announcement table's tenantGuid,active fields.
+CREATE INDEX `I_Announcement_tenantGuid_active` ON `Announcement` (`tenantGuid`, `active`);
+
+-- Index on the Announcement table's tenantGuid,deleted fields.
+CREATE INDEX `I_Announcement_tenantGuid_deleted` ON `Announcement` (`tenantGuid`, `deleted`);
 
 
 -- The change history for records from the Announcement table.
 CREATE TABLE `AnnouncementChangeHistory`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`announcementId` INT NOT NULL,		-- Link to the Announcement table.
 	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
 	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
@@ -418,22 +459,26 @@ CREATE TABLE `AnnouncementChangeHistory`(
 	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
 	FOREIGN KEY (`announcementId`) REFERENCES `Announcement`(`id`)		-- Foreign key to the Announcement table.
 );
--- Index on the AnnouncementChangeHistory table's versionNumber field.
-CREATE INDEX `I_AnnouncementChangeHistory_versionNumber` ON `AnnouncementChangeHistory` (`versionNumber`);
+-- Index on the AnnouncementChangeHistory table's tenantGuid field.
+CREATE INDEX `I_AnnouncementChangeHistory_tenantGuid` ON `AnnouncementChangeHistory` (`tenantGuid`);
 
--- Index on the AnnouncementChangeHistory table's timeStamp field.
-CREATE INDEX `I_AnnouncementChangeHistory_timeStamp` ON `AnnouncementChangeHistory` (`timeStamp`);
+-- Index on the AnnouncementChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_AnnouncementChangeHistory_tenantGuid_versionNumber` ON `AnnouncementChangeHistory` (`tenantGuid`, `versionNumber`);
 
--- Index on the AnnouncementChangeHistory table's userId field.
-CREATE INDEX `I_AnnouncementChangeHistory_userId` ON `AnnouncementChangeHistory` (`userId`);
+-- Index on the AnnouncementChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_AnnouncementChangeHistory_tenantGuid_timeStamp` ON `AnnouncementChangeHistory` (`tenantGuid`, `timeStamp`);
 
--- Index on the AnnouncementChangeHistory table's announcementId field.
-CREATE INDEX `I_AnnouncementChangeHistory_announcementId` ON `AnnouncementChangeHistory` (`announcementId`, `versionNumber`, `timeStamp`, `userId`);
+-- Index on the AnnouncementChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_AnnouncementChangeHistory_tenantGuid_userId` ON `AnnouncementChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the AnnouncementChangeHistory table's tenantGuid,announcementId fields.
+CREATE INDEX `I_AnnouncementChangeHistory_tenantGuid_announcementId` ON `AnnouncementChangeHistory` (`tenantGuid`, `announcementId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 -- Photo albums for organizing gallery images (e.g. 'Community Day 2026', 'Town Views', 'Heritage Photos').
 CREATE TABLE `GalleryAlbum`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`title` VARCHAR(250) NOT NULL,		-- Album title
 	`slug` VARCHAR(250) NOT NULL,		-- URL-friendly slug for the album
 	`description` TEXT NULL,		-- Description of the album
@@ -445,19 +490,23 @@ CREATE TABLE `GalleryAlbum`(
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the GalleryAlbum table's slug field.
-CREATE UNIQUE INDEX `I_GalleryAlbum_slug` ON `GalleryAlbum` (`slug`);
+-- Index on the GalleryAlbum table's tenantGuid field.
+CREATE INDEX `I_GalleryAlbum_tenantGuid` ON `GalleryAlbum` (`tenantGuid`);
 
--- Index on the GalleryAlbum table's active field.
-CREATE INDEX `I_GalleryAlbum_active` ON `GalleryAlbum` (`active`);
+-- Index on the GalleryAlbum table's tenantGuid,slug fields.
+CREATE UNIQUE INDEX `I_GalleryAlbum_tenantGuid_slug` ON `GalleryAlbum` (`tenantGuid`, `slug`);
 
--- Index on the GalleryAlbum table's deleted field.
-CREATE INDEX `I_GalleryAlbum_deleted` ON `GalleryAlbum` (`deleted`);
+-- Index on the GalleryAlbum table's tenantGuid,active fields.
+CREATE INDEX `I_GalleryAlbum_tenantGuid_active` ON `GalleryAlbum` (`tenantGuid`, `active`);
+
+-- Index on the GalleryAlbum table's tenantGuid,deleted fields.
+CREATE INDEX `I_GalleryAlbum_tenantGuid_deleted` ON `GalleryAlbum` (`tenantGuid`, `deleted`);
 
 
 -- Individual images within a gallery album.
 CREATE TABLE `GalleryImage`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`galleryAlbumId` INT NOT NULL,		-- The album this image belongs to
 	`imageUrl` VARCHAR(500) NOT NULL,		-- URL or relative path to the image file
 	`caption` VARCHAR(500) NULL,		-- Display caption for the image
@@ -468,19 +517,23 @@ CREATE TABLE `GalleryImage`(
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`galleryAlbumId`) REFERENCES `GalleryAlbum`(`id`)		-- Foreign key to the GalleryAlbum table.
 );
--- Index on the GalleryImage table's galleryAlbumId field.
-CREATE INDEX `I_GalleryImage_galleryAlbumId` ON `GalleryImage` (`galleryAlbumId`);
+-- Index on the GalleryImage table's tenantGuid field.
+CREATE INDEX `I_GalleryImage_tenantGuid` ON `GalleryImage` (`tenantGuid`);
 
--- Index on the GalleryImage table's active field.
-CREATE INDEX `I_GalleryImage_active` ON `GalleryImage` (`active`);
+-- Index on the GalleryImage table's tenantGuid,galleryAlbumId fields.
+CREATE INDEX `I_GalleryImage_tenantGuid_galleryAlbumId` ON `GalleryImage` (`tenantGuid`, `galleryAlbumId`);
 
--- Index on the GalleryImage table's deleted field.
-CREATE INDEX `I_GalleryImage_deleted` ON `GalleryImage` (`deleted`);
+-- Index on the GalleryImage table's tenantGuid,active fields.
+CREATE INDEX `I_GalleryImage_tenantGuid_active` ON `GalleryImage` (`tenantGuid`, `active`);
+
+-- Index on the GalleryImage table's tenantGuid,deleted fields.
+CREATE INDEX `I_GalleryImage_tenantGuid_deleted` ON `GalleryImage` (`tenantGuid`, `deleted`);
 
 
 -- Downloadable documents for public access (council minutes, schedules, forms, regulations). Replaces the PDF-as-image pattern.
 CREATE TABLE `DocumentDownload`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`title` VARCHAR(250) NOT NULL,		-- Display title for the document
 	`description` TEXT NULL,		-- Description of what this document contains
 	`filePath` VARCHAR(500) NOT NULL,		-- Server-relative path to the downloadable file
@@ -496,16 +549,20 @@ CREATE TABLE `DocumentDownload`(
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the DocumentDownload table's active field.
-CREATE INDEX `I_DocumentDownload_active` ON `DocumentDownload` (`active`);
+-- Index on the DocumentDownload table's tenantGuid field.
+CREATE INDEX `I_DocumentDownload_tenantGuid` ON `DocumentDownload` (`tenantGuid`);
 
--- Index on the DocumentDownload table's deleted field.
-CREATE INDEX `I_DocumentDownload_deleted` ON `DocumentDownload` (`deleted`);
+-- Index on the DocumentDownload table's tenantGuid,active fields.
+CREATE INDEX `I_DocumentDownload_tenantGuid_active` ON `DocumentDownload` (`tenantGuid`, `active`);
+
+-- Index on the DocumentDownload table's tenantGuid,deleted fields.
+CREATE INDEX `I_DocumentDownload_tenantGuid_deleted` ON `DocumentDownload` (`tenantGuid`, `deleted`);
 
 
 -- Captures contact form submissions from public site visitors.
 CREATE TABLE `ContactSubmission`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	`name` VARCHAR(100) NOT NULL,		-- Name of the person submitting the form
 	`email` VARCHAR(250) NOT NULL,		-- Email address for reply
 	`subject` VARCHAR(250) NULL,		-- Subject line of the message
@@ -519,10 +576,13 @@ CREATE TABLE `ContactSubmission`(
 	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the ContactSubmission table's active field.
-CREATE INDEX `I_ContactSubmission_active` ON `ContactSubmission` (`active`);
+-- Index on the ContactSubmission table's tenantGuid field.
+CREATE INDEX `I_ContactSubmission_tenantGuid` ON `ContactSubmission` (`tenantGuid`);
 
--- Index on the ContactSubmission table's deleted field.
-CREATE INDEX `I_ContactSubmission_deleted` ON `ContactSubmission` (`deleted`);
+-- Index on the ContactSubmission table's tenantGuid,active fields.
+CREATE INDEX `I_ContactSubmission_tenantGuid_active` ON `ContactSubmission` (`tenantGuid`, `active`);
+
+-- Index on the ContactSubmission table's tenantGuid,deleted fields.
+CREATE INDEX `I_ContactSubmission_tenantGuid_deleted` ON `ContactSubmission` (`tenantGuid`, `deleted`);
 
 

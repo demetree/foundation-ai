@@ -51,647 +51,472 @@ public partial class CommunityContext : DbContext
     {
         modelBuilder.Entity<Announcement>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Announce__3213E83F9E395E83");
+            entity.HasKey(e => e.id).HasName("PK__Announce__3213E83F358CA734");
 
             entity.ToTable("Announcement", "Community");
 
-            entity.HasIndex(e => e.Active, "I_Announcement_active");
+            entity.HasIndex(e => e.tenantGuid, "I_Announcement_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_Announcement_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_Announcement_tenantGuid_active");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__Announce__3E543F949B263235").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_Announcement_tenantGuid_deleted");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Body).HasColumnName("body");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.EndDate).HasColumnName("endDate");
-            entity.Property(e => e.IsPinned).HasColumnName("isPinned");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.Severity)
+            entity.HasIndex(e => e.objectGuid, "UQ__Announce__3E543F94229E0CC6").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.severity)
                 .IsRequired()
                 .HasMaxLength(50)
-                .HasDefaultValue("info")
-                .HasColumnName("severity");
-            entity.Property(e => e.StartDate).HasColumnName("startDate");
-            entity.Property(e => e.Title)
+                .HasDefaultValue("info");
+            entity.Property(e => e.title)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("title");
-            entity.Property(e => e.VersionNumber)
-                .HasDefaultValue(1)
-                .HasColumnName("versionNumber");
+                .HasMaxLength(250);
+            entity.Property(e => e.versionNumber).HasDefaultValue(1);
         });
 
         modelBuilder.Entity<AnnouncementChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Announce__3213E83F0285A01D");
+            entity.HasKey(e => e.id).HasName("PK__Announce__3213E83F3F94E511");
 
             entity.ToTable("AnnouncementChangeHistory", "Community");
 
-            entity.HasIndex(e => e.AnnouncementId, "I_AnnouncementChangeHistory_announcementId");
+            entity.HasIndex(e => e.tenantGuid, "I_AnnouncementChangeHistory_tenantGuid");
 
-            entity.HasIndex(e => e.TimeStamp, "I_AnnouncementChangeHistory_timeStamp");
+            entity.HasIndex(e => new { e.tenantGuid, e.announcementId }, "I_AnnouncementChangeHistory_tenantGuid_announcementId");
 
-            entity.HasIndex(e => e.UserId, "I_AnnouncementChangeHistory_userId");
+            entity.HasIndex(e => new { e.tenantGuid, e.timeStamp }, "I_AnnouncementChangeHistory_tenantGuid_timeStamp");
 
-            entity.HasIndex(e => e.VersionNumber, "I_AnnouncementChangeHistory_versionNumber");
+            entity.HasIndex(e => new { e.tenantGuid, e.userId }, "I_AnnouncementChangeHistory_tenantGuid_userId");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.AnnouncementId).HasColumnName("announcementId");
-            entity.Property(e => e.Data)
-                .IsRequired()
-                .HasColumnName("data");
-            entity.Property(e => e.TimeStamp).HasColumnName("timeStamp");
-            entity.Property(e => e.UserId).HasColumnName("userId");
-            entity.Property(e => e.VersionNumber).HasColumnName("versionNumber");
+            entity.HasIndex(e => new { e.tenantGuid, e.versionNumber }, "I_AnnouncementChangeHistory_tenantGuid_versionNumber");
 
-            entity.HasOne(d => d.Announcement).WithMany(p => p.AnnouncementChangeHistories)
-                .HasForeignKey(d => d.AnnouncementId)
+            entity.Property(e => e.data).IsRequired();
+
+            entity.HasOne(d => d.announcement).WithMany(p => p.AnnouncementChangeHistories)
+                .HasForeignKey(d => d.announcementId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<ContactSubmission>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ContactS__3213E83FBD69A54A");
+            entity.HasKey(e => e.id).HasName("PK__ContactS__3213E83F02CD745F");
 
             entity.ToTable("ContactSubmission", "Community");
 
-            entity.HasIndex(e => e.Active, "I_ContactSubmission_active");
+            entity.HasIndex(e => e.tenantGuid, "I_ContactSubmission_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_ContactSubmission_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_ContactSubmission_tenantGuid_active");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__ContactS__3E543F94730734AC").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_ContactSubmission_tenantGuid_deleted");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.AdminNotes)
-                .HasMaxLength(500)
-                .HasColumnName("adminNotes");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Email)
+            entity.HasIndex(e => e.objectGuid, "UQ__ContactS__3E543F9499F07836").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.adminNotes).HasMaxLength(500);
+            entity.Property(e => e.email)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("email");
-            entity.Property(e => e.IsArchived).HasColumnName("isArchived");
-            entity.Property(e => e.IsRead).HasColumnName("isRead");
-            entity.Property(e => e.Message)
+                .HasMaxLength(250);
+            entity.Property(e => e.message).IsRequired();
+            entity.Property(e => e.name)
                 .IsRequired()
-                .HasColumnName("message");
-            entity.Property(e => e.Name)
-                .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("name");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.Subject)
-                .HasMaxLength(250)
-                .HasColumnName("subject");
-            entity.Property(e => e.SubmittedDate).HasColumnName("submittedDate");
+                .HasMaxLength(100);
+            entity.Property(e => e.subject).HasMaxLength(250);
         });
 
         modelBuilder.Entity<DocumentDownload>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Document__3213E83F28F63045");
+            entity.HasKey(e => e.id).HasName("PK__Document__3213E83F72125143");
 
             entity.ToTable("DocumentDownload", "Community");
 
-            entity.HasIndex(e => e.Active, "I_DocumentDownload_active");
+            entity.HasIndex(e => e.tenantGuid, "I_DocumentDownload_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_DocumentDownload_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_DocumentDownload_tenantGuid_active");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__Document__3E543F9425889F19").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_DocumentDownload_tenantGuid_deleted");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.CategoryName)
-                .HasMaxLength(100)
-                .HasColumnName("categoryName");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Description).HasColumnName("description");
-            entity.Property(e => e.DocumentDate).HasColumnName("documentDate");
-            entity.Property(e => e.FileName)
+            entity.HasIndex(e => e.objectGuid, "UQ__Document__3E543F9439540086").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.categoryName).HasMaxLength(100);
+            entity.Property(e => e.fileName)
                 .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("fileName");
-            entity.Property(e => e.FilePath)
+                .HasMaxLength(100);
+            entity.Property(e => e.filePath)
                 .IsRequired()
-                .HasMaxLength(500)
-                .HasColumnName("filePath");
-            entity.Property(e => e.FileSizeBytes).HasColumnName("fileSizeBytes");
-            entity.Property(e => e.IsPublished)
-                .HasDefaultValue(true)
-                .HasColumnName("isPublished");
-            entity.Property(e => e.MimeType)
-                .HasMaxLength(100)
-                .HasColumnName("mimeType");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.Sequence).HasColumnName("sequence");
-            entity.Property(e => e.Title)
+                .HasMaxLength(500);
+            entity.Property(e => e.isPublished).HasDefaultValue(true);
+            entity.Property(e => e.mimeType).HasMaxLength(100);
+            entity.Property(e => e.title)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("title");
+                .HasMaxLength(250);
         });
 
         modelBuilder.Entity<GalleryAlbum>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__GalleryA__3213E83FF2E97204");
+            entity.HasKey(e => e.id).HasName("PK__GalleryA__3213E83FB1BF2BEC");
 
             entity.ToTable("GalleryAlbum", "Community");
 
-            entity.HasIndex(e => e.Active, "I_GalleryAlbum_active");
+            entity.HasIndex(e => e.tenantGuid, "I_GalleryAlbum_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_GalleryAlbum_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_GalleryAlbum_tenantGuid_active");
 
-            entity.HasIndex(e => e.Slug, "I_GalleryAlbum_slug").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_GalleryAlbum_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__GalleryA__3E543F94AD9584F0").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.slug }, "I_GalleryAlbum_tenantGuid_slug").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.CoverImageUrl)
-                .HasMaxLength(500)
-                .HasColumnName("coverImageUrl");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Description).HasColumnName("description");
-            entity.Property(e => e.IsPublished)
-                .HasDefaultValue(true)
-                .HasColumnName("isPublished");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.Sequence).HasColumnName("sequence");
-            entity.Property(e => e.Slug)
+            entity.HasIndex(e => e.objectGuid, "UQ__GalleryA__3E543F94024167AF").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.coverImageUrl).HasMaxLength(500);
+            entity.Property(e => e.isPublished).HasDefaultValue(true);
+            entity.Property(e => e.slug)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("slug");
-            entity.Property(e => e.Title)
+                .HasMaxLength(250);
+            entity.Property(e => e.title)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("title");
+                .HasMaxLength(250);
         });
 
         modelBuilder.Entity<GalleryImage>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__GalleryI__3213E83FCE1E178A");
+            entity.HasKey(e => e.id).HasName("PK__GalleryI__3213E83F49C168A7");
 
             entity.ToTable("GalleryImage", "Community");
 
-            entity.HasIndex(e => e.Active, "I_GalleryImage_active");
+            entity.HasIndex(e => e.tenantGuid, "I_GalleryImage_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_GalleryImage_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_GalleryImage_tenantGuid_active");
 
-            entity.HasIndex(e => e.GalleryAlbumId, "I_GalleryImage_galleryAlbumId");
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_GalleryImage_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__GalleryI__3E543F942ABD15FD").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.galleryAlbumId }, "I_GalleryImage_tenantGuid_galleryAlbumId");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.AltText)
-                .HasMaxLength(250)
-                .HasColumnName("altText");
-            entity.Property(e => e.Caption)
-                .HasMaxLength(500)
-                .HasColumnName("caption");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.GalleryAlbumId).HasColumnName("galleryAlbumId");
-            entity.Property(e => e.ImageUrl)
+            entity.HasIndex(e => e.objectGuid, "UQ__GalleryI__3E543F94BF936377").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.altText).HasMaxLength(250);
+            entity.Property(e => e.caption).HasMaxLength(500);
+            entity.Property(e => e.imageUrl)
                 .IsRequired()
-                .HasMaxLength(500)
-                .HasColumnName("imageUrl");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.Sequence).HasColumnName("sequence");
+                .HasMaxLength(500);
 
-            entity.HasOne(d => d.GalleryAlbum).WithMany(p => p.GalleryImages)
-                .HasForeignKey(d => d.GalleryAlbumId)
+            entity.HasOne(d => d.galleryAlbum).WithMany(p => p.GalleryImages)
+                .HasForeignKey(d => d.galleryAlbumId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<MediaAsset>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__MediaAss__3213E83FEAF4B99C");
+            entity.HasKey(e => e.id).HasName("PK__MediaAss__3213E83FBDFB2887");
 
             entity.ToTable("MediaAsset", "Community");
 
-            entity.HasIndex(e => e.Active, "I_MediaAsset_active");
+            entity.HasIndex(e => e.tenantGuid, "I_MediaAsset_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_MediaAsset_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_MediaAsset_tenantGuid_active");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__MediaAss__3E543F940736084A").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_MediaAsset_tenantGuid_deleted");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.AltText)
-                .HasMaxLength(250)
-                .HasColumnName("altText");
-            entity.Property(e => e.Caption)
-                .HasMaxLength(500)
-                .HasColumnName("caption");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.FileName)
+            entity.HasIndex(e => e.objectGuid, "UQ__MediaAss__3E543F940D131572").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.altText).HasMaxLength(250);
+            entity.Property(e => e.caption).HasMaxLength(500);
+            entity.Property(e => e.fileName)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("fileName");
-            entity.Property(e => e.FilePath)
+                .HasMaxLength(250);
+            entity.Property(e => e.filePath)
                 .IsRequired()
-                .HasMaxLength(500)
-                .HasColumnName("filePath");
-            entity.Property(e => e.FileSizeBytes).HasColumnName("fileSizeBytes");
-            entity.Property(e => e.ImageHeight).HasColumnName("imageHeight");
-            entity.Property(e => e.ImageWidth).HasColumnName("imageWidth");
-            entity.Property(e => e.MimeType)
+                .HasMaxLength(500);
+            entity.Property(e => e.mimeType)
                 .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("mimeType");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
+                .HasMaxLength(100);
         });
 
         modelBuilder.Entity<Menu>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Menu__3213E83F4ED75A3C");
+            entity.HasKey(e => e.id).HasName("PK__Menu__3213E83FB10FD218");
 
             entity.ToTable("Menu", "Community");
 
-            entity.HasIndex(e => e.Active, "I_Menu_active");
+            entity.HasIndex(e => e.tenantGuid, "I_Menu_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_Menu_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_Menu_tenantGuid_active");
 
-            entity.HasIndex(e => e.Name, "I_Menu_name");
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_Menu_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__Menu__3E543F94BB02489A").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.name }, "I_Menu_tenantGuid_name");
 
-            entity.HasIndex(e => e.Name, "UQ__Menu__72E12F1B017F1AF8").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_Menu_tenantGuid_name").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Location)
+            entity.HasIndex(e => e.objectGuid, "UQ__Menu__3E543F94ED37095B").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.location)
                 .IsRequired()
-                .HasMaxLength(50)
-                .HasColumnName("location");
-            entity.Property(e => e.Name)
+                .HasMaxLength(50);
+            entity.Property(e => e.name)
                 .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("name");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
+                .HasMaxLength(100);
         });
 
         modelBuilder.Entity<MenuItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__MenuItem__3213E83F3929F0BF");
+            entity.HasKey(e => e.id).HasName("PK__MenuItem__3213E83F7E2371E4");
 
             entity.ToTable("MenuItem", "Community");
 
-            entity.HasIndex(e => e.Active, "I_MenuItem_active");
+            entity.HasIndex(e => e.tenantGuid, "I_MenuItem_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_MenuItem_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_MenuItem_tenantGuid_active");
 
-            entity.HasIndex(e => e.MenuId, "I_MenuItem_menuId");
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_MenuItem_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.PageId, "I_MenuItem_pageId");
+            entity.HasIndex(e => new { e.tenantGuid, e.menuId }, "I_MenuItem_tenantGuid_menuId");
 
-            entity.HasIndex(e => e.ParentMenuItemId, "I_MenuItem_parentMenuItemId");
+            entity.HasIndex(e => new { e.tenantGuid, e.pageId }, "I_MenuItem_tenantGuid_pageId");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__MenuItem__3E543F9417168DD0").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.parentMenuItemId }, "I_MenuItem_tenantGuid_parentMenuItemId");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.IconClass)
-                .HasMaxLength(50)
-                .HasColumnName("iconClass");
-            entity.Property(e => e.Label)
+            entity.HasIndex(e => e.objectGuid, "UQ__MenuItem__3E543F9445F6D3A0").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.iconClass).HasMaxLength(50);
+            entity.Property(e => e.label)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("label");
-            entity.Property(e => e.MenuId).HasColumnName("menuId");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.OpenInNewTab).HasColumnName("openInNewTab");
-            entity.Property(e => e.PageId).HasColumnName("pageId");
-            entity.Property(e => e.ParentMenuItemId).HasColumnName("parentMenuItemId");
-            entity.Property(e => e.Sequence).HasColumnName("sequence");
-            entity.Property(e => e.Url)
-                .HasMaxLength(500)
-                .HasColumnName("url");
+                .HasMaxLength(250);
+            entity.Property(e => e.url).HasMaxLength(500);
 
-            entity.HasOne(d => d.Menu).WithMany(p => p.MenuItems)
-                .HasForeignKey(d => d.MenuId)
+            entity.HasOne(d => d.menu).WithMany(p => p.MenuItems)
+                .HasForeignKey(d => d.menuId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.Page).WithMany(p => p.MenuItems).HasForeignKey(d => d.PageId);
+            entity.HasOne(d => d.page).WithMany(p => p.MenuItems).HasForeignKey(d => d.pageId);
 
-            entity.HasOne(d => d.ParentMenuItem).WithMany(p => p.InverseParentMenuItem).HasForeignKey(d => d.ParentMenuItemId);
+            entity.HasOne(d => d.parentMenuItem).WithMany(p => p.InverseparentMenuItem).HasForeignKey(d => d.parentMenuItemId);
         });
 
         modelBuilder.Entity<Page>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Page__3213E83FD0589E44");
+            entity.HasKey(e => e.id).HasName("PK__Page__3213E83F6FDC736F");
 
             entity.ToTable("Page", "Community");
 
-            entity.HasIndex(e => e.Active, "I_Page_active");
+            entity.HasIndex(e => e.tenantGuid, "I_Page_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_Page_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_Page_tenantGuid_active");
 
-            entity.HasIndex(e => e.Slug, "I_Page_slug").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_Page_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__Page__3E543F941FB74ED9").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.slug }, "I_Page_tenantGuid_slug").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Body).HasColumnName("body");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.FeaturedImageUrl)
-                .HasMaxLength(500)
-                .HasColumnName("featuredImageUrl");
-            entity.Property(e => e.IsPublished).HasColumnName("isPublished");
-            entity.Property(e => e.MetaDescription)
-                .HasMaxLength(500)
-                .HasColumnName("metaDescription");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.PublishedDate).HasColumnName("publishedDate");
-            entity.Property(e => e.Slug)
+            entity.HasIndex(e => e.objectGuid, "UQ__Page__3E543F94059B313E").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.featuredImageUrl).HasMaxLength(500);
+            entity.Property(e => e.metaDescription).HasMaxLength(500);
+            entity.Property(e => e.slug)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("slug");
-            entity.Property(e => e.SortOrder)
-                .HasDefaultValue(0)
-                .HasColumnName("sortOrder");
-            entity.Property(e => e.Title)
+                .HasMaxLength(250);
+            entity.Property(e => e.sortOrder).HasDefaultValue(0);
+            entity.Property(e => e.title)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("title");
-            entity.Property(e => e.VersionNumber)
-                .HasDefaultValue(1)
-                .HasColumnName("versionNumber");
+                .HasMaxLength(250);
+            entity.Property(e => e.versionNumber).HasDefaultValue(1);
         });
 
         modelBuilder.Entity<PageChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PageChan__3213E83F1A52D592");
+            entity.HasKey(e => e.id).HasName("PK__PageChan__3213E83FB3C7B03E");
 
             entity.ToTable("PageChangeHistory", "Community");
 
-            entity.HasIndex(e => e.PageId, "I_PageChangeHistory_pageId");
+            entity.HasIndex(e => e.tenantGuid, "I_PageChangeHistory_tenantGuid");
 
-            entity.HasIndex(e => e.TimeStamp, "I_PageChangeHistory_timeStamp");
+            entity.HasIndex(e => new { e.tenantGuid, e.pageId }, "I_PageChangeHistory_tenantGuid_pageId");
 
-            entity.HasIndex(e => e.UserId, "I_PageChangeHistory_userId");
+            entity.HasIndex(e => new { e.tenantGuid, e.timeStamp }, "I_PageChangeHistory_tenantGuid_timeStamp");
 
-            entity.HasIndex(e => e.VersionNumber, "I_PageChangeHistory_versionNumber");
+            entity.HasIndex(e => new { e.tenantGuid, e.userId }, "I_PageChangeHistory_tenantGuid_userId");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Data)
-                .IsRequired()
-                .HasColumnName("data");
-            entity.Property(e => e.PageId).HasColumnName("pageId");
-            entity.Property(e => e.TimeStamp).HasColumnName("timeStamp");
-            entity.Property(e => e.UserId).HasColumnName("userId");
-            entity.Property(e => e.VersionNumber).HasColumnName("versionNumber");
+            entity.HasIndex(e => new { e.tenantGuid, e.versionNumber }, "I_PageChangeHistory_tenantGuid_versionNumber");
 
-            entity.HasOne(d => d.Page).WithMany(p => p.PageChangeHistories)
-                .HasForeignKey(d => d.PageId)
+            entity.Property(e => e.data).IsRequired();
+
+            entity.HasOne(d => d.page).WithMany(p => p.PageChangeHistories)
+                .HasForeignKey(d => d.pageId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<Post>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Post__3213E83FF6D1781D");
+            entity.HasKey(e => e.id).HasName("PK__Post__3213E83FADFE0BF7");
 
             entity.ToTable("Post", "Community");
 
-            entity.HasIndex(e => e.Active, "I_Post_active");
+            entity.HasIndex(e => e.tenantGuid, "I_Post_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_Post_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_Post_tenantGuid_active");
 
-            entity.HasIndex(e => e.PostCategoryId, "I_Post_postCategoryId");
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_Post_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.Slug, "I_Post_slug").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.postCategoryId }, "I_Post_tenantGuid_postCategoryId");
 
-            entity.HasIndex(e => e.Title, "I_Post_title");
+            entity.HasIndex(e => new { e.tenantGuid, e.slug }, "I_Post_tenantGuid_slug").IsUnique();
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__Post__3E543F945C1813EB").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.title }, "I_Post_tenantGuid_title");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.AuthorName)
-                .HasMaxLength(100)
-                .HasColumnName("authorName");
-            entity.Property(e => e.Body).HasColumnName("body");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Excerpt)
-                .HasMaxLength(500)
-                .HasColumnName("excerpt");
-            entity.Property(e => e.FeaturedImageUrl)
-                .HasMaxLength(500)
-                .HasColumnName("featuredImageUrl");
-            entity.Property(e => e.IsFeatured).HasColumnName("isFeatured");
-            entity.Property(e => e.IsPublished).HasColumnName("isPublished");
-            entity.Property(e => e.MetaDescription)
-                .HasMaxLength(500)
-                .HasColumnName("metaDescription");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.PostCategoryId).HasColumnName("postCategoryId");
-            entity.Property(e => e.PublishedDate).HasColumnName("publishedDate");
-            entity.Property(e => e.Slug)
+            entity.HasIndex(e => e.objectGuid, "UQ__Post__3E543F943F9838DE").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.authorName).HasMaxLength(100);
+            entity.Property(e => e.excerpt).HasMaxLength(500);
+            entity.Property(e => e.featuredImageUrl).HasMaxLength(500);
+            entity.Property(e => e.metaDescription).HasMaxLength(500);
+            entity.Property(e => e.slug)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("slug");
-            entity.Property(e => e.Title)
+                .HasMaxLength(250);
+            entity.Property(e => e.title)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("title");
-            entity.Property(e => e.VersionNumber)
-                .HasDefaultValue(1)
-                .HasColumnName("versionNumber");
+                .HasMaxLength(250);
+            entity.Property(e => e.versionNumber).HasDefaultValue(1);
 
-            entity.HasOne(d => d.PostCategory).WithMany(p => p.Posts).HasForeignKey(d => d.PostCategoryId);
+            entity.HasOne(d => d.postCategory).WithMany(p => p.Posts).HasForeignKey(d => d.postCategoryId);
         });
 
         modelBuilder.Entity<PostCategory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PostCate__3213E83FF14936AF");
+            entity.HasKey(e => e.id).HasName("PK__PostCate__3213E83FBB22EBB6");
 
             entity.ToTable("PostCategory", "Community");
 
-            entity.HasIndex(e => e.Active, "I_PostCategory_active");
+            entity.HasIndex(e => e.active, "I_PostCategory_active");
 
-            entity.HasIndex(e => e.Deleted, "I_PostCategory_deleted");
+            entity.HasIndex(e => e.deleted, "I_PostCategory_deleted");
 
-            entity.HasIndex(e => e.Name, "I_PostCategory_name");
+            entity.HasIndex(e => e.name, "I_PostCategory_name");
 
-            entity.HasIndex(e => e.Slug, "I_PostCategory_slug").IsUnique();
+            entity.HasIndex(e => e.slug, "I_PostCategory_slug").IsUnique();
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__PostCate__3E543F94CE7A671E").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PostCate__3E543F9471D8369E").IsUnique();
 
-            entity.HasIndex(e => e.Name, "UQ__PostCate__72E12F1B493850A3").IsUnique();
+            entity.HasIndex(e => e.name, "UQ__PostCate__72E12F1B512D56D5").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Description)
-                .HasMaxLength(500)
-                .HasColumnName("description");
-            entity.Property(e => e.Name)
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.description).HasMaxLength(500);
+            entity.Property(e => e.name)
                 .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("name");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.Sequence).HasColumnName("sequence");
-            entity.Property(e => e.Slug)
+                .HasMaxLength(100);
+            entity.Property(e => e.slug)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("slug");
+                .HasMaxLength(250);
         });
 
         modelBuilder.Entity<PostChangeHistory>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PostChan__3213E83F15351C37");
+            entity.HasKey(e => e.id).HasName("PK__PostChan__3213E83F81336CE9");
 
             entity.ToTable("PostChangeHistory", "Community");
 
-            entity.HasIndex(e => e.PostId, "I_PostChangeHistory_postId");
+            entity.HasIndex(e => e.tenantGuid, "I_PostChangeHistory_tenantGuid");
 
-            entity.HasIndex(e => e.TimeStamp, "I_PostChangeHistory_timeStamp");
+            entity.HasIndex(e => new { e.tenantGuid, e.postId }, "I_PostChangeHistory_tenantGuid_postId");
 
-            entity.HasIndex(e => e.UserId, "I_PostChangeHistory_userId");
+            entity.HasIndex(e => new { e.tenantGuid, e.timeStamp }, "I_PostChangeHistory_tenantGuid_timeStamp");
 
-            entity.HasIndex(e => e.VersionNumber, "I_PostChangeHistory_versionNumber");
+            entity.HasIndex(e => new { e.tenantGuid, e.userId }, "I_PostChangeHistory_tenantGuid_userId");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Data)
-                .IsRequired()
-                .HasColumnName("data");
-            entity.Property(e => e.PostId).HasColumnName("postId");
-            entity.Property(e => e.TimeStamp).HasColumnName("timeStamp");
-            entity.Property(e => e.UserId).HasColumnName("userId");
-            entity.Property(e => e.VersionNumber).HasColumnName("versionNumber");
+            entity.HasIndex(e => new { e.tenantGuid, e.versionNumber }, "I_PostChangeHistory_tenantGuid_versionNumber");
 
-            entity.HasOne(d => d.Post).WithMany(p => p.PostChangeHistories)
-                .HasForeignKey(d => d.PostId)
+            entity.Property(e => e.data).IsRequired();
+
+            entity.HasOne(d => d.post).WithMany(p => p.PostChangeHistories)
+                .HasForeignKey(d => d.postId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<PostTag>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PostTag__3213E83F7DA3563D");
+            entity.HasKey(e => e.id).HasName("PK__PostTag__3213E83F8CDDC9C1");
 
             entity.ToTable("PostTag", "Community");
 
-            entity.HasIndex(e => e.Active, "I_PostTag_active");
+            entity.HasIndex(e => e.tenantGuid, "I_PostTag_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_PostTag_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_PostTag_tenantGuid_active");
 
-            entity.HasIndex(e => e.Name, "I_PostTag_name");
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_PostTag_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.Slug, "I_PostTag_slug").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.name }, "I_PostTag_tenantGuid_name");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__PostTag__3E543F94E2379538").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.slug }, "I_PostTag_tenantGuid_slug").IsUnique();
 
-            entity.HasIndex(e => e.Name, "UQ__PostTag__72E12F1BE31FDCEE").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.name }, "UC_PostTag_tenantGuid_name").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Name)
+            entity.HasIndex(e => e.objectGuid, "UQ__PostTag__3E543F94B38B708E").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.name)
                 .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("name");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.Slug)
+                .HasMaxLength(100);
+            entity.Property(e => e.slug)
                 .IsRequired()
-                .HasMaxLength(250)
-                .HasColumnName("slug");
+                .HasMaxLength(250);
         });
 
         modelBuilder.Entity<PostTagAssignment>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PostTagA__3213E83F411A2B83");
+            entity.HasKey(e => e.id).HasName("PK__PostTagA__3213E83F46294E37");
 
             entity.ToTable("PostTagAssignment", "Community");
 
-            entity.HasIndex(e => e.Active, "I_PostTagAssignment_active");
+            entity.HasIndex(e => e.active, "I_PostTagAssignment_active");
 
-            entity.HasIndex(e => e.Deleted, "I_PostTagAssignment_deleted");
+            entity.HasIndex(e => e.deleted, "I_PostTagAssignment_deleted");
 
-            entity.HasIndex(e => e.PostId, "I_PostTagAssignment_postId");
+            entity.HasIndex(e => e.postId, "I_PostTagAssignment_postId");
 
-            entity.HasIndex(e => e.PostTagId, "I_PostTagAssignment_postTagId");
+            entity.HasIndex(e => e.postTagId, "I_PostTagAssignment_postTagId");
 
-            entity.HasIndex(e => new { e.PostId, e.PostTagId }, "UC_PostTagAssignment_postId_postTagId").IsUnique();
+            entity.HasIndex(e => new { e.postId, e.postTagId }, "UC_PostTagAssignment_postId_postTagId").IsUnique();
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__PostTagA__3E543F9434E862C0").IsUnique();
+            entity.HasIndex(e => e.objectGuid, "UQ__PostTagA__3E543F94758E3A7A").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.PostId).HasColumnName("postId");
-            entity.Property(e => e.PostTagId).HasColumnName("postTagId");
+            entity.Property(e => e.active).HasDefaultValue(true);
 
-            entity.HasOne(d => d.Post).WithMany(p => p.PostTagAssignments)
-                .HasForeignKey(d => d.PostId)
+            entity.HasOne(d => d.post).WithMany(p => p.PostTagAssignments)
+                .HasForeignKey(d => d.postId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 
-            entity.HasOne(d => d.PostTag).WithMany(p => p.PostTagAssignments)
-                .HasForeignKey(d => d.PostTagId)
+            entity.HasOne(d => d.postTag).WithMany(p => p.PostTagAssignments)
+                .HasForeignKey(d => d.postTagId)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
 
         modelBuilder.Entity<SiteSetting>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__SiteSett__3213E83FA717D89D");
+            entity.HasKey(e => e.id).HasName("PK__SiteSett__3213E83F7B57ABDB");
 
             entity.ToTable("SiteSetting", "Community");
 
-            entity.HasIndex(e => e.Active, "I_SiteSetting_active");
+            entity.HasIndex(e => e.tenantGuid, "I_SiteSetting_tenantGuid");
 
-            entity.HasIndex(e => e.Deleted, "I_SiteSetting_deleted");
+            entity.HasIndex(e => new { e.tenantGuid, e.active }, "I_SiteSetting_tenantGuid_active");
 
-            entity.HasIndex(e => e.SettingKey, "I_SiteSetting_settingKey").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.deleted }, "I_SiteSetting_tenantGuid_deleted");
 
-            entity.HasIndex(e => e.ObjectGuid, "UQ__SiteSett__3E543F9477DFF4B2").IsUnique();
+            entity.HasIndex(e => new { e.tenantGuid, e.settingKey }, "I_SiteSetting_tenantGuid_settingKey").IsUnique();
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Active)
-                .HasDefaultValue(true)
-                .HasColumnName("active");
-            entity.Property(e => e.Deleted).HasColumnName("deleted");
-            entity.Property(e => e.Description)
-                .HasMaxLength(250)
-                .HasColumnName("description");
-            entity.Property(e => e.ObjectGuid).HasColumnName("objectGuid");
-            entity.Property(e => e.SettingGroup)
-                .HasMaxLength(50)
-                .HasColumnName("settingGroup");
-            entity.Property(e => e.SettingKey)
+            entity.HasIndex(e => e.objectGuid, "UQ__SiteSett__3E543F9414C20164").IsUnique();
+
+            entity.Property(e => e.active).HasDefaultValue(true);
+            entity.Property(e => e.description).HasMaxLength(250);
+            entity.Property(e => e.settingGroup).HasMaxLength(50);
+            entity.Property(e => e.settingKey)
                 .IsRequired()
-                .HasMaxLength(100)
-                .HasColumnName("settingKey");
-            entity.Property(e => e.SettingValue).HasColumnName("settingValue");
+                .HasMaxLength(100);
         });
 
         OnModelCreatingPartial(modelBuilder);

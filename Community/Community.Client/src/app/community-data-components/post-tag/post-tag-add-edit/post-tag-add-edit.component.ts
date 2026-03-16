@@ -34,6 +34,10 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostTagFormValues {
+  name: string,
+  slug: string,
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -64,6 +68,10 @@ export class PostTagAddEditComponent {
 
 
   public postTagForm: FormGroup = this.fb.group({
+        name: ['', Validators.required],
+        slug: ['', Validators.required],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -98,6 +106,7 @@ export class PostTagAddEditComponent {
       }
       this.postTagSubmitData = this.postTagService.ConvertToPostTagSubmitData(postTagData);
       this.isEditMode = true;
+      this.objectGuid = postTagData.objectGuid;
 
       this.buildFormValues(postTagData);
 
@@ -196,6 +205,10 @@ export class PostTagAddEditComponent {
     //
     const postTagSubmitData: PostTagSubmitData = {
         id: this.postTagSubmitData?.id || 0,
+        name: formValue.name!.trim(),
+        slug: formValue.slug!.trim(),
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -321,6 +334,8 @@ export class PostTagAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postTagForm.reset({
+        name: '',
+        slug: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -332,6 +347,10 @@ export class PostTagAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postTagForm.reset({
+        name: postTagData.name ?? '',
+        slug: postTagData.slug ?? '',
+        active: postTagData.active ?? true,
+        deleted: postTagData.deleted ?? false,
       }, { emitEvent: false});
     }
 

@@ -7,19 +7,21 @@ namespace Foundation.Community.Database;
 
 public partial class SiteSetting
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string SettingKey { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string SettingValue { get; set; }
+    public string settingKey { get; set; }
 
-    public string Description { get; set; }
+    public string settingValue { get; set; }
 
-    public string SettingGroup { get; set; }
+    public string description { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public string settingGroup { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
+
+    public bool deleted { get; set; }
 }

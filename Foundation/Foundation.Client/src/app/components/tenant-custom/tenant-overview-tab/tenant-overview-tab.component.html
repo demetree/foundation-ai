@@ -23,6 +23,15 @@
                     <span class="info-value">{{ tenant.description || '—' }}</span>
                 </div>
                 <div class="info-item">
+                    <span class="info-label">
+                        <i class="fa-solid fa-globe me-1"></i>Host Name
+                    </span>
+                    <span class="info-value">
+                        <span *ngIf="tenant.hostName" class="hostname-value">{{ tenant.hostName }}</span>
+                        <span *ngIf="!tenant.hostName" class="text-muted">Not configured</span>
+                    </span>
+                </div>
+                <div class="info-item">
                     <span class="info-label">Object GUID</span>
                     <span class="info-value guid-value">{{ tenant.objectGuid || '—' }}</span>
                 </div>

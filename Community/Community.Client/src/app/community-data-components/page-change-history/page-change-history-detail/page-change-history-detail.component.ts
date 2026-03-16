@@ -35,6 +35,11 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface PageChangeHistoryFormValues {
+  pageId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  timeStamp: string,
+  userId: string,     // Stored as string for form input, converted to number on submit.
+  data: string,
 };
 
 
@@ -62,6 +67,11 @@ export class PageChangeHistoryDetailComponent implements OnInit, CanComponentDea
 
 
   public pageChangeHistoryForm: FormGroup = this.fb.group({
+        pageId: [null, Validators.required],
+        versionNumber: [''],
+        timeStamp: ['', Validators.required],
+        userId: ['', Validators.required],
+        data: ['', Validators.required],
       });
 
 
@@ -364,6 +374,11 @@ export class PageChangeHistoryDetailComponent implements OnInit, CanComponentDea
       // Reset the form group to null state, but don't change the form instance.
       //
       this.pageChangeHistoryForm.reset({
+        pageId: null,
+        versionNumber: '',
+        timeStamp: '',
+        userId: '',
+        data: '',
    }, { emitEvent: false});
 
     }
@@ -373,6 +388,11 @@ export class PageChangeHistoryDetailComponent implements OnInit, CanComponentDea
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.pageChangeHistoryForm.reset({
+        pageId: pageChangeHistoryData.pageId,
+        versionNumber: pageChangeHistoryData.versionNumber?.toString() ?? '',
+        timeStamp: isoUtcStringToDateTimeLocal(pageChangeHistoryData.timeStamp) ?? '',
+        userId: pageChangeHistoryData.userId?.toString() ?? '',
+        data: pageChangeHistoryData.data ?? '',
       }, { emitEvent: false});
     }
 
@@ -432,6 +452,11 @@ export class PageChangeHistoryDetailComponent implements OnInit, CanComponentDea
     //
     const pageChangeHistorySubmitData: PageChangeHistorySubmitData = {
         id: this.pageChangeHistoryData?.id || 0,
+        pageId: Number(formValue.pageId),
+        versionNumber: this.pageChangeHistoryData?.versionNumber ?? 0,
+        timeStamp: dateTimeLocalToIsoUtc(formValue.timeStamp!.trim())!,
+        userId: Number(formValue.userId),
+        data: formValue.data!.trim(),
    };
 
 

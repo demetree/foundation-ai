@@ -40,6 +40,7 @@ interface SecurityTenantFormValues {
   name: string,
   description: string | null,
   settings: string | null,
+  hostName: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -72,6 +73,7 @@ export class SecurityTenantDetailComponent implements OnInit, CanComponentDeacti
         name: ['', Validators.required],
         description: [''],
         settings: [''],
+        hostName: [''],
         active: [true],
         deleted: [false],
       });
@@ -383,6 +385,7 @@ export class SecurityTenantDetailComponent implements OnInit, CanComponentDeacti
         name: '',
         description: '',
         settings: '',
+        hostName: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -397,6 +400,7 @@ export class SecurityTenantDetailComponent implements OnInit, CanComponentDeacti
         name: securityTenantData.name ?? '',
         description: securityTenantData.description ?? '',
         settings: securityTenantData.settings ?? '',
+        hostName: securityTenantData.hostName ?? '',
         active: securityTenantData.active ?? true,
         deleted: securityTenantData.deleted ?? false,
       }, { emitEvent: false});
@@ -461,6 +465,7 @@ export class SecurityTenantDetailComponent implements OnInit, CanComponentDeacti
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
         settings: formValue.settings?.trim() || null,
+        hostName: formValue.hostName?.trim() || null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

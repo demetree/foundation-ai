@@ -20,15 +20,18 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class GalleryImageDTO
 		{
-			public Int32 Id { get; set; }
-			public Int32 GalleryAlbumId { get; set; }
-			public String ImageUrl { get; set; }
-			public String Caption { get; set; }
-			public String AltText { get; set; }
-			public Int32? Sequence { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public Int32 galleryAlbumId { get; set; }
+			[Required]
+			public String imageUrl { get; set; }
+			public String caption { get; set; }
+			public String altText { get; set; }
+			public Int32? sequence { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -39,7 +42,7 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class GalleryImageOutputDTO : GalleryImageDTO
 		{
-			public GalleryAlbum.GalleryAlbumDTO GalleryAlbum { get; set; }
+			public GalleryAlbum.GalleryAlbumDTO galleryAlbum { get; set; }
 		}
 
 
@@ -54,15 +57,15 @@ namespace Foundation.Community.Database
 		{
 			return new GalleryImageDTO
 			{
-				Id = this.Id,
-				GalleryAlbumId = this.GalleryAlbumId,
-				ImageUrl = this.ImageUrl,
-				Caption = this.Caption,
-				AltText = this.AltText,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				galleryAlbumId = this.galleryAlbumId,
+				imageUrl = this.imageUrl,
+				caption = this.caption,
+				altText = this.altText,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -101,16 +104,16 @@ namespace Foundation.Community.Database
 		{
 			return new GalleryImageOutputDTO
 			{
-				Id = this.Id,
-				GalleryAlbumId = this.GalleryAlbumId,
-				ImageUrl = this.ImageUrl,
-				Caption = this.Caption,
-				AltText = this.AltText,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
-				GalleryAlbum = this.GalleryAlbum?.ToDTO()
+				id = this.id,
+				galleryAlbumId = this.galleryAlbumId,
+				imageUrl = this.imageUrl,
+				caption = this.caption,
+				altText = this.altText,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
+				galleryAlbum = this.galleryAlbum?.ToDTO()
 			};
 		}
 
@@ -149,15 +152,15 @@ namespace Foundation.Community.Database
 		{
 			return new Database.GalleryImage
 			{
-				Id = dto.Id,
-				GalleryAlbumId = dto.GalleryAlbumId,
-				ImageUrl = dto.ImageUrl,
-				Caption = dto.Caption,
-				AltText = dto.AltText,
-				Sequence = dto.Sequence,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				galleryAlbumId = dto.galleryAlbumId,
+				imageUrl = dto.imageUrl,
+				caption = dto.caption,
+				altText = dto.altText,
+				sequence = dto.sequence,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -174,19 +177,19 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.GalleryAlbumId = dto.GalleryAlbumId;
-			this.ImageUrl = dto.ImageUrl;
-			this.Caption = dto.Caption;
-			this.AltText = dto.AltText;
-			this.Sequence = dto.Sequence;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.galleryAlbumId = dto.galleryAlbumId;
+			this.imageUrl = dto.imageUrl;
+			this.caption = dto.caption;
+			this.altText = dto.altText;
+			this.sequence = dto.sequence;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -202,15 +205,16 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new GalleryImage{
-				Id = this.Id,
-				GalleryAlbumId = this.GalleryAlbumId,
-				ImageUrl = this.ImageUrl,
-				Caption = this.Caption,
-				AltText = this.AltText,
-				Sequence = this.Sequence,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				galleryAlbumId = this.galleryAlbumId,
+				imageUrl = this.imageUrl,
+				caption = this.caption,
+				altText = this.altText,
+				sequence = this.sequence,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -263,15 +267,15 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = galleryImage.Id,
-				GalleryAlbumId = galleryImage.GalleryAlbumId,
-				ImageUrl = galleryImage.ImageUrl,
-				Caption = galleryImage.Caption,
-				AltText = galleryImage.AltText,
-				Sequence = galleryImage.Sequence,
-				ObjectGuid = galleryImage.ObjectGuid,
-				Active = galleryImage.Active,
-				Deleted = galleryImage.Deleted,
+				id = galleryImage.id,
+				galleryAlbumId = galleryImage.galleryAlbumId,
+				imageUrl = galleryImage.imageUrl,
+				caption = galleryImage.caption,
+				altText = galleryImage.altText,
+				sequence = galleryImage.sequence,
+				objectGuid = galleryImage.objectGuid,
+				active = galleryImage.active,
+				deleted = galleryImage.deleted,
 			 };
 		}
 
@@ -291,16 +295,16 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = galleryImage.Id,
-				GalleryAlbumId = galleryImage.GalleryAlbumId,
-				ImageUrl = galleryImage.ImageUrl,
-				Caption = galleryImage.Caption,
-				AltText = galleryImage.AltText,
-				Sequence = galleryImage.Sequence,
-				ObjectGuid = galleryImage.ObjectGuid,
-				Active = galleryImage.Active,
-				Deleted = galleryImage.Deleted,
-				GalleryAlbum = GalleryAlbum.CreateMinimalAnonymous(galleryImage.GalleryAlbum)
+				id = galleryImage.id,
+				galleryAlbumId = galleryImage.galleryAlbumId,
+				imageUrl = galleryImage.imageUrl,
+				caption = galleryImage.caption,
+				altText = galleryImage.altText,
+				sequence = galleryImage.sequence,
+				objectGuid = galleryImage.objectGuid,
+				active = galleryImage.active,
+				deleted = galleryImage.deleted,
+				galleryAlbum = GalleryAlbum.CreateMinimalAnonymous(galleryImage.galleryAlbum)
 			 };
 		}
 
@@ -320,6 +324,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = galleryImage.id,
 				name = galleryImage.imageUrl,
 				description = string.Join(", ", new[] { galleryImage.imageUrl, galleryImage.caption, galleryImage.altText}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

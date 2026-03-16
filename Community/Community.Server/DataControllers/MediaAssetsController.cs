@@ -42,7 +42,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -62,18 +62,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/MediaAssets")]
 		public async Task<IActionResult> GetMediaAssets(
-			int? Id = null,
-			string FileName = null,
-			string FilePath = null,
-			string MimeType = null,
-			string AltText = null,
-			string Caption = null,
-			long? FileSizeBytes = null,
-			int? ImageWidth = null,
-			int? ImageHeight = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string fileName = null,
+			string filePath = null,
+			string mimeType = null,
+			string altText = null,
+			string caption = null,
+			long? fileSizeBytes = null,
+			int? imageWidth = null,
+			int? imageHeight = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -96,6 +95,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -109,53 +120,68 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.MediaAsset> query = (from ma in _context.MediaAssets select ma);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(fileName) == false)
 			{
-				query = query.Where(ma => ma.Id == Id.Value);
+				query = query.Where(ma => ma.fileName == fileName);
 			}
-			if (string.IsNullOrEmpty(FileName) == false)
+			if (string.IsNullOrEmpty(filePath) == false)
 			{
-				query = query.Where(ma => ma.FileName == FileName);
+				query = query.Where(ma => ma.filePath == filePath);
 			}
-			if (string.IsNullOrEmpty(FilePath) == false)
+			if (string.IsNullOrEmpty(mimeType) == false)
 			{
-				query = query.Where(ma => ma.FilePath == FilePath);
+				query = query.Where(ma => ma.mimeType == mimeType);
 			}
-			if (string.IsNullOrEmpty(MimeType) == false)
+			if (string.IsNullOrEmpty(altText) == false)
 			{
-				query = query.Where(ma => ma.MimeType == MimeType);
+				query = query.Where(ma => ma.altText == altText);
 			}
-			if (string.IsNullOrEmpty(AltText) == false)
+			if (string.IsNullOrEmpty(caption) == false)
 			{
-				query = query.Where(ma => ma.AltText == AltText);
+				query = query.Where(ma => ma.caption == caption);
 			}
-			if (string.IsNullOrEmpty(Caption) == false)
+			if (fileSizeBytes.HasValue == true)
 			{
-				query = query.Where(ma => ma.Caption == Caption);
+				query = query.Where(ma => ma.fileSizeBytes == fileSizeBytes.Value);
 			}
-			if (FileSizeBytes.HasValue == true)
+			if (imageWidth.HasValue == true)
 			{
-				query = query.Where(ma => ma.FileSizeBytes == FileSizeBytes.Value);
+				query = query.Where(ma => ma.imageWidth == imageWidth.Value);
 			}
-			if (ImageWidth.HasValue == true)
+			if (imageHeight.HasValue == true)
 			{
-				query = query.Where(ma => ma.ImageWidth == ImageWidth.Value);
+				query = query.Where(ma => ma.imageHeight == imageHeight.Value);
 			}
-			if (ImageHeight.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(ma => ma.ImageHeight == ImageHeight.Value);
+				query = query.Where(ma => ma.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(ma => ma.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(ma => ma.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(ma => ma.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(ma => ma.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(ma => ma.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(ma => ma.Deleted == Deleted.Value);
+				query = query.Where(ma => ma.active == true);
+				query = query.Where(ma => ma.deleted == false);
 			}
 
 			query = query.OrderBy(ma => ma.fileName).ThenBy(ma => ma.filePath).ThenBy(ma => ma.mimeType);
@@ -169,11 +195,11 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.FileName.Contains(anyStringContains)
-			       || x.FilePath.Contains(anyStringContains)
-			       || x.MimeType.Contains(anyStringContains)
-			       || x.AltText.Contains(anyStringContains)
-			       || x.Caption.Contains(anyStringContains)
+			       x.fileName.Contains(anyStringContains)
+			       || x.filePath.Contains(anyStringContains)
+			       || x.mimeType.Contains(anyStringContains)
+			       || x.altText.Contains(anyStringContains)
+			       || x.caption.Contains(anyStringContains)
 			   );
 			}
 
@@ -227,18 +253,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/MediaAssets/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string FileName = null,
-			string FilePath = null,
-			string MimeType = null,
-			string AltText = null,
-			string Caption = null,
-			long? FileSizeBytes = null,
-			int? ImageWidth = null,
-			int? ImageHeight = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string fileName = null,
+			string filePath = null,
+			string mimeType = null,
+			string altText = null,
+			string caption = null,
+			long? fileSizeBytes = null,
+			int? imageWidth = null,
+			int? imageHeight = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -254,55 +279,80 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			IQueryable<Database.MediaAsset> query = (from ma in _context.MediaAssets select ma);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (fileName != null)
 			{
-				query = query.Where(ma => ma.Id == Id.Value);
+				query = query.Where(ma => ma.fileName == fileName);
 			}
-			if (FileName != null)
+			if (filePath != null)
 			{
-				query = query.Where(ma => ma.FileName == FileName);
+				query = query.Where(ma => ma.filePath == filePath);
 			}
-			if (FilePath != null)
+			if (mimeType != null)
 			{
-				query = query.Where(ma => ma.FilePath == FilePath);
+				query = query.Where(ma => ma.mimeType == mimeType);
 			}
-			if (MimeType != null)
+			if (altText != null)
 			{
-				query = query.Where(ma => ma.MimeType == MimeType);
+				query = query.Where(ma => ma.altText == altText);
 			}
-			if (AltText != null)
+			if (caption != null)
 			{
-				query = query.Where(ma => ma.AltText == AltText);
+				query = query.Where(ma => ma.caption == caption);
 			}
-			if (Caption != null)
+			if (fileSizeBytes.HasValue == true)
 			{
-				query = query.Where(ma => ma.Caption == Caption);
+				query = query.Where(ma => ma.fileSizeBytes == fileSizeBytes.Value);
 			}
-			if (FileSizeBytes.HasValue == true)
+			if (imageWidth.HasValue == true)
 			{
-				query = query.Where(ma => ma.FileSizeBytes == FileSizeBytes.Value);
+				query = query.Where(ma => ma.imageWidth == imageWidth.Value);
 			}
-			if (ImageWidth.HasValue == true)
+			if (imageHeight.HasValue == true)
 			{
-				query = query.Where(ma => ma.ImageWidth == ImageWidth.Value);
+				query = query.Where(ma => ma.imageHeight == imageHeight.Value);
 			}
-			if (ImageHeight.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(ma => ma.ImageHeight == ImageHeight.Value);
+				query = query.Where(ma => ma.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(ma => ma.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(ma => ma.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(ma => ma.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(ma => ma.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(ma => ma.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(ma => ma.Deleted == Deleted.Value);
+				query = query.Where(ma => ma.active == true);
+				query = query.Where(ma => ma.deleted == false);
 			}
 
 			//
@@ -313,11 +363,11 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.FileName.Contains(anyStringContains)
-			       || x.FilePath.Contains(anyStringContains)
-			       || x.MimeType.Contains(anyStringContains)
-			       || x.AltText.Contains(anyStringContains)
-			       || x.Caption.Contains(anyStringContains)
+			       x.fileName.Contains(anyStringContains)
+			       || x.filePath.Contains(anyStringContains)
+			       || x.mimeType.Contains(anyStringContains)
+			       || x.altText.Contains(anyStringContains)
+			       || x.caption.Contains(anyStringContains)
 			   );
 			}
 
@@ -355,13 +405,30 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.MediaAsset> query = (from ma in _context.MediaAssets where
-				(ma.id == id)
+							(ma.id == id) &&
+							(userIsAdmin == true || ma.deleted == false) &&
+							(userIsWriter == true || ma.active == true)
 					select ma);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
 					query = query.AsSplitQuery();
@@ -443,11 +510,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.MediaAsset> query = (from x in _context.MediaAssets
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.MediaAsset existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -480,7 +561,54 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.MediaAsset mediaAsset = (Database.MediaAsset)_context.Entry(existing).GetDatabaseValues().ToObject();
 			mediaAsset.ApplyDTO(mediaAssetDTO);
+			//
+			// The tenant guid for any MediaAsset being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the MediaAsset because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				mediaAsset.tenantGuid = existing.tenantGuid;
+			}
 
+
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (mediaAsset.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.MediaAsset record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
+
+			if (mediaAsset.fileName != null && mediaAsset.fileName.Length > 250)
+			{
+				mediaAsset.fileName = mediaAsset.fileName.Substring(0, 250);
+			}
+
+			if (mediaAsset.filePath != null && mediaAsset.filePath.Length > 500)
+			{
+				mediaAsset.filePath = mediaAsset.filePath.Substring(0, 500);
+			}
+
+			if (mediaAsset.mimeType != null && mediaAsset.mimeType.Length > 100)
+			{
+				mediaAsset.mimeType = mediaAsset.mimeType.Substring(0, 100);
+			}
+
+			if (mediaAsset.altText != null && mediaAsset.altText.Length > 250)
+			{
+				mediaAsset.altText = mediaAsset.altText.Substring(0, 250);
+			}
+
+			if (mediaAsset.caption != null && mediaAsset.caption.Length > 500)
+			{
+				mediaAsset.caption = mediaAsset.caption.Substring(0, 500);
+			}
 
 			EntityEntry<Database.MediaAsset> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(mediaAsset);
@@ -546,6 +674,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new MediaAsset object using the data from the DTO
 			//
@@ -553,6 +694,37 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				mediaAsset.tenantGuid = userTenantGuid;
+
+				if (mediaAsset.fileName != null && mediaAsset.fileName.Length > 250)
+				{
+					mediaAsset.fileName = mediaAsset.fileName.Substring(0, 250);
+				}
+
+				if (mediaAsset.filePath != null && mediaAsset.filePath.Length > 500)
+				{
+					mediaAsset.filePath = mediaAsset.filePath.Substring(0, 500);
+				}
+
+				if (mediaAsset.mimeType != null && mediaAsset.mimeType.Length > 100)
+				{
+					mediaAsset.mimeType = mediaAsset.mimeType.Substring(0, 100);
+				}
+
+				if (mediaAsset.altText != null && mediaAsset.altText.Length > 250)
+				{
+					mediaAsset.altText = mediaAsset.altText.Substring(0, 250);
+				}
+
+				if (mediaAsset.caption != null && mediaAsset.caption.Length > 500)
+				{
+					mediaAsset.caption = mediaAsset.caption.Substring(0, 500);
+				}
+
+				mediaAsset.objectGuid = Guid.NewGuid();
 				_context.MediaAssets.Add(mediaAsset);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -606,11 +778,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.MediaAsset> query = (from x in _context.MediaAssets
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.MediaAsset mediaAsset = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -624,7 +811,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.MediaAssets.Remove(mediaAsset);
+				mediaAsset.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -665,18 +852,17 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string FileName = null,
-			string FilePath = null,
-			string MimeType = null,
-			string AltText = null,
-			string Caption = null,
-			long? FileSizeBytes = null,
-			int? ImageWidth = null,
-			int? ImageHeight = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string fileName = null,
+			string filePath = null,
+			string mimeType = null,
+			string altText = null,
+			string caption = null,
+			long? fileSizeBytes = null,
+			int? imageWidth = null,
+			int? imageHeight = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -697,6 +883,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -710,53 +909,68 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.MediaAsset> query = (from ma in _context.MediaAssets select ma);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(fileName) == false)
 			{
-				query = query.Where(ma => ma.Id == Id.Value);
+				query = query.Where(ma => ma.fileName == fileName);
 			}
-			if (string.IsNullOrEmpty(FileName) == false)
+			if (string.IsNullOrEmpty(filePath) == false)
 			{
-				query = query.Where(ma => ma.FileName == FileName);
+				query = query.Where(ma => ma.filePath == filePath);
 			}
-			if (string.IsNullOrEmpty(FilePath) == false)
+			if (string.IsNullOrEmpty(mimeType) == false)
 			{
-				query = query.Where(ma => ma.FilePath == FilePath);
+				query = query.Where(ma => ma.mimeType == mimeType);
 			}
-			if (string.IsNullOrEmpty(MimeType) == false)
+			if (string.IsNullOrEmpty(altText) == false)
 			{
-				query = query.Where(ma => ma.MimeType == MimeType);
+				query = query.Where(ma => ma.altText == altText);
 			}
-			if (string.IsNullOrEmpty(AltText) == false)
+			if (string.IsNullOrEmpty(caption) == false)
 			{
-				query = query.Where(ma => ma.AltText == AltText);
+				query = query.Where(ma => ma.caption == caption);
 			}
-			if (string.IsNullOrEmpty(Caption) == false)
+			if (fileSizeBytes.HasValue == true)
 			{
-				query = query.Where(ma => ma.Caption == Caption);
+				query = query.Where(ma => ma.fileSizeBytes == fileSizeBytes.Value);
 			}
-			if (FileSizeBytes.HasValue == true)
+			if (imageWidth.HasValue == true)
 			{
-				query = query.Where(ma => ma.FileSizeBytes == FileSizeBytes.Value);
+				query = query.Where(ma => ma.imageWidth == imageWidth.Value);
 			}
-			if (ImageWidth.HasValue == true)
+			if (imageHeight.HasValue == true)
 			{
-				query = query.Where(ma => ma.ImageWidth == ImageWidth.Value);
+				query = query.Where(ma => ma.imageHeight == imageHeight.Value);
 			}
-			if (ImageHeight.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(ma => ma.ImageHeight == ImageHeight.Value);
+				query = query.Where(ma => ma.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(ma => ma.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(ma => ma.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(ma => ma.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(ma => ma.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(ma => ma.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(ma => ma.Deleted == Deleted.Value);
+				query = query.Where(ma => ma.active == true);
+				query = query.Where(ma => ma.deleted == false);
 			}
 
 
@@ -768,13 +982,16 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.FileName.Contains(anyStringContains)
-			       || x.FilePath.Contains(anyStringContains)
-			       || x.MimeType.Contains(anyStringContains)
-			       || x.AltText.Contains(anyStringContains)
-			       || x.Caption.Contains(anyStringContains)
+			       x.fileName.Contains(anyStringContains)
+			       || x.filePath.Contains(anyStringContains)
+			       || x.mimeType.Contains(anyStringContains)
+			       || x.altText.Contains(anyStringContains)
+			       || x.caption.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.fileName).ThenBy(x => x.filePath).ThenBy(x => x.mimeType);

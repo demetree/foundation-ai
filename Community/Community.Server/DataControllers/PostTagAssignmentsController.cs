@@ -62,12 +62,11 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/PostTagAssignments")]
 		public async Task<IActionResult> GetPostTagAssignments(
-			int? Id = null,
-			int? PostId = null,
-			int? PostTagId = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? postId = null,
+			int? postTagId = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			bool includeRelations = true,
@@ -102,37 +101,49 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.PostTagAssignment> query = (from pta in _context.PostTagAssignments select pta);
-			if (Id.HasValue == true)
+			if (postId.HasValue == true)
 			{
-				query = query.Where(pta => pta.Id == Id.Value);
+				query = query.Where(pta => pta.postId == postId.Value);
 			}
-			if (PostId.HasValue == true)
+			if (postTagId.HasValue == true)
 			{
-				query = query.Where(pta => pta.PostId == PostId.Value);
+				query = query.Where(pta => pta.postTagId == postTagId.Value);
 			}
-			if (PostTagId.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(pta => pta.PostTagId == PostTagId.Value);
+				query = query.Where(pta => pta.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(pta => pta.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(pta => pta.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(pta => pta.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(pta => pta.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(pta => pta.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(pta => pta.Deleted == Deleted.Value);
+				query = query.Where(pta => pta.active == true);
+				query = query.Where(pta => pta.deleted == false);
 			}
 
 			query = query.OrderBy(pta => pta.id);
 
 			if (includeRelations == true)
 			{
-				query = query.Include(x => x.Post);
-				query = query.Include(x => x.PostTag);
+				query = query.Include(x => x.post);
+				query = query.Include(x => x.postTag);
 				query = query.AsSplitQuery();
 			}
 
@@ -181,12 +192,11 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/PostTagAssignments/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			int? PostId = null,
-			int? PostTagId = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? postId = null,
+			int? postTagId = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			CancellationToken cancellationToken = default)
 		{
 			//
@@ -203,29 +213,41 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			IQueryable<Database.PostTagAssignment> query = (from pta in _context.PostTagAssignments select pta);
-			if (Id.HasValue == true)
+			if (postId.HasValue == true)
 			{
-				query = query.Where(pta => pta.Id == Id.Value);
+				query = query.Where(pta => pta.postId == postId.Value);
 			}
-			if (PostId.HasValue == true)
+			if (postTagId.HasValue == true)
 			{
-				query = query.Where(pta => pta.PostId == PostId.Value);
+				query = query.Where(pta => pta.postTagId == postTagId.Value);
 			}
-			if (PostTagId.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(pta => pta.PostTagId == PostTagId.Value);
+				query = query.Where(pta => pta.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(pta => pta.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(pta => pta.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(pta => pta.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(pta => pta.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(pta => pta.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(pta => pta.Deleted == Deleted.Value);
+				query = query.Where(pta => pta.active == true);
+				query = query.Where(pta => pta.deleted == false);
 			}
 
 			int output = await query.CountAsync(cancellationToken);
@@ -265,13 +287,15 @@ namespace Foundation.Community.Controllers.WebAPI
 			try
 			{
 				IQueryable<Database.PostTagAssignment> query = (from pta in _context.PostTagAssignments where
-				(pta.id == id)
+							(pta.id == id) &&
+							(userIsAdmin == true || pta.deleted == false) &&
+							(userIsWriter == true || pta.active == true)
 					select pta);
 
 				if (includeRelations == true)
 				{
-					query = query.Include(x => x.Post);
-					query = query.Include(x => x.PostTag);
+					query = query.Include(x => x.post);
+					query = query.Include(x => x.postTag);
 					query = query.AsSplitQuery();
 				}
 
@@ -389,6 +413,14 @@ namespace Foundation.Community.Controllers.WebAPI
 			Database.PostTagAssignment postTagAssignment = (Database.PostTagAssignment)_context.Entry(existing).GetDatabaseValues().ToObject();
 			postTagAssignment.ApplyDTO(postTagAssignmentDTO);
 
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (postTagAssignment.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.PostTagAssignment record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
 
 			EntityEntry<Database.PostTagAssignment> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(postTagAssignment);
@@ -461,6 +493,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
+				postTagAssignment.objectGuid = Guid.NewGuid();
 				_context.PostTagAssignments.Add(postTagAssignment);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -532,7 +565,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.PostTagAssignments.Remove(postTagAssignment);
+				postTagAssignment.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -573,12 +606,11 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			int? PostId = null,
-			int? PostTagId = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			int? postId = null,
+			int? postTagId = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			CancellationToken cancellationToken = default)
@@ -611,29 +643,41 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.PostTagAssignment> query = (from pta in _context.PostTagAssignments select pta);
-			if (Id.HasValue == true)
+			if (postId.HasValue == true)
 			{
-				query = query.Where(pta => pta.Id == Id.Value);
+				query = query.Where(pta => pta.postId == postId.Value);
 			}
-			if (PostId.HasValue == true)
+			if (postTagId.HasValue == true)
 			{
-				query = query.Where(pta => pta.PostId == PostId.Value);
+				query = query.Where(pta => pta.postTagId == postTagId.Value);
 			}
-			if (PostTagId.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(pta => pta.PostTagId == PostTagId.Value);
+				query = query.Where(pta => pta.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(pta => pta.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(pta => pta.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(pta => pta.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(pta => pta.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(pta => pta.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(pta => pta.Deleted == Deleted.Value);
+				query = query.Where(pta => pta.active == true);
+				query = query.Where(pta => pta.deleted == false);
 			}
 
 

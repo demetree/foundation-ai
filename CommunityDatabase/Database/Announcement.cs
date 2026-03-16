@@ -7,27 +7,29 @@ namespace Foundation.Community.Database;
 
 public partial class Announcement
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string Title { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string Body { get; set; }
+    public string title { get; set; }
 
-    public string Severity { get; set; }
+    public string body { get; set; }
 
-    public DateTime StartDate { get; set; }
+    public string severity { get; set; }
 
-    public DateTime? EndDate { get; set; }
+    public DateTime startDate { get; set; }
 
-    public bool IsPinned { get; set; }
+    public DateTime? endDate { get; set; }
 
-    public int VersionNumber { get; set; }
+    public bool isPinned { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public int versionNumber { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
+
+    public bool deleted { get; set; }
 
     public virtual ICollection<AnnouncementChangeHistory> AnnouncementChangeHistories { get; set; } = new List<AnnouncementChangeHistory>();
 }

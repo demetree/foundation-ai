@@ -372,6 +372,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || (includeRelations == true && x.securityTenant.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.securityTenant.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.securityTenant.settings.Contains(anyStringContains))
+			       || (includeRelations == true && x.securityTenant.hostName.Contains(anyStringContains))
 			       || (includeRelations == true && x.securityUserTitle.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.securityUserTitle.description.Contains(anyStringContains))
 			   );
@@ -723,6 +724,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.securityTenant.name.Contains(anyStringContains)
 			       || x.securityTenant.description.Contains(anyStringContains)
 			       || x.securityTenant.settings.Contains(anyStringContains)
+			       || x.securityTenant.hostName.Contains(anyStringContains)
 			       || x.securityUserTitle.name.Contains(anyStringContains)
 			       || x.securityUserTitle.description.Contains(anyStringContains)
 			   );
@@ -1594,6 +1596,7 @@ namespace Foundation.Security.Controllers.WebAPI
 			       || x.securityTenant.name.Contains(anyStringContains)
 			       || x.securityTenant.description.Contains(anyStringContains)
 			       || x.securityTenant.settings.Contains(anyStringContains)
+			       || x.securityTenant.hostName.Contains(anyStringContains)
 			       || x.securityUserTitle.name.Contains(anyStringContains)
 			       || x.securityUserTitle.description.Contains(anyStringContains)
 			   );

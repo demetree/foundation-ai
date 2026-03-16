@@ -35,6 +35,12 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostCategoryFormValues {
+  name: string,
+  description: string | null,
+  slug: string,
+  sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -62,6 +68,12 @@ export class PostCategoryDetailComponent implements OnInit, CanComponentDeactiva
 
 
   public postCategoryForm: FormGroup = this.fb.group({
+        name: ['', Validators.required],
+        description: [''],
+        slug: ['', Validators.required],
+        sequence: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -364,6 +376,12 @@ export class PostCategoryDetailComponent implements OnInit, CanComponentDeactiva
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postCategoryForm.reset({
+        name: '',
+        description: '',
+        slug: '',
+        sequence: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -373,6 +391,12 @@ export class PostCategoryDetailComponent implements OnInit, CanComponentDeactiva
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postCategoryForm.reset({
+        name: postCategoryData.name ?? '',
+        description: postCategoryData.description ?? '',
+        slug: postCategoryData.slug ?? '',
+        sequence: postCategoryData.sequence?.toString() ?? '',
+        active: postCategoryData.active ?? true,
+        deleted: postCategoryData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -432,6 +456,12 @@ export class PostCategoryDetailComponent implements OnInit, CanComponentDeactiva
     //
     const postCategorySubmitData: PostCategorySubmitData = {
         id: this.postCategoryData?.id || 0,
+        name: formValue.name!.trim(),
+        description: formValue.description?.trim() || null,
+        slug: formValue.slug!.trim(),
+        sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

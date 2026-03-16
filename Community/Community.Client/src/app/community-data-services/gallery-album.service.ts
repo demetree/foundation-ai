@@ -28,16 +28,15 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class GalleryAlbumQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    Title: string | null | undefined = null;
-    Slug: string | null | undefined = null;
-    Description: string | null | undefined = null;
-    CoverImageUrl: string | null | undefined = null;
-    IsPublished: boolean | null | undefined = null;
-    Sequence: bigint | number | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    title: string | null | undefined = null;
+    slug: string | null | undefined = null;
+    description: string | null | undefined = null;
+    coverImageUrl: string | null | undefined = null;
+    isPublished: boolean | null | undefined = null;
+    sequence: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -49,15 +48,15 @@ export class GalleryAlbumQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class GalleryAlbumSubmitData {
-    Id: bigint | number | null = null;
-    Title: string | null = null;
-    Slug: string | null = null;
-    Description: string | null = null;
-    CoverImageUrl: string | null = null;
-    IsPublished: boolean | null = null;
-    Sequence: bigint | number | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    title!: string;
+    slug!: string;
+    description: string | null = null;
+    coverImageUrl: string | null = null;
+    isPublished!: boolean;
+    sequence: bigint | number | null = null;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -104,16 +103,16 @@ export class GalleryAlbumBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class GalleryAlbumData {
-    Id!: bigint | number;
-    Title!: string | null;
-    Slug!: string | null;
-    Description!: string | null;
-    CoverImageUrl!: string | null;
-    IsPublished!: boolean | null;
-    Sequence!: bigint | number;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
+    id!: bigint | number;
+    title!: string;
+    slug!: string;
+    description!: string | null;
+    coverImageUrl!: string | null;
+    isPublished!: boolean;
+    sequence!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
 
     //
     // Private lazy-loading caches for related collections
@@ -361,15 +360,15 @@ export class GalleryAlbumService extends SecureEndpointBase {
 
         let output = new GalleryAlbumSubmitData();
 
-        output.Id = data.Id;
-        output.Title = data.Title;
-        output.Slug = data.Slug;
-        output.Description = data.Description;
-        output.CoverImageUrl = data.CoverImageUrl;
-        output.IsPublished = data.IsPublished;
-        output.Sequence = data.Sequence;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.title = data.title;
+        output.slug = data.slug;
+        output.description = data.description;
+        output.coverImageUrl = data.coverImageUrl;
+        output.isPublished = data.isPublished;
+        output.sequence = data.sequence;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

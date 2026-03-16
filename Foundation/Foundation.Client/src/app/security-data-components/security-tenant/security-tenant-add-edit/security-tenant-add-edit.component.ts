@@ -37,6 +37,7 @@ interface SecurityTenantFormValues {
   name: string,
   description: string | null,
   settings: string | null,
+  hostName: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -72,6 +73,7 @@ export class SecurityTenantAddEditComponent {
         name: ['', Validators.required],
         description: [''],
         settings: [''],
+        hostName: [''],
         active: [true],
         deleted: [false],
       });
@@ -210,6 +212,7 @@ export class SecurityTenantAddEditComponent {
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
         settings: formValue.settings?.trim() || null,
+        hostName: formValue.hostName?.trim() || null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -340,6 +343,7 @@ export class SecurityTenantAddEditComponent {
         name: '',
         description: '',
         settings: '',
+        hostName: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -354,6 +358,7 @@ export class SecurityTenantAddEditComponent {
         name: securityTenantData.name ?? '',
         description: securityTenantData.description ?? '',
         settings: securityTenantData.settings ?? '',
+        hostName: securityTenantData.hostName ?? '',
         active: securityTenantData.active ?? true,
         deleted: securityTenantData.deleted ?? false,
       }, { emitEvent: false});

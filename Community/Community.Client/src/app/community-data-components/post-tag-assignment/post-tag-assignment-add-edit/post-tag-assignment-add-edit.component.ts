@@ -36,6 +36,10 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostTagAssignmentFormValues {
+  postId: number | bigint,       // For FK link number
+  postTagId: number | bigint,       // For FK link number
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -66,6 +70,10 @@ export class PostTagAssignmentAddEditComponent {
 
 
   public postTagAssignmentForm: FormGroup = this.fb.group({
+        postId: [null, Validators.required],
+        postTagId: [null, Validators.required],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -104,6 +112,7 @@ export class PostTagAssignmentAddEditComponent {
       }
       this.postTagAssignmentSubmitData = this.postTagAssignmentService.ConvertToPostTagAssignmentSubmitData(postTagAssignmentData);
       this.isEditMode = true;
+      this.objectGuid = postTagAssignmentData.objectGuid;
 
       this.buildFormValues(postTagAssignmentData);
 
@@ -202,6 +211,10 @@ export class PostTagAssignmentAddEditComponent {
     //
     const postTagAssignmentSubmitData: PostTagAssignmentSubmitData = {
         id: this.postTagAssignmentSubmitData?.id || 0,
+        postId: Number(formValue.postId),
+        postTagId: Number(formValue.postTagId),
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -327,6 +340,8 @@ export class PostTagAssignmentAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postTagAssignmentForm.reset({
+        postId: null,
+        postTagId: null,
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -338,6 +353,10 @@ export class PostTagAssignmentAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postTagAssignmentForm.reset({
+        postId: postTagAssignmentData.postId,
+        postTagId: postTagAssignmentData.postTagId,
+        active: postTagAssignmentData.active ?? true,
+        deleted: postTagAssignmentData.deleted ?? false,
       }, { emitEvent: false});
     }
 

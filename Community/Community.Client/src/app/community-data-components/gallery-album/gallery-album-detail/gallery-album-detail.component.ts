@@ -35,6 +35,14 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface GalleryAlbumFormValues {
+  title: string,
+  slug: string,
+  description: string | null,
+  coverImageUrl: string | null,
+  isPublished: boolean,
+  sequence: string | null,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -62,6 +70,14 @@ export class GalleryAlbumDetailComponent implements OnInit, CanComponentDeactiva
 
 
   public galleryAlbumForm: FormGroup = this.fb.group({
+        title: ['', Validators.required],
+        slug: ['', Validators.required],
+        description: [''],
+        coverImageUrl: [''],
+        isPublished: [false],
+        sequence: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -364,6 +380,14 @@ export class GalleryAlbumDetailComponent implements OnInit, CanComponentDeactiva
       // Reset the form group to null state, but don't change the form instance.
       //
       this.galleryAlbumForm.reset({
+        title: '',
+        slug: '',
+        description: '',
+        coverImageUrl: '',
+        isPublished: false,
+        sequence: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -373,6 +397,14 @@ export class GalleryAlbumDetailComponent implements OnInit, CanComponentDeactiva
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.galleryAlbumForm.reset({
+        title: galleryAlbumData.title ?? '',
+        slug: galleryAlbumData.slug ?? '',
+        description: galleryAlbumData.description ?? '',
+        coverImageUrl: galleryAlbumData.coverImageUrl ?? '',
+        isPublished: galleryAlbumData.isPublished ?? false,
+        sequence: galleryAlbumData.sequence?.toString() ?? '',
+        active: galleryAlbumData.active ?? true,
+        deleted: galleryAlbumData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -432,6 +464,14 @@ export class GalleryAlbumDetailComponent implements OnInit, CanComponentDeactiva
     //
     const galleryAlbumSubmitData: GalleryAlbumSubmitData = {
         id: this.galleryAlbumData?.id || 0,
+        title: formValue.title!.trim(),
+        slug: formValue.slug!.trim(),
+        description: formValue.description?.trim() || null,
+        coverImageUrl: formValue.coverImageUrl?.trim() || null,
+        isPublished: !!formValue.isPublished,
+        sequence: formValue.sequence ? Number(formValue.sequence) : null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

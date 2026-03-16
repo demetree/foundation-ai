@@ -27,6 +27,50 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('title')">
+                Title
+                <span *ngIf="sortColumn === 'title'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('slug')">
+                Slug
+                <span *ngIf="sortColumn === 'slug'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('body')">
+                Body
+                <span *ngIf="sortColumn === 'body'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('excerpt')">
+                Excerpt
+                <span *ngIf="sortColumn === 'excerpt'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('authorName')">
+                Author  Name
+                <span *ngIf="sortColumn === 'authorName'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('postCategory.name')">
+                Post  Category
+                <span *ngIf="sortColumn === 'postCategory.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('featuredImageUrl')">
+                Featured  Image  Url
+                <span *ngIf="sortColumn === 'featuredImageUrl'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('metaDescription')">
+                Meta  Description
+                <span *ngIf="sortColumn === 'metaDescription'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isPublished')">
+                Is  Published
+                <span *ngIf="sortColumn === 'isPublished'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('publishedDate')">
+                Published  Date
+                <span *ngIf="sortColumn === 'publishedDate'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('isFeatured')">
+                Is  Featured
+                <span *ngIf="sortColumn === 'isFeatured'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +156,17 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/post', post.id]" class="btn btn-link text-left" ngbTooltip="Open Post details">{{post.title}}</a></td>
+            <td class="text-truncate">{{post.slug}}</td>
+            <td class="text-truncate">{{post.body}}</td>
+            <td class="text-truncate">{{post.excerpt}}</td>
+            <td class="text-truncate">{{post.authorName}}</td>
+            <td class="text-truncate"><a [routerLink]="['/postcategory', post.postCategoryId]" class="btn btn-link text-left" ngbTooltip="Open Post Category details">{{post.postCategory?.name}}</a></td>
+            <td class="text-truncate">{{post.featuredImageUrl}}</td>
+            <td class="text-truncate">{{post.metaDescription}}</td>
+            <td class="text-truncate"><boolean-icon [value]="post.isPublished"/></td>
+            <td class="text-truncate">{{post.publishedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate"><boolean-icon [value]="post.isFeatured"/></td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -259,6 +314,50 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="post-info" *ngIf="post.title != null">
+              <strong>Title: </strong>
+              {{post.title}}
+            </p>
+            <p class="post-info" *ngIf="post.slug != null">
+              <strong>Slug: </strong>
+              {{post.slug}}
+            </p>
+            <p class="post-info" *ngIf="post.body != null">
+              <strong>Body: </strong>
+              {{post.body}}
+            </p>
+            <p class="post-info" *ngIf="post.excerpt != null">
+              <strong>Excerpt: </strong>
+              {{post.excerpt}}
+            </p>
+            <p class="post-info" *ngIf="post.authorName != null">
+              <strong>Author Name: </strong>
+              {{post.authorName}}
+            </p>
+            <p class="post-info" *ngIf="post.postCategoryId != null">
+              <strong>Post Category: </strong>
+              <a [routerLink]="['/postcategory', post.postCategoryId]" class="text-left p-0 m-0" ngbTooltip="Open Post Category details">{{post.postCategory?.name}}</a>
+            </p>
+            <p class="post-info" *ngIf="post.featuredImageUrl != null">
+              <strong>Featured Image Url: </strong>
+              {{post.featuredImageUrl}}
+            </p>
+            <p class="post-info" *ngIf="post.metaDescription != null">
+              <strong>Meta Description: </strong>
+              {{post.metaDescription}}
+            </p>
+            <p class="post-info" *ngIf="post.isPublished != null">
+              <strong>Is Published: </strong>
+              <boolean-icon [value]="post.isPublished"/>
+            </p>
+            <p class="post-info" *ngIf="post.publishedDate != null">
+              <strong>Published Date: </strong>
+              {{post.publishedDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="post-info" *ngIf="post.isFeatured != null">
+              <strong>Is Featured: </strong>
+              <boolean-icon [value]="post.isFeatured"/>
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

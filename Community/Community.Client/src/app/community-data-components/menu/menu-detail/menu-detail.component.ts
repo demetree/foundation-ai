@@ -35,6 +35,10 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface MenuFormValues {
+  name: string,
+  location: string,
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -62,6 +66,10 @@ export class MenuDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   public menuForm: FormGroup = this.fb.group({
+        name: ['', Validators.required],
+        location: ['', Validators.required],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -364,6 +372,10 @@ export class MenuDetailComponent implements OnInit, CanComponentDeactivate {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.menuForm.reset({
+        name: '',
+        location: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -373,6 +385,10 @@ export class MenuDetailComponent implements OnInit, CanComponentDeactivate {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.menuForm.reset({
+        name: menuData.name ?? '',
+        location: menuData.location ?? '',
+        active: menuData.active ?? true,
+        deleted: menuData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -432,6 +448,10 @@ export class MenuDetailComponent implements OnInit, CanComponentDeactivate {
     //
     const menuSubmitData: MenuSubmitData = {
         id: this.menuData?.id || 0,
+        name: formValue.name!.trim(),
+        location: formValue.location!.trim(),
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

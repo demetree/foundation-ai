@@ -175,6 +175,14 @@ export class ContactSubmissionTableComponent implements OnInit, OnChanges, After
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/contactsubmission', 'id']  },
+    { key: 'email', label: 'Email', width: undefined },
+    { key: 'subject', label: 'Subject', width: undefined },
+    { key: 'message', label: 'Message', width: undefined },
+    { key: 'submittedDate', label: 'Submitted Date', width: undefined, template: 'date' },
+    { key: 'isRead', label: 'Is Read', width: '120px', template: 'boolean' },
+    { key: 'isArchived', label: 'Is Archived', width: '120px', template: 'boolean' },
+    { key: 'adminNotes', label: 'Admin Notes', width: undefined },
 
     ];
 
@@ -186,6 +194,8 @@ export class ContactSubmissionTableComponent implements OnInit, OnChanges, After
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +328,14 @@ export class ContactSubmissionTableComponent implements OnInit, OnChanges, After
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'name',
+                      'email',
+                      'subject',
+                      'message',
+                      'submittedDate',
+                      'isRead',
+                      'isArchived',
+                      'adminNotes',
         ];
 
         result = result.filter((contactSubmission) =>

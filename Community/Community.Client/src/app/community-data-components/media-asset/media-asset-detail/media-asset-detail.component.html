@@ -17,6 +17,55 @@
                 <div class="col m-2 media-asset-details-body">
                     <div *showSpinner="isLoading$ | async">
                         <form [class.hidden]="isLoading$ | async" [formGroup]="mediaAssetForm" (ngSubmit)="submitForm()" class="media-asset-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('fileName')">
+                                <label for="MediaAsset-fileName" id="label-MediaAsset-fileName"><span class="text-danger">*</span>File Name</label>
+                                <input type="text" id="MediaAsset-fileName" formControlName="fileName" placeholder="Enter File Name" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()" aria-labelledby="label-fileName" />
+                                <div *ngIf="mediaAssetForm.get('fileName')?.invalid && mediaAssetForm.get('fileName')?.touched" class="text-danger">
+                                    File Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('filePath')">
+                                <label for="MediaAsset-filePath" id="label-MediaAsset-filePath"><span class="text-danger">*</span>File Path</label>
+                                <textarea id="MediaAsset-filePath" formControlName="filePath" placeholder="Enter File Path" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()"></textarea>
+                                <div *ngIf="mediaAssetForm.get('filePath')?.invalid && mediaAssetForm.get('filePath')?.touched" class="text-danger">
+                                    File Path is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('mimeType')">
+                                <label for="MediaAsset-mimeType" id="label-MediaAsset-mimeType"><span class="text-danger">*</span>Mime Type</label>
+                                <input type="text" id="MediaAsset-mimeType" formControlName="mimeType" placeholder="Enter Mime Type" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()" aria-labelledby="label-mimeType" />
+                                <div *ngIf="mediaAssetForm.get('mimeType')?.invalid && mediaAssetForm.get('mimeType')?.touched" class="text-danger">
+                                    Mime Type is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('altText')">
+                                <label for="MediaAsset-altText" id="label-MediaAsset-altText">Alt Text</label>
+                                <input type="text" id="MediaAsset-altText" formControlName="altText" placeholder="Enter Alt Text" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()" aria-labelledby="label-altText" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('caption')">
+                                <label for="MediaAsset-caption" id="label-MediaAsset-caption">Caption</label>
+                                <textarea id="MediaAsset-caption" formControlName="caption" placeholder="Enter Caption" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fileSizeBytes')">
+                                <label for="MediaAsset-fileSizeBytes" id="label-MediaAsset-fileSizeBytes">File Size Bytes</label>
+                                <input type="number" id="MediaAsset-fileSizeBytes" formControlName="fileSizeBytes" placeholder="Enter File Size Bytes" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()" aria-labelledby="label-fileSizeBytes" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('imageWidth')">
+                                <label for="MediaAsset-imageWidth" id="label-MediaAsset-imageWidth">Image Width</label>
+                                <input type="number" id="MediaAsset-imageWidth" formControlName="imageWidth" placeholder="Enter Image Width" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()" aria-labelledby="label-imageWidth" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('imageHeight')">
+                                <label for="MediaAsset-imageHeight" id="label-MediaAsset-imageHeight">Image Height</label>
+                                <input type="number" id="MediaAsset-imageHeight" formControlName="imageHeight" placeholder="Enter Image Height" class="form-control media-asset-input" [disabled]="!userIsCommunityMediaAssetWriter()" aria-labelledby="label-imageHeight" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MediaAsset-active" formControlName="active" class="form-check-input" [disabled]="!userIsCommunityMediaAssetWriter()" />
+                                <label for="MediaAsset-active" class="form-check-label" id="label-MediaAsset-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MediaAsset-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsCommunityMediaAssetWriter()" />
+                                <label for="MediaAsset-deleted" class="form-check-label" id="label-MediaAsset-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
                             <div class="media-asset-details-footer">
                                 <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="mediaAssetForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Media Asset">Reset</button>
                                 <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !mediaAssetForm.valid || !mediaAssetForm.dirty || mediaAssetForm.pristine  || userIsCommunityMediaAssetWriter() == false " ngbTooltip="Save the Media Asset changes">

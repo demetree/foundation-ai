@@ -16,8 +16,8 @@ namespace Foundation.Community.Database
 		[NotMapped]
 		public long primaryId 
 		{
-			get { return (long)PageId; }
-			set { PageId = (int)value; } 
+			get { return (long)pageId; }
+			set { pageId = (int)value; } 
 		}
 
 		/// <summary>
@@ -29,12 +29,16 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PageChangeHistoryDTO
 		{
-			public Int32 Id { get; set; }
-			public Int32 PageId { get; set; }
-			public Int32 VersionNumber { get; set; }
-			public DateTime TimeStamp { get; set; }
-			public Int32 UserId { get; set; }
-			public String Data { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public Int32 pageId { get; set; }
+			public Int32 versionNumber { get; set; }
+			[Required]
+			public DateTime timeStamp { get; set; }
+			[Required]
+			public Int32 userId { get; set; }
+			[Required]
+			public String data { get; set; }
 		}
 
 
@@ -45,7 +49,7 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PageChangeHistoryOutputDTO : PageChangeHistoryDTO
 		{
-			public Page.PageDTO Page { get; set; }
+			public Page.PageDTO page { get; set; }
 		}
 
 
@@ -60,12 +64,12 @@ namespace Foundation.Community.Database
 		{
 			return new PageChangeHistoryDTO
 			{
-				Id = this.Id,
-				PageId = this.PageId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data
+				id = this.id,
+				pageId = this.pageId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data
 			};
 		}
 
@@ -104,13 +108,13 @@ namespace Foundation.Community.Database
 		{
 			return new PageChangeHistoryOutputDTO
 			{
-				Id = this.Id,
-				PageId = this.PageId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data,
-				Page = this.Page?.ToDTO()
+				id = this.id,
+				pageId = this.pageId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data,
+				page = this.page?.ToDTO()
 			};
 		}
 
@@ -149,12 +153,12 @@ namespace Foundation.Community.Database
 		{
 			return new Database.PageChangeHistory
 			{
-				Id = dto.Id,
-				PageId = dto.PageId,
-				VersionNumber = dto.VersionNumber,
-				TimeStamp = dto.TimeStamp,
-				UserId = dto.UserId,
-				Data = dto.Data
+				id = dto.id,
+				pageId = dto.pageId,
+				versionNumber = dto.versionNumber,
+				timeStamp = dto.timeStamp,
+				userId = dto.userId,
+				data = dto.data
 			};
 		}
 
@@ -171,11 +175,11 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.PageId = dto.PageId;
-			this.VersionNumber = dto.VersionNumber;
-			this.TimeStamp = dto.TimeStamp;
-			this.UserId = dto.UserId;
-			this.Data = dto.Data;
+			this.pageId = dto.pageId;
+			this.versionNumber = dto.versionNumber;
+			this.timeStamp = dto.timeStamp;
+			this.userId = dto.userId;
+			this.data = dto.data;
 		}
 
 
@@ -190,12 +194,13 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new PageChangeHistory{
-				Id = this.Id,
-				PageId = this.PageId,
-				VersionNumber = this.VersionNumber,
-				TimeStamp = this.TimeStamp,
-				UserId = this.UserId,
-				Data = this.Data,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				pageId = this.pageId,
+				versionNumber = this.versionNumber,
+				timeStamp = this.timeStamp,
+				userId = this.userId,
+				data = this.data,
 			 };
 		}
 
@@ -248,12 +253,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = pageChangeHistory.Id,
-				PageId = pageChangeHistory.PageId,
-				VersionNumber = pageChangeHistory.VersionNumber,
-				TimeStamp = pageChangeHistory.TimeStamp,
-				UserId = pageChangeHistory.UserId,
-				Data = pageChangeHistory.Data,
+				id = pageChangeHistory.id,
+				pageId = pageChangeHistory.pageId,
+				versionNumber = pageChangeHistory.versionNumber,
+				timeStamp = pageChangeHistory.timeStamp,
+				userId = pageChangeHistory.userId,
+				data = pageChangeHistory.data,
 			 };
 		}
 
@@ -273,13 +278,13 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = pageChangeHistory.Id,
-				PageId = pageChangeHistory.PageId,
-				VersionNumber = pageChangeHistory.VersionNumber,
-				TimeStamp = pageChangeHistory.TimeStamp,
-				UserId = pageChangeHistory.UserId,
-				Data = pageChangeHistory.Data,
-				Page = Page.CreateMinimalAnonymous(pageChangeHistory.Page)
+				id = pageChangeHistory.id,
+				pageId = pageChangeHistory.pageId,
+				versionNumber = pageChangeHistory.versionNumber,
+				timeStamp = pageChangeHistory.timeStamp,
+				userId = pageChangeHistory.userId,
+				data = pageChangeHistory.data,
+				page = Page.CreateMinimalAnonymous(pageChangeHistory.page)
 			 };
 		}
 
@@ -299,6 +304,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = pageChangeHistory.id,
 				name = pageChangeHistory.id,
 				description = pageChangeHistory.id
 			 };

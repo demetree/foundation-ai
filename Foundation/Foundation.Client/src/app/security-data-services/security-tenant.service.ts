@@ -33,6 +33,7 @@ export class SecurityTenantQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     settings: string | null | undefined = null;
+    hostName: string | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -51,6 +52,7 @@ export class SecurityTenantSubmitData {
     name!: string;
     description: string | null = null;
     settings: string | null = null;
+    hostName: string | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -103,6 +105,7 @@ export class SecurityTenantData {
     name!: string;
     description!: string | null;
     settings!: string | null;
+    hostName!: string | null;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -559,6 +562,7 @@ export class SecurityTenantService extends SecureEndpointBase {
         output.name = data.name;
         output.description = data.description;
         output.settings = data.settings;
+        output.hostName = data.hostName;
         output.active = data.active;
         output.deleted = data.deleted;
 

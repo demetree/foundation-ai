@@ -5,7 +5,7 @@
 // Modeled after module-custom-detail pattern.
 //
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 import { Subject, BehaviorSubject } from 'rxjs';
@@ -13,6 +13,7 @@ import { takeUntil } from 'rxjs/operators';
 
 import { SecurityTenantService, SecurityTenantData } from '../../../security-data-services/security-tenant.service';
 import { AlertService } from '../../../services/alert.service';
+import { TenantAddEditComponent } from '../tenant-add-edit/tenant-add-edit.component';
 
 @Component({
     selector: 'app-tenant-custom-detail',
@@ -42,6 +43,11 @@ export class TenantCustomDetailComponent implements OnInit, OnDestroy {
     // Quick action states
     //
     public isToggling: boolean = false;
+
+    //
+    // Edit modal
+    //
+    @ViewChild(TenantAddEditComponent) tenantAddEdit!: TenantAddEditComponent;
 
 
     constructor(
@@ -174,5 +180,26 @@ export class TenantCustomDetailComponent implements OnInit, OnDestroy {
 
     canEdit(): boolean {
         return this.securityTenantService.userIsSecuritySecurityTenantWriter();
+    }
+
+
+    //
+    // Edit Modal
+    //
+
+    openEditModal(): void {
+        if (this.tenantData && this.tenantAddEdit) {
+            this.tenantAddEdit.openForEdit(this.tenantData);
+        }
+    }
+
+
+    onTenantSaved(updatedTenant: SecurityTenantData): void {
+        //
+        // Update the displayed tenantData in place, clear the record cache
+        // so the next navigation will fetch fresh data
+        //
+        this.tenantData = updatedTenant;
+        this.securityTenantService.ClearRecordCache(Number(updatedTenant.id));
     }
 }

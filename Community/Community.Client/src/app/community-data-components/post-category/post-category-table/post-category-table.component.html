@@ -27,6 +27,22 @@
                 </span>
               </th>
 <!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('name')">
+                Name
+                <span *ngIf="sortColumn === 'name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('description')">
+                Description
+                <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('slug')">
+                Slug
+                <span *ngIf="sortColumn === 'slug'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('sequence')">
+                Sequence
+                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -112,6 +128,10 @@ End of commented block for alternate definition option -->
                 </ng-container>
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/postcategory', postCategory.id]" class="btn btn-link text-left" ngbTooltip="Open Post Category details">{{postCategory.name}}</a></td>
+            <td class="text-truncate">{{postCategory.description}}</td>
+            <td class="text-truncate">{{postCategory.slug}}</td>
+            <td class="text-truncate">{{postCategory.sequence | bigNumberFormat : '1.0-2'}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -228,7 +248,7 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
            <div class="card-header d-flex justify-content-between align-items-center">
              <div>
-               <strong>{{postCategory.id}}</strong>
+               <strong>{{postCategory.name}}</strong>
              </div>
              <div>
                 <button class="action-btn action-view"
@@ -258,6 +278,22 @@ End of commented block for alternate definition option -->
              </div>
              </div>
              <div class="card-body">
+            <p class="post-category-info" *ngIf="postCategory.name != null">
+              <strong>Name: </strong>
+              {{postCategory.name}}
+            </p>
+            <p class="post-category-info" *ngIf="postCategory.description != null">
+              <strong>Description: </strong>
+              {{postCategory.description}}
+            </p>
+            <p class="post-category-info" *ngIf="postCategory.slug != null">
+              <strong>Slug: </strong>
+              {{postCategory.slug}}
+            </p>
+            <p class="post-category-info" *ngIf="postCategory.sequence != null">
+              <strong>Sequence: </strong>
+              {{postCategory.sequence | bigNumberFormat : '1.0-2'}}
+            </p>
             </div>
          </div>
 End of commented block for alternate definition option  -->

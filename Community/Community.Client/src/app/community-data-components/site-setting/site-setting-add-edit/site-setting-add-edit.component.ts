@@ -34,6 +34,12 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface SiteSettingFormValues {
+  settingKey: string,
+  settingValue: string | null,
+  description: string | null,
+  settingGroup: string | null,
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -64,6 +70,12 @@ export class SiteSettingAddEditComponent {
 
 
   public siteSettingForm: FormGroup = this.fb.group({
+        settingKey: ['', Validators.required],
+        settingValue: [''],
+        description: [''],
+        settingGroup: [''],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -98,6 +110,7 @@ export class SiteSettingAddEditComponent {
       }
       this.siteSettingSubmitData = this.siteSettingService.ConvertToSiteSettingSubmitData(siteSettingData);
       this.isEditMode = true;
+      this.objectGuid = siteSettingData.objectGuid;
 
       this.buildFormValues(siteSettingData);
 
@@ -196,6 +209,12 @@ export class SiteSettingAddEditComponent {
     //
     const siteSettingSubmitData: SiteSettingSubmitData = {
         id: this.siteSettingSubmitData?.id || 0,
+        settingKey: formValue.settingKey!.trim(),
+        settingValue: formValue.settingValue?.trim() || null,
+        description: formValue.description?.trim() || null,
+        settingGroup: formValue.settingGroup?.trim() || null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -321,6 +340,10 @@ export class SiteSettingAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.siteSettingForm.reset({
+        settingKey: '',
+        settingValue: '',
+        description: '',
+        settingGroup: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -332,6 +355,12 @@ export class SiteSettingAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.siteSettingForm.reset({
+        settingKey: siteSettingData.settingKey ?? '',
+        settingValue: siteSettingData.settingValue ?? '',
+        description: siteSettingData.description ?? '',
+        settingGroup: siteSettingData.settingGroup ?? '',
+        active: siteSettingData.active ?? true,
+        deleted: siteSettingData.deleted ?? false,
       }, { emitEvent: false});
     }
 

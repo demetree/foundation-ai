@@ -175,6 +175,8 @@ export class MenuTableComponent implements OnInit, OnChanges, AfterViewInit {
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/menu', 'id']  },
+    { key: 'location', label: 'Location', width: undefined },
 
     ];
 
@@ -186,6 +188,8 @@ export class MenuTableComponent implements OnInit, OnChanges, AfterViewInit {
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +322,8 @@ export class MenuTableComponent implements OnInit, OnChanges, AfterViewInit {
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'name',
+                      'location',
         ];
 
         result = result.filter((menu) =>

@@ -29,12 +29,11 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class PostTagAssignmentQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    PostId: bigint | number | null | undefined = null;
-    PostTagId: bigint | number | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    postId: bigint | number | null | undefined = null;
+    postTagId: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -46,11 +45,11 @@ export class PostTagAssignmentQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class PostTagAssignmentSubmitData {
-    Id: bigint | number | null = null;
-    PostId: bigint | number | null = null;
-    PostTagId: bigint | number | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    postId!: bigint | number;
+    postTagId!: bigint | number;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -97,14 +96,14 @@ export class PostTagAssignmentBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class PostTagAssignmentData {
-    Id!: bigint | number;
-    PostId!: bigint | number;
-    PostTagId!: bigint | number;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
-    Post: PostData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
-    PostTag: PostTagData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    id!: bigint | number;
+    postId!: bigint | number;
+    postTagId!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
+    post: PostData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    postTag: PostTagData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -251,11 +250,11 @@ export class PostTagAssignmentService extends SecureEndpointBase {
 
         let output = new PostTagAssignmentSubmitData();
 
-        output.Id = data.Id;
-        output.PostId = data.PostId;
-        output.PostTagId = data.PostTagId;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.postId = data.postId;
+        output.postTagId = data.postTagId;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

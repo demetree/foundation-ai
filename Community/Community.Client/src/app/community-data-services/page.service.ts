@@ -29,19 +29,18 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class PageQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    Title: string | null | undefined = null;
-    Slug: string | null | undefined = null;
-    Body: string | null | undefined = null;
-    MetaDescription: string | null | undefined = null;
-    FeaturedImageUrl: string | null | undefined = null;
-    IsPublished: boolean | null | undefined = null;
-    PublishedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
-    SortOrder: bigint | number | null | undefined = null;
-    VersionNumber: bigint | number | null | undefined = null;
-    ObjectGuid: string | null | undefined = null;
-    Active: boolean | null | undefined = null;
-    Deleted: boolean | null | undefined = null;
+    title: string | null | undefined = null;
+    slug: string | null | undefined = null;
+    body: string | null | undefined = null;
+    metaDescription: string | null | undefined = null;
+    featuredImageUrl: string | null | undefined = null;
+    isPublished: boolean | null | undefined = null;
+    publishedDate: string | null | undefined = null;        // ISO 8601 (full datetime)
+    sortOrder: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
+    objectGuid: string | null | undefined = null;
+    active: boolean | null | undefined = null;
+    deleted: boolean | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -53,18 +52,18 @@ export class PageQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class PageSubmitData {
-    Id: bigint | number | null = null;
-    Title: string | null = null;
-    Slug: string | null = null;
-    Body: string | null = null;
-    MetaDescription: string | null = null;
-    FeaturedImageUrl: string | null = null;
-    IsPublished: boolean | null = null;
-    PublishedDate: string | null = null;     // ISO 8601 (full datetime)
-    SortOrder: bigint | number | null = null;
-    VersionNumber: bigint | number | null = null;
-    Active: boolean | null = null;
-    Deleted: boolean | null = null;
+    id!: bigint | number;
+    title!: string;
+    slug!: string;
+    body: string | null = null;
+    metaDescription: string | null = null;
+    featuredImageUrl: string | null = null;
+    isPublished!: boolean;
+    publishedDate: string | null = null;     // ISO 8601 (full datetime)
+    sortOrder: bigint | number | null = null;
+    versionNumber!: bigint | number;
+    active!: boolean;
+    deleted!: boolean;
 }
 
 
@@ -131,19 +130,19 @@ export class PageBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class PageData {
-    Id!: bigint | number;
-    Title!: string | null;
-    Slug!: string | null;
-    Body!: string | null;
-    MetaDescription!: string | null;
-    FeaturedImageUrl!: string | null;
-    IsPublished!: boolean | null;
-    PublishedDate!: string | null;   // ISO 8601 (full datetime)
-    SortOrder!: bigint | number;
-    VersionNumber!: bigint | number;
-    ObjectGuid!: string | null;
-    Active!: boolean | null;
-    Deleted!: boolean | null;
+    id!: bigint | number;
+    title!: string;
+    slug!: string;
+    body!: string | null;
+    metaDescription!: string | null;
+    featuredImageUrl!: string | null;
+    isPublished!: boolean;
+    publishedDate!: string | null;   // ISO 8601 (full datetime)
+    sortOrder!: bigint | number;
+    versionNumber!: bigint | number;
+    objectGuid!: string;
+    active!: boolean;
+    deleted!: boolean;
 
     //
     // Private lazy-loading caches for related collections
@@ -547,18 +546,18 @@ export class PageService extends SecureEndpointBase {
 
         let output = new PageSubmitData();
 
-        output.Id = data.Id;
-        output.Title = data.Title;
-        output.Slug = data.Slug;
-        output.Body = data.Body;
-        output.MetaDescription = data.MetaDescription;
-        output.FeaturedImageUrl = data.FeaturedImageUrl;
-        output.IsPublished = data.IsPublished;
-        output.PublishedDate = data.PublishedDate;
-        output.SortOrder = data.SortOrder;
-        output.VersionNumber = data.VersionNumber;
-        output.Active = data.Active;
-        output.Deleted = data.Deleted;
+        output.id = data.id;
+        output.title = data.title;
+        output.slug = data.slug;
+        output.body = data.body;
+        output.metaDescription = data.metaDescription;
+        output.featuredImageUrl = data.featuredImageUrl;
+        output.isPublished = data.isPublished;
+        output.publishedDate = data.publishedDate;
+        output.sortOrder = data.sortOrder;
+        output.versionNumber = data.versionNumber;
+        output.active = data.active;
+        output.deleted = data.deleted;
 
         return output;
     }

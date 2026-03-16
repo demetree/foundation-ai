@@ -20,14 +20,16 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class SiteSettingDTO
 		{
-			public Int32 Id { get; set; }
-			public String SettingKey { get; set; }
-			public String SettingValue { get; set; }
-			public String Description { get; set; }
-			public String SettingGroup { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String settingKey { get; set; }
+			public String settingValue { get; set; }
+			public String description { get; set; }
+			public String settingGroup { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -52,14 +54,14 @@ namespace Foundation.Community.Database
 		{
 			return new SiteSettingDTO
 			{
-				Id = this.Id,
-				SettingKey = this.SettingKey,
-				SettingValue = this.SettingValue,
-				Description = this.Description,
-				SettingGroup = this.SettingGroup,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				settingKey = this.settingKey,
+				settingValue = this.settingValue,
+				description = this.description,
+				settingGroup = this.settingGroup,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -98,14 +100,14 @@ namespace Foundation.Community.Database
 		{
 			return new SiteSettingOutputDTO
 			{
-				Id = this.Id,
-				SettingKey = this.SettingKey,
-				SettingValue = this.SettingValue,
-				Description = this.Description,
-				SettingGroup = this.SettingGroup,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				settingKey = this.settingKey,
+				settingValue = this.settingValue,
+				description = this.description,
+				settingGroup = this.settingGroup,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -144,14 +146,14 @@ namespace Foundation.Community.Database
 		{
 			return new Database.SiteSetting
 			{
-				Id = dto.Id,
-				SettingKey = dto.SettingKey,
-				SettingValue = dto.SettingValue,
-				Description = dto.Description,
-				SettingGroup = dto.SettingGroup,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				settingKey = dto.settingKey,
+				settingValue = dto.settingValue,
+				description = dto.description,
+				settingGroup = dto.settingGroup,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -168,18 +170,18 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.SettingKey = dto.SettingKey;
-			this.SettingValue = dto.SettingValue;
-			this.Description = dto.Description;
-			this.SettingGroup = dto.SettingGroup;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.settingKey = dto.settingKey;
+			this.settingValue = dto.settingValue;
+			this.description = dto.description;
+			this.settingGroup = dto.settingGroup;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -195,14 +197,15 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new SiteSetting{
-				Id = this.Id,
-				SettingKey = this.SettingKey,
-				SettingValue = this.SettingValue,
-				Description = this.Description,
-				SettingGroup = this.SettingGroup,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				settingKey = this.settingKey,
+				settingValue = this.settingValue,
+				description = this.description,
+				settingGroup = this.settingGroup,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			 };
 		}
 
@@ -255,14 +258,14 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = siteSetting.Id,
-				SettingKey = siteSetting.SettingKey,
-				SettingValue = siteSetting.SettingValue,
-				Description = siteSetting.Description,
-				SettingGroup = siteSetting.SettingGroup,
-				ObjectGuid = siteSetting.ObjectGuid,
-				Active = siteSetting.Active,
-				Deleted = siteSetting.Deleted
+				id = siteSetting.id,
+				settingKey = siteSetting.settingKey,
+				settingValue = siteSetting.settingValue,
+				description = siteSetting.description,
+				settingGroup = siteSetting.settingGroup,
+				objectGuid = siteSetting.objectGuid,
+				active = siteSetting.active,
+				deleted = siteSetting.deleted
 			 };
 		}
 
@@ -282,14 +285,14 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = siteSetting.Id,
-				SettingKey = siteSetting.SettingKey,
-				SettingValue = siteSetting.SettingValue,
-				Description = siteSetting.Description,
-				SettingGroup = siteSetting.SettingGroup,
-				ObjectGuid = siteSetting.ObjectGuid,
-				Active = siteSetting.Active,
-				Deleted = siteSetting.Deleted
+				id = siteSetting.id,
+				settingKey = siteSetting.settingKey,
+				settingValue = siteSetting.settingValue,
+				description = siteSetting.description,
+				settingGroup = siteSetting.settingGroup,
+				objectGuid = siteSetting.objectGuid,
+				active = siteSetting.active,
+				deleted = siteSetting.deleted
 			 };
 		}
 
@@ -309,8 +312,9 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				name = siteSetting.settingKey,
-				description = string.Join(", ", new[] { siteSetting.settingKey, siteSetting.description, siteSetting.settingGroup}.Where(s => !string.IsNullOrWhiteSpace(s)))
+				id = siteSetting.id,
+				description = siteSetting.description,
+				name = siteSetting.settingKey
 			 };
 		}
 	}

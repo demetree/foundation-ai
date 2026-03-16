@@ -7,31 +7,33 @@ namespace Foundation.Community.Database;
 
 public partial class DocumentDownload
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public string Title { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string Description { get; set; }
+    public string title { get; set; }
 
-    public string FilePath { get; set; }
+    public string description { get; set; }
 
-    public string FileName { get; set; }
+    public string filePath { get; set; }
 
-    public string MimeType { get; set; }
+    public string fileName { get; set; }
 
-    public long? FileSizeBytes { get; set; }
+    public string mimeType { get; set; }
 
-    public string CategoryName { get; set; }
+    public long? fileSizeBytes { get; set; }
 
-    public DateTime? DocumentDate { get; set; }
+    public string categoryName { get; set; }
 
-    public bool IsPublished { get; set; }
+    public DateTime? documentDate { get; set; }
 
-    public int? Sequence { get; set; }
+    public bool isPublished { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public int? sequence { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
+
+    public bool deleted { get; set; }
 }

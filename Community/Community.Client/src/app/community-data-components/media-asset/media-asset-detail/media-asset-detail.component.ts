@@ -34,6 +34,16 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface MediaAssetFormValues {
+  fileName: string,
+  filePath: string,
+  mimeType: string,
+  altText: string | null,
+  caption: string | null,
+  fileSizeBytes: string | null,     // Stored as string for form input, converted to number on submit.
+  imageWidth: string | null,     // Stored as string for form input, converted to number on submit.
+  imageHeight: string | null,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -61,6 +71,16 @@ export class MediaAssetDetailComponent implements OnInit, CanComponentDeactivate
 
 
   public mediaAssetForm: FormGroup = this.fb.group({
+        fileName: ['', Validators.required],
+        filePath: ['', Validators.required],
+        mimeType: ['', Validators.required],
+        altText: [''],
+        caption: [''],
+        fileSizeBytes: [''],
+        imageWidth: [''],
+        imageHeight: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -361,6 +381,16 @@ export class MediaAssetDetailComponent implements OnInit, CanComponentDeactivate
       // Reset the form group to null state, but don't change the form instance.
       //
       this.mediaAssetForm.reset({
+        fileName: '',
+        filePath: '',
+        mimeType: '',
+        altText: '',
+        caption: '',
+        fileSizeBytes: '',
+        imageWidth: '',
+        imageHeight: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -370,6 +400,16 @@ export class MediaAssetDetailComponent implements OnInit, CanComponentDeactivate
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.mediaAssetForm.reset({
+        fileName: mediaAssetData.fileName ?? '',
+        filePath: mediaAssetData.filePath ?? '',
+        mimeType: mediaAssetData.mimeType ?? '',
+        altText: mediaAssetData.altText ?? '',
+        caption: mediaAssetData.caption ?? '',
+        fileSizeBytes: mediaAssetData.fileSizeBytes?.toString() ?? '',
+        imageWidth: mediaAssetData.imageWidth?.toString() ?? '',
+        imageHeight: mediaAssetData.imageHeight?.toString() ?? '',
+        active: mediaAssetData.active ?? true,
+        deleted: mediaAssetData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -429,6 +469,16 @@ export class MediaAssetDetailComponent implements OnInit, CanComponentDeactivate
     //
     const mediaAssetSubmitData: MediaAssetSubmitData = {
         id: this.mediaAssetData?.id || 0,
+        fileName: formValue.fileName!.trim(),
+        filePath: formValue.filePath!.trim(),
+        mimeType: formValue.mimeType!.trim(),
+        altText: formValue.altText?.trim() || null,
+        caption: formValue.caption?.trim() || null,
+        fileSizeBytes: formValue.fileSizeBytes ? Number(formValue.fileSizeBytes) : null,
+        imageWidth: formValue.imageWidth ? Number(formValue.imageWidth) : null,
+        imageHeight: formValue.imageHeight ? Number(formValue.imageHeight) : null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

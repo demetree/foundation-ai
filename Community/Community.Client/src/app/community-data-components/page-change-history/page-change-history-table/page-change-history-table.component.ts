@@ -173,6 +173,10 @@ export class PageChangeHistoryTableComponent implements OnInit, OnChanges, After
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'page.name', label: 'Page', width: undefined, template: 'link', linkPath: ['/page', 'pageId'] },
+    { key: 'timeStamp', label: 'Time Stamp', width: undefined, template: 'date' },
+    { key: 'userId', label: 'User Id', width: undefined },
+    { key: 'data', label: 'Data', width: undefined },
 
     ];
 
@@ -184,9 +188,11 @@ export class PageChangeHistoryTableComponent implements OnInit, OnChanges, After
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
 
     }
     else if (isWriter) {
+     defaultColumns.push({ key: 'versionNumber', label: 'Version Number', width: undefined });
     }
 
     
@@ -316,6 +322,10 @@ export class PageChangeHistoryTableComponent implements OnInit, OnChanges, After
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'page.name',
+                      'timeStamp',
+                      'userId',
+                      'data',
         ];
 
         result = result.filter((pageChangeHistory) =>

@@ -124,6 +124,7 @@ namespace Foundation.Scheduler.CodeGeneration
 
                     phmcTenant.name = "Petty Harbour Maddox Cove";
                     phmcTenant.description = "The town of Petty Harbour Maddox Cove";
+                    phmcTenant.hostName = "localhost";          // to allow testing of the community sytem on localhost
 
                     phmcTenant.objectGuid = PHMCTenantGuid;
 

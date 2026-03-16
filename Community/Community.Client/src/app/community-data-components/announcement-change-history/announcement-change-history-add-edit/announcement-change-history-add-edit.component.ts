@@ -35,6 +35,11 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface AnnouncementChangeHistoryFormValues {
+  announcementId: number | bigint,       // For FK link number
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  timeStamp: string,
+  userId: string,     // Stored as string for form input, converted to number on submit.
+  data: string,
 };
 
 @Component({
@@ -65,6 +70,11 @@ export class AnnouncementChangeHistoryAddEditComponent {
 
 
   public announcementChangeHistoryForm: FormGroup = this.fb.group({
+        announcementId: [null, Validators.required],
+        versionNumber: [''],
+        timeStamp: ['', Validators.required],
+        userId: ['', Validators.required],
+        data: ['', Validators.required],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -199,6 +209,11 @@ export class AnnouncementChangeHistoryAddEditComponent {
     //
     const announcementChangeHistorySubmitData: AnnouncementChangeHistorySubmitData = {
         id: this.announcementChangeHistorySubmitData?.id || 0,
+        announcementId: Number(formValue.announcementId),
+        versionNumber: this.announcementChangeHistorySubmitData?.versionNumber ?? 0,
+        timeStamp: dateTimeLocalToIsoUtc(formValue.timeStamp!.trim())!,
+        userId: Number(formValue.userId),
+        data: formValue.data!.trim(),
    };
 
       if (this.isEditMode) {
@@ -323,6 +338,11 @@ export class AnnouncementChangeHistoryAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.announcementChangeHistoryForm.reset({
+        announcementId: null,
+        versionNumber: '',
+        timeStamp: '',
+        userId: '',
+        data: '',
    }, { emitEvent: false});
 
     }
@@ -332,6 +352,11 @@ export class AnnouncementChangeHistoryAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.announcementChangeHistoryForm.reset({
+        announcementId: announcementChangeHistoryData.announcementId,
+        versionNumber: announcementChangeHistoryData.versionNumber?.toString() ?? '',
+        timeStamp: isoUtcStringToDateTimeLocal(announcementChangeHistoryData.timeStamp) ?? '',
+        userId: announcementChangeHistoryData.userId?.toString() ?? '',
+        data: announcementChangeHistoryData.data ?? '',
       }, { emitEvent: false});
     }
 

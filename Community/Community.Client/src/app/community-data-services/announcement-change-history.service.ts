@@ -28,12 +28,11 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 // - Dates are typed as strings because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z
 //
 export class AnnouncementChangeHistoryQueryParameters {
-    Id: bigint | number | null | undefined = null;
-    AnnouncementId: bigint | number | null | undefined = null;
-    VersionNumber: bigint | number | null | undefined = null;
-    TimeStamp: string | null | undefined = null;        // ISO 8601 (full datetime)
-    UserId: bigint | number | null | undefined = null;
-    Data: string | null | undefined = null;
+    announcementId: bigint | number | null | undefined = null;
+    versionNumber: bigint | number | null | undefined = null;
+    timeStamp: string | null | undefined = null;        // ISO 8601 (full datetime)
+    userId: bigint | number | null | undefined = null;
+    data: string | null | undefined = null;
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
@@ -45,12 +44,12 @@ export class AnnouncementChangeHistoryQueryParameters {
 // This class is for sending to the server for saving with.  It includes only the fields that are necessary for saving data.
 //
 export class AnnouncementChangeHistorySubmitData {
-    Id: bigint | number | null = null;
-    AnnouncementId: bigint | number | null = null;
-    VersionNumber: bigint | number | null = null;
-    TimeStamp: string | null = null;     // ISO 8601 (full datetime)
-    UserId: bigint | number | null = null;
-    Data: string | null = null;
+    id!: bigint | number;
+    announcementId!: bigint | number;
+    versionNumber!: bigint | number;
+    timeStamp!: string;      // ISO 8601 (full datetime)
+    userId!: bigint | number;
+    data!: string;
 }
 
 
@@ -97,13 +96,13 @@ export class AnnouncementChangeHistoryBasicListData {
 // 7. **Dates are typed as strings**: because the server requires ISO UTC dates.  The Javascript date object does not naturally construct with that input.  The string format used in 'Date' fields is to be ISO 8601, including millisconds.  For example, 2025-12-09T01:09:27.093Z");
 //
 export class AnnouncementChangeHistoryData {
-    Id!: bigint | number;
-    AnnouncementId!: bigint | number;
-    VersionNumber!: bigint | number;
-    TimeStamp!: string | null;   // ISO 8601 (full datetime)
-    UserId!: bigint | number;
-    Data!: string | null;
-    Announcement: AnnouncementData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    id!: bigint | number;
+    announcementId!: bigint | number;
+    versionNumber!: bigint | number;
+    timeStamp!: string;      // ISO 8601 (full datetime)
+    userId!: bigint | number;
+    data!: string;
+    announcement: AnnouncementData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -250,12 +249,12 @@ export class AnnouncementChangeHistoryService extends SecureEndpointBase {
 
         let output = new AnnouncementChangeHistorySubmitData();
 
-        output.Id = data.Id;
-        output.AnnouncementId = data.AnnouncementId;
-        output.VersionNumber = data.VersionNumber;
-        output.TimeStamp = data.TimeStamp;
-        output.UserId = data.UserId;
-        output.Data = data.Data;
+        output.id = data.id;
+        output.announcementId = data.announcementId;
+        output.versionNumber = data.versionNumber;
+        output.timeStamp = data.timeStamp;
+        output.userId = data.userId;
+        output.data = data.data;
 
         return output;
     }

@@ -20,12 +20,15 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class MenuDTO
 		{
-			public Int32 Id { get; set; }
-			public String Name { get; set; }
-			public String Location { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String name { get; set; }
+			[Required]
+			public String location { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -50,12 +53,12 @@ namespace Foundation.Community.Database
 		{
 			return new MenuDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Location = this.Location,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				location = this.location,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -94,12 +97,12 @@ namespace Foundation.Community.Database
 		{
 			return new MenuOutputDTO
 			{
-				Id = this.Id,
-				Name = this.Name,
-				Location = this.Location,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				name = this.name,
+				location = this.location,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -138,12 +141,12 @@ namespace Foundation.Community.Database
 		{
 			return new Database.Menu
 			{
-				Id = dto.Id,
-				Name = dto.Name,
-				Location = dto.Location,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				name = dto.name,
+				location = dto.location,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -160,16 +163,16 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Name = dto.Name;
-			this.Location = dto.Location;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.name = dto.name;
+			this.location = dto.location;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -185,12 +188,13 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new Menu{
-				Id = this.Id,
-				Name = this.Name,
-				Location = this.Location,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				name = this.name,
+				location = this.location,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -243,12 +247,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = menu.Id,
-				Name = menu.Name,
-				Location = menu.Location,
-				ObjectGuid = menu.ObjectGuid,
-				Active = menu.Active,
-				Deleted = menu.Deleted,
+				id = menu.id,
+				name = menu.name,
+				location = menu.location,
+				objectGuid = menu.objectGuid,
+				active = menu.active,
+				deleted = menu.deleted,
 			 };
 		}
 
@@ -268,12 +272,12 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = menu.Id,
-				Name = menu.Name,
-				Location = menu.Location,
-				ObjectGuid = menu.ObjectGuid,
-				Active = menu.Active,
-				Deleted = menu.Deleted,
+				id = menu.id,
+				name = menu.name,
+				location = menu.location,
+				objectGuid = menu.objectGuid,
+				active = menu.active,
+				deleted = menu.deleted,
 			 };
 		}
 
@@ -293,6 +297,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = menu.id,
 				name = menu.name,
 				description = string.Join(", ", new[] { menu.name, menu.location}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

@@ -1,4 +1,5 @@
 using Foundation.CodeGeneration;
+using System;
 using System.Collections.Generic;
 using static Foundation.CodeGeneration.DatabaseGenerator;
 
@@ -47,6 +48,7 @@ namespace Foundation.Community.Database
         private const string COMMUNITY_NAVIGATION_WRITER_ROLE = "Community Navigation Writer";
         private const string COMMUNITY_ADMIN_ROLE = "Community Admin";
 
+        private static readonly Guid PHMCTenantGuid = Guid.Parse("d58f56c6-e3fb-4d3b-80b3-7053c66491e3");
 
         public CommunityDatabaseGenerator() : base("Community", "Community")
         {
@@ -77,7 +79,7 @@ All operational tables include auditing and security controls.";
             pageTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             pageTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             pageTable.AddIdField();
-
+            pageTable.AddMultiTenantSupport();
             pageTable.AddString250Field("title", false).AddScriptComments("Display title of the page");
             pageTable.AddString250Field("slug", false).AddScriptComments("URL-friendly slug (e.g. 'about', 'history', 'faq')").CreateIndex(true);
             pageTable.AddTextField("body").AddScriptComments("HTML or Markdown body content of the page");
@@ -96,14 +98,14 @@ All operational tables include auditing and security controls.";
             #region Blog / News
 
             // -------------------------------------------------
-            // PostCategory — Category taxonomy for blog posts
+            // PostCategory — Category taxonomy for blog posts - Not multi tenanted on purpose because this is a Community focussed CMS, and these categories are universal in that regard.  Forcing each tenant to likely define the same set is counter intuitive.
             // -------------------------------------------------
             Database.Table postCategoryTable = database.AddTable("PostCategory");
             postCategoryTable.comment = "Category taxonomy for organizing blog/news posts (e.g. News, Council Updates, Community Events).";
             postCategoryTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             postCategoryTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             postCategoryTable.AddIdField();
-
+            
             postCategoryTable.AddNameAndDescriptionFields(true, true, true);
             postCategoryTable.AddString250Field("slug", false).AddScriptComments("URL-friendly slug for the category").CreateIndex(true);
             postCategoryTable.AddSequenceField();
@@ -125,7 +127,7 @@ All operational tables include auditing and security controls.";
             postTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             postTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             postTable.AddIdField();
-
+            postTable.AddMultiTenantSupport();
             postTable.AddString250Field("title", false).AddScriptComments("Display title of the post").CreateIndex();
             postTable.AddString250Field("slug", false).AddScriptComments("URL-friendly slug for the post").CreateIndex(true);
             postTable.AddTextField("body").AddScriptComments("Full HTML or Markdown body content of the post");
@@ -150,6 +152,7 @@ All operational tables include auditing and security controls.";
             postTagTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             postTagTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             postTagTable.AddIdField();
+            postTagTable.AddMultiTenantSupport();
 
             postTagTable.AddNameField(true, true);
             postTagTable.AddString250Field("slug", false).AddScriptComments("URL-friendly slug for the tag").CreateIndex(true);
@@ -184,7 +187,7 @@ All operational tables include auditing and security controls.";
             mediaAssetTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             mediaAssetTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             mediaAssetTable.AddIdField();
-
+            mediaAssetTable.AddMultiTenantSupport();
             mediaAssetTable.AddString250Field("fileName", false).AddScriptComments("Original filename as uploaded (e.g. 'council-photo-2026.jpg')");
             mediaAssetTable.AddString500Field("filePath", false).AddScriptComments("Server-relative storage path for the file");
             mediaAssetTable.AddString100Field("mimeType", false).AddScriptComments("MIME type (e.g. 'image/jpeg', 'application/pdf')");
@@ -209,14 +212,14 @@ All operational tables include auditing and security controls.";
             menuTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_NAVIGATION_WRITER_PERMISSION_LEVEL);
             menuTable.customWriteAccessRole = COMMUNITY_NAVIGATION_WRITER_ROLE;
             menuTable.AddIdField();
-
+            menuTable.AddMultiTenantSupport();
             menuTable.AddNameField(true, true);
             menuTable.AddString50Field("location", false).AddScriptComments("Where this menu is displayed: header, footer, sidebar");
             menuTable.AddControlFields();
 
             // Seed default menus
-            menuTable.AddData(new Dictionary<string, string> { { "name", "Main Navigation" }, { "location", "header" }, { "objectGuid", "c0b10001-0001-4000-8000-000000000001" } });
-            menuTable.AddData(new Dictionary<string, string> { { "name", "Footer Links" }, { "location", "footer" }, { "objectGuid", "c0b10001-0001-4000-8000-000000000002" } });
+            menuTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString()}, { "name", "Main Navigation" }, { "location", "header" }, { "objectGuid", "c0b10001-0001-4000-8000-000000000001" } });
+            menuTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString()}, { "name", "Footer Links" }, { "location", "footer" }, { "objectGuid", "c0b10001-0001-4000-8000-000000000002" } });
 
 
             // -------------------------------------------------
@@ -227,7 +230,7 @@ All operational tables include auditing and security controls.";
             menuItemTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_NAVIGATION_WRITER_PERMISSION_LEVEL);
             menuItemTable.customWriteAccessRole = COMMUNITY_NAVIGATION_WRITER_ROLE;
             menuItemTable.AddIdField();
-
+            menuItemTable.AddMultiTenantSupport();
             menuItemTable.AddForeignKeyField(menuTable, false).AddScriptComments("The menu this item belongs to");
             menuItemTable.AddString250Field("label", false).AddScriptComments("Display text for the menu item");
             menuItemTable.AddString500Field("url").AddScriptComments("External or absolute URL (used if pageId is null)");
@@ -251,7 +254,7 @@ All operational tables include auditing and security controls.";
             siteSettingTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_ADMIN_PERMISSION_LEVEL);
             siteSettingTable.customWriteAccessRole = COMMUNITY_ADMIN_ROLE;
             siteSettingTable.AddIdField();
-
+            siteSettingTable.AddMultiTenantSupport();
             siteSettingTable.AddString100Field("settingKey", false).AddScriptComments("Unique setting identifier (e.g. 'siteName', 'tagline', 'logoUrl')").CreateIndex(true);
             siteSettingTable.AddTextField("settingValue").AddScriptComments("The value for this setting");
             siteSettingTable.AddString250Field("description").AddScriptComments("Human-readable description of what this setting controls");
@@ -259,18 +262,18 @@ All operational tables include auditing and security controls.";
             siteSettingTable.AddControlFields();
 
             // Seed essential settings
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "siteName" }, { "settingValue", "Community" }, { "description", "The name of the site displayed in the header and browser tab" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000001" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "tagline" }, { "settingValue", "Welcome to our community" }, { "description", "Site tagline displayed below the site name" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000002" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "logoUrl" }, { "settingValue", "" }, { "description", "URL to the site logo image" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000003" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "footerText" }, { "settingValue", "© 2026 K2 Research. All rights reserved." }, { "description", "Copyright text displayed in the site footer" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000004" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "contactEmail" }, { "settingValue", "" }, { "description", "Primary contact email address" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000005" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "contactPhone" }, { "settingValue", "" }, { "description", "Primary contact phone number" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000006" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "facebookUrl" }, { "settingValue", "" }, { "description", "Facebook page URL" }, { "settingGroup", "Social" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000010" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "twitterUrl" }, { "settingValue", "" }, { "description", "Twitter/X profile URL" }, { "settingGroup", "Social" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000011" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "instagramUrl" }, { "settingValue", "" }, { "description", "Instagram profile URL" }, { "settingGroup", "Social" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000012" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "heroTitle" }, { "settingValue", "Welcome" }, { "description", "Hero section title on the home page" }, { "settingGroup", "HomePage" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000020" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "heroSubtitle" }, { "settingValue", "" }, { "description", "Hero section subtitle on the home page" }, { "settingGroup", "HomePage" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000021" } });
-            siteSettingTable.AddData(new Dictionary<string, string> { { "settingKey", "heroImageUrl" }, { "settingValue", "" }, { "description", "Hero section background image URL" }, { "settingGroup", "HomePage" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000022" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "siteName" }, { "settingValue", "Community" }, { "description", "The name of the site displayed in the header and browser tab" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000001" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "tagline" }, { "settingValue", "Welcome to our community" }, { "description", "Site tagline displayed below the site name" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000002" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "logoUrl" }, { "settingValue", "" }, { "description", "URL to the site logo image" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000003" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "footerText" }, { "settingValue", "© 2026 K2 Research. All rights reserved." }, { "description", "Copyright text displayed in the site footer" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000004" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "contactEmail" }, { "settingValue", "" }, { "description", "Primary contact email address" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000005" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "contactPhone" }, { "settingValue", "" }, { "description", "Primary contact phone number" }, { "settingGroup", "General" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000006" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "facebookUrl" }, { "settingValue", "" }, { "description", "Facebook page URL" }, { "settingGroup", "Social" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000010" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "twitterUrl" }, { "settingValue", "" }, { "description", "Twitter/X profile URL" }, { "settingGroup", "Social" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000011" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "instagramUrl" }, { "settingValue", "" }, { "description", "Instagram profile URL" }, { "settingGroup", "Social" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000012" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "heroTitle" }, { "settingValue", "Welcome" }, { "description", "Hero section title on the home page" }, { "settingGroup", "HomePage" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000020" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "heroSubtitle" }, { "settingValue", "" }, { "description", "Hero section subtitle on the home page" }, { "settingGroup", "HomePage" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000021" } });
+            siteSettingTable.AddData(new Dictionary<string, string> { { "tenantGuid", PHMCTenantGuid.ToString() }, { "settingKey", "heroImageUrl" }, { "settingValue", "" }, { "description", "Hero section background image URL" }, { "settingGroup", "HomePage" }, { "objectGuid", "c0c10001-0001-4000-8000-000000000022" } });
 
             #endregion
 
@@ -285,7 +288,7 @@ All operational tables include auditing and security controls.";
             announcementTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             announcementTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             announcementTable.AddIdField();
-
+            announcementTable.AddMultiTenantSupport();
             announcementTable.AddString250Field("title", false).AddScriptComments("Announcement title");
             announcementTable.AddTextField("body").AddScriptComments("Full announcement body content (HTML or Markdown)");
             announcementTable.AddString50Field("severity", false, "info").AddScriptComments("Severity level: info, warning, urgent");
@@ -309,7 +312,7 @@ All operational tables include auditing and security controls.";
             galleryAlbumTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             galleryAlbumTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             galleryAlbumTable.AddIdField();
-
+            galleryAlbumTable.AddMultiTenantSupport();
             galleryAlbumTable.AddString250Field("title", false).AddScriptComments("Album title");
             galleryAlbumTable.AddString250Field("slug", false).AddScriptComments("URL-friendly slug for the album").CreateIndex(true);
             galleryAlbumTable.AddTextField("description").AddScriptComments("Description of the album");
@@ -327,7 +330,7 @@ All operational tables include auditing and security controls.";
             galleryImageTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             galleryImageTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             galleryImageTable.AddIdField();
-
+            galleryImageTable.AddMultiTenantSupport();
             galleryImageTable.AddForeignKeyField(galleryAlbumTable, false).AddScriptComments("The album this image belongs to");
             galleryImageTable.AddString500Field("imageUrl", false).AddScriptComments("URL or relative path to the image file");
             galleryImageTable.AddString500Field("caption").AddScriptComments("Display caption for the image");
@@ -348,7 +351,7 @@ All operational tables include auditing and security controls.";
             documentDownloadTable.SetMinimumPermissionLevels(COMMUNITY_READER_PERMISSION_LEVEL, COMMUNITY_CONTENT_WRITER_PERMISSION_LEVEL);
             documentDownloadTable.customWriteAccessRole = COMMUNITY_CONTENT_WRITER_ROLE;
             documentDownloadTable.AddIdField();
-
+            documentDownloadTable.AddMultiTenantSupport();
             documentDownloadTable.AddString250Field("title", false).AddScriptComments("Display title for the document");
             documentDownloadTable.AddTextField("description").AddScriptComments("Description of what this document contains");
             documentDownloadTable.AddString500Field("filePath", false).AddScriptComments("Server-relative path to the downloadable file");
@@ -374,7 +377,7 @@ All operational tables include auditing and security controls.";
             contactSubmissionTable.SetMinimumPermissionLevels(COMMUNITY_ADMIN_PERMISSION_LEVEL, COMMUNITY_READER_PERMISSION_LEVEL);
             contactSubmissionTable.customReadAccessRole = COMMUNITY_ADMIN_ROLE;
             contactSubmissionTable.AddIdField();
-
+            contactSubmissionTable.AddMultiTenantSupport();
             contactSubmissionTable.AddString100Field("name", false).AddScriptComments("Name of the person submitting the form");
             contactSubmissionTable.AddString250Field("email", false).AddScriptComments("Email address for reply");
             contactSubmissionTable.AddString250Field("subject").AddScriptComments("Subject line of the message");

@@ -7,35 +7,37 @@ namespace Foundation.Community.Database;
 
 public partial class MenuItem
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public int MenuId { get; set; }
+    public Guid tenantGuid { get; set; }
 
-    public string Label { get; set; }
+    public int menuId { get; set; }
 
-    public string Url { get; set; }
+    public string label { get; set; }
 
-    public int? PageId { get; set; }
+    public string url { get; set; }
 
-    public int? ParentMenuItemId { get; set; }
+    public int? pageId { get; set; }
 
-    public string IconClass { get; set; }
+    public int? parentMenuItemId { get; set; }
 
-    public bool OpenInNewTab { get; set; }
+    public string iconClass { get; set; }
 
-    public int? Sequence { get; set; }
+    public bool openInNewTab { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public int? sequence { get; set; }
 
-    public bool Active { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool active { get; set; }
 
-    public virtual ICollection<MenuItem> InverseParentMenuItem { get; set; } = new List<MenuItem>();
+    public bool deleted { get; set; }
 
-    public virtual Menu Menu { get; set; }
+    public virtual ICollection<MenuItem> InverseparentMenuItem { get; set; } = new List<MenuItem>();
 
-    public virtual Page Page { get; set; }
+    public virtual Menu menu { get; set; }
 
-    public virtual MenuItem ParentMenuItem { get; set; }
+    public virtual Page page { get; set; }
+
+    public virtual MenuItem parentMenuItem { get; set; }
 }

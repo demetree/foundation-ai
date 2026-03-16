@@ -35,6 +35,10 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostTagFormValues {
+  name: string,
+  slug: string,
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -62,6 +66,10 @@ export class PostTagDetailComponent implements OnInit, CanComponentDeactivate {
 
 
   public postTagForm: FormGroup = this.fb.group({
+        name: ['', Validators.required],
+        slug: ['', Validators.required],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -364,6 +372,10 @@ export class PostTagDetailComponent implements OnInit, CanComponentDeactivate {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postTagForm.reset({
+        name: '',
+        slug: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -373,6 +385,10 @@ export class PostTagDetailComponent implements OnInit, CanComponentDeactivate {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postTagForm.reset({
+        name: postTagData.name ?? '',
+        slug: postTagData.slug ?? '',
+        active: postTagData.active ?? true,
+        deleted: postTagData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -432,6 +448,10 @@ export class PostTagDetailComponent implements OnInit, CanComponentDeactivate {
     //
     const postTagSubmitData: PostTagSubmitData = {
         id: this.postTagData?.id || 0,
+        name: formValue.name!.trim(),
+        slug: formValue.slug!.trim(),
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

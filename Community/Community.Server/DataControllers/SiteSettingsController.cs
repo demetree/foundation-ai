@@ -42,7 +42,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -62,14 +62,13 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/SiteSettings")]
 		public async Task<IActionResult> GetSiteSettings(
-			int? Id = null,
-			string SettingKey = null,
-			string SettingValue = null,
-			string Description = null,
-			string SettingGroup = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string settingKey = null,
+			string settingValue = null,
+			string description = null,
+			string settingGroup = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -92,6 +91,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -105,37 +116,52 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.SiteSetting> query = (from ss in _context.SiteSettings select ss);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(settingKey) == false)
 			{
-				query = query.Where(ss => ss.Id == Id.Value);
+				query = query.Where(ss => ss.settingKey == settingKey);
 			}
-			if (string.IsNullOrEmpty(SettingKey) == false)
+			if (string.IsNullOrEmpty(settingValue) == false)
 			{
-				query = query.Where(ss => ss.SettingKey == SettingKey);
+				query = query.Where(ss => ss.settingValue == settingValue);
 			}
-			if (string.IsNullOrEmpty(SettingValue) == false)
+			if (string.IsNullOrEmpty(description) == false)
 			{
-				query = query.Where(ss => ss.SettingValue == SettingValue);
+				query = query.Where(ss => ss.description == description);
 			}
-			if (string.IsNullOrEmpty(Description) == false)
+			if (string.IsNullOrEmpty(settingGroup) == false)
 			{
-				query = query.Where(ss => ss.Description == Description);
+				query = query.Where(ss => ss.settingGroup == settingGroup);
 			}
-			if (string.IsNullOrEmpty(SettingGroup) == false)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(ss => ss.SettingGroup == SettingGroup);
+				query = query.Where(ss => ss.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(ss => ss.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(ss => ss.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(ss => ss.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(ss => ss.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(ss => ss.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(ss => ss.Deleted == Deleted.Value);
+				query = query.Where(ss => ss.active == true);
+				query = query.Where(ss => ss.deleted == false);
 			}
 
 			query = query.OrderBy(ss => ss.settingKey).ThenBy(ss => ss.description).ThenBy(ss => ss.settingGroup);
@@ -149,10 +175,10 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.SettingKey.Contains(anyStringContains)
-			       || x.SettingValue.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.SettingGroup.Contains(anyStringContains)
+			       x.settingKey.Contains(anyStringContains)
+			       || x.settingValue.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.settingGroup.Contains(anyStringContains)
 			   );
 			}
 
@@ -206,14 +232,13 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/SiteSettings/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string SettingKey = null,
-			string SettingValue = null,
-			string Description = null,
-			string SettingGroup = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string settingKey = null,
+			string settingValue = null,
+			string description = null,
+			string settingGroup = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -229,39 +254,64 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			IQueryable<Database.SiteSetting> query = (from ss in _context.SiteSettings select ss);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (settingKey != null)
 			{
-				query = query.Where(ss => ss.Id == Id.Value);
+				query = query.Where(ss => ss.settingKey == settingKey);
 			}
-			if (SettingKey != null)
+			if (settingValue != null)
 			{
-				query = query.Where(ss => ss.SettingKey == SettingKey);
+				query = query.Where(ss => ss.settingValue == settingValue);
 			}
-			if (SettingValue != null)
+			if (description != null)
 			{
-				query = query.Where(ss => ss.SettingValue == SettingValue);
+				query = query.Where(ss => ss.description == description);
 			}
-			if (Description != null)
+			if (settingGroup != null)
 			{
-				query = query.Where(ss => ss.Description == Description);
+				query = query.Where(ss => ss.settingGroup == settingGroup);
 			}
-			if (SettingGroup != null)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(ss => ss.SettingGroup == SettingGroup);
+				query = query.Where(ss => ss.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(ss => ss.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(ss => ss.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(ss => ss.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(ss => ss.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(ss => ss.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(ss => ss.Deleted == Deleted.Value);
+				query = query.Where(ss => ss.active == true);
+				query = query.Where(ss => ss.deleted == false);
 			}
 
 			//
@@ -272,10 +322,10 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.SettingKey.Contains(anyStringContains)
-			       || x.SettingValue.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.SettingGroup.Contains(anyStringContains)
+			       x.settingKey.Contains(anyStringContains)
+			       || x.settingValue.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.settingGroup.Contains(anyStringContains)
 			   );
 			}
 
@@ -313,13 +363,30 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.SiteSetting> query = (from ss in _context.SiteSettings where
-				(ss.id == id)
+							(ss.id == id) &&
+							(userIsAdmin == true || ss.deleted == false) &&
+							(userIsWriter == true || ss.active == true)
 					select ss);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
 					query = query.AsSplitQuery();
@@ -401,11 +468,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.SiteSetting> query = (from x in _context.SiteSettings
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.SiteSetting existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -438,7 +519,44 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.SiteSetting siteSetting = (Database.SiteSetting)_context.Entry(existing).GetDatabaseValues().ToObject();
 			siteSetting.ApplyDTO(siteSettingDTO);
+			//
+			// The tenant guid for any SiteSetting being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
+			{
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the SiteSetting because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				siteSetting.tenantGuid = existing.tenantGuid;
+			}
 
+
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (siteSetting.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.SiteSetting record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
+
+			if (siteSetting.settingKey != null && siteSetting.settingKey.Length > 100)
+			{
+				siteSetting.settingKey = siteSetting.settingKey.Substring(0, 100);
+			}
+
+			if (siteSetting.description != null && siteSetting.description.Length > 250)
+			{
+				siteSetting.description = siteSetting.description.Substring(0, 250);
+			}
+
+			if (siteSetting.settingGroup != null && siteSetting.settingGroup.Length > 50)
+			{
+				siteSetting.settingGroup = siteSetting.settingGroup.Substring(0, 50);
+			}
 
 			EntityEntry<Database.SiteSetting> attached = _context.Entry(existing);
 			attached.CurrentValues.SetValues(siteSetting);
@@ -504,6 +622,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new SiteSetting object using the data from the DTO
 			//
@@ -511,6 +642,27 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
+				//
+				// Ensure that the tenant data is correct.
+				//
+				siteSetting.tenantGuid = userTenantGuid;
+
+				if (siteSetting.settingKey != null && siteSetting.settingKey.Length > 100)
+				{
+					siteSetting.settingKey = siteSetting.settingKey.Substring(0, 100);
+				}
+
+				if (siteSetting.description != null && siteSetting.description.Length > 250)
+				{
+					siteSetting.description = siteSetting.description.Substring(0, 250);
+				}
+
+				if (siteSetting.settingGroup != null && siteSetting.settingGroup.Length > 50)
+				{
+					siteSetting.settingGroup = siteSetting.settingGroup.Substring(0, 50);
+				}
+
+				siteSetting.objectGuid = Guid.NewGuid();
 				_context.SiteSettings.Add(siteSetting);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -564,11 +716,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.SiteSetting> query = (from x in _context.SiteSettings
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.SiteSetting siteSetting = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -582,7 +749,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.SiteSettings.Remove(siteSetting);
+				siteSetting.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -623,14 +790,13 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string SettingKey = null,
-			string SettingValue = null,
-			string Description = null,
-			string SettingGroup = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string settingKey = null,
+			string settingValue = null,
+			string description = null,
+			string settingGroup = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -651,6 +817,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -664,37 +843,52 @@ namespace Foundation.Community.Controllers.WebAPI
 			}
 
 			IQueryable<Database.SiteSetting> query = (from ss in _context.SiteSettings select ss);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(settingKey) == false)
 			{
-				query = query.Where(ss => ss.Id == Id.Value);
+				query = query.Where(ss => ss.settingKey == settingKey);
 			}
-			if (string.IsNullOrEmpty(SettingKey) == false)
+			if (string.IsNullOrEmpty(settingValue) == false)
 			{
-				query = query.Where(ss => ss.SettingKey == SettingKey);
+				query = query.Where(ss => ss.settingValue == settingValue);
 			}
-			if (string.IsNullOrEmpty(SettingValue) == false)
+			if (string.IsNullOrEmpty(description) == false)
 			{
-				query = query.Where(ss => ss.SettingValue == SettingValue);
+				query = query.Where(ss => ss.description == description);
 			}
-			if (string.IsNullOrEmpty(Description) == false)
+			if (string.IsNullOrEmpty(settingGroup) == false)
 			{
-				query = query.Where(ss => ss.Description == Description);
+				query = query.Where(ss => ss.settingGroup == settingGroup);
 			}
-			if (string.IsNullOrEmpty(SettingGroup) == false)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(ss => ss.SettingGroup == SettingGroup);
+				query = query.Where(ss => ss.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(ss => ss.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(ss => ss.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(ss => ss.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(ss => ss.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(ss => ss.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(ss => ss.Deleted == Deleted.Value);
+				query = query.Where(ss => ss.active == true);
+				query = query.Where(ss => ss.deleted == false);
 			}
 
 
@@ -706,12 +900,15 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.SettingKey.Contains(anyStringContains)
-			       || x.SettingValue.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.SettingGroup.Contains(anyStringContains)
+			       x.settingKey.Contains(anyStringContains)
+			       || x.settingValue.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.settingGroup.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.settingKey).ThenBy(x => x.description).ThenBy(x => x.settingGroup);

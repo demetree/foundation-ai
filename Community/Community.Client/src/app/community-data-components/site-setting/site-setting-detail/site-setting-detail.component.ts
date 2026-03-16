@@ -34,6 +34,12 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 // - Does not include navigation properties or methods from domain models.
 //
 interface SiteSettingFormValues {
+  settingKey: string,
+  settingValue: string | null,
+  description: string | null,
+  settingGroup: string | null,
+  active: boolean,
+  deleted: boolean,
 };
 
 
@@ -61,6 +67,12 @@ export class SiteSettingDetailComponent implements OnInit, CanComponentDeactivat
 
 
   public siteSettingForm: FormGroup = this.fb.group({
+        settingKey: ['', Validators.required],
+        settingValue: [''],
+        description: [''],
+        settingGroup: [''],
+        active: [true],
+        deleted: [false],
       });
 
 
@@ -361,6 +373,12 @@ export class SiteSettingDetailComponent implements OnInit, CanComponentDeactivat
       // Reset the form group to null state, but don't change the form instance.
       //
       this.siteSettingForm.reset({
+        settingKey: '',
+        settingValue: '',
+        description: '',
+        settingGroup: '',
+        active: true,
+        deleted: false,
    }, { emitEvent: false});
 
     }
@@ -370,6 +388,12 @@ export class SiteSettingDetailComponent implements OnInit, CanComponentDeactivat
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.siteSettingForm.reset({
+        settingKey: siteSettingData.settingKey ?? '',
+        settingValue: siteSettingData.settingValue ?? '',
+        description: siteSettingData.description ?? '',
+        settingGroup: siteSettingData.settingGroup ?? '',
+        active: siteSettingData.active ?? true,
+        deleted: siteSettingData.deleted ?? false,
       }, { emitEvent: false});
     }
 
@@ -429,6 +453,12 @@ export class SiteSettingDetailComponent implements OnInit, CanComponentDeactivat
     //
     const siteSettingSubmitData: SiteSettingSubmitData = {
         id: this.siteSettingData?.id || 0,
+        settingKey: formValue.settingKey!.trim(),
+        settingValue: formValue.settingValue?.trim() || null,
+        description: formValue.description?.trim() || null,
+        settingGroup: formValue.settingGroup?.trim() || null,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
 

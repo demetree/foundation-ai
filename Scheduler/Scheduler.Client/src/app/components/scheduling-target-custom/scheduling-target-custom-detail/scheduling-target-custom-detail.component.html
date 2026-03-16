@@ -5,6 +5,11 @@
         <div class="card mb-4 premium-header shadow-lg border-0">
             <div class="card-body d-flex flex-wrap align-items-center gap-4">
 
+                <!-- Back Button -->
+                <button class="btn btn-glass btn-sm me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+
                 <!-- Avatar -->
                 <div class="avatar rounded-circle overflow-hidden shadow clickable flex-shrink-0"
                     style="width: 120px; height: 120px;">
@@ -54,9 +59,7 @@
                             <i class="fa fa-save me-2"></i> Save
                         </span>
                     </button>
-                    <button class="btn btn-outline-light-custom" (click)="goBack()" *ngIf="canGoBack()">
-                        <i class="fa fa-arrow-left me-2"></i> Back
-                    </button>
+
                 </div>
 
             </div>

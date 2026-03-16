@@ -42,7 +42,7 @@ namespace Foundation.Community.Controllers.WebAPI
 			this._context = context;
 			this._logger = logger;
 
-			this._context.Database.SetCommandTimeout(30);
+			this._context.Database.SetCommandTimeout(60);
 
 			return;
 		}
@@ -62,20 +62,19 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/DocumentDownloads")]
 		public async Task<IActionResult> GetDocumentDownloads(
-			int? Id = null,
-			string Title = null,
-			string Description = null,
-			string FilePath = null,
-			string FileName = null,
-			string MimeType = null,
-			long? FileSizeBytes = null,
-			string CategoryName = null,
-			DateTime? DocumentDate = null,
-			bool? IsPublished = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string description = null,
+			string filePath = null,
+			string fileName = null,
+			string mimeType = null,
+			long? fileSizeBytes = null,
+			string categoryName = null,
+			DateTime? documentDate = null,
+			bool? isPublished = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			int? pageSize = null,
 			int? pageNumber = null,
 			string anyStringContains = null,
@@ -98,6 +97,18 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -113,67 +124,82 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (DocumentDate.HasValue == true && DocumentDate.Value.Kind != DateTimeKind.Utc)
+			if (documentDate.HasValue == true && documentDate.Value.Kind != DateTimeKind.Utc)
 			{
-				DocumentDate = DocumentDate.Value.ToUniversalTime();
+				documentDate = documentDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.DocumentDownload> query = (from dd in _context.DocumentDownloads select dd);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(dd => dd.Id == Id.Value);
+				query = query.Where(dd => dd.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(description) == false)
 			{
-				query = query.Where(dd => dd.Title == Title);
+				query = query.Where(dd => dd.description == description);
 			}
-			if (string.IsNullOrEmpty(Description) == false)
+			if (string.IsNullOrEmpty(filePath) == false)
 			{
-				query = query.Where(dd => dd.Description == Description);
+				query = query.Where(dd => dd.filePath == filePath);
 			}
-			if (string.IsNullOrEmpty(FilePath) == false)
+			if (string.IsNullOrEmpty(fileName) == false)
 			{
-				query = query.Where(dd => dd.FilePath == FilePath);
+				query = query.Where(dd => dd.fileName == fileName);
 			}
-			if (string.IsNullOrEmpty(FileName) == false)
+			if (string.IsNullOrEmpty(mimeType) == false)
 			{
-				query = query.Where(dd => dd.FileName == FileName);
+				query = query.Where(dd => dd.mimeType == mimeType);
 			}
-			if (string.IsNullOrEmpty(MimeType) == false)
+			if (fileSizeBytes.HasValue == true)
 			{
-				query = query.Where(dd => dd.MimeType == MimeType);
+				query = query.Where(dd => dd.fileSizeBytes == fileSizeBytes.Value);
 			}
-			if (FileSizeBytes.HasValue == true)
+			if (string.IsNullOrEmpty(categoryName) == false)
 			{
-				query = query.Where(dd => dd.FileSizeBytes == FileSizeBytes.Value);
+				query = query.Where(dd => dd.categoryName == categoryName);
 			}
-			if (string.IsNullOrEmpty(CategoryName) == false)
+			if (documentDate.HasValue == true)
 			{
-				query = query.Where(dd => dd.CategoryName == CategoryName);
+				query = query.Where(dd => dd.documentDate == documentDate.Value);
 			}
-			if (DocumentDate.HasValue == true)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(dd => dd.DocumentDate == DocumentDate.Value);
+				query = query.Where(dd => dd.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(dd => dd.IsPublished == IsPublished.Value);
+				query = query.Where(dd => dd.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(dd => dd.Sequence == Sequence.Value);
+				query = query.Where(dd => dd.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(dd => dd.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(dd => dd.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(dd => dd.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(dd => dd.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(dd => dd.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(dd => dd.Deleted == Deleted.Value);
+				query = query.Where(dd => dd.active == true);
+				query = query.Where(dd => dd.deleted == false);
 			}
 
 			query = query.OrderBy(dd => dd.sequence).ThenBy(dd => dd.title).ThenBy(dd => dd.filePath).ThenBy(dd => dd.fileName);
@@ -187,12 +213,12 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.FilePath.Contains(anyStringContains)
-			       || x.FileName.Contains(anyStringContains)
-			       || x.MimeType.Contains(anyStringContains)
-			       || x.CategoryName.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.filePath.Contains(anyStringContains)
+			       || x.fileName.Contains(anyStringContains)
+			       || x.mimeType.Contains(anyStringContains)
+			       || x.categoryName.Contains(anyStringContains)
 			   );
 			}
 
@@ -246,20 +272,19 @@ namespace Foundation.Community.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TenPerSecond, Scope = RateLimitScope.PerUser)]
 		[Route("api/DocumentDownloads/RowCount")]
 		public async Task<IActionResult> GetRowCount(
-			int? Id = null,
-			string Title = null,
-			string Description = null,
-			string FilePath = null,
-			string FileName = null,
-			string MimeType = null,
-			long? FileSizeBytes = null,
-			string CategoryName = null,
-			DateTime? DocumentDate = null,
-			bool? IsPublished = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string description = null,
+			string filePath = null,
+			string fileName = null,
+			string mimeType = null,
+			long? fileSizeBytes = null,
+			string categoryName = null,
+			DateTime? documentDate = null,
+			bool? isPublished = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			CancellationToken cancellationToken = default)
 		{
@@ -275,71 +300,96 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			//
 			// Fix any non-UTC date parameters that come in.
 			//
-			if (DocumentDate.HasValue == true && DocumentDate.Value.Kind != DateTimeKind.Utc)
+			if (documentDate.HasValue == true && documentDate.Value.Kind != DateTimeKind.Utc)
 			{
-				DocumentDate = DocumentDate.Value.ToUniversalTime();
+				documentDate = documentDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.DocumentDownload> query = (from dd in _context.DocumentDownloads select dd);
-			if (Id.HasValue == true)
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+			if (title != null)
 			{
-				query = query.Where(dd => dd.Id == Id.Value);
+				query = query.Where(dd => dd.title == title);
 			}
-			if (Title != null)
+			if (description != null)
 			{
-				query = query.Where(dd => dd.Title == Title);
+				query = query.Where(dd => dd.description == description);
 			}
-			if (Description != null)
+			if (filePath != null)
 			{
-				query = query.Where(dd => dd.Description == Description);
+				query = query.Where(dd => dd.filePath == filePath);
 			}
-			if (FilePath != null)
+			if (fileName != null)
 			{
-				query = query.Where(dd => dd.FilePath == FilePath);
+				query = query.Where(dd => dd.fileName == fileName);
 			}
-			if (FileName != null)
+			if (mimeType != null)
 			{
-				query = query.Where(dd => dd.FileName == FileName);
+				query = query.Where(dd => dd.mimeType == mimeType);
 			}
-			if (MimeType != null)
+			if (fileSizeBytes.HasValue == true)
 			{
-				query = query.Where(dd => dd.MimeType == MimeType);
+				query = query.Where(dd => dd.fileSizeBytes == fileSizeBytes.Value);
 			}
-			if (FileSizeBytes.HasValue == true)
+			if (categoryName != null)
 			{
-				query = query.Where(dd => dd.FileSizeBytes == FileSizeBytes.Value);
+				query = query.Where(dd => dd.categoryName == categoryName);
 			}
-			if (CategoryName != null)
+			if (documentDate.HasValue == true)
 			{
-				query = query.Where(dd => dd.CategoryName == CategoryName);
+				query = query.Where(dd => dd.documentDate == documentDate.Value);
 			}
-			if (DocumentDate.HasValue == true)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(dd => dd.DocumentDate == DocumentDate.Value);
+				query = query.Where(dd => dd.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(dd => dd.IsPublished == IsPublished.Value);
+				query = query.Where(dd => dd.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(dd => dd.Sequence == Sequence.Value);
+				query = query.Where(dd => dd.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(dd => dd.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(dd => dd.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(dd => dd.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(dd => dd.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(dd => dd.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(dd => dd.Deleted == Deleted.Value);
+				query = query.Where(dd => dd.active == true);
+				query = query.Where(dd => dd.deleted == false);
 			}
 
 			//
@@ -350,12 +400,12 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.FilePath.Contains(anyStringContains)
-			       || x.FileName.Contains(anyStringContains)
-			       || x.MimeType.Contains(anyStringContains)
-			       || x.CategoryName.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.filePath.Contains(anyStringContains)
+			       || x.fileName.Contains(anyStringContains)
+			       || x.mimeType.Contains(anyStringContains)
+			       || x.categoryName.Contains(anyStringContains)
 			   );
 			}
 
@@ -393,13 +443,30 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 
 			try
 			{
 				IQueryable<Database.DocumentDownload> query = (from dd in _context.DocumentDownloads where
-				(dd.id == id)
+							(dd.id == id) &&
+							(userIsAdmin == true || dd.deleted == false) &&
+							(userIsWriter == true || dd.active == true)
 					select dd);
 
+
+				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
 					query = query.AsSplitQuery();
@@ -481,11 +548,25 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			IQueryable<Database.DocumentDownload> query = (from x in _context.DocumentDownloads
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.DocumentDownload existing = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -518,11 +599,58 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			Database.DocumentDownload documentDownload = (Database.DocumentDownload)_context.Entry(existing).GetDatabaseValues().ToObject();
 			documentDownload.ApplyDTO(documentDownloadDTO);
-
-
-			if (documentDownload.DocumentDate.HasValue == true && documentDownload.DocumentDate.Value.Kind != DateTimeKind.Utc)
+			//
+			// The tenant guid for any DocumentDownload being saved must match the tenant guid of the user.  
+			//
+			if (existing.tenantGuid != userTenantGuid)
 			{
-				documentDownload.DocumentDate = documentDownload.DocumentDate.Value.ToUniversalTime();
+				await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to save a record with a tenant guid that is not the user's tenant guid.", false);
+				return Problem("Data integrity violation detected while attempting to save.");
+			}
+			else
+			{
+				// Assign the tenantGuid to the DocumentDownload because it shouldn't be on the input object, and we want to ensure that it always is what the correct value in case it is.
+				documentDownload.tenantGuid = existing.tenantGuid;
+			}
+
+
+			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
+			if (userIsAdmin == false && (documentDownload.deleted == true || existing.deleted == true))
+			{
+				// we're not recording state here because it is not being changed.
+				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Community.DocumentDownload record.", id.ToString());
+				DestroySessionAndAuthentication();
+				return Forbid();
+			}
+
+			if (documentDownload.title != null && documentDownload.title.Length > 250)
+			{
+				documentDownload.title = documentDownload.title.Substring(0, 250);
+			}
+
+			if (documentDownload.filePath != null && documentDownload.filePath.Length > 500)
+			{
+				documentDownload.filePath = documentDownload.filePath.Substring(0, 500);
+			}
+
+			if (documentDownload.fileName != null && documentDownload.fileName.Length > 100)
+			{
+				documentDownload.fileName = documentDownload.fileName.Substring(0, 100);
+			}
+
+			if (documentDownload.mimeType != null && documentDownload.mimeType.Length > 100)
+			{
+				documentDownload.mimeType = documentDownload.mimeType.Substring(0, 100);
+			}
+
+			if (documentDownload.categoryName != null && documentDownload.categoryName.Length > 100)
+			{
+				documentDownload.categoryName = documentDownload.categoryName.Substring(0, 100);
+			}
+
+			if (documentDownload.documentDate.HasValue == true && documentDownload.documentDate.Value.Kind != DateTimeKind.Utc)
+			{
+				documentDownload.documentDate = documentDownload.documentDate.Value.ToUniversalTime();
 			}
 
 			EntityEntry<Database.DocumentDownload> attached = _context.Entry(existing);
@@ -589,6 +717,19 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			//
 			// Create a new DocumentDownload object using the data from the DTO
 			//
@@ -596,11 +737,42 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				if (documentDownload.DocumentDate.HasValue == true && documentDownload.DocumentDate.Value.Kind != DateTimeKind.Utc)
+				//
+				// Ensure that the tenant data is correct.
+				//
+				documentDownload.tenantGuid = userTenantGuid;
+
+				if (documentDownload.title != null && documentDownload.title.Length > 250)
 				{
-					documentDownload.DocumentDate = documentDownload.DocumentDate.Value.ToUniversalTime();
+					documentDownload.title = documentDownload.title.Substring(0, 250);
 				}
 
+				if (documentDownload.filePath != null && documentDownload.filePath.Length > 500)
+				{
+					documentDownload.filePath = documentDownload.filePath.Substring(0, 500);
+				}
+
+				if (documentDownload.fileName != null && documentDownload.fileName.Length > 100)
+				{
+					documentDownload.fileName = documentDownload.fileName.Substring(0, 100);
+				}
+
+				if (documentDownload.mimeType != null && documentDownload.mimeType.Length > 100)
+				{
+					documentDownload.mimeType = documentDownload.mimeType.Substring(0, 100);
+				}
+
+				if (documentDownload.categoryName != null && documentDownload.categoryName.Length > 100)
+				{
+					documentDownload.categoryName = documentDownload.categoryName.Substring(0, 100);
+				}
+
+				if (documentDownload.documentDate.HasValue == true && documentDownload.documentDate.Value.Kind != DateTimeKind.Utc)
+				{
+					documentDownload.documentDate = documentDownload.documentDate.Value.ToUniversalTime();
+				}
+
+				documentDownload.objectGuid = Guid.NewGuid();
 				_context.DocumentDownloads.Add(documentDownload);
 				await _context.SaveChangesAsync(cancellationToken);
 
@@ -654,11 +826,26 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
+			
+			
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
 			IQueryable<Database.DocumentDownload> query = (from x in _context.DocumentDownloads
 				where
 				(x.id == id)
 				select x);
 
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 			Database.DocumentDownload documentDownload = await query.FirstOrDefaultAsync(cancellationToken);
 
@@ -672,7 +859,7 @@ namespace Foundation.Community.Controllers.WebAPI
 
 			try
 			{
-				_context.DocumentDownloads.Remove(documentDownload);
+				documentDownload.deleted = true;
 				await _context.SaveChangesAsync(cancellationToken);
 
 				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
@@ -713,20 +900,19 @@ namespace Foundation.Community.Controllers.WebAPI
 		[HttpGet]
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
-			int? Id = null,
-			string Title = null,
-			string Description = null,
-			string FilePath = null,
-			string FileName = null,
-			string MimeType = null,
-			long? FileSizeBytes = null,
-			string CategoryName = null,
-			DateTime? DocumentDate = null,
-			bool? IsPublished = null,
-			int? Sequence = null,
-			Guid? ObjectGuid = null,
-			bool? Active = null,
-			bool? Deleted = null,
+			string title = null,
+			string description = null,
+			string filePath = null,
+			string fileName = null,
+			string mimeType = null,
+			long? fileSizeBytes = null,
+			string categoryName = null,
+			DateTime? documentDate = null,
+			bool? isPublished = null,
+			int? sequence = null,
+			Guid? objectGuid = null,
+			bool? active = null,
+			bool? deleted = null,
 			string anyStringContains = null,
 			int? pageSize = null,
 			int? pageNumber = null,
@@ -747,6 +933,19 @@ namespace Foundation.Community.Controllers.WebAPI
 			bool userIsWriter = await UserCanWriteAsync(securityUser, 10, cancellationToken);
 
 
+			Guid userTenantGuid;
+
+			try
+			{
+			    userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+			}
+			catch (Exception ex)
+			{
+			    await CreateAuditEventAsync(AuditEngine.AuditType.Error, "Attempt was made to interact with a multi-tenancy enabled table by a user that is not configured with a tenant.  The User is " + securityUser?.accountName, securityUser?.accountName, ex);
+			    return Problem("Your user account is not configured with a tenant, so this operation is not allowed.");
+			}
+
+
 			if (pageNumber.HasValue == true &&
 			    pageNumber < 1)
 			{
@@ -762,67 +961,82 @@ namespace Foundation.Community.Controllers.WebAPI
 			//
 			// Turn any local time kinded parameters to UTC.
 			//
-			if (DocumentDate.HasValue == true && DocumentDate.Value.Kind != DateTimeKind.Utc)
+			if (documentDate.HasValue == true && documentDate.Value.Kind != DateTimeKind.Utc)
 			{
-				DocumentDate = DocumentDate.Value.ToUniversalTime();
+				documentDate = documentDate.Value.ToUniversalTime();
 			}
 
 			IQueryable<Database.DocumentDownload> query = (from dd in _context.DocumentDownloads select dd);
-			if (Id.HasValue == true)
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
+
+			if (string.IsNullOrEmpty(title) == false)
 			{
-				query = query.Where(dd => dd.Id == Id.Value);
+				query = query.Where(dd => dd.title == title);
 			}
-			if (string.IsNullOrEmpty(Title) == false)
+			if (string.IsNullOrEmpty(description) == false)
 			{
-				query = query.Where(dd => dd.Title == Title);
+				query = query.Where(dd => dd.description == description);
 			}
-			if (string.IsNullOrEmpty(Description) == false)
+			if (string.IsNullOrEmpty(filePath) == false)
 			{
-				query = query.Where(dd => dd.Description == Description);
+				query = query.Where(dd => dd.filePath == filePath);
 			}
-			if (string.IsNullOrEmpty(FilePath) == false)
+			if (string.IsNullOrEmpty(fileName) == false)
 			{
-				query = query.Where(dd => dd.FilePath == FilePath);
+				query = query.Where(dd => dd.fileName == fileName);
 			}
-			if (string.IsNullOrEmpty(FileName) == false)
+			if (string.IsNullOrEmpty(mimeType) == false)
 			{
-				query = query.Where(dd => dd.FileName == FileName);
+				query = query.Where(dd => dd.mimeType == mimeType);
 			}
-			if (string.IsNullOrEmpty(MimeType) == false)
+			if (fileSizeBytes.HasValue == true)
 			{
-				query = query.Where(dd => dd.MimeType == MimeType);
+				query = query.Where(dd => dd.fileSizeBytes == fileSizeBytes.Value);
 			}
-			if (FileSizeBytes.HasValue == true)
+			if (string.IsNullOrEmpty(categoryName) == false)
 			{
-				query = query.Where(dd => dd.FileSizeBytes == FileSizeBytes.Value);
+				query = query.Where(dd => dd.categoryName == categoryName);
 			}
-			if (string.IsNullOrEmpty(CategoryName) == false)
+			if (documentDate.HasValue == true)
 			{
-				query = query.Where(dd => dd.CategoryName == CategoryName);
+				query = query.Where(dd => dd.documentDate == documentDate.Value);
 			}
-			if (DocumentDate.HasValue == true)
+			if (isPublished.HasValue == true)
 			{
-				query = query.Where(dd => dd.DocumentDate == DocumentDate.Value);
+				query = query.Where(dd => dd.isPublished == isPublished.Value);
 			}
-			if (IsPublished.HasValue == true)
+			if (sequence.HasValue == true)
 			{
-				query = query.Where(dd => dd.IsPublished == IsPublished.Value);
+				query = query.Where(dd => dd.sequence == sequence.Value);
 			}
-			if (Sequence.HasValue == true)
+			if (objectGuid.HasValue == true)
 			{
-				query = query.Where(dd => dd.Sequence == Sequence.Value);
+				query = query.Where(dd => dd.objectGuid == objectGuid);
 			}
-			if (ObjectGuid.HasValue == true)
+			if (userIsWriter == true)
 			{
-				query = query.Where(dd => dd.ObjectGuid == ObjectGuid);
+				if (active.HasValue == true)
+				{
+					query = query.Where(dd => dd.active == active.Value);
+				}
+			
+				if (userIsAdmin == true)
+				{
+					if (deleted.HasValue == true)
+					{
+						query = query.Where(dd => dd.deleted == deleted.Value);
+					}
+				}
+				else
+				{
+					query = query.Where(dd => dd.deleted == false);
+				}
 			}
-			if (Active.HasValue == true)
+			else
 			{
-				query = query.Where(dd => dd.Active == Active.Value);
-			}
-			if (Deleted.HasValue == true)
-			{
-				query = query.Where(dd => dd.Deleted == Deleted.Value);
+				query = query.Where(dd => dd.active == true);
+				query = query.Where(dd => dd.deleted == false);
 			}
 
 
@@ -834,14 +1048,17 @@ namespace Foundation.Community.Controllers.WebAPI
 			if (!string.IsNullOrEmpty(anyStringContains))
 			{
 			   query = query.Where(x =>
-			       x.Title.Contains(anyStringContains)
-			       || x.Description.Contains(anyStringContains)
-			       || x.FilePath.Contains(anyStringContains)
-			       || x.FileName.Contains(anyStringContains)
-			       || x.MimeType.Contains(anyStringContains)
-			       || x.CategoryName.Contains(anyStringContains)
+			       x.title.Contains(anyStringContains)
+			       || x.description.Contains(anyStringContains)
+			       || x.filePath.Contains(anyStringContains)
+			       || x.fileName.Contains(anyStringContains)
+			       || x.mimeType.Contains(anyStringContains)
+			       || x.categoryName.Contains(anyStringContains)
 			   );
 			}
+
+
+			query = query.Where(x => x.tenantGuid == userTenantGuid);
 
 
 			query = query.OrderBy(x => x.sequence).ThenBy(x => x.title).ThenBy(x => x.filePath).ThenBy(x => x.fileName);

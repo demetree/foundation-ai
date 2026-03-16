@@ -175,6 +175,12 @@ export class GalleryAlbumTableComponent implements OnInit, OnChanges, AfterViewI
     // Start with the common columns that everyone sees
     //
     const defaultColumns: TableColumn[] = [
+    { key: 'title', label: 'Title', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/galleryalbum', 'id']  },
+    { key: 'slug', label: 'Slug', width: undefined },
+    { key: 'description', label: 'Description', width: undefined },
+    { key: 'coverImageUrl', label: 'Cover Image Url', width: undefined },
+    { key: 'isPublished', label: 'Is Published', width: '120px', template: 'boolean' },
+    { key: 'sequence', label: 'Sequence', width: undefined },
 
     ];
 
@@ -186,6 +192,8 @@ export class GalleryAlbumTableComponent implements OnInit, OnChanges, AfterViewI
     const isAdmin = this.authService.isCommunityAdministrator; 
 
     if (isAdmin) {
+     defaultColumns.push({ key: 'active', label: 'Active', width: '120px', template: 'boolean' });
+     defaultColumns.push({ key: 'deleted', label: 'Deleted', width: '120px', template: 'boolean' });
 
     }
     else if (isWriter) {
@@ -318,6 +326,12 @@ export class GalleryAlbumTableComponent implements OnInit, OnChanges, AfterViewI
 
         // Define fields to filter on, including nested properties
         const filterFields = [
+                      'title',
+                      'slug',
+                      'description',
+                      'coverImageUrl',
+                      'isPublished',
+                      'sequence',
         ];
 
         result = result.filter((galleryAlbum) =>

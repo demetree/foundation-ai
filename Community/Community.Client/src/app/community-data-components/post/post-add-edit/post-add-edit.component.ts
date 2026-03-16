@@ -35,6 +35,20 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface PostFormValues {
+  title: string,
+  slug: string,
+  body: string | null,
+  excerpt: string | null,
+  authorName: string | null,
+  postCategoryId: number | bigint | null,       // For FK link number
+  featuredImageUrl: string | null,
+  metaDescription: string | null,
+  isPublished: boolean,
+  publishedDate: string | null,
+  isFeatured: boolean,
+  versionNumber: string,     // Stored as string for form input, converted to number on submit.
+  active: boolean,
+  deleted: boolean,
 };
 
 @Component({
@@ -65,6 +79,20 @@ export class PostAddEditComponent {
 
 
   public postForm: FormGroup = this.fb.group({
+        title: ['', Validators.required],
+        slug: ['', Validators.required],
+        body: [''],
+        excerpt: [''],
+        authorName: [''],
+        postCategoryId: [null],
+        featuredImageUrl: [''],
+        metaDescription: [''],
+        isPublished: [false],
+        publishedDate: [''],
+        isFeatured: [false],
+        versionNumber: [''],
+        active: [true],
+        deleted: [false],
       });
 
   private modalRef: NgbModalRef | undefined;
@@ -101,6 +129,7 @@ export class PostAddEditComponent {
       }
       this.postSubmitData = this.postService.ConvertToPostSubmitData(postData);
       this.isEditMode = true;
+      this.objectGuid = postData.objectGuid;
 
       this.buildFormValues(postData);
 
@@ -199,6 +228,20 @@ export class PostAddEditComponent {
     //
     const postSubmitData: PostSubmitData = {
         id: this.postSubmitData?.id || 0,
+        title: formValue.title!.trim(),
+        slug: formValue.slug!.trim(),
+        body: formValue.body?.trim() || null,
+        excerpt: formValue.excerpt?.trim() || null,
+        authorName: formValue.authorName?.trim() || null,
+        postCategoryId: formValue.postCategoryId ? Number(formValue.postCategoryId) : null,
+        featuredImageUrl: formValue.featuredImageUrl?.trim() || null,
+        metaDescription: formValue.metaDescription?.trim() || null,
+        isPublished: !!formValue.isPublished,
+        publishedDate: formValue.publishedDate ? dateTimeLocalToIsoUtc(formValue.publishedDate.trim()) : null,
+        isFeatured: !!formValue.isFeatured,
+        versionNumber: this.postSubmitData?.versionNumber ?? 0,
+        active: !!formValue.active,
+        deleted: !!formValue.deleted,
    };
 
       if (this.isEditMode) {
@@ -325,6 +368,18 @@ export class PostAddEditComponent {
       // Reset the form group to null state, but don't change the form instance.
       //
       this.postForm.reset({
+        title: '',
+        slug: '',
+        body: '',
+        excerpt: '',
+        authorName: '',
+        postCategoryId: null,
+        featuredImageUrl: '',
+        metaDescription: '',
+        isPublished: false,
+        publishedDate: '',
+        isFeatured: false,
+        versionNumber: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -336,6 +391,20 @@ export class PostAddEditComponent {
         // Reset the form with properly formatted values that support dates in datetime-local inputs
         //
         this.postForm.reset({
+        title: postData.title ?? '',
+        slug: postData.slug ?? '',
+        body: postData.body ?? '',
+        excerpt: postData.excerpt ?? '',
+        authorName: postData.authorName ?? '',
+        postCategoryId: postData.postCategoryId,
+        featuredImageUrl: postData.featuredImageUrl ?? '',
+        metaDescription: postData.metaDescription ?? '',
+        isPublished: postData.isPublished ?? false,
+        publishedDate: isoUtcStringToDateTimeLocal(postData.publishedDate) ?? '',
+        isFeatured: postData.isFeatured ?? false,
+        versionNumber: postData.versionNumber?.toString() ?? '',
+        active: postData.active ?? true,
+        deleted: postData.deleted ?? false,
       }, { emitEvent: false});
     }
 

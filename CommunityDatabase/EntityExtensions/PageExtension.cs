@@ -18,6 +18,7 @@ namespace Foundation.Community.Database
         /// This is for setting the context for change history inquiries.
         /// </summary>
         private CommunityContext _contextForVersionInquiry = null;
+        private Guid _tenantGuidForVersionInquiry = Guid.Empty;
 
 
 
@@ -74,9 +75,10 @@ namespace Foundation.Community.Database
         /// </summary>
         /// <param name="context"></param>
         /// <param name="tenantGuid"></param>
-        public void SetupVersionInquiry(CommunityContext context)
+        public void SetupVersionInquiry(CommunityContext context, Guid tenantGuid)
         {
             _contextForVersionInquiry = context;
+            _tenantGuidForVersionInquiry = tenantGuid;
         }
 
 
@@ -173,7 +175,7 @@ namespace Foundation.Community.Database
         /// <exception cref="Exception"></exception>
         public async Task<VersionInformation<Page>> GetVersionAsync(int versionNumber, bool includeData = true, CancellationToken cancellationToken = default)
         {
-            if (_contextForVersionInquiry == null)
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
             {
                 throw new Exception("Context for version inquiry is not set.  Please call SetupVersionInquiry() before accessing the GetVersion function.");
             }
@@ -195,8 +197,8 @@ namespace Foundation.Community.Database
 
             if (versionAudit.userId.HasValue == true)
             {
-                // Note that this system is has neither multi tenancy or data visibility enabled, so it gets its change history users from the security module, and gets all users.
-                version.user = await Foundation.Security.ChangeHistory.GetChangeHistoryUserAsync(versionAudit.userId.Value, cancellationToken).ConfigureAwait(false);
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
             }
             else
             {
@@ -223,7 +225,7 @@ namespace Foundation.Community.Database
         /// <exception cref="Exception"></exception>
         public async Task<List<VersionInformation<Page>>> GetAllVersionsAsync(bool includeData = true, CancellationToken cancellationToken = default)
         {
-            if (_contextForVersionInquiry == null)
+            if (_contextForVersionInquiry == null || _tenantGuidForVersionInquiry == Guid.Empty)
             {
                 throw new Exception("Context for version inquiry is not set.Please call SetupVersionInquiry() before accessing the GetAllVersions function.");
             }
@@ -248,8 +250,8 @@ namespace Foundation.Community.Database
 
                 if (versionAudit.userId.HasValue == true)
                 {
-                // Note that this system is has neither multi tenancy or data visibility enabled, so it gets its change history users from the security module, and gets all users.
-                version.user = await Foundation.Security.ChangeHistory.GetChangeHistoryUserAsync(versionAudit.userId.Value, cancellationToken).ConfigureAwait(false);
+                // Note that this system has multi tenancy enabled but not data visibility, so it gets its change history users from the security module by linking to tenant users.
+                version.user = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(versionAudit.userId.Value, _tenantGuidForVersionInquiry, cancellationToken).ConfigureAwait(false);
                 }
                 else
                 {
@@ -278,19 +280,23 @@ namespace Foundation.Community.Database
 		/// </summary>
 		public class PageDTO
 		{
-			public Int32 Id { get; set; }
-			public String Title { get; set; }
-			public String Slug { get; set; }
-			public String Body { get; set; }
-			public String MetaDescription { get; set; }
-			public String FeaturedImageUrl { get; set; }
-			public Boolean IsPublished { get; set; }
-			public DateTime? PublishedDate { get; set; }
-			public Int32? SortOrder { get; set; }
-			public Int32 VersionNumber { get; set; }
-			public Guid ObjectGuid { get; set; }
-			public Boolean? Active { get; set; }
-			public Boolean? Deleted { get; set; }
+			public Int32 id { get; set; }
+			[Required]
+			public String title { get; set; }
+			[Required]
+			public String slug { get; set; }
+			public String body { get; set; }
+			public String metaDescription { get; set; }
+			public String featuredImageUrl { get; set; }
+			[Required]
+			public Boolean isPublished { get; set; }
+			public DateTime? publishedDate { get; set; }
+			public Int32? sortOrder { get; set; }
+			public Int32 versionNumber { get; set; }
+			[Required]
+			public Guid objectGuid { get; set; }
+			public Boolean? active { get; set; }
+			public Boolean? deleted { get; set; }
 		}
 
 
@@ -315,19 +321,19 @@ namespace Foundation.Community.Database
 		{
 			return new PageDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Slug = this.Slug,
-				Body = this.Body,
-				MetaDescription = this.MetaDescription,
-				FeaturedImageUrl = this.FeaturedImageUrl,
-				IsPublished = this.IsPublished,
-				PublishedDate = this.PublishedDate,
-				SortOrder = this.SortOrder,
-				VersionNumber = this.VersionNumber,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				slug = this.slug,
+				body = this.body,
+				metaDescription = this.metaDescription,
+				featuredImageUrl = this.featuredImageUrl,
+				isPublished = this.isPublished,
+				publishedDate = this.publishedDate,
+				sortOrder = this.sortOrder,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -366,19 +372,19 @@ namespace Foundation.Community.Database
 		{
 			return new PageOutputDTO
 			{
-				Id = this.Id,
-				Title = this.Title,
-				Slug = this.Slug,
-				Body = this.Body,
-				MetaDescription = this.MetaDescription,
-				FeaturedImageUrl = this.FeaturedImageUrl,
-				IsPublished = this.IsPublished,
-				PublishedDate = this.PublishedDate,
-				SortOrder = this.SortOrder,
-				VersionNumber = this.VersionNumber,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted
+				id = this.id,
+				title = this.title,
+				slug = this.slug,
+				body = this.body,
+				metaDescription = this.metaDescription,
+				featuredImageUrl = this.featuredImageUrl,
+				isPublished = this.isPublished,
+				publishedDate = this.publishedDate,
+				sortOrder = this.sortOrder,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted
 			};
 		}
 
@@ -417,19 +423,19 @@ namespace Foundation.Community.Database
 		{
 			return new Database.Page
 			{
-				Id = dto.Id,
-				Title = dto.Title,
-				Slug = dto.Slug,
-				Body = dto.Body,
-				MetaDescription = dto.MetaDescription,
-				FeaturedImageUrl = dto.FeaturedImageUrl,
-				IsPublished = dto.IsPublished,
-				PublishedDate = dto.PublishedDate,
-				SortOrder = dto.SortOrder,
-				VersionNumber = dto.VersionNumber,
-				ObjectGuid = dto.ObjectGuid,
-				Active = dto.Active ?? true,
-				Deleted = dto.Deleted ?? false
+				id = dto.id,
+				title = dto.title,
+				slug = dto.slug,
+				body = dto.body,
+				metaDescription = dto.metaDescription,
+				featuredImageUrl = dto.featuredImageUrl,
+				isPublished = dto.isPublished,
+				publishedDate = dto.publishedDate,
+				sortOrder = dto.sortOrder,
+				versionNumber = dto.versionNumber,
+				objectGuid = dto.objectGuid,
+				active = dto.active ?? true,
+				deleted = dto.deleted ?? false
 			};
 		}
 
@@ -446,23 +452,23 @@ namespace Foundation.Community.Database
 			    throw new Exception("DTO is null or has an id mismatch.");
 			}
 
-			this.Title = dto.Title;
-			this.Slug = dto.Slug;
-			this.Body = dto.Body;
-			this.MetaDescription = dto.MetaDescription;
-			this.FeaturedImageUrl = dto.FeaturedImageUrl;
-			this.IsPublished = dto.IsPublished;
-			this.PublishedDate = dto.PublishedDate;
-			this.SortOrder = dto.SortOrder;
-			this.VersionNumber = dto.VersionNumber;
-			this.ObjectGuid = dto.ObjectGuid;
-			if (dto.Active.HasValue == true)
+			this.title = dto.title;
+			this.slug = dto.slug;
+			this.body = dto.body;
+			this.metaDescription = dto.metaDescription;
+			this.featuredImageUrl = dto.featuredImageUrl;
+			this.isPublished = dto.isPublished;
+			this.publishedDate = dto.publishedDate;
+			this.sortOrder = dto.sortOrder;
+			this.versionNumber = dto.versionNumber;
+			this.objectGuid = dto.objectGuid;
+			if (dto.active.HasValue == true)
 			{
-				this.Active = dto.Active.Value;
+				this.active = dto.active.Value;
 			}
-			if (dto.Deleted.HasValue == true)
+			if (dto.deleted.HasValue == true)
 			{
-				this.Deleted = dto.Deleted.Value;
+				this.deleted = dto.deleted.Value;
 			}
 		}
 
@@ -478,19 +484,20 @@ namespace Foundation.Community.Database
 			// Return a cloned object without any object or list properties.
 			//
 			return new Page{
-				Id = this.Id,
-				Title = this.Title,
-				Slug = this.Slug,
-				Body = this.Body,
-				MetaDescription = this.MetaDescription,
-				FeaturedImageUrl = this.FeaturedImageUrl,
-				IsPublished = this.IsPublished,
-				PublishedDate = this.PublishedDate,
-				SortOrder = this.SortOrder,
-				VersionNumber = this.VersionNumber,
-				ObjectGuid = this.ObjectGuid,
-				Active = this.Active,
-				Deleted = this.Deleted,
+				id = this.id,
+				tenantGuid = this.tenantGuid,
+				title = this.title,
+				slug = this.slug,
+				body = this.body,
+				metaDescription = this.metaDescription,
+				featuredImageUrl = this.featuredImageUrl,
+				isPublished = this.isPublished,
+				publishedDate = this.publishedDate,
+				sortOrder = this.sortOrder,
+				versionNumber = this.versionNumber,
+				objectGuid = this.objectGuid,
+				active = this.active,
+				deleted = this.deleted,
 			 };
 		}
 
@@ -543,19 +550,19 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = page.Id,
-				Title = page.Title,
-				Slug = page.Slug,
-				Body = page.Body,
-				MetaDescription = page.MetaDescription,
-				FeaturedImageUrl = page.FeaturedImageUrl,
-				IsPublished = page.IsPublished,
-				PublishedDate = page.PublishedDate,
-				SortOrder = page.SortOrder,
-				VersionNumber = page.VersionNumber,
-				ObjectGuid = page.ObjectGuid,
-				Active = page.Active,
-				Deleted = page.Deleted,
+				id = page.id,
+				title = page.title,
+				slug = page.slug,
+				body = page.body,
+				metaDescription = page.metaDescription,
+				featuredImageUrl = page.featuredImageUrl,
+				isPublished = page.isPublished,
+				publishedDate = page.publishedDate,
+				sortOrder = page.sortOrder,
+				versionNumber = page.versionNumber,
+				objectGuid = page.objectGuid,
+				active = page.active,
+				deleted = page.deleted,
 			 };
 		}
 
@@ -575,19 +582,19 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
-				Id = page.Id,
-				Title = page.Title,
-				Slug = page.Slug,
-				Body = page.Body,
-				MetaDescription = page.MetaDescription,
-				FeaturedImageUrl = page.FeaturedImageUrl,
-				IsPublished = page.IsPublished,
-				PublishedDate = page.PublishedDate,
-				SortOrder = page.SortOrder,
-				VersionNumber = page.VersionNumber,
-				ObjectGuid = page.ObjectGuid,
-				Active = page.Active,
-				Deleted = page.Deleted,
+				id = page.id,
+				title = page.title,
+				slug = page.slug,
+				body = page.body,
+				metaDescription = page.metaDescription,
+				featuredImageUrl = page.featuredImageUrl,
+				isPublished = page.isPublished,
+				publishedDate = page.publishedDate,
+				sortOrder = page.sortOrder,
+				versionNumber = page.versionNumber,
+				objectGuid = page.objectGuid,
+				active = page.active,
+				deleted = page.deleted,
 			 };
 		}
 
@@ -607,6 +614,7 @@ namespace Foundation.Community.Database
 			}
 
 			return new {
+				id = page.id,
 				name = page.title,
 				description = string.Join(", ", new[] { page.title, page.slug, page.metaDescription}.Where(s => !string.IsNullOrWhiteSpace(s)))
 			 };

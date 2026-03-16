@@ -7,19 +7,19 @@ namespace Foundation.Community.Database;
 
 public partial class PostTagAssignment
 {
-    public int Id { get; set; }
+    public int id { get; set; }
 
-    public int PostId { get; set; }
+    public int postId { get; set; }
 
-    public int PostTagId { get; set; }
+    public int postTagId { get; set; }
 
-    public Guid ObjectGuid { get; set; }
+    public Guid objectGuid { get; set; }
 
-    public bool Active { get; set; }
+    public bool active { get; set; }
 
-    public bool Deleted { get; set; }
+    public bool deleted { get; set; }
 
-    public virtual Post Post { get; set; }
+    public virtual Post post { get; set; }
 
-    public virtual PostTag PostTag { get; set; }
+    public virtual PostTag postTag { get; set; }
 }

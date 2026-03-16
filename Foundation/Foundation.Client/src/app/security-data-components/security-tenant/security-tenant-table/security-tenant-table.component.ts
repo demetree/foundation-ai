@@ -178,6 +178,7 @@ export class SecurityTenantTableComponent implements OnInit, OnChanges, AfterVie
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/securitytenant', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
     { key: 'settings', label: 'Settings', width: undefined },
+    { key: 'hostName', label: 'Host Name', width: undefined },
 
     ];
 
@@ -326,6 +327,7 @@ export class SecurityTenantTableComponent implements OnInit, OnChanges, AfterVie
                       'name',
                       'description',
                       'settings',
+                      'hostName',
         ];
 
         result = result.filter((securityTenant) =>
