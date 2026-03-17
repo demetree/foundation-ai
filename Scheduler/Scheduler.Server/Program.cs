@@ -676,6 +676,12 @@ namespace Foundation.Scheduler
                 }
 
                 //
+                // Auto-seed required reference data (DocumentTypes, Cash category)
+                // AI-Developed — This block was added with AI assistance.
+                //
+                await Foundation.Scheduler.Services.SchedulerDataSeeder.SeedRequiredDataAsync(logger);
+
+                //
                 // Auto-register with Alerting system (if configured)
                 //
                 await Foundation.Web.Utility.StartupBasics.RegisterWithAlertingAsync(app, logger).ConfigureAwait(false);

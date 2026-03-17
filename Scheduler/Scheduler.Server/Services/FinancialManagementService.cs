@@ -693,6 +693,9 @@ namespace Foundation.Scheduler.Services
             //
             var existingInvoice = await _context.Invoices
                 .Where(i => i.scheduledEventId == eventId && i.tenantGuid == tenantGuid && i.active == true && i.deleted == false)
+                // AI-Developed — Exclude voided invoices so re-invoicing after void is allowed.
+                .Where(i => !_context.InvoiceStatuses
+                    .Any(s => s.id == i.invoiceStatusId && s.name == "Voided"))
                 .Select(i => new { i.id, i.invoiceNumber })
                 .FirstOrDefaultAsync(cancellationToken);
 

@@ -348,10 +348,12 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             // Load tenant profile for the report header
             //
             var tenantProfile = await _context.TenantProfiles
+                .Include(tp => tp.timeZone)
                 .Where(tp => tp.tenantGuid == userTenantGuid && tp.active == true && tp.deleted == false)
                 .FirstOrDefaultAsync(cancellationToken);
 
             string tenantName = tenantProfile?.name ?? "Financial Report";
+            string tenantTimeZone = tenantProfile?.timeZone?.ianaTimeZone;
 
             //
             // Load all transactions for the year with their categories
@@ -377,7 +379,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             //
             using var workbook = new XLWorkbook();
 
-            BuildSummarySheet(workbook, transactions, tenantName, filterYear);
+            BuildSummarySheet(workbook, transactions, tenantName, filterYear, tenantTimeZone);
             BuildTransactionSheet(workbook, transactions, "Income", true, filterYear);
             BuildTransactionSheet(workbook, transactions, "Expenses", false, filterYear);
 
@@ -407,7 +409,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             XLWorkbook workbook,
             List<Database.FinancialTransaction> transactions,
             string tenantName,
-            int year)
+            int year,
+            string ianaTimeZone = null)
         {
             var ws = workbook.Worksheets.Add("Summary");
 
@@ -422,7 +425,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             ws.Cell("A2").Style.Font.FontSize = 12;
             ws.Cell("A2").Style.Font.FontColor = XLColor.DimGray;
 
-            ws.Cell("A3").Value = $"Generated {DateTime.UtcNow:MMMM dd, yyyy}";
+            // AI-Developed — Convert report date to tenant's local timezone.
+            DateTime reportDate = DateTime.UtcNow;
+            if (!string.IsNullOrEmpty(ianaTimeZone))
+            {
+                try
+                {
+                    TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(ianaTimeZone);
+                    reportDate = TimeZoneInfo.ConvertTimeFromUtc(reportDate, tz);
+                }
+                catch { /* Fallback to UTC if timezone ID is invalid */ }
+            }
+            ws.Cell("A3").Value = $"Generated {reportDate:MMMM dd, yyyy h:mm tt}";
             ws.Cell("A3").Style.Font.FontSize = 10;
             ws.Cell("A3").Style.Font.FontColor = XLColor.DimGray;
 
