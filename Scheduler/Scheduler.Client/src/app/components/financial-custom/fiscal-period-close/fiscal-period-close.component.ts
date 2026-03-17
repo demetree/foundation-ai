@@ -1,9 +1,10 @@
 // AI-Developed — This file was significantly developed with AI assistance.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { FiscalPeriodService, FiscalPeriodData, FiscalPeriodSubmitData } from '../../../scheduler-data-services/fiscal-period.service';
+import { HttpClient } from '@angular/common/http';
 
 
 interface PeriodRow {
@@ -33,12 +34,18 @@ export class FiscalPeriodCloseComponent implements OnInit {
     public openCount = 0;
     public closedCount = 0;
 
+    // Generate year
+    public generateYearInput: number = new Date().getFullYear() + 1;
+    public isGenerating = false;
+
     constructor(
         private fiscalPeriodService: FiscalPeriodService,
         private alertService: AlertService,
         private authService: AuthService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private http: HttpClient,
+        @Inject('BASE_URL') private baseUrl: string
     ) { }
 
 
@@ -180,5 +187,40 @@ export class FiscalPeriodCloseComponent implements OnInit {
         const params: any = {};
         if (this.selectedYear) params.year = this.selectedYear;
         this.router.navigate(['/finances'], { queryParams: params });
+    }
+
+
+    generateYear(): void {
+        if (this.isGenerating) return;
+        this.isGenerating = true;
+
+        const headers = this.authService.GetAuthenticationHeaders()
+            .set('Content-Type', 'application/json');
+        this.http.post<any>(
+            `${this.baseUrl}api/FiscalPeriods/GenerateYear?year=${this.generateYearInput}`,
+            null,
+            { headers }
+        ).subscribe({
+            next: (result) => {
+                const created = result?.created ?? 0;
+                if (created > 0) {
+                    this.alertService.showMessage(
+                        `Generated ${created} fiscal periods for ${this.generateYearInput}`,
+                        '', MessageSeverity.success);
+                } else {
+                    this.alertService.showMessage(
+                        result?.message || `Periods for ${this.generateYearInput} already exist`,
+                        '', MessageSeverity.info);
+                }
+                this.isGenerating = false;
+                this.fiscalPeriodService.ClearAllCaches();
+                this.loadPeriods();
+            },
+            error: (err) => {
+                const msg = err?.error?.error || 'Failed to generate fiscal periods';
+                this.alertService.showMessage(msg, '', MessageSeverity.error);
+                this.isGenerating = false;
+            }
+        });
     }
 }

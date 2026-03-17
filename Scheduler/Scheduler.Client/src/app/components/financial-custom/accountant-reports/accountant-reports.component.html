@@ -67,6 +67,9 @@
         <div class="balance-indicator" [ngClass]="isBalanced ? 'balanced' : 'unbalanced'">
             <i class="fa-solid" [ngClass]="isBalanced ? 'fa-check-circle' : 'fa-exclamation-triangle'"></i>
             {{ isBalanced ? 'Balanced' : 'Out of Balance' }}
+            <span class="net-summary" *ngIf="netAmount >= 0.01">
+                &mdash; {{ netLabel }}: {{ netAmount | number:'1.2-2' }}
+            </span>
         </div>
 
         <div class="table-responsive">
@@ -81,7 +84,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let r of trialBalanceRows">
+                    <tr *ngFor="let r of trialBalanceRows"
+                        [class.net-row]="r.accountType === 'Equity'">
                         <td class="code-cell">{{ r.code }}</td>
                         <td>{{ r.name }}</td>
                         <td class="type-cell">{{ r.accountType }}</td>

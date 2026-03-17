@@ -32,6 +32,22 @@
 .summary-card.open { background: rgba(76,175,80,0.08); .card-count { color: #66bb6a; } }
 .summary-card.closed { background: rgba(158,158,158,0.08); .card-count { color: #9e9e9e; } }
 
+// Generate year
+.generate-section {
+    margin-left: auto; display: flex; flex-direction: column; align-items: flex-end;
+    gap: 0.25rem; min-width: 180px;
+}
+.generate-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; opacity: 0.5; }
+.generate-controls { display: flex; gap: 0.4rem; align-items: center; }
+.generate-input { width: 85px; border-radius: 8px; text-align: center; font-weight: 600; }
+.btn-generate {
+    background: rgba(66,165,245,0.15); color: #42a5f5; border: 1px solid rgba(66,165,245,0.3);
+    border-radius: 8px; font-weight: 600; font-size: 0.8rem; padding: 0.35rem 0.9rem;
+    white-space: nowrap; transition: all 0.2s;
+    &:hover { background: rgba(66,165,245,0.25); color: #42a5f5; }
+    &:disabled { opacity: 0.6; }
+}
+
 // Period list
 .period-list { display: flex; flex-direction: column; gap: 0.5rem; }
 .period-card {

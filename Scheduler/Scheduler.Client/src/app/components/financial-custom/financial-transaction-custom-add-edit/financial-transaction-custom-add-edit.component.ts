@@ -1,10 +1,11 @@
-import { Component, ViewChild, TemplateRef, Input, Output, EventEmitter } from '@angular/core';
+import { Component, ViewChild, TemplateRef, Input, Output, EventEmitter, Inject } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { Router } from '@angular/router';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { FinancialTransactionService, FinancialTransactionData, FinancialTransactionSubmitData } from '../../../scheduler-data-services/financial-transaction.service';
+import { HttpClient } from '@angular/common/http';
 import { FinancialCategoryService, FinancialCategoryData } from '../../../scheduler-data-services/financial-category.service';
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { PaymentTypeService } from '../../../scheduler-data-services/payment-type.service';
@@ -71,7 +72,9 @@ export class FinancialTransactionCustomAddEditComponent {
         private authService: AuthService,
         private alertService: AlertService,
         private router: Router,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private http: HttpClient,
+        @Inject('BASE_URL') private baseUrl: string
     ) {
         this.initForm();
     }
@@ -361,7 +364,8 @@ export class FinancialTransactionCustomAddEditComponent {
                 }
             });
         } else {
-            this.transactionService.PostFinancialTransaction(submitData).subscribe({
+            // Route new entries through FinancialManagementService for proper validation
+            this.postViaService(fv).subscribe({
                 next: () => {
                     this.rememberLastUsedValues();
                     this.alertService.showMessage('Transaction created successfully', '', MessageSeverity.success);
@@ -372,7 +376,8 @@ export class FinancialTransactionCustomAddEditComponent {
                     this.financialTransactionChanged.emit();
                 },
                 error: (err) => {
-                    this.alertService.showMessage('Failed to create transaction', JSON.stringify(err), MessageSeverity.error);
+                    const msg = err?.error?.error || JSON.stringify(err);
+                    this.alertService.showMessage('Failed to create transaction', msg, MessageSeverity.error);
                     this.isSaving = false;
                     this.isSavingAndAdding = false;
                 }
@@ -433,7 +438,8 @@ export class FinancialTransactionCustomAddEditComponent {
             deleted: false,
         };
 
-        this.transactionService.PostFinancialTransaction(submitData).subscribe({
+        // Route new entries through FinancialManagementService for proper validation
+        this.postViaService(fv).subscribe({
             next: () => {
                 this.rememberLastUsedValues();
                 this.alertService.showMessage('Transaction saved — add another!', '', MessageSeverity.success);
@@ -448,10 +454,40 @@ export class FinancialTransactionCustomAddEditComponent {
                 this.applyLastUsedValues();
             },
             error: (err) => {
-                this.alertService.showMessage('Failed to create transaction', JSON.stringify(err), MessageSeverity.error);
+                const msg = err?.error?.error || JSON.stringify(err);
+                this.alertService.showMessage('Failed to create transaction', msg, MessageSeverity.error);
                 this.isSavingAndAdding = false;
             }
         });
+    }
+
+
+    /**
+     * Routes new transaction creation through FinancialManagementService.
+     * Uses /RecordRevenue or /RecordExpense depending on isRevenue flag.
+     * These endpoints provide fiscal period validation, category validation,
+     * journal entry type assignment, and structured audit logging.
+     */
+    private postViaService(fv: any) {
+        const isRevenue = !!fv.isRevenue;
+        const endpoint = isRevenue ? 'RecordRevenue' : 'RecordExpense';
+        const body = {
+            financialCategoryId: Number(fv.financialCategoryId),
+            transactionDate: dateTimeLocalToIsoUtc(fv.transactionDate!.trim()),
+            amount: Number(fv.amount),
+            taxAmount: Number(fv.taxAmount),
+            description: fv.description!.trim(),
+            currencyId: Number(fv.currencyId),
+            financialOfficeId: fv.financialOfficeId ? Number(fv.financialOfficeId) : null,
+            scheduledEventId: fv.scheduledEventId ? Number(fv.scheduledEventId) : null,
+            contactId: fv.contactId ? Number(fv.contactId) : null,
+            clientId: fv.clientId ? Number(fv.clientId) : null,
+            referenceNumber: fv.referenceNumber?.trim() || null,
+            notes: fv.notes?.trim() || null,
+        };
+        const headers = this.authService.GetAuthenticationHeaders()
+            .set('Content-Type', 'application/json');
+        return this.http.post(`${this.baseUrl}api/FinancialTransactions/${endpoint}`, body, { headers });
     }
 
 

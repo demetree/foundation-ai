@@ -833,5 +833,192 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 deposits
             });
         }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  RecordExpense
+        //
+        //  Routes expense recording through FinancialManagementService for proper:
+        //    - Fiscal period validation
+        //    - Category validation
+        //    - Journal entry type assignment
+        //    - Structured audit logging
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        public class RecordExpenseRequest
+        {
+            public int FinancialCategoryId { get; set; }
+            public DateTime TransactionDate { get; set; }
+            public decimal Amount { get; set; }
+            public decimal TaxAmount { get; set; }
+            public string Description { get; set; }
+            public int CurrencyId { get; set; }
+            public int? FinancialOfficeId { get; set; }
+            public int? ScheduledEventId { get; set; }
+            public int? ContactId { get; set; }
+            public int? ClientId { get; set; }
+            public string ReferenceNumber { get; set; }
+            public string Notes { get; set; }
+        }
+
+
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/FinancialTransactions/RecordExpense")]
+        public async Task<IActionResult> RecordExpenseAsync(
+            [FromBody] RecordExpenseRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "Attempt to record expense by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            // Resolve FinancialManagementService from DI
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.RecordExpenseAsync(
+                userTenantGuid,
+                request.FinancialCategoryId,
+                request.TransactionDate,
+                request.Amount,
+                request.TaxAmount,
+                request.Description,
+                request.CurrencyId,
+                request.FinancialOfficeId,
+                request.ScheduledEventId,
+                request.ContactId,
+                request.ClientId,
+                request.ReferenceNumber,
+                request.Notes,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            await CreateAuditEventAsync(AuditType.Miscellaneous,
+                $"Expense of {request.Amount:C} recorded in category {request.FinancialCategoryId} via FinancialManagementService.");
+
+            return Ok(result.Data);
+        }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  RecordRevenue
+        //
+        //  Routes direct revenue recording through FinancialManagementService.
+        //  For ad-hoc revenue not tied to invoices (walk-in sales, permit fees, etc.).
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        public class RecordRevenueRequest
+        {
+            public int FinancialCategoryId { get; set; }
+            public DateTime TransactionDate { get; set; }
+            public decimal Amount { get; set; }
+            public decimal TaxAmount { get; set; }
+            public string Description { get; set; }
+            public int CurrencyId { get; set; }
+            public int? FinancialOfficeId { get; set; }
+            public int? ScheduledEventId { get; set; }
+            public int? ContactId { get; set; }
+            public int? ClientId { get; set; }
+            public string ReferenceNumber { get; set; }
+            public string Notes { get; set; }
+        }
+
+
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/FinancialTransactions/RecordRevenue")]
+        public async Task<IActionResult> RecordRevenueAsync(
+            [FromBody] RecordRevenueRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "Attempt to record revenue by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            // Resolve FinancialManagementService from DI
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.RecordDirectRevenueAsync(
+                userTenantGuid,
+                request.FinancialCategoryId,
+                request.TransactionDate,
+                request.Amount,
+                request.TaxAmount,
+                request.Description,
+                request.CurrencyId,
+                request.FinancialOfficeId,
+                request.ScheduledEventId,
+                request.ContactId,
+                request.ClientId,
+                request.ReferenceNumber,
+                request.Notes,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            await CreateAuditEventAsync(AuditType.Miscellaneous,
+                $"Revenue of {request.Amount:C} recorded in category {request.FinancialCategoryId} via FinancialManagementService.");
+
+            return Ok(result.Data);
+        }
     }
 }

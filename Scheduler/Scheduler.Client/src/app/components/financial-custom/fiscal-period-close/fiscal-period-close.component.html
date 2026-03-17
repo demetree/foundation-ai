@@ -30,6 +30,20 @@
             <div class="card-count">{{ closedCount }}</div>
             <div class="card-label">Closed</div>
         </div>
+
+        <!-- Generate Year -->
+        <div class="generate-section">
+            <label class="generate-label">Generate Year</label>
+            <div class="generate-controls">
+                <input type="number" class="form-control form-control-sm generate-input"
+                    [(ngModel)]="generateYearInput" [min]="2020" [max]="2035" />
+                <button class="btn btn-sm btn-generate" (click)="generateYear()" [disabled]="isGenerating">
+                    <span *ngIf="isGenerating" class="spinner-border spinner-border-sm me-1"></span>
+                    <i class="fa-solid fa-calendar-plus me-1" *ngIf="!isGenerating"></i>
+                    {{ isGenerating ? 'Creating...' : 'Generate' }}
+                </button>
+            </div>
+        </div>
     </div>
 
 

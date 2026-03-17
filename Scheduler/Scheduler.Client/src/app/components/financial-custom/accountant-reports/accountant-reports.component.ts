@@ -75,6 +75,8 @@ export class AccountantReportsComponent implements OnInit {
     public trialBalanceRows: TrialBalanceRow[] = [];
     public totalDebits = 0;
     public totalCredits = 0;
+    public netAmount = 0;          // abs(revenue - expenses)
+    public netLabel = 'Net Income'; // 'Net Income' or 'Net Loss'
     public isBalanced = true;
 
     // Chart of Accounts
@@ -221,6 +223,39 @@ export class AccountantReportsComponent implements OnInit {
             };
         }).filter(r => r.debit !== 0 || r.credit !== 0)
             .sort((a, b) => a.code.localeCompare(b.code));
+
+        // Compute raw totals before the balancing row
+        const rawDebits = this.trialBalanceRows.reduce((s, r) => s + r.debit, 0);
+        const rawCredits = this.trialBalanceRows.reduce((s, r) => s + r.credit, 0);
+        const difference = rawCredits - rawDebits;
+
+        // Add a Net Income / Net Loss balancing row
+        // Revenue > Expenses → Net Income placed on debit side to balance
+        // Expenses > Revenue → Net Loss placed on credit side to balance
+        this.netAmount = Math.abs(difference);
+        if (Math.abs(difference) >= 0.01) {
+            if (difference > 0) {
+                this.netLabel = 'Net Income';
+                this.trialBalanceRows.push({
+                    code: '',
+                    name: 'Net Income',
+                    accountType: 'Equity',
+                    debit: this.netAmount,
+                    credit: 0,
+                });
+            } else {
+                this.netLabel = 'Net Loss';
+                this.trialBalanceRows.push({
+                    code: '',
+                    name: 'Net Loss',
+                    accountType: 'Equity',
+                    debit: 0,
+                    credit: this.netAmount,
+                });
+            }
+        } else {
+            this.netLabel = 'Balanced';
+        }
 
         this.totalDebits = this.trialBalanceRows.reduce((s, r) => s + r.debit, 0);
         this.totalCredits = this.trialBalanceRows.reduce((s, r) => s + r.credit, 0);

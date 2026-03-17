@@ -1850,5 +1850,122 @@ namespace Foundation.Scheduler.Services
                 data = JsonSerializer.Serialize(Receipt.CreateAnonymousWithFirstLevelSubObjects(receipt))
             });
         }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  GenerateFiscalYear
+        //
+        //  Creates 12 monthly fiscal periods for a given year.
+        //  Idempotent — returns existing count if periods already exist.
+        //  Validates year range (current year ± 5).
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        public async Task<FinancialOperationResult> GenerateFiscalYearAsync(
+            Guid tenantGuid,
+            int year,
+            CancellationToken cancellationToken = default)
+        {
+            //
+            // Validate year range
+            //
+            int currentYear = DateTime.UtcNow.Year;
+            if (year < currentYear - 5 || year > currentYear + 5)
+            {
+                return FinancialOperationResult.Fail(
+                    $"Year must be between {currentYear - 5} and {currentYear + 5}.");
+            }
+
+            //
+            // Idempotency: check if periods already exist for this year
+            //
+            int existingCount = await _context.FiscalPeriods
+                .Where(fp => fp.tenantGuid == tenantGuid && fp.fiscalYear == year
+                          && fp.active == true && fp.deleted == false)
+                .CountAsync(cancellationToken);
+
+            if (existingCount > 0)
+            {
+                return FinancialOperationResult.Ok(new Dictionary<string, object>
+                {
+                    ["created"] = 0,
+                    ["existing"] = existingCount,
+                    ["message"] = $"Fiscal periods for {year} already exist ({existingCount} found)."
+                });
+            }
+
+            //
+            // Resolve the "Open" PeriodStatus from seed data
+            //
+            var openStatus = await _context.PeriodStatuses
+                .Where(ps => ps.name == "Open" && ps.active == true && ps.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (openStatus == null)
+            {
+                return FinancialOperationResult.Fail(
+                    "Period status 'Open' not found. Ensure database seed data has been run.");
+            }
+
+            //
+            // Create 12 monthly periods
+            //
+            string[] monthNames = new string[]
+            {
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            };
+
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    for (int month = 1; month <= 12; month++)
+                    {
+                        DateTime periodStart = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+                        DateTime periodEnd = periodStart.AddMonths(1).AddSeconds(-1);
+
+                        var fp = new FiscalPeriod
+                        {
+                            tenantGuid = tenantGuid,
+                            name = $"{monthNames[month - 1]} {year}",
+                            description = $"{monthNames[month - 1]} {year} fiscal period",
+                            startDate = periodStart,
+                            endDate = periodEnd,
+                            periodType = "Month",
+                            fiscalYear = year,
+                            periodNumber = month,
+                            periodStatusId = openStatus.id,
+                            sequence = (year * 100) + month,
+                            versionNumber = 0,
+                            objectGuid = Guid.NewGuid(),
+                            active = true,
+                            deleted = false
+                        };
+
+                        _context.FiscalPeriods.Add(fp);
+                    }
+
+                    await _context.SaveChangesAsync(cancellationToken);
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "Generated 12 fiscal periods for year {Year}, tenant {TenantGuid}.",
+                        year, tenantGuid);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to generate fiscal periods for year {Year}", year);
+                    return FinancialOperationResult.Fail($"Failed to generate fiscal periods: {ex.Message}");
+                }
+            }
+
+            return FinancialOperationResult.Ok(new Dictionary<string, object>
+            {
+                ["created"] = 12,
+                ["existing"] = 0,
+                ["year"] = year
+            });
+        }
     }
 }
