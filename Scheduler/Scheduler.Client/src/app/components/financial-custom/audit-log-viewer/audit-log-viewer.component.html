@@ -122,7 +122,7 @@
                             </td>
                             <td>
                                 <span class="text-muted small" *ngIf="entry.fieldChanges?.length">
-                                    {{ entry.fieldChanges.length }} field{{ entry.fieldChanges.length === 1 ? '' : 's' }}
+                                    {{ entry.fieldChanges?.length }} field{{ entry.fieldChanges?.length === 1 ? '' : 's' }}
                                 </span>
                                 <span class="text-muted small" *ngIf="!entry.fieldChanges?.length">—</span>
                             </td>

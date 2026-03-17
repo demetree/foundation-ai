@@ -1,4 +1,6 @@
+// AI-Developed — This file was significantly developed with AI assistance.
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { FinancialCategoryService, FinancialCategoryData } from '../../../scheduler-data-services/financial-category.service';
@@ -7,6 +9,29 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { FinancialCategoryCustomAddEditComponent } from '../financial-category-custom-add-edit/financial-category-custom-add-edit.component';
 import { Router } from '@angular/router';
+
+
+//
+// Tree view interfaces
+//
+interface TreeNode {
+    category: FinancialCategoryData;
+    children: TreeNode[];
+    depth: number;
+    expanded: boolean;
+}
+
+interface AccountTypeGroup {
+    typeName: string;
+    isRevenue: boolean;
+    categories: TreeNode[];
+    totalCount: number;
+    expanded: boolean;
+}
+
+interface CategoryUsageMap {
+    [categoryId: number]: number;
+}
 
 
 @Component({
@@ -33,17 +58,29 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
     public totalCount = 0;
     public incomeCount = 0;
     public expenseCount = 0;
+    public assetLiabilityEquityCount = 0;
 
     private debounceTimeout: any;
 
+    // View mode
+    public viewMode: 'table' | 'tree' = 'table';
+
+    // Tree view state
+    public accountTypeGroups: AccountTypeGroup[] = [];
+    public expandedParents: Set<number> = new Set<number>();
+
+    // Transaction usage counts (from CategoryBreakdown)
+    public transactionCounts: CategoryUsageMap = {};
+    public loadingCounts = false;
+
     // Account type colors and labels
-    public accountTypeConfig: { [key: string]: { bg: string; color: string; label: string } } = {
-        'Income': { bg: 'rgba(16, 185, 129, 0.1)', color: '#059669', label: 'Income' },
-        'Expense': { bg: 'rgba(239, 68, 68, 0.1)', color: '#dc2626', label: 'Expense' },
-        'COGS': { bg: 'rgba(245, 158, 11, 0.1)', color: '#d97706', label: 'COGS' },
-        'Asset': { bg: 'rgba(59, 130, 246, 0.1)', color: '#2563eb', label: 'Asset' },
-        'Liability': { bg: 'rgba(139, 92, 246, 0.1)', color: '#7c3aed', label: 'Liability' },
-        'Equity': { bg: 'rgba(236, 72, 153, 0.1)', color: '#db2777', label: 'Equity' }
+    public accountTypeConfig: { [key: string]: { bg: string; color: string; icon: string; gradient: string } } = {
+        'Income':    { bg: 'rgba(16, 185, 129, 0.1)',  color: '#059669', icon: 'fa-arrow-trend-up',   gradient: 'linear-gradient(135deg, #059669, #10b981)' },
+        'Expense':   { bg: 'rgba(239, 68, 68, 0.1)',   color: '#dc2626', icon: 'fa-arrow-trend-down', gradient: 'linear-gradient(135deg, #dc2626, #ef4444)' },
+        'COGS':      { bg: 'rgba(245, 158, 11, 0.1)',  color: '#d97706', icon: 'fa-industry',         gradient: 'linear-gradient(135deg, #d97706, #f59e0b)' },
+        'Asset':     { bg: 'rgba(59, 130, 246, 0.1)',   color: '#2563eb', icon: 'fa-building-columns', gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)' },
+        'Liability': { bg: 'rgba(139, 92, 246, 0.1)',   color: '#7c3aed', icon: 'fa-file-invoice-dollar', gradient: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' },
+        'Equity':    { bg: 'rgba(236, 72, 153, 0.1)',   color: '#db2777', icon: 'fa-scale-balanced',  gradient: 'linear-gradient(135deg, #db2777, #ec4899)' }
     };
 
     // Office filter
@@ -54,6 +91,7 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
     constructor(
         private categoryService: FinancialCategoryService,
         private financialOfficeService: FinancialOfficeService,
+        private http: HttpClient,
         private alertService: AlertService,
         private authService: AuthService,
         private navigationService: NavigationService,
@@ -73,6 +111,7 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
 
         this.loadData();
         this.loadOffices();
+        this.loadTransactionCounts();
     }
 
 
@@ -87,10 +126,9 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
         }).subscribe({
             next: (data: FinancialCategoryData[] | null) => {
                 this.categories = data ?? [];
-                this.totalCount = this.categories.length;
-                this.incomeCount = this.categories.filter(c => c.accountType?.isRevenue).length;
-                this.expenseCount = this.categories.filter(c => !c.accountType?.isRevenue).length;
+                this.computeCounts();
                 this.applyFiltersAndSort();
+                this.buildTree();
                 this.isLoading = false;
             },
             error: () => {
@@ -98,6 +136,23 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
                 this.isLoading = false;
             }
         });
+    }
+
+
+    private computeCounts(): void {
+        this.totalCount = this.categories.length;
+        this.incomeCount = this.categories.filter(c => c.accountType?.isRevenue === true).length;
+        this.expenseCount = this.categories.filter(c =>
+            c.accountType?.isRevenue === false &&
+            c.accountType?.name !== 'Asset' &&
+            c.accountType?.name !== 'Liability' &&
+            c.accountType?.name !== 'Equity'
+        ).length;
+        this.assetLiabilityEquityCount = this.categories.filter(c =>
+            c.accountType?.name === 'Asset' ||
+            c.accountType?.name === 'Liability' ||
+            c.accountType?.name === 'Equity'
+        ).length;
     }
 
 
@@ -113,6 +168,177 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
         });
     }
 
+
+    /**
+     * Loads transaction usage counts per category from the server-side CategoryBreakdown endpoint.
+     */
+    private loadTransactionCounts(): void {
+        this.loadingCounts = true;
+
+        const currentYear = new Date().getFullYear();
+        const url = `/api/FinancialTransactions/CategoryBreakdown?year=${currentYear}`;
+        const headers = new HttpHeaders({
+            'Authorization': 'Bearer ' + this.authService.accessToken
+        });
+
+        this.http.get<{ year: number; categories: { categoryId: number; count: number }[] }>(url, { headers }).subscribe({
+            next: (response) => {
+                this.transactionCounts = {};
+                for (const cat of (response?.categories ?? [])) {
+                    this.transactionCounts[cat.categoryId] = cat.count;
+                }
+                this.loadingCounts = false;
+            },
+            error: () => {
+                this.loadingCounts = false;
+            }
+        });
+    }
+
+
+    public getTransactionCount(categoryId: number | bigint): number {
+        return this.transactionCounts[Number(categoryId)] || 0;
+    }
+
+
+    //
+    // ── View Mode Toggle ──
+    //
+
+    public setViewMode(mode: 'table' | 'tree'): void {
+        this.viewMode = mode;
+    }
+
+
+    //
+    // ── Tree View Logic ──
+    //
+
+    private buildTree(): void {
+        // Group categories by account type
+        const groupMap = new Map<string, { isRevenue: boolean; cats: FinancialCategoryData[] }>();
+
+        // Define group ordering
+        const groupOrder = ['Income', 'Expense', 'COGS', 'Asset', 'Liability', 'Equity'];
+
+        for (const cat of this.categories) {
+            const typeName = cat.accountType?.name || 'Other';
+            if (!groupMap.has(typeName)) {
+                groupMap.set(typeName, {
+                    isRevenue: cat.accountType?.isRevenue ?? false,
+                    cats: []
+                });
+            }
+            groupMap.get(typeName)!.cats.push(cat);
+        }
+
+        // Build tree nodes within each group
+        this.accountTypeGroups = [];
+
+        // Process in defined order first, then any others
+        const processedTypes = new Set<string>();
+
+        for (const typeName of groupOrder) {
+            if (groupMap.has(typeName)) {
+                const group = groupMap.get(typeName)!;
+                this.accountTypeGroups.push({
+                    typeName,
+                    isRevenue: group.isRevenue,
+                    categories: this.buildTreeNodes(group.cats, 0),
+                    totalCount: group.cats.length,
+                    expanded: true
+                });
+                processedTypes.add(typeName);
+            }
+        }
+
+        // Add any remaining types
+        for (const [typeName, group] of groupMap) {
+            if (!processedTypes.has(typeName)) {
+                this.accountTypeGroups.push({
+                    typeName,
+                    isRevenue: group.isRevenue,
+                    categories: this.buildTreeNodes(group.cats, 0),
+                    totalCount: group.cats.length,
+                    expanded: true
+                });
+            }
+        }
+    }
+
+
+    private buildTreeNodes(categories: FinancialCategoryData[], depth: number): TreeNode[] {
+        // Find root categories (no parent, or parent not in this group)
+        const catIds = new Set(categories.map(c => Number(c.id)));
+
+        const roots = categories.filter(c =>
+            !c.parentFinancialCategoryId || !catIds.has(Number(c.parentFinancialCategoryId))
+        );
+
+        const childMap = new Map<number, FinancialCategoryData[]>();
+        for (const cat of categories) {
+            if (cat.parentFinancialCategoryId && catIds.has(Number(cat.parentFinancialCategoryId))) {
+                const parentId = Number(cat.parentFinancialCategoryId);
+                if (!childMap.has(parentId)) {
+                    childMap.set(parentId, []);
+                }
+                childMap.get(parentId)!.push(cat);
+            }
+        }
+
+        const buildNodes = (cats: FinancialCategoryData[], d: number): TreeNode[] => {
+            return cats
+                .sort((a, b) => (a.code ?? '').localeCompare(b.code ?? ''))
+                .map(cat => {
+                    const children = childMap.get(Number(cat.id)) || [];
+                    return {
+                        category: cat,
+                        children: buildNodes(children, d + 1),
+                        depth: d,
+                        expanded: this.expandedParents.has(Number(cat.id))
+                    };
+                });
+        };
+
+        return buildNodes(roots, depth);
+    }
+
+
+    public toggleGroup(group: AccountTypeGroup): void {
+        group.expanded = !group.expanded;
+    }
+
+
+    public toggleParent(node: TreeNode): void {
+        const id = Number(node.category.id);
+        if (this.expandedParents.has(id)) {
+            this.expandedParents.delete(id);
+            node.expanded = false;
+        } else {
+            this.expandedParents.add(id);
+            node.expanded = true;
+        }
+    }
+
+
+    /**
+     * Flattens tree nodes for rendering, respecting expand/collapse state.
+     */
+    public flattenTreeNodes(nodes: TreeNode[]): TreeNode[] {
+        const result: TreeNode[] = [];
+        for (const node of nodes) {
+            result.push(node);
+            if (node.expanded && node.children.length > 0) {
+                result.push(...this.flattenTreeNodes(node.children));
+            }
+        }
+        return result;
+    }
+
+
+    //
+    // ── Existing Filter/Sort Logic (unchanged) ──
+    //
 
     public onOfficeChange(): void {
         this.applyFiltersAndSort();
@@ -215,6 +441,16 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
     }
 
 
+    public getAccountTypeIcon(type: string): string {
+        return this.accountTypeConfig[type]?.icon || 'fa-folder';
+    }
+
+
+    public getAccountTypeGradient(type: string): string {
+        return this.accountTypeConfig[type]?.gradient || 'linear-gradient(135deg, #6b7280, #9ca3af)';
+    }
+
+
     public goBack(): void {
         this.navigationService.goBack();
     }
@@ -229,6 +465,10 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
 
     public trackById(index: number, item: FinancialCategoryData): number {
         return Number(item.id);
+    }
+
+    public trackByNodeId(index: number, item: TreeNode): number {
+        return Number(item.category.id);
     }
 
 
@@ -251,5 +491,6 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
 
     public onCategoryChanged(): void {
         this.loadData();
+        this.loadTransactionCounts();
     }
 }
