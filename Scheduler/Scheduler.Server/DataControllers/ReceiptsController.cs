@@ -671,6 +671,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing Receipt record
@@ -873,7 +874,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			}
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new Receipt record
@@ -1018,7 +1021,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			return CreatedAtRoute("Receipt", new { id = receipt.id }, Database.Receipt.CreateAnonymousWithFirstLevelSubObjects(receipt));
 		}
 
+*/
 
+/* This function is expected to be overridden in a custom file
 
         /// <summary>
         /// 
@@ -1191,6 +1196,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				}
 			}
 		}
+
+*/
 
 
 
@@ -1467,6 +1474,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 		}
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a Receipt record
@@ -1573,6 +1581,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of Receipt records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.

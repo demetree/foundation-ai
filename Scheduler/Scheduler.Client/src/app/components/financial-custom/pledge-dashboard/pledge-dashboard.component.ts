@@ -67,7 +67,7 @@ export class PledgeDashboardComponent implements OnInit {
 
         forkJoin({
             pledges: this.pledgeService.GetPledgeList({ active: true, deleted: false, includeRelations: true, pageSize: 5000 }),
-            gifts: this.giftService.GetGiftList({ active: true, deleted: false, includeRelations: false, pageSize: 10000 }),
+            gifts: this.giftService.GetGiftList({ active: true, deleted: false, includeRelations: false }),
             campaigns: this.campaignService.GetCampaignList({ active: true, deleted: false }),
             funds: this.fundService.GetFundList({ active: true, deleted: false })
         }).subscribe({

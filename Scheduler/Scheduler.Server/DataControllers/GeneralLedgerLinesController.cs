@@ -31,7 +31,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 	public partial class GeneralLedgerLinesController : SecureWebAPIController
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
-		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 50;
 
 		private SchedulerContext _context;
 
@@ -86,7 +86,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			if (pageNumber.HasValue == true &&
@@ -215,7 +215,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			IQueryable<Database.GeneralLedgerLine> query = (from gll in _context.GeneralLedgerLines select gll);
@@ -291,7 +291,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			try
@@ -344,6 +344,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing GeneralLedgerLine record
@@ -381,7 +382,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			IQueryable<Database.GeneralLedgerLine> query = (from x in _context.GeneralLedgerLines
 				where
@@ -444,7 +445,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new GeneralLedgerLine record
@@ -513,8 +516,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			return CreatedAtRoute("GeneralLedgerLine", new { id = generalLedgerLine.id }, Database.GeneralLedgerLine.CreateAnonymousWithFirstLevelSubObjects(generalLedgerLine));
 		}
 
+*/
 
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a GeneralLedgerLine record
@@ -587,6 +592,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of GeneralLedgerLine records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
@@ -622,7 +628,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 
 
 			if (pageNumber.HasValue == true &&

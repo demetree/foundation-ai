@@ -85,7 +85,7 @@ export class RevenueByClientReportComponent implements OnInit {
         this.isLoading = true;
 
         this.invoiceService.GetInvoiceList({
-            active: true, deleted: false, includeRelations: true, pageSize: 10000
+            active: true, deleted: false, includeRelations: true
         }).subscribe({
             next: (invoices) => {
                 this.buildReport(invoices ?? []);

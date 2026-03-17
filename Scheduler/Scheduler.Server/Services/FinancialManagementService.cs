@@ -343,6 +343,16 @@ namespace Foundation.Scheduler.Services
                 description = $"CR: {description}"
             });
 
+            // Balance validation — ensure debits equal credits before persisting
+            decimal totalDebits = glEntry.GeneralLedgerLines.Sum(l => l.debitAmount);
+            decimal totalCredits = glEntry.GeneralLedgerLines.Sum(l => l.creditAmount);
+            if (totalDebits != totalCredits)
+            {
+                throw new InvalidOperationException(
+                    $"GL entry is unbalanced: debits={totalDebits}, credits={totalCredits}. " +
+                    $"Journal entry #{glEntry.journalEntryNumber} for tenant {tenantGuid}.");
+            }
+
             _context.GeneralLedgerEntries.Add(glEntry);
             // SaveChanges is handled by the calling method
         }
@@ -406,6 +416,16 @@ namespace Foundation.Scheduler.Services
                     creditAmount = line.debitAmount,    // Swap
                     description = $"REVERSAL: {line.description}"
                 });
+            }
+
+            // Balance validation — ensure reversal debits equal credits
+            decimal totalDebits = reversalEntry.GeneralLedgerLines.Sum(l => l.debitAmount);
+            decimal totalCredits = reversalEntry.GeneralLedgerLines.Sum(l => l.creditAmount);
+            if (totalDebits != totalCredits)
+            {
+                throw new InvalidOperationException(
+                    $"GL reversal entry is unbalanced: debits={totalDebits}, credits={totalCredits}. " +
+                    $"Journal entry #{reversalEntry.journalEntryNumber} for tenant {tenantGuid}.");
             }
 
             _context.GeneralLedgerEntries.Add(reversalEntry);
@@ -498,6 +518,143 @@ namespace Foundation.Scheduler.Services
             });
 
             return result;
+        }
+
+
+        /// <summary>
+        /// Reconciles FinancialTransaction ↔ GeneralLedgerEntry.
+        /// Returns discrepancies: missing GL entries, orphaned GL entries, and amount mismatches.
+        /// </summary>
+        public async Task<object> ReconcileGLAsync(
+            Guid tenantGuid,
+            int? fiscalPeriodId = null,
+            CancellationToken cancellationToken = default)
+        {
+            // Get all non-voided financial transactions
+            var txQuery = _context.FinancialTransactions
+                .Where(ft => ft.tenantGuid == tenantGuid && ft.active == true && ft.deleted == false);
+
+            if (fiscalPeriodId.HasValue)
+                txQuery = txQuery.Where(ft => ft.fiscalPeriodId == fiscalPeriodId.Value);
+
+            var transactions = await txQuery
+                .Select(ft => new { ft.id, ft.totalAmount, ft.description, ft.transactionDate, ft.isRevenue })
+                .ToListAsync(cancellationToken);
+
+            // Get all non-deleted, non-reversal GL entries
+            var glQuery = _context.GeneralLedgerEntries
+                .Where(e => e.tenantGuid == tenantGuid && e.active == true && e.deleted == false && e.reversalOfId == null);
+
+            if (fiscalPeriodId.HasValue)
+                glQuery = glQuery.Where(e => e.fiscalPeriodId == fiscalPeriodId.Value);
+
+            var glEntries = await glQuery
+                .Select(e => new
+                {
+                    e.id,
+                    e.financialTransactionId,
+                    e.description,
+                    e.transactionDate,
+                    totalDebits = e.GeneralLedgerLines.Sum(l => l.debitAmount),
+                    totalCredits = e.GeneralLedgerLines.Sum(l => l.creditAmount)
+                })
+                .ToListAsync(cancellationToken);
+
+            var glByTxId = glEntries
+                .Where(e => e.financialTransactionId.HasValue)
+                .GroupBy(e => e.financialTransactionId.Value)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var txIds = new HashSet<int>(transactions.Select(t => t.id));
+
+            // 1. Transactions missing GL entries
+            var missingGLEntries = transactions
+                .Where(t => !glByTxId.ContainsKey(t.id))
+                .Select(t => new
+                {
+                    financialTransactionId = t.id,
+                    t.totalAmount,
+                    t.description,
+                    transactionDate = t.transactionDate.ToString("o"),
+                    t.isRevenue,
+                    issue = "No GL entry found for this transaction"
+                })
+                .ToList();
+
+            // 2. Orphaned GL entries (reference a missing/voided transaction)
+            var orphanedGLEntries = glEntries
+                .Where(e => e.financialTransactionId.HasValue && !txIds.Contains(e.financialTransactionId.Value))
+                .Select(e => new
+                {
+                    generalLedgerEntryId = e.id,
+                    e.financialTransactionId,
+                    e.description,
+                    transactionDate = e.transactionDate.ToString("o"),
+                    e.totalDebits,
+                    e.totalCredits,
+                    issue = "GL entry references a transaction that does not exist or is voided/deleted"
+                })
+                .ToList();
+
+            // 3. Amount mismatches
+            var amountMismatches = new List<object>();
+            foreach (var tx in transactions)
+            {
+                if (glByTxId.TryGetValue(tx.id, out var entries))
+                {
+                    foreach (var entry in entries)
+                    {
+                        if (entry.totalDebits != tx.totalAmount || entry.totalCredits != tx.totalAmount)
+                        {
+                            amountMismatches.Add(new
+                            {
+                                financialTransactionId = tx.id,
+                                generalLedgerEntryId = entry.id,
+                                transactionAmount = tx.totalAmount,
+                                glDebits = entry.totalDebits,
+                                glCredits = entry.totalCredits,
+                                issue = "GL amounts do not match transaction amount"
+                            });
+                        }
+                    }
+                }
+            }
+
+            // 4. Unbalanced GL entries
+            var unbalancedEntries = glEntries
+                .Where(e => e.totalDebits != e.totalCredits)
+                .Select(e => new
+                {
+                    generalLedgerEntryId = e.id,
+                    e.financialTransactionId,
+                    e.description,
+                    e.totalDebits,
+                    e.totalCredits,
+                    difference = e.totalDebits - e.totalCredits,
+                    issue = "GL entry debits do not equal credits"
+                })
+                .ToList();
+
+            return new
+            {
+                summary = new
+                {
+                    totalTransactions = transactions.Count,
+                    totalGLEntries = glEntries.Count,
+                    transactionsMissingGL = missingGLEntries.Count,
+                    orphanedGLEntries = orphanedGLEntries.Count,
+                    amountMismatches = amountMismatches.Count,
+                    unbalancedEntries = unbalancedEntries.Count,
+                    isClean = missingGLEntries.Count == 0
+                              && orphanedGLEntries.Count == 0
+                              && amountMismatches.Count == 0
+                              && unbalancedEntries.Count == 0
+                },
+                missingGLEntries,
+                orphanedGLEntries,
+                amountMismatches,
+                unbalancedEntries
+            };
         }
 
 
@@ -1033,6 +1190,7 @@ namespace Foundation.Scheduler.Services
             int? clientId = null,
             string referenceNumber = null,
             string notes = null,
+            int userId = 0,
             CancellationToken cancellationToken = default)
         {
             if (amount < 0 || taxAmount < 0)
@@ -1103,7 +1261,7 @@ namespace Foundation.Scheduler.Services
                         financialTransactionId = ft.id,
                         versionNumber = 1,
                         timeStamp = DateTime.UtcNow,
-                        userId = 0,
+                        userId = userId,
                         tenantGuid = tenantGuid,
                         data = BuildAuditJson("Created", null, ft)
                     });
@@ -1164,6 +1322,7 @@ namespace Foundation.Scheduler.Services
             int? clientId = null,
             string referenceNumber = null,
             string notes = null,
+            int userId = 0,
             CancellationToken cancellationToken = default)
         {
             if (amount <= 0)
@@ -1228,7 +1387,7 @@ namespace Foundation.Scheduler.Services
                         financialTransactionId = ft.id,
                         versionNumber = 1,
                         timeStamp = DateTime.UtcNow,
-                        userId = 0,
+                        userId = userId,
                         tenantGuid = tenantGuid,
                         data = BuildAuditJson("Created", null, ft)
                     });

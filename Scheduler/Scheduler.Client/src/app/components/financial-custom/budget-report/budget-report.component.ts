@@ -117,7 +117,7 @@ export class BudgetReportComponent implements OnInit {
         if (this.selectedOfficeId) budgetParams.financialOfficeId = this.selectedOfficeId;
         if (this.selectedFiscalPeriodId) budgetParams.fiscalPeriodId = this.selectedFiscalPeriodId;
 
-        const txParams: any = { active: true, deleted: false, pageSize: 10000 };
+        const txParams: any = { active: true, deleted: false };
         if (this.selectedOfficeId) txParams.financialOfficeId = this.selectedOfficeId;
 
         forkJoin({

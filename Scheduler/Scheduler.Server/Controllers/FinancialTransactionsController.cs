@@ -916,6 +916,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 request.ClientId,
                 request.ReferenceNumber,
                 request.Notes,
+                securityUser.id,
                 cancellationToken);
 
             if (!result.Success)
@@ -1008,6 +1009,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 request.ClientId,
                 request.ReferenceNumber,
                 request.Notes,
+                securityUser.id,
                 cancellationToken);
 
             if (!result.Success)
@@ -1114,6 +1116,50 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 fiscalPeriodId,
                 fromDate,
                 toDate,
+                cancellationToken);
+
+            return Ok(result);
+        }
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  GL Reconciliation
+        //
+        //  GET /api/FinancialTransactions/GLReconciliation
+        //  Cross-references FinancialTransaction ↔ GeneralLedgerEntry to
+        //  identify missing entries, orphans, amount mismatches, and imbalances.
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        [HttpGet]
+        [Route("api/FinancialTransactions/GLReconciliation")]
+        public async Task<IActionResult> GetGLReconciliation(
+            [FromQuery] int? fiscalPeriodId = null,
+            CancellationToken cancellationToken = default)
+        {
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.ReconcileGLAsync(
+                userTenantGuid,
+                fiscalPeriodId,
                 cancellationToken);
 
             return Ok(result);

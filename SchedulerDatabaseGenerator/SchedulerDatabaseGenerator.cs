@@ -3095,6 +3095,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             fiscalPeriodTable.AddControlFields();
 
             fiscalPeriodTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "fiscalYear", "periodNumber" }, true);
+            fiscalPeriodTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
 
 
             //
@@ -3143,6 +3144,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             financialTransactionTable.AddString50Field("externalSystemName", true).AddScriptComments("Name of the external system (e.g., 'QuickBooks', 'Xero') for multi-system tracking.");
             financialTransactionTable.AddVersionControl();
             financialTransactionTable.AddControlFields();
+            financialTransactionTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
 
 
             // TODO: Add composite indexes (tenantGuid, isRevenue, transactionDate) and
@@ -3201,7 +3203,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
  DESIGN NOTE: reversalOfId links void/correction entries back to the original entry they reverse.
  ====================================================================================================";
 
-            generalLedgerEntryTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            generalLedgerEntryTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            generalLedgerEntryTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
             generalLedgerEntryTable.AddIdField();
             generalLedgerEntryTable.AddMultiTenantSupport();
             generalLedgerEntryTable.AddIntField("journalEntryNumber", false).AddScriptComments("Auto-incrementing per-tenant journal entry number for human reference.");
@@ -3231,7 +3234,8 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
  Exactly one of debitAmount/creditAmount should be non-zero per line.
  ====================================================================================================";
 
-            generalLedgerLineTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            generalLedgerLineTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            generalLedgerLineTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
             generalLedgerLineTable.AddIdField();
             generalLedgerLineTable.AddForeignKeyField(generalLedgerEntryTable, false, true).AddScriptComments("The parent journal entry this line belongs to.");
             generalLedgerLineTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("The account (FinancialCategory) this line posts to.");
@@ -3476,6 +3480,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             invoiceTable.AddVersionControl();
             invoiceTable.AddControlFields();
             invoiceTable.SetDisplayNameField("invoiceNumber");
+            invoiceTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
 
             invoiceTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "invoiceNumber" }, true);
 
@@ -3504,6 +3509,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             invoiceLineItemTable.AddMoneyField("totalAmount", false, 0, true).AddScriptComments("Line total (amount + taxAmount).");
             invoiceLineItemTable.AddSequenceField().AddScriptComments("Display order on the invoice.");
             invoiceLineItemTable.AddControlFields();
+            invoiceLineItemTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
 
 
             //
@@ -3539,6 +3545,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             receiptTable.AddVersionControl();
             receiptTable.AddControlFields();
             receiptTable.SetDisplayNameField("receiptNumber");
+            receiptTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
 
             receiptTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "receiptNumber" }, true);
 

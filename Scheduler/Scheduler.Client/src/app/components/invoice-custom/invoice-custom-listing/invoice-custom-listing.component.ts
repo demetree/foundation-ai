@@ -70,8 +70,7 @@ export class InvoiceCustomListingComponent implements OnInit {
         this.invoiceService.GetInvoiceList({
             active: true,
             deleted: false,
-            includeRelations: true,
-            pageSize: 10000
+            includeRelations: true
         }).subscribe({
             next: (data: InvoiceData[] | null) => {
                 this.invoices = data ?? [];

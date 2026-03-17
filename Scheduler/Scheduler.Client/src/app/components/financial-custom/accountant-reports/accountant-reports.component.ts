@@ -157,7 +157,7 @@ export class AccountantReportsComponent implements OnInit {
         this.isLoading = true;
 
         const catParams: any = { active: true, deleted: false, includeRelations: true };
-        const txParams: any = { active: true, deleted: false, includeRelations: true, pageSize: 10000 };
+        const txParams: any = { active: true, deleted: false, includeRelations: true };
         if (this.selectedOfficeId) {
             catParams.financialOfficeId = this.selectedOfficeId;
             txParams.financialOfficeId = this.selectedOfficeId;

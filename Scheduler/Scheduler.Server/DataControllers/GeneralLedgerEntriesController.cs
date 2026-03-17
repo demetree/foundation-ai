@@ -31,7 +31,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 	public partial class GeneralLedgerEntriesController : SecureWebAPIController
 	{
 		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
-		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 50;
 
 		private SchedulerContext _context;
 
@@ -94,7 +94,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			Guid userTenantGuid;
@@ -320,7 +320,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			Guid userTenantGuid;
 
@@ -482,7 +482,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			
 			Guid userTenantGuid;
@@ -553,6 +553,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing GeneralLedgerEntry record
@@ -590,7 +591,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 			Guid userTenantGuid;
 
@@ -719,7 +720,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new GeneralLedgerEntry record
@@ -822,8 +825,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			return CreatedAtRoute("GeneralLedgerEntry", new { id = generalLedgerEntry.id }, Database.GeneralLedgerEntry.CreateAnonymousWithFirstLevelSubObjects(generalLedgerEntry));
 		}
 
+*/
 
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a GeneralLedgerEntry record
@@ -911,6 +916,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of GeneralLedgerEntry records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
@@ -954,7 +960,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 1, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 50, cancellationToken);
 
 
 			Guid userTenantGuid;

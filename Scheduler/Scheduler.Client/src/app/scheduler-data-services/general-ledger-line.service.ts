@@ -544,7 +544,7 @@ export class GeneralLedgerLineService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerGeneralLedgerLineWriter = user.writePermission >= 1;
+            userIsSchedulerGeneralLedgerLineWriter = user.writePermission >= 50;
           } else {
             userIsSchedulerGeneralLedgerLineWriter = false;
           }      

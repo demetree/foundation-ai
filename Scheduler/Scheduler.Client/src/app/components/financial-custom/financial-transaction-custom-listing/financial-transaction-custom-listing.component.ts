@@ -88,8 +88,7 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
             deleted: false,
             includeRelations: true,
             // TODO: Replace with server-side pagination when transaction volume grows
-            pageSize: 10000
-        }).subscribe({
+            }).subscribe({
             next: (data: FinancialTransactionData[] | null) => {
                 this.transactions = data ?? [];
                 this.totalCount = this.transactions.length;

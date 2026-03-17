@@ -109,7 +109,7 @@ export class PnlReportComponent implements OnInit {
     private loadReport(): void {
         this.isLoading = true;
 
-        const txParams: any = { active: true, deleted: false, includeRelations: true, pageSize: 10000 };
+        const txParams: any = { active: true, deleted: false, includeRelations: true };
         if (this.selectedOfficeId) txParams.financialOfficeId = this.selectedOfficeId;
 
         this.transactionService.GetFinancialTransactionList(txParams).subscribe({

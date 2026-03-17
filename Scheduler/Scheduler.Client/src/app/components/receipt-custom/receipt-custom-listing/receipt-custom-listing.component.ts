@@ -61,8 +61,7 @@ export class ReceiptCustomListingComponent implements OnInit {
         this.receiptService.GetReceiptList({
             active: true,
             deleted: false,
-            includeRelations: true,
-            pageSize: 10000
+            includeRelations: true
         }).subscribe({
             next: (data: ReceiptData[] | null) => {
                 this.receipts = data ?? [];
