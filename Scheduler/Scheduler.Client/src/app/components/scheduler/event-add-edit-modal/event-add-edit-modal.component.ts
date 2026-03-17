@@ -46,6 +46,7 @@ import { InputDialogService } from '../../../services/input-dialog.service';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 import { EventChargeService, EventChargeData } from '../../../scheduler-data-services/event-charge.service';
 import { FinancialTransactionService, FinancialTransactionData } from '../../../scheduler-data-services/financial-transaction.service';
+import { SchedulerModeService } from '../../../services/scheduler-mode.service';
 
 @Component({
   selector: 'app-event-add-edit-modal',
@@ -73,6 +74,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   isRecurring = false;
   recurrenceRule: RecurrenceRuleData | null = null;
   activeTab = 'basic';
+  isSimpleMode = true;
 
   // Dynamic attributes
   attributesParsed: any = {};
@@ -200,9 +202,18 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private resourceScheduleContextService: ResourceScheduleContextService,
     private schedulerHelperService: SchedulerHelperService,
     private eventChargeService: EventChargeService,
-    private financialTransactionService: FinancialTransactionService
+    private financialTransactionService: FinancialTransactionService,
+    private schedulerModeService: SchedulerModeService
   ) {
     this.buildForm();
+
+    //
+    // Subscribe to the mode service for the event editor
+    //
+    this.subscriptions.add(
+      this.schedulerModeService.isSimpleMode('eventEditor')
+        .subscribe(simple => this.isSimpleMode = simple)
+    );
   }
 
   ngOnInit(): void {

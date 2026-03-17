@@ -41,7 +41,7 @@
           <div class="stat-value text-white">{{ todaysAssignments.length }}</div>
           <div class="stat-label text-white-50">Events Today</div>
         </div>
-        <div class="stat-item text-center">
+        <div class="stat-item text-center" *ngIf="!isSimpleMode">
           <div class="stat-value text-white">{{ activeResourcesToday }}</div>
           <div class="stat-label text-white-50">Active Resources</div>
         </div>
@@ -49,7 +49,7 @@
           <div class="stat-value text-white">{{ currentlyRunning.length }}</div>
           <div class="stat-label text-white-50">Running Now</div>
         </div>
-        <div class="stat-item text-center" *ngIf="resourcesOnBlackoutToday.length > 0">
+        <div class="stat-item text-center" *ngIf="resourcesOnBlackoutToday.length > 0 && !isSimpleMode">
           <div class="stat-value text-warning">{{ resourcesOnBlackoutToday.length }}</div>
           <div class="stat-label text-white-50">Unavailable</div>
         </div>
@@ -199,8 +199,8 @@
             <!-- Row 2: Targets + Resources + Quick Access -->
             <div class="row g-4">
 
-              <!-- Active Projects/Targets -->
-              <div class="col-lg-4">
+              <!-- Active Projects/Targets (Advanced only) -->
+              <div class="col-lg-4" *ngIf="!isSimpleMode">
                 <div class="card h-100 shadow-sm border-0 premium-card">
                   <div
                     class="card-header gradient-info text-white border-0 d-flex justify-content-between align-items-center">
@@ -232,8 +232,8 @@
                 </div>
               </div>
 
-              <!-- Resource Status -->
-              <div class="col-lg-4">
+              <!-- Resource Status (Advanced only) -->
+              <div class="col-lg-4" *ngIf="!isSimpleMode">
                 <div class="card h-100 shadow-sm border-0 premium-card">
                   <div class="card-header gradient-warning border-0 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-dark">

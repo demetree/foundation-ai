@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { SchedulerHelperService } from '../../services/scheduler-helper.service';
+import { SchedulerModeService } from '../../services/scheduler-mode.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -21,7 +22,9 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   public volunteersExpanded = false;
   public setupExpanded = false;
   public isUserFoundationAdmin = false; // keep if you gate items elsewhere
+  public isSimpleMode = true;
   private navSub?: Subscription;
+  private modeSub?: Subscription;
 
 
   // To get the count of offices to allow the offices button to be invisible if there are no offices (It can always be found under Administration)
@@ -31,8 +34,12 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private schedulerHelperService: SchedulerHelperService) {
+    private schedulerHelperService: SchedulerHelperService,
+    private schedulerModeService: SchedulerModeService) {
+
+    //
     // Close side panel + tooltips on navigation
+    //
     this.navSub = this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe(() => {
@@ -41,6 +48,14 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
       });
 
     this.isUserFoundationAdmin = this.authService?.isFoundationAdmin ?? false;
+
+    //
+    // Subscribe to the mode service for the sidebar component
+    //
+    this.modeSub = this.schedulerModeService.isSimpleMode('sidebar')
+      .subscribe(simple => {
+        this.isSimpleMode = simple;
+      });
   }
 
   ngAfterViewInit(): void {
@@ -84,7 +99,16 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
     else this.closeAllTooltips();
   }
 
+  /**
+   * Toggles the global scheduler mode between simple and advanced.
+   */
+  public toggleSchedulerMode(): void {
+    this.schedulerModeService.toggleGlobalMode();
+  }
+
+
   ngOnDestroy(): void {
     this.navSub?.unsubscribe();
+    this.modeSub?.unsubscribe();
   }
 }

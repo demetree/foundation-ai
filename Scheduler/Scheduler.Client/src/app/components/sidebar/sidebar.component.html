@@ -64,7 +64,8 @@
     <!-- COLLAPSIBLE GROUPS                                           -->
     <!-- ============================================================ -->
 
-    <!-- Volunteers Group -->
+    <!-- Volunteers Group (Advanced mode only) -->
+    <ng-container *ngIf="!isSimpleMode">
     <li class="nav-item">
       <a class="nav-link text-white group-toggle" (click)="volunteersExpanded = !volunteersExpanded"
          [ngbTooltip]="!isExpanded ? 'Volunteers' : null" triggers="hover" #tVolGroup="ngbTooltip"
@@ -97,8 +98,10 @@
         </a>
       </li>
     </ng-container>
+    </ng-container>
 
-    <!-- Setup Group -->
+    <!-- Setup Group (Advanced mode only) -->
+    <ng-container *ngIf="!isSimpleMode">
     <li class="nav-item">
       <a class="nav-link text-white group-toggle" (click)="setupExpanded = !setupExpanded"
          [ngbTooltip]="!isExpanded ? 'Setup' : null" triggers="hover" #tSetup="ngbTooltip"
@@ -196,10 +199,26 @@
         </a>
       </li>
     </ng-container>
+    </ng-container>
 
     <!-- ============================================================ -->
     <!-- BOTTOM — Administration                                      -->
     <!-- ============================================================ -->
+
+    <!-- Mode Toggle (Simple / Advanced) -->
+    <li class="nav-item mt-2">
+      <a class="nav-link text-white" style="cursor: pointer;"
+         (click)="toggleSchedulerMode()"
+         [ngbTooltip]="!isExpanded ? (isSimpleMode ? 'Switch to Advanced' : 'Switch to Simple') : null"
+         triggers="hover" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid" [ngClass]="isSimpleMode ? 'fa-toggle-off' : 'fa-toggle-on'"
+           [style.color]="isSimpleMode ? '#6c757d' : '#0dcaf0'"></i>
+        <span class="label px-2">
+          <span class="small" style="opacity: 0.6;">Mode:</span>
+          {{ isSimpleMode ? 'Simple' : 'Advanced' }}
+        </span>
+      </a>
+    </li>
 
     <!-- Divider -->
     <li class="nav-item" *ngIf="isExpanded">

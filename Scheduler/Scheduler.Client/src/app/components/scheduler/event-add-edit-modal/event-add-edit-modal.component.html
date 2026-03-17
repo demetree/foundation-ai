@@ -16,8 +16,8 @@
 </div>
 
 <div class="modal-body event-modal-body">
-  <!-- Template Quick Picker (Create Mode Only) -->
-  <div class="template-picker" *ngIf="!isEditMode">
+  <!-- Template Quick Picker (Create Mode Only, Advanced Only) -->
+  <div class="template-picker" *ngIf="!isEditMode && !isSimpleMode">
     <div class="d-flex align-items-center mb-2">
       <i class="bi bi-lightning-charge text-warning me-2"></i>
       <span class="fw-semibold small text-uppercase text-muted ls-1">Quick Start from Template</span>
@@ -45,7 +45,8 @@
       </button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" [class.active]="activeTab === 'assignments'" (click)="setActiveTab('assignments')">
+      <button class="nav-link" [class.active]="activeTab === 'assignments'" (click)="setActiveTab('assignments')"
+        *ngIf="!isSimpleMode">
         <i class="bi bi-people me-1"></i>Assignments
       </button>
     </li>
@@ -54,12 +55,12 @@
         <i class="bi bi-arrow-repeat me-1"></i>Recurrence
       </button>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" *ngIf="!isSimpleMode">
       <button class="nav-link" [class.active]="activeTab === 'advanced'" (click)="setActiveTab('advanced')">
         <i class="bi bi-gear me-1"></i>Advanced
       </button>
     </li>
-    <li class="nav-item" *ngIf="isEditMode">
+    <li class="nav-item" *ngIf="isEditMode && !isSimpleMode">
       <button class="nav-link" [class.active]="activeTab === 'dependencies'" (click)="setActiveTab('dependencies')">
         <i class="bi bi-diagram-3 me-1"></i>Dependencies
         <span class="badge bg-primary-subtle text-primary ms-1"
@@ -68,7 +69,7 @@
         </span>
       </button>
     </li>
-    <li class="nav-item" *ngIf="isEditMode">
+    <li class="nav-item" *ngIf="isEditMode && !isSimpleMode">
       <button class="nav-link" [class.active]="activeTab === 'financials'" (click)="setActiveTab('financials')">
         <i class="bi bi-wallet2 me-1"></i>Financials
         <span class="badge bg-success-subtle text-success ms-1"
@@ -77,7 +78,7 @@
         </span>
       </button>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" *ngIf="!isSimpleMode">
       <button class="nav-link" [class.active]="activeTab === 'rental'" (click)="setActiveTab('rental')">
         <i class="bi bi-file-earmark-text me-1"></i>Rental Agreement
         <span class="badge ms-1" *ngIf="getRentalStatus() !== 'none'"
@@ -100,8 +101,8 @@
           <input type="text" class="form-control" formControlName="name" placeholder="e.g. Morning Shift" />
         </div>
 
-        <!-- Status -->
-        <div class="col-md-4">
+        <!-- Status (Advanced only) -->
+        <div class="col-md-4" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Status</label>
           <select class="form-select" formControlName="eventStatusId">
             <option [ngValue]="null">Select Status</option>
@@ -158,8 +159,8 @@
           </div>
         </div>
 
-        <!-- Priority -->
-        <div class="col-md-3">
+        <!-- Priority (Advanced only) -->
+        <div class="col-md-3" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Priority</label>
           <select class="form-select" formControlName="priorityId">
             <option [ngValue]="null">None</option>
@@ -167,8 +168,8 @@
           </select>
         </div>
 
-        <!-- Color -->
-        <div class="col-md-3">
+        <!-- Color (Advanced only) -->
+        <div class="col-md-3" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Color</label>
           <div class="d-flex align-items-center gap-2">
             <input type="color" class="form-control form-control-color" formControlName="color" />
@@ -179,8 +180,8 @@
           </div>
         </div>
 
-        <!-- Project / Target -->
-        <div class="col-md-6">
+        <!-- Project / Target (Advanced only) -->
+        <div class="col-md-6" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Project / Patient</label>
           <select class="form-select" formControlName="schedulingTargetId">
             <option [ngValue]="null">No Target</option>
@@ -190,8 +191,8 @@
           </select>
         </div>
 
-        <!-- Client -->
-        <div class="col-md-6">
+        <!-- Client (Advanced only) -->
+        <div class="col-md-6" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Client</label>
           <select class="form-select" formControlName="clientId">
             <option [ngValue]="null">No Client</option>
@@ -199,8 +200,8 @@
           </select>
         </div>
 
-        <!-- Office -->
-        <div class="col-md-6">
+        <!-- Office (Advanced only) -->
+        <div class="col-md-6" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Office</label>
           <select class="form-select" formControlName="officeId">
             <option [ngValue]="null">No Office</option>
@@ -208,8 +209,8 @@
           </select>
         </div>
 
-        <!-- Booking Source -->
-        <div class="col-md-6">
+        <!-- Booking Source (Advanced only) -->
+        <div class="col-md-6" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Booking Source</label>
           <select class="form-select" formControlName="bookingSourceTypeId">
             <option [ngValue]="null">Select Source</option>
@@ -251,21 +252,21 @@
             placeholder="Brief description of this event"></textarea>
         </div>
 
-        <!-- Notes -->
-        <div class="col-12">
+        <!-- Notes (Advanced only) -->
+        <div class="col-12" *ngIf="!isSimpleMode">
           <label class="form-label fw-semibold">Notes</label>
           <textarea class="form-control" rows="3" formControlName="notes" placeholder="Internal notes..."></textarea>
         </div>
 
-        <!-- Dynamic Attributes -->
-        <div class="col-12">
+        <!-- Dynamic Attributes (Advanced only) -->
+        <div class="col-12" *ngIf="!isSimpleMode">
           <app-dynamic-field-renderer [entityName]="'ScheduledEvent'" [data]="attributesParsed"
             (dataChange)="onDynamicAttributeChange($event)">
           </app-dynamic-field-renderer>
         </div>
 
-        <!-- Calendar Assignment -->
-        <div class="col-12" *ngIf="calendars.length > 0">
+        <!-- Calendar Assignment (Advanced only) -->
+        <div class="col-12" *ngIf="calendars.length > 0 && !isSimpleMode">
           <label class="form-label fw-semibold">
             <i class="bi bi-collection me-1 text-primary"></i>Calendars
           </label>
@@ -447,12 +448,12 @@
       </div>
 
       <div class="recurrence-panel" *ngIf="isRecurring">
-        <app-recurrence-builder [recurrenceRule]="recurrenceRule"
+        <app-recurrence-builder [recurrenceRule]="recurrenceRule" [simpleMode]="isSimpleMode"
           (recurrenceRuleChange)="recurrenceRule = $event"></app-recurrence-builder>
       </div>
 
-      <!-- Recurrence Exceptions (Edit Mode + Recurring Only) -->
-      <div class="exceptions-panel mt-4" *ngIf="isRecurring && isEditMode">
+      <!-- Recurrence Exceptions (Edit Mode + Recurring + Advanced Only) -->
+      <div class="exceptions-panel mt-4" *ngIf="isRecurring && isEditMode && !isSimpleMode">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-semibold mb-0">
             <i class="bi bi-calendar-x me-2 text-warning"></i>Skipped & Moved Dates

@@ -10,6 +10,7 @@ import { lastValueFrom } from 'rxjs';
 })
 export class RecurrenceBuilderComponent implements OnInit, OnChanges {
     @Input() recurrenceRule: RecurrenceRuleData | null = null;
+    @Input() simpleMode: boolean = false;
     @Output() recurrenceRuleChange = new EventEmitter<RecurrenceRuleData>();
 
     frequencies: RecurrenceFrequencyData[] = [];

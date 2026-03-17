@@ -29,6 +29,7 @@ import { ContactData } from '../../scheduler-data-services/contact.service';
 import { AuthService } from '../../services/auth.service';
 import { CurrentUserService } from '../../services/current-user.service';
 import { UserSettingsService, FavouriteItem, MostRecentItem } from '../../services/user-settings.service';
+import { SchedulerModeService } from '../../services/scheduler-mode.service';
 
 
 //
@@ -79,6 +80,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   //
   public loading = true;
   public today = new Date();
+  public isSimpleMode = true;
 
   //
   // Current user info
@@ -127,9 +129,17 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private assignmentService: EventResourceAssignmentService,
     private resourceService: ResourceService,
     private resourceAvailabilityService: ResourceAvailabilityService,
-    private schedulingTargetService: SchedulingTargetService
+    private schedulingTargetService: SchedulingTargetService,
+    private schedulerModeService: SchedulerModeService
   ) {
     this.setGreeting();
+
+    //
+    // Subscribe to the mode service for the overview component
+    //
+    this.schedulerModeService.isSimpleMode('overview')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(simple => this.isSimpleMode = simple);
   }
 
 

@@ -26,17 +26,17 @@
         <button type="button" class="freq-btn" [class.active]="selectedFrequencyId === FREQ_WEEKLY"
           (click)="onFrequencyChange(FREQ_WEEKLY)">Weekly</button>
         <button type="button" class="freq-btn" [class.active]="selectedFrequencyId === FREQ_MONTHLY"
-          (click)="onFrequencyChange(FREQ_MONTHLY)">Monthly</button>
+          (click)="onFrequencyChange(FREQ_MONTHLY)" *ngIf="!simpleMode">Monthly</button>
         <button type="button" class="freq-btn" [class.active]="selectedFrequencyId === FREQ_YEARLY"
-          (click)="onFrequencyChange(FREQ_YEARLY)">Yearly</button>
+          (click)="onFrequencyChange(FREQ_YEARLY)" *ngIf="!simpleMode">Yearly</button>
       </div>
     </div>
 
     <!-- Configuration Panel -->
     <div class="recurrence-config-card p-3 mb-3" *ngIf="selectedFrequencyId">
 
-      <!-- Interval Section -->
-      <div class="d-flex align-items-center mb-3">
+      <!-- Interval Section (Advanced only) -->
+      <div class="d-flex align-items-center mb-3" *ngIf="!simpleMode">
         <span class="me-2 small fw-semibold text-muted">Repeat every</span>
         <input type="number" class="form-control form-control-sm interval-input me-2" [(ngModel)]="recurrenceInterval"
           [ngModelOptions]="{standalone: true}" (ngModelChange)="updateRule()" min="1">
@@ -125,7 +125,7 @@
           <label class="form-check-label" for="endNever">Never</label>
         </div>
 
-        <div class="end-option mb-1">
+        <div class="end-option mb-1" *ngIf="!simpleMode">
           <input class="form-check-input" type="radio" name="endCondition" id="endAfter" [checked]="endType === 'count'"
             (change)="onEndTypeChange('count')">
           <label class="form-check-label d-inline-flex align-items-center gap-1" for="endAfter">

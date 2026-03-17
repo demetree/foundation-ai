@@ -1,3 +1,4 @@
+<!-- AI-Developed — This file was significantly developed with AI assistance. -->
 <div class="page-container">
 
     <!-- Premium Header -->
@@ -18,6 +19,12 @@
             </div>
 
             <div class="header-right">
+                <!-- Add Budget -->
+                <button class="btn btn-sm btn-glass me-2" (click)="startAddBudget()"
+                    *ngIf="selectedFiscalPeriodId && !addingBudget">
+                    <i class="fa-solid fa-plus me-1"></i> Add Budget
+                </button>
+
                 <!-- Office Filter -->
                 <select class="form-select form-select-sm glass-select me-2" *ngIf="offices.length > 1"
                     [(ngModel)]="selectedOfficeId" (ngModelChange)="onFilterChange()" style="max-width: 180px;">
@@ -32,7 +39,18 @@
                     <option *ngFor="let fp of fiscalPeriods" [ngValue]="$any(fp.id)">{{ fp.name }}</option>
                 </select>
 
-                <button class="btn btn-sm btn-glass" (click)="goToDashboard()">
+                <!-- Search -->
+                <div class="search-bar position-relative">
+                    <i class="fa fa-search search-icon text-white-50"></i>
+                    <input type="text" class="form-control search-input glass-input" placeholder="Search budgets..."
+                        [(ngModel)]="searchText" (ngModelChange)="onSearchChange()">
+                    <button *ngIf="searchText" class="clear-search btn text-white"
+                        (click)="searchText=''; onSearchChange()" title="Clear">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+
+                <button class="btn btn-sm btn-glass ms-2" (click)="goToDashboard()">
                     <i class="fa-solid fa-chart-line me-1"></i> Dashboard
                 </button>
             </div>
@@ -46,87 +64,196 @@
         </div>
     </div>
 
+
+    <!-- ═════ Summary Cards ═════ -->
+    <div class="row g-3 mb-3"
+        *ngIf="!isLoading && (revenueRows.length > 0 || expenseRows.length > 0)">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #059669, #10b981);">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value text-success">
+                        {{ totalRevenueBudgetRevised | currency:'CAD':'symbol':'1.0-0' }}
+                    </div>
+                    <div class="stat-label">Revenue Target</div>
+                    <div class="stat-sub">Actual: {{ totalRevenueActual | currency:'CAD':'symbol':'1.0-0' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+                    <i class="fa-solid fa-arrow-trend-down"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value text-danger">
+                        {{ totalExpenseBudgetRevised | currency:'CAD':'symbol':'1.0-0' }}
+                    </div>
+                    <div class="stat-label">Expense Budget</div>
+                    <div class="stat-sub">Actual: {{ totalExpenseActual | currency:'CAD':'symbol':'1.0-0' }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #818cf8);">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value"
+                        [ngClass]="(totalRevenueActual - totalExpenseActual) >= 0 ? 'text-success' : 'text-danger'">
+                        {{ (totalRevenueActual - totalExpenseActual) | currency:'CAD':'symbol':'1.0-0' }}
+                    </div>
+                    <div class="stat-label">Net Position</div>
+                    <div class="stat-sub">Revenue − Expenses</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon" [ngClass]="getHealthClass()">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value" [ngClass]="getHealthClass()">{{ getHealthLabel() }}</div>
+                    <div class="stat-label">Budget Health</div>
+                    <div class="stat-sub">
+                        <span class="text-success me-2" *ngIf="onTrackCount > 0">
+                            <i class="fa-solid fa-circle fa-xs me-1"></i>{{ onTrackCount }}
+                        </span>
+                        <span class="text-warning me-2" *ngIf="warningCount > 0">
+                            <i class="fa-solid fa-circle fa-xs me-1"></i>{{ warningCount }}
+                        </span>
+                        <span class="text-danger" *ngIf="overBudgetCount > 0">
+                            <i class="fa-solid fa-circle fa-xs me-1"></i>{{ overBudgetCount }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═════ Add Budget Inline ═════ -->
+    <div class="card border-0 shadow-sm mb-3 add-budget-card" *ngIf="addingBudget">
+        <div class="card-body py-3 px-4">
+            <div class="d-flex flex-wrap align-items-end gap-3">
+                <div>
+                    <label class="form-label small mb-1 fw-medium">Category</label>
+                    <select class="form-select form-select-sm" [(ngModel)]="addBudgetCategoryId" style="min-width: 250px;">
+                        <option [ngValue]="null">— Select —</option>
+                        <optgroup label="Unbudgeted Categories" *ngIf="unbudgetedCategories.length > 0">
+                            <option *ngFor="let uc of unbudgetedCategories" [ngValue]="$any(uc.category.id)">
+                                {{ uc.category.code }} — {{ uc.category.name }}
+                                <span *ngIf="uc.isRevenue"> (Revenue)</span>
+                                <span *ngIf="!uc.isRevenue"> (Expense)</span>
+                            </option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small mb-1 fw-medium">Budgeted Amount</label>
+                    <input type="number" class="form-control form-control-sm" [(ngModel)]="addBudgetAmount"
+                        step="0.01" style="width: 140px;" (keyup.enter)="saveNewBudget()">
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-primary" (click)="saveNewBudget()" [disabled]="isSavingNew">
+                        <i class="fa-solid fa-check me-1"></i>
+                        {{ isSavingNew ? 'Saving...' : 'Save' }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" (click)="cancelAddBudget()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ═════ Unbudgeted Categories Alert ═════ -->
+    <div class="card border-0 shadow-sm mb-3 unbudgeted-card"
+        *ngIf="!isLoading && unbudgetedCategories.length > 0 && !addingBudget">
+        <div class="card-body py-2 px-4">
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-triangle-exclamation text-warning me-2"></i>
+                    <span class="small fw-medium">
+                        {{ unbudgetedCategories.length }} categor{{ unbudgetedCategories.length === 1 ? 'y' : 'ies' }}
+                        without budgets
+                    </span>
+                </div>
+                <button class="btn btn-sm btn-outline-warning" (click)="showUnbudgeted = !showUnbudgeted">
+                    {{ showUnbudgeted ? 'Hide' : 'Show' }}
+                    <i class="fa-solid ms-1" [ngClass]="showUnbudgeted ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                </button>
+            </div>
+
+            <div *ngIf="showUnbudgeted" class="mt-2">
+                <div *ngFor="let uc of unbudgetedCategories"
+                    class="d-flex align-items-center justify-content-between py-1 unbudgeted-row">
+                    <div>
+                        <span class="fw-bold text-monospace me-2">{{ uc.category.code }}</span>
+                        <span class="fw-medium">{{ uc.category.name }}</span>
+                        <span class="badge ms-2"
+                            [ngClass]="uc.isRevenue ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+                            {{ uc.isRevenue ? 'Revenue' : 'Expense' }}
+                        </span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" (click)="quickAddBudget(uc)">
+                        <i class="fa-solid fa-plus me-1"></i> Budget
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Empty State -->
     <div class="card border-0 shadow-sm text-center py-5"
         *ngIf="!isLoading && revenueRows.length === 0 && expenseRows.length === 0">
         <div class="card-body">
             <i class="fa-solid fa-chart-pie fa-3x text-muted opacity-25 mb-3"></i>
             <h5 class="text-muted">No Budget Data</h5>
-            <p class="text-muted">
-                No budgets found for the selected filters. Create budgets via the
-                <a routerLink="/budgets">Budgets</a> configuration page.
+            <p class="text-muted mb-3" *ngIf="selectedFiscalPeriodId">
+                No budgets found for the selected period. Add your first budget to get started.
             </p>
+            <p class="text-muted mb-3" *ngIf="!selectedFiscalPeriodId">
+                Select a fiscal period to manage budgets.
+            </p>
+            <button class="btn btn-primary" (click)="startAddBudget()" *ngIf="selectedFiscalPeriodId">
+                <i class="fa-solid fa-plus me-1"></i> Add Budget
+            </button>
         </div>
     </div>
 
     <!-- Budget Grid -->
-    <div *ngIf="!isLoading && (revenueRows.length > 0 || expenseRows.length > 0)">
-
-        <!-- ═════ Summary Cards ═════ -->
-        <div class="row g-3 mb-3">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm summary-card">
-                    <div class="card-body text-center">
-                        <div class="small text-muted text-uppercase fw-medium mb-1">Revenue Target</div>
-                        <div class="h4 mb-0 text-success">
-                            {{ totalRevenueBudgetRevised | currency:'CAD':'symbol':'1.0-0' }}
-                        </div>
-                        <div class="small text-muted">
-                            Actual: {{ totalRevenueActual | currency:'CAD':'symbol':'1.0-0' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm summary-card">
-                    <div class="card-body text-center">
-                        <div class="small text-muted text-uppercase fw-medium mb-1">Expense Budget</div>
-                        <div class="h4 mb-0 text-danger">
-                            {{ totalExpenseBudgetRevised | currency:'CAD':'symbol':'1.0-0' }}
-                        </div>
-                        <div class="small text-muted">
-                            Actual: {{ totalExpenseActual | currency:'CAD':'symbol':'1.0-0' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm summary-card">
-                    <div class="card-body text-center">
-                        <div class="small text-muted text-uppercase fw-medium mb-1">Net Position</div>
-                        <div class="h4 mb-0"
-                            [ngClass]="(totalRevenueActual - totalExpenseActual) >= 0 ? 'text-success' : 'text-danger'">
-                            {{ (totalRevenueActual - totalExpenseActual) | currency:'CAD':'symbol':'1.0-0' }}
-                        </div>
-                        <div class="small text-muted">Revenue - Expenses</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
+    <div *ngIf="!isLoading && (revenueRows.length > 0 || expenseRows.length > 0) && !isSmallScreen">
 
         <!-- ═════ Revenue Section ═════ -->
-        <div class="card border-0 shadow-sm mb-3" *ngIf="revenueRows.length > 0">
+        <div class="card border-0 shadow-sm mb-3" *ngIf="filteredRevenueRows.length > 0">
             <div class="card-header bg-white border-bottom py-2 px-4">
                 <h6 class="mb-0 fw-bold">
                     <i class="fa-solid fa-arrow-trend-up text-success me-2"></i>Revenue
-                    <span class="badge bg-success-subtle text-success ms-2">{{ revenueRows.length }} categories</span>
+                    <span class="badge bg-success-subtle text-success ms-2">{{ filteredRevenueRows.length }}
+                        categories</span>
                 </h6>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle budget-table">
                     <thead class="bg-light">
                         <tr>
-                            <th class="ps-4" style="width: 250px;">Category</th>
-                            <th class="text-end" style="width: 130px;">Budgeted</th>
-                            <th class="text-end" style="width: 130px;">Revised</th>
-                            <th class="text-end" style="width: 130px;">Actual</th>
-                            <th class="text-end" style="width: 130px;">Variance</th>
-                            <th style="width: 160px;">Progress</th>
+                            <th class="ps-4" style="width: 220px;">Category</th>
+                            <th class="text-end" style="width: 120px;">Budgeted</th>
+                            <th class="text-end" style="width: 120px;">Revised</th>
+                            <th class="text-end" style="width: 120px;">Actual</th>
+                            <th class="text-end" style="width: 120px;">Variance</th>
+                            <th style="width: 150px;">Progress</th>
+                            <th style="width: 180px;">Notes</th>
+                            <th style="width: 40px;"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let row of revenueRows" class="budget-row">
+                        <tr *ngFor="let row of filteredRevenueRows" class="budget-row">
                             <!-- Category -->
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
@@ -190,8 +317,8 @@
                             <!-- Variance -->
                             <td class="text-end">
                                 <span class="badge variance-badge" [ngClass]="getVarianceClass(row)">
-                                    {{ row.variance >= 0 ? '+' : '' }}{{ row.variance | currency:'CAD':'symbol':'1.0-0'
-                                    }}
+                                    {{ row.variance >= 0 ? '+' : '' }}{{ row.variance |
+                                    currency:'CAD':'symbol':'1.0-0' }}
                                 </span>
                             </td>
 
@@ -208,6 +335,37 @@
                                         {{ row.percentUsed }}%
                                     </span>
                                 </div>
+                            </td>
+
+                            <!-- Notes (editable) -->
+                            <td>
+                                <span *ngIf="!isEditing(row.budget.id, 'notes')" class="notes-cell"
+                                    (click)="startEdit(row, 'notes')">
+                                    <span *ngIf="row.notes" class="small text-muted text-truncate d-inline-block"
+                                        style="max-width: 150px;">{{ row.notes }}</span>
+                                    <i *ngIf="!row.notes" class="fa-solid fa-pen-to-square text-muted notes-icon"></i>
+                                </span>
+                                <div *ngIf="isEditing(row.budget.id, 'notes')" class="inline-edit-notes">
+                                    <input type="text" [(ngModel)]="editNotes" class="form-control form-control-sm"
+                                        placeholder="Add a note..." (keyup.enter)="saveEdit(row)"
+                                        (keyup.escape)="cancelEdit()" />
+                                    <div class="inline-edit-actions">
+                                        <button class="btn btn-sm btn-success" (click)="saveEdit(row)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Delete -->
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-link text-danger delete-btn p-0"
+                                    (click)="deleteBudget(row)" ngbTooltip="Remove budget">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -226,6 +384,8 @@
                                 </span>
                             </td>
                             <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>
@@ -234,27 +394,30 @@
 
 
         <!-- ═════ Expense Section ═════ -->
-        <div class="card border-0 shadow-sm mb-3" *ngIf="expenseRows.length > 0">
+        <div class="card border-0 shadow-sm mb-3" *ngIf="filteredExpenseRows.length > 0">
             <div class="card-header bg-white border-bottom py-2 px-4">
                 <h6 class="mb-0 fw-bold">
                     <i class="fa-solid fa-arrow-trend-down text-danger me-2"></i>Expenses
-                    <span class="badge bg-danger-subtle text-danger ms-2">{{ expenseRows.length }} categories</span>
+                    <span class="badge bg-danger-subtle text-danger ms-2">{{ filteredExpenseRows.length }}
+                        categories</span>
                 </h6>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle budget-table">
                     <thead class="bg-light">
                         <tr>
-                            <th class="ps-4" style="width: 250px;">Category</th>
-                            <th class="text-end" style="width: 130px;">Budgeted</th>
-                            <th class="text-end" style="width: 130px;">Revised</th>
-                            <th class="text-end" style="width: 130px;">Actual</th>
-                            <th class="text-end" style="width: 130px;">Variance</th>
-                            <th style="width: 160px;">Progress</th>
+                            <th class="ps-4" style="width: 220px;">Category</th>
+                            <th class="text-end" style="width: 120px;">Budgeted</th>
+                            <th class="text-end" style="width: 120px;">Revised</th>
+                            <th class="text-end" style="width: 120px;">Actual</th>
+                            <th class="text-end" style="width: 120px;">Variance</th>
+                            <th style="width: 150px;">Progress</th>
+                            <th style="width: 180px;">Notes</th>
+                            <th style="width: 40px;"></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let row of expenseRows" class="budget-row">
+                        <tr *ngFor="let row of filteredExpenseRows" class="budget-row">
                             <!-- Category -->
                             <td class="ps-4">
                                 <div class="d-flex align-items-center">
@@ -318,8 +481,8 @@
                             <!-- Variance -->
                             <td class="text-end">
                                 <span class="badge variance-badge" [ngClass]="getVarianceClass(row)">
-                                    {{ row.variance >= 0 ? '+' : '' }}{{ row.variance | currency:'CAD':'symbol':'1.0-0'
-                                    }}
+                                    {{ row.variance >= 0 ? '+' : '' }}{{ row.variance |
+                                    currency:'CAD':'symbol':'1.0-0' }}
                                 </span>
                             </td>
 
@@ -336,6 +499,37 @@
                                         {{ row.percentUsed }}%
                                     </span>
                                 </div>
+                            </td>
+
+                            <!-- Notes (editable) -->
+                            <td>
+                                <span *ngIf="!isEditing(row.budget.id, 'notes')" class="notes-cell"
+                                    (click)="startEdit(row, 'notes')">
+                                    <span *ngIf="row.notes" class="small text-muted text-truncate d-inline-block"
+                                        style="max-width: 150px;">{{ row.notes }}</span>
+                                    <i *ngIf="!row.notes" class="fa-solid fa-pen-to-square text-muted notes-icon"></i>
+                                </span>
+                                <div *ngIf="isEditing(row.budget.id, 'notes')" class="inline-edit-notes">
+                                    <input type="text" [(ngModel)]="editNotes" class="form-control form-control-sm"
+                                        placeholder="Add a note..." (keyup.enter)="saveEdit(row)"
+                                        (keyup.escape)="cancelEdit()" />
+                                    <div class="inline-edit-actions">
+                                        <button class="btn btn-sm btn-success" (click)="saveEdit(row)">
+                                            <i class="fa-solid fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Delete -->
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-link text-danger delete-btn p-0"
+                                    (click)="deleteBudget(row)" ngbTooltip="Remove budget">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -354,12 +548,83 @@
                                 </span>
                             </td>
                             <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>
             </div>
         </div>
 
+    </div>
+
+
+    <!-- ═════ MOBILE CARDS ═════ -->
+    <div *ngIf="!isLoading && (filteredRevenueRows.length > 0 || filteredExpenseRows.length > 0) && isSmallScreen">
+
+        <!-- Revenue Cards -->
+        <h6 class="fw-bold mb-2" *ngIf="filteredRevenueRows.length > 0">
+            <i class="fa-solid fa-arrow-trend-up text-success me-1"></i> Revenue
+        </h6>
+        <div class="card border-0 shadow-sm mb-2" *ngFor="let row of filteredRevenueRows"
+            style="cursor: pointer;">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="fw-bold text-monospace me-1">{{ row.categoryCode }}</span>
+                        <span class="fw-medium">{{ row.categoryName }}</span>
+                    </div>
+                    <span class="badge variance-badge" [ngClass]="getVarianceClass(row)">
+                        {{ row.percentUsed }}%
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Budget: {{ (row.revisedAmount ?? row.budgetedAmount) | currency:'CAD':'symbol':'1.2-2'
+                        }}</span>
+                    <span>Actual: {{ row.actualAmount | currency:'CAD':'symbol':'1.2-2' }}</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar" [ngClass]="getProgressBarClass(row)"
+                        [style.width.%]="row.percentUsed > 100 ? 100 : row.percentUsed">
+                    </div>
+                </div>
+                <div class="small text-muted mt-1" *ngIf="row.notes">
+                    <i class="fa-solid fa-note-sticky me-1"></i>{{ row.notes }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense Cards -->
+        <h6 class="fw-bold mb-2 mt-3" *ngIf="filteredExpenseRows.length > 0">
+            <i class="fa-solid fa-arrow-trend-down text-danger me-1"></i> Expenses
+        </h6>
+        <div class="card border-0 shadow-sm mb-2" *ngFor="let row of filteredExpenseRows"
+            style="cursor: pointer;">
+            <div class="card-body py-3 px-4">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="fw-bold text-monospace me-1">{{ row.categoryCode }}</span>
+                        <span class="fw-medium">{{ row.categoryName }}</span>
+                    </div>
+                    <span class="badge variance-badge" [ngClass]="getVarianceClass(row)">
+                        {{ row.percentUsed }}%
+                    </span>
+                </div>
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Budget: {{ (row.revisedAmount ?? row.budgetedAmount) | currency:'CAD':'symbol':'1.2-2'
+                        }}</span>
+                    <span>Actual: {{ row.actualAmount | currency:'CAD':'symbol':'1.2-2' }}</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar" [ngClass]="getProgressBarClass(row)"
+                        [style.width.%]="row.percentUsed > 100 ? 100 : row.percentUsed">
+                    </div>
+                </div>
+                <div class="small text-muted mt-1" *ngIf="row.notes">
+                    <i class="fa-solid fa-note-sticky me-1"></i>{{ row.notes }}
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
