@@ -22,6 +22,7 @@ import { FinancialCategoryChangeHistoryService, FinancialCategoryChangeHistoryDa
 import { ChargeTypeService, ChargeTypeData } from './charge-type.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { BudgetService, BudgetData } from './budget.service';
+import { GeneralLedgerLineService, GeneralLedgerLineData } from './general-ledger-line.service';
 import { InvoiceLineItemService, InvoiceLineItemData } from './invoice-line-item.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -184,6 +185,11 @@ export class FinancialCategoryData {
     private _budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
                 
+    private _generalLedgerLines: GeneralLedgerLineData[] | null = null;
+    private _generalLedgerLinesPromise: Promise<GeneralLedgerLineData[]> | null  = null;
+    private _generalLedgerLinesSubject = new BehaviorSubject<GeneralLedgerLineData[] | null>(null);
+
+                
     private _invoiceLineItems: InvoiceLineItemData[] | null = null;
     private _invoiceLineItemsPromise: Promise<InvoiceLineItemData[]> | null  = null;
     private _invoiceLineItemsSubject = new BehaviorSubject<InvoiceLineItemData[] | null>(null);
@@ -305,6 +311,31 @@ export class FinancialCategoryData {
 
 
 
+    public GeneralLedgerLines$ = this._generalLedgerLinesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._generalLedgerLines === null && this._generalLedgerLinesPromise === null) {
+            this.loadGeneralLedgerLines(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _generalLedgerLinesCount$: Observable<bigint | number> | null = null;
+    public get GeneralLedgerLinesCount$(): Observable<bigint | number> {
+        if (this._generalLedgerLinesCount$ === null) {
+            this._generalLedgerLinesCount$ = GeneralLedgerLineService.Instance.GetGeneralLedgerLinesRowCount({financialCategoryId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._generalLedgerLinesCount$;
+    }
+
+
+
     public InvoiceLineItems$ = this._invoiceLineItemsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -387,6 +418,11 @@ export class FinancialCategoryData {
      this._budgetsPromise = null;
      this._budgetsSubject.next(null);
      this._budgetsCount$ = null;
+
+     this._generalLedgerLines = null;
+     this._generalLedgerLinesPromise = null;
+     this._generalLedgerLinesSubject.next(null);
+     this._generalLedgerLinesCount$ = null;
 
      this._invoiceLineItems = null;
      this._invoiceLineItemsPromise = null;
@@ -664,6 +700,71 @@ export class FinancialCategoryData {
 
     /**
      *
+     * Gets the GeneralLedgerLines for this FinancialCategory.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialCategory.GeneralLedgerLines.then(financialCategories => { ... })
+     *   or
+     *   await this.financialCategory.financialCategories
+     *
+    */
+    public get GeneralLedgerLines(): Promise<GeneralLedgerLineData[]> {
+        if (this._generalLedgerLines !== null) {
+            return Promise.resolve(this._generalLedgerLines);
+        }
+
+        if (this._generalLedgerLinesPromise !== null) {
+            return this._generalLedgerLinesPromise;
+        }
+
+        // Start the load
+        this.loadGeneralLedgerLines();
+
+        return this._generalLedgerLinesPromise!;
+    }
+
+
+
+    private loadGeneralLedgerLines(): void {
+
+        this._generalLedgerLinesPromise = lastValueFrom(
+            FinancialCategoryService.Instance.GetGeneralLedgerLinesForFinancialCategory(this.id)
+        )
+        .then(GeneralLedgerLines => {
+            this._generalLedgerLines = GeneralLedgerLines ?? [];
+            this._generalLedgerLinesSubject.next(this._generalLedgerLines);
+            return this._generalLedgerLines;
+         })
+        .catch(err => {
+            this._generalLedgerLines = [];
+            this._generalLedgerLinesSubject.next(this._generalLedgerLines);
+            throw err;
+        })
+        .finally(() => {
+            this._generalLedgerLinesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached GeneralLedgerLine. Call after mutations to force refresh.
+     */
+    public ClearGeneralLedgerLinesCache(): void {
+        this._generalLedgerLines = null;
+        this._generalLedgerLinesPromise = null;
+        this._generalLedgerLinesSubject.next(this._generalLedgerLines);      // Emit to observable
+    }
+
+    public get HasGeneralLedgerLines(): Promise<boolean> {
+        return this.GeneralLedgerLines.then(generalLedgerLines => generalLedgerLines.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the InvoiceLineItems for this FinancialCategory.
      *
      * If already loaded, returns cached array.
@@ -809,6 +910,7 @@ export class FinancialCategoryService extends SecureEndpointBase {
         private chargeTypeService: ChargeTypeService,
         private financialTransactionService: FinancialTransactionService,
         private budgetService: BudgetService,
+        private generalLedgerLineService: GeneralLedgerLineService,
         private invoiceLineItemService: InvoiceLineItemService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -1319,6 +1421,16 @@ export class FinancialCategoryService extends SecureEndpointBase {
     }
 
 
+    public GetGeneralLedgerLinesForFinancialCategory(financialCategoryId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GeneralLedgerLineData[]> {
+        return this.generalLedgerLineService.GetGeneralLedgerLineList({
+            financialCategoryId: financialCategoryId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetInvoiceLineItemsForFinancialCategory(financialCategoryId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<InvoiceLineItemData[]> {
         return this.invoiceLineItemService.GetInvoiceLineItemList({
             financialCategoryId: financialCategoryId,
@@ -1379,6 +1491,10 @@ export class FinancialCategoryService extends SecureEndpointBase {
     (revived as any)._budgets = null;
     (revived as any)._budgetsPromise = null;
     (revived as any)._budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
+
+    (revived as any)._generalLedgerLines = null;
+    (revived as any)._generalLedgerLinesPromise = null;
+    (revived as any)._generalLedgerLinesSubject = new BehaviorSubject<GeneralLedgerLineData[] | null>(null);
 
     (revived as any)._invoiceLineItems = null;
     (revived as any)._invoiceLineItemsPromise = null;
@@ -1442,6 +1558,18 @@ export class FinancialCategoryService extends SecureEndpointBase {
       );
 
     (revived as any)._budgetsCount$ = null;
+
+
+    (revived as any).GeneralLedgerLines$ = (revived as any)._generalLedgerLinesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._generalLedgerLines === null && (revived as any)._generalLedgerLinesPromise === null) {
+                (revived as any).loadGeneralLedgerLines();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._generalLedgerLinesCount$ = null;
 
 
     (revived as any).InvoiceLineItems$ = (revived as any)._invoiceLineItemsSubject.asObservable().pipe(

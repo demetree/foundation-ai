@@ -82,6 +82,426 @@ namespace Foundation.Scheduler.Services
 
 
         // ────────────────────────────────────────────────────────────────────────
+        //  Structured Audit Helpers
+        //
+        //  Phase 2: Every mutation writes structured JSON into the existing
+        //  FinancialTransactionChangeHistory.data column, containing:
+        //    - action: Created | Updated | Voided
+        //    - fieldChanges: [{field, oldValue, newValue}]
+        //    - reason: string (for voids/corrections)
+        //    - previousState: full snapshot (for backward compat)
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Builds a structured audit JSON string comparing old vs new transaction state.
+        /// </summary>
+        private string BuildAuditJson(string action, FinancialTransaction before, FinancialTransaction after, string reason = null)
+        {
+            var fieldChanges = new List<object>();
+
+            void Diff(string field, object oldVal, object newVal)
+            {
+                var o = oldVal?.ToString() ?? "";
+                var n = newVal?.ToString() ?? "";
+                if (o != n) fieldChanges.Add(new { field, oldValue = o, newValue = n });
+            }
+
+            if (before != null && after != null)
+            {
+                // Field-level diff for updates
+                Diff("financialCategoryId", before.financialCategoryId, after.financialCategoryId);
+                Diff("transactionDate", before.transactionDate.ToString("o"), after.transactionDate.ToString("o"));
+                Diff("amount", before.amount, after.amount);
+                Diff("taxAmount", before.taxAmount, after.taxAmount);
+                Diff("totalAmount", before.totalAmount, after.totalAmount);
+                Diff("description", before.description, after.description);
+                Diff("isRevenue", before.isRevenue, after.isRevenue);
+                Diff("journalEntryType", before.journalEntryType, after.journalEntryType);
+                Diff("currencyId", before.currencyId, after.currencyId);
+                Diff("financialOfficeId", before.financialOfficeId, after.financialOfficeId);
+                Diff("scheduledEventId", before.scheduledEventId, after.scheduledEventId);
+                Diff("contactId", before.contactId, after.contactId);
+                Diff("clientId", before.clientId, after.clientId);
+                Diff("referenceNumber", before.referenceNumber, after.referenceNumber);
+                Diff("notes", before.notes, after.notes);
+                Diff("fiscalPeriodId", before.fiscalPeriodId, after.fiscalPeriodId);
+                Diff("deleted", before.deleted, after.deleted);
+            }
+            else if (after != null)
+            {
+                // Created — all fields are new
+                Diff("financialCategoryId", null, after.financialCategoryId);
+                Diff("transactionDate", null, after.transactionDate.ToString("o"));
+                Diff("amount", null, after.amount);
+                Diff("taxAmount", null, after.taxAmount);
+                Diff("totalAmount", null, after.totalAmount);
+                Diff("description", null, after.description);
+                Diff("isRevenue", null, after.isRevenue);
+                Diff("journalEntryType", null, after.journalEntryType);
+                Diff("currencyId", null, after.currencyId);
+                Diff("referenceNumber", null, after.referenceNumber);
+            }
+
+            var audit = new
+            {
+                action,
+                fieldChanges,
+                reason = reason ?? (string)null,
+                transactionId = after?.id ?? before?.id ?? 0,
+                timestamp = DateTime.UtcNow.ToString("o")
+            };
+
+            return JsonSerializer.Serialize(audit);
+        }
+
+
+        /// <summary>
+        /// Reads the audit trail for financial transactions.
+        /// Returns structured audit entries with user names resolved.
+        /// </summary>
+        public async Task<List<object>> GetAuditLogAsync(
+            Guid tenantGuid,
+            int? transactionId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            int maxResults = 200,
+            CancellationToken cancellationToken = default)
+        {
+            var query = _context.FinancialTransactionChangeHistories
+                .Where(ch => ch.tenantGuid == tenantGuid);
+
+            if (transactionId.HasValue)
+                query = query.Where(ch => ch.financialTransactionId == transactionId.Value);
+
+            if (fromDate.HasValue)
+                query = query.Where(ch => ch.timeStamp >= fromDate.Value);
+
+            if (toDate.HasValue)
+                query = query.Where(ch => ch.timeStamp <= toDate.Value);
+
+            var entries = await query
+                .OrderByDescending(ch => ch.timeStamp)
+                .Take(maxResults)
+                .Select(ch => new
+                {
+                    ch.id,
+                    ch.financialTransactionId,
+                    ch.versionNumber,
+                    ch.timeStamp,
+                    ch.userId,
+                    ch.data
+                })
+                .ToListAsync(cancellationToken);
+
+            // Resolve user names
+            var userIds = entries.Select(e => e.userId).Distinct().ToList();
+            var userMap = new Dictionary<int, string>();
+            foreach (var uid in userIds)
+            {
+                try
+                {
+                    var u = await Foundation.Security.ChangeHistoryMultiTenant
+                        .GetChangeHistoryUserAsync(uid, tenantGuid, cancellationToken);
+                    if (u != null)
+                        userMap[uid] = $"{u.firstName} {u.lastName}".Trim();
+                }
+                catch { /* user not found — will default to "Unknown" */ }
+            }
+
+            var result = new List<object>();
+            foreach (var entry in entries)
+            {
+                // Try to parse structured audit JSON
+                string action = "Unknown";
+                object fieldChanges = null;
+                string reason = null;
+
+                if (!string.IsNullOrEmpty(entry.data))
+                {
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(entry.data);
+                        var root = doc.RootElement;
+                        if (root.TryGetProperty("action", out var actionProp))
+                            action = actionProp.GetString();
+                        if (root.TryGetProperty("fieldChanges", out var changesProp))
+                            fieldChanges = JsonSerializer.Deserialize<object>(changesProp.GetRawText());
+                        if (root.TryGetProperty("reason", out var reasonProp) && reasonProp.ValueKind != JsonValueKind.Null)
+                            reason = reasonProp.GetString();
+                    }
+                    catch
+                    {
+                        // Legacy snapshot format — treat as Unknown action
+                        action = entry.versionNumber == 1 ? "Created" : "Updated";
+                    }
+                }
+
+                result.Add(new
+                {
+                    entry.id,
+                    entry.financialTransactionId,
+                    entry.versionNumber,
+                    timestamp = entry.timeStamp,
+                    entry.userId,
+                    userName = userMap.GetValueOrDefault(entry.userId, "Unknown"),
+                    action,
+                    fieldChanges,
+                    reason
+                });
+            }
+
+            return result;
+        }
+
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  Double-Entry GL Posting (Phase 3)
+        //
+        //  Every financial operation posts balanced journal entries to the GL.
+        //  The GL becomes the authoritative ledger for reporting.
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Finds the Cash/Bank contra-account for the tenant (by name convention).
+        /// Returns null if no cash account exists yet — GL posting is skipped gracefully.
+        /// </summary>
+        private async Task<int?> GetCashAccountIdAsync(Guid tenantGuid, CancellationToken cancellationToken)
+        {
+            var cashAccount = await _context.FinancialCategories
+                .Where(c => c.tenantGuid == tenantGuid && c.active == true && c.deleted == false
+                         && (c.name.Contains("Cash") || c.name.Contains("Bank")))
+                .OrderBy(c => c.id)
+                .Select(c => (int?)c.id)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return cashAccount;
+        }
+        // ────────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Posts a balanced journal entry to the General Ledger.
+        /// debitCategoryId receives the debit; creditCategoryId receives the credit.
+        /// </summary>
+        public async Task PostToGeneralLedgerAsync(
+            Guid tenantGuid,
+            int debitCategoryId,
+            int creditCategoryId,
+            decimal amount,
+            DateTime transactionDate,
+            string description,
+            int postedByUserId,
+            int? financialTransactionId = null,
+            int? fiscalPeriodId = null,
+            int? financialOfficeId = null,
+            string referenceNumber = null,
+            CancellationToken cancellationToken = default)
+        {
+            if (amount <= 0) return; // Nothing to post
+
+            // Auto-increment journal entry number per tenant
+            int nextJournalNumber = 1;
+            var lastEntry = await _context.GeneralLedgerEntries
+                .Where(e => e.tenantGuid == tenantGuid)
+                .OrderByDescending(e => e.journalEntryNumber)
+                .Select(e => e.journalEntryNumber)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (lastEntry > 0) nextJournalNumber = lastEntry + 1;
+
+            var glEntry = new GeneralLedgerEntry
+            {
+                tenantGuid = tenantGuid,
+                journalEntryNumber = nextJournalNumber,
+                transactionDate = transactionDate,
+                description = description,
+                referenceNumber = referenceNumber,
+                financialTransactionId = financialTransactionId,
+                fiscalPeriodId = fiscalPeriodId,
+                financialOfficeId = financialOfficeId,
+                postedBy = postedByUserId,
+                postedDate = DateTime.UtcNow,
+                objectGuid = Guid.NewGuid(),
+                active = true,
+                deleted = false
+            };
+
+            glEntry.GeneralLedgerLines.Add(new GeneralLedgerLine
+            {
+                financialCategoryId = debitCategoryId,
+                debitAmount = amount,
+                creditAmount = 0,
+                description = $"DR: {description}"
+            });
+
+            glEntry.GeneralLedgerLines.Add(new GeneralLedgerLine
+            {
+                financialCategoryId = creditCategoryId,
+                debitAmount = 0,
+                creditAmount = amount,
+                description = $"CR: {description}"
+            });
+
+            _context.GeneralLedgerEntries.Add(glEntry);
+            // SaveChanges is handled by the calling method
+        }
+
+
+        /// <summary>
+        /// Posts a reversal entry to the GL (swaps debits and credits of an original entry).
+        /// Used when voiding a transaction.
+        /// </summary>
+        public async Task PostReversalToGLAsync(
+            Guid tenantGuid,
+            int originalTransactionId,
+            int postedByUserId,
+            string reason,
+            CancellationToken cancellationToken = default)
+        {
+            // Find the original GL entry for this transaction
+            var originalEntry = await _context.GeneralLedgerEntries
+                .Include(e => e.GeneralLedgerLines)
+                .Where(e => e.tenantGuid == tenantGuid
+                         && e.financialTransactionId == originalTransactionId
+                         && e.deleted == false
+                         && e.reversalOfId == null)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (originalEntry == null) return; // No GL entry to reverse
+
+            int nextJournalNumber = 1;
+            var lastEntry = await _context.GeneralLedgerEntries
+                .Where(e => e.tenantGuid == tenantGuid)
+                .OrderByDescending(e => e.journalEntryNumber)
+                .Select(e => e.journalEntryNumber)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (lastEntry > 0) nextJournalNumber = lastEntry + 1;
+
+            var reversalEntry = new GeneralLedgerEntry
+            {
+                tenantGuid = tenantGuid,
+                journalEntryNumber = nextJournalNumber,
+                transactionDate = DateTime.UtcNow,
+                description = $"REVERSAL: {reason}",
+                referenceNumber = originalEntry.referenceNumber,
+                financialTransactionId = originalTransactionId,
+                fiscalPeriodId = originalEntry.fiscalPeriodId,
+                financialOfficeId = originalEntry.financialOfficeId,
+                postedBy = postedByUserId,
+                postedDate = DateTime.UtcNow,
+                reversalOfId = originalEntry.id,
+                objectGuid = Guid.NewGuid(),
+                active = true,
+                deleted = false
+            };
+
+            // Swap debits and credits
+            foreach (var line in originalEntry.GeneralLedgerLines)
+            {
+                reversalEntry.GeneralLedgerLines.Add(new GeneralLedgerLine
+                {
+                    financialCategoryId = line.financialCategoryId,
+                    debitAmount = line.creditAmount,   // Swap
+                    creditAmount = line.debitAmount,    // Swap
+                    description = $"REVERSAL: {line.description}"
+                });
+            }
+
+            _context.GeneralLedgerEntries.Add(reversalEntry);
+            // SaveChanges is handled by the calling method
+        }
+
+
+        /// <summary>
+        /// Gets a GL-based trial balance: totals debits and credits per category.
+        /// </summary>
+        public async Task<List<object>> GetTrialBalanceFromGLAsync(
+            Guid tenantGuid,
+            int? fiscalPeriodId = null,
+            DateTime? fromDate = null,
+            DateTime? toDate = null,
+            CancellationToken cancellationToken = default)
+        {
+            var entryQuery = _context.GeneralLedgerEntries
+                .Where(e => e.tenantGuid == tenantGuid && e.active == true && e.deleted == false);
+
+            if (fiscalPeriodId.HasValue)
+                entryQuery = entryQuery.Where(e => e.fiscalPeriodId == fiscalPeriodId.Value);
+            if (fromDate.HasValue)
+                entryQuery = entryQuery.Where(e => e.transactionDate >= fromDate.Value);
+            if (toDate.HasValue)
+                entryQuery = entryQuery.Where(e => e.transactionDate <= toDate.Value);
+
+            var entryIds = entryQuery.Select(e => e.id);
+
+            var lines = await _context.GeneralLedgerLines
+                .Where(l => entryIds.Contains(l.generalLedgerEntryId))
+                .GroupBy(l => l.financialCategoryId)
+                .Select(g => new
+                {
+                    financialCategoryId = g.Key,
+                    totalDebits = g.Sum(l => l.debitAmount),
+                    totalCredits = g.Sum(l => l.creditAmount)
+                })
+                .ToListAsync(cancellationToken);
+
+            // Resolve category names
+            var categoryIds = lines.Select(l => l.financialCategoryId).Distinct().ToList();
+            var categories = await _context.FinancialCategories
+                .Where(c => categoryIds.Contains(c.id))
+                .Select(c => new { c.id, c.name, c.code, c.accountTypeId })
+                .ToListAsync(cancellationToken);
+
+            var categoryMap = categories.ToDictionary(c => c.id);
+
+            // Resolve account type names
+            var accountTypeIds = categories.Select(c => c.accountTypeId).Distinct().ToList();
+            var accountTypes = await _context.AccountTypes
+                .Where(at => accountTypeIds.Contains(at.id))
+                .Select(at => new { at.id, at.name, at.isRevenue })
+                .ToListAsync(cancellationToken);
+
+            var atMap = accountTypes.ToDictionary(at => at.id);
+
+            var totalDebits = lines.Sum(l => l.totalDebits);
+            var totalCredits = lines.Sum(l => l.totalCredits);
+
+            var result = lines.Select(l =>
+            {
+                var cat = categoryMap.GetValueOrDefault(l.financialCategoryId);
+                var at = cat != null ? atMap.GetValueOrDefault(cat.accountTypeId) : null;
+                return (object)new
+                {
+                    l.financialCategoryId,
+                    categoryName = cat?.name ?? "Unknown",
+                    categoryCode = cat?.code,
+                    accountType = at?.name ?? "Unknown",
+                    isRevenue = at?.isRevenue ?? false,
+                    l.totalDebits,
+                    l.totalCredits,
+                    netBalance = l.totalDebits - l.totalCredits
+                };
+            }).ToList();
+
+            // Add summary row
+            result.Add(new
+            {
+                financialCategoryId = 0,
+                categoryName = "TOTALS",
+                categoryCode = (string)null,
+                accountType = "",
+                isRevenue = false,
+                totalDebits,
+                totalCredits,
+                netBalance = totalDebits - totalCredits
+            });
+
+            return result;
+        }
+
+
+        // ────────────────────────────────────────────────────────────────────────
         //  CreateInvoiceFromEvent
         //
         //  Atomically creates:
@@ -671,18 +1091,48 @@ namespace Foundation.Scheduler.Services
 
             _context.FinancialTransactions.Add(ft);
 
-            try
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation(
-                    "Expense recorded: {Amount:C} in category {Category}. FinancialTransaction {Id}.",
-                    totalAmount, category.name, ft.id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to record expense");
-                return FinancialOperationResult.Fail($"Expense recording failed: {ex.Message}");
+                    // Write structured audit entry
+                    _context.FinancialTransactionChangeHistories.Add(new FinancialTransactionChangeHistory
+                    {
+                        financialTransactionId = ft.id,
+                        versionNumber = 1,
+                        timeStamp = DateTime.UtcNow,
+                        userId = 0,
+                        tenantGuid = tenantGuid,
+                        data = BuildAuditJson("Created", null, ft)
+                    });
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    // Post to General Ledger: DR Expense category, CR Cash/Bank
+                    var cashId = await GetCashAccountIdAsync(tenantGuid, cancellationToken);
+                    if (cashId.HasValue)
+                    {
+                        await PostToGeneralLedgerAsync(tenantGuid, financialCategoryId, cashId.Value, totalAmount,
+                            transactionDate, $"Expense: {ft.description}", 0, ft.id, ft.fiscalPeriodId, financialOfficeId, referenceNumber, cancellationToken);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("GL posting skipped for transaction {Id}: no FinancialCategory with 'Cash' or 'Bank' in its name found for tenant {Tenant}. Create one to enable double-entry GL.", ft.id, tenantGuid);
+                    }
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "Expense recorded: {Amount:C} in category {Category}. FinancialTransaction {Id}.",
+                        totalAmount, category.name, ft.id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to record expense");
+                    return FinancialOperationResult.Fail($"Expense recording failed: {ex.Message}");
+                }
             }
 
             return FinancialOperationResult.Ok(new Dictionary<string, object>
@@ -766,18 +1216,48 @@ namespace Foundation.Scheduler.Services
 
             _context.FinancialTransactions.Add(ft);
 
-            try
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation(
-                    "Direct revenue recorded: {Amount:C} in category {Category}. FinancialTransaction {Id}.",
-                    totalAmount, category.name, ft.id);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to record direct revenue");
-                return FinancialOperationResult.Fail($"Revenue recording failed: {ex.Message}");
+                    // Write structured audit entry
+                    _context.FinancialTransactionChangeHistories.Add(new FinancialTransactionChangeHistory
+                    {
+                        financialTransactionId = ft.id,
+                        versionNumber = 1,
+                        timeStamp = DateTime.UtcNow,
+                        userId = 0,
+                        tenantGuid = tenantGuid,
+                        data = BuildAuditJson("Created", null, ft)
+                    });
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    // Post to General Ledger: DR Cash/Bank, CR Revenue category
+                    var cashId = await GetCashAccountIdAsync(tenantGuid, cancellationToken);
+                    if (cashId.HasValue)
+                    {
+                        await PostToGeneralLedgerAsync(tenantGuid, cashId.Value, financialCategoryId, totalAmount,
+                            transactionDate, $"Revenue: {ft.description}", 0, ft.id, ft.fiscalPeriodId, financialOfficeId, referenceNumber, cancellationToken);
+                        await _context.SaveChangesAsync(cancellationToken);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("GL posting skipped for transaction {Id}: no FinancialCategory with 'Cash' or 'Bank' in its name found for tenant {Tenant}. Create one to enable double-entry GL.", ft.id, tenantGuid);
+                    }
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "Direct revenue recorded: {Amount:C} in category {Category}. FinancialTransaction {Id}.",
+                        totalAmount, category.name, ft.id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to record direct revenue");
+                    return FinancialOperationResult.Fail($"Revenue recording failed: {ex.Message}");
+                }
             }
 
             return FinancialOperationResult.Ok(new Dictionary<string, object>
@@ -1965,6 +2445,284 @@ namespace Foundation.Scheduler.Services
                 ["created"] = 12,
                 ["existing"] = 0,
                 ["year"] = year
+            });
+        }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  UpdateTransaction
+        //
+        //  Validates:
+        //    - Transaction exists and belongs to tenant
+        //    - Fiscal period not closed (both original and new if date changed)
+        //    - Category exists
+        //    - Writes FinancialTransactionChangeHistory with snapshot
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        public async Task<FinancialOperationResult> UpdateTransactionAsync(
+            Guid tenantGuid,
+            int transactionId,
+            int userId,
+            int financialCategoryId,
+            DateTime transactionDate,
+            decimal amount,
+            decimal taxAmount,
+            string description,
+            int currencyId,
+            int? financialOfficeId = null,
+            int? scheduledEventId = null,
+            int? contactId = null,
+            int? clientId = null,
+            string referenceNumber = null,
+            string notes = null,
+            CancellationToken cancellationToken = default)
+        {
+            //
+            // 1. Load existing transaction
+            //
+            var ft = await _context.FinancialTransactions
+                .Where(t => t.id == transactionId && t.tenantGuid == tenantGuid
+                         && t.active == true && t.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (ft == null)
+            {
+                return FinancialOperationResult.Fail("Transaction not found.");
+            }
+
+            //
+            // 2. Validate fiscal period for the ORIGINAL transaction date (must be open)
+            //
+            var originalPeriodCheck = await ValidateFiscalPeriodOpenAsync(tenantGuid, ft.transactionDate, cancellationToken);
+            if (!originalPeriodCheck.Success)
+            {
+                return FinancialOperationResult.Fail(
+                    $"Cannot modify — the original fiscal period is closed. {originalPeriodCheck.ErrorMessage}");
+            }
+
+            //
+            // 3. If date changed, also validate the NEW fiscal period
+            //
+            int? newFiscalPeriodId = null;
+            if (transactionDate.Date != ft.transactionDate.Date)
+            {
+                var newPeriodCheck = await ValidateFiscalPeriodOpenAsync(tenantGuid, transactionDate, cancellationToken);
+                if (!newPeriodCheck.Success)
+                {
+                    return FinancialOperationResult.Fail(
+                        $"Cannot move transaction to a closed fiscal period. {newPeriodCheck.ErrorMessage}");
+                }
+                newFiscalPeriodId = (int?)newPeriodCheck.Data.GetValueOrDefault("fiscalPeriodId");
+            }
+
+            //
+            // 4. Validate category
+            //
+            var category = await _context.FinancialCategories
+                .Where(fc => fc.id == financialCategoryId && fc.tenantGuid == tenantGuid
+                          && fc.active == true && fc.deleted == false)
+                .Include(fc => fc.accountType)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (category == null)
+            {
+                return FinancialOperationResult.Fail("Financial category not found.");
+            }
+
+            //
+            // 5. Clone BEFORE state for audit diff
+            //
+            var beforeClone = ft.Clone();
+
+            //
+            // 6. Apply updates
+            //
+            ft.financialCategoryId = financialCategoryId;
+            ft.transactionDate = transactionDate;
+            ft.amount = amount;
+            ft.taxAmount = taxAmount;
+            ft.totalAmount = amount + taxAmount;
+            ft.description = description?.Length > 500 ? description.Substring(0, 500) : description;
+            ft.currencyId = currencyId;
+            ft.financialOfficeId = financialOfficeId;
+            ft.scheduledEventId = scheduledEventId;
+            ft.contactId = contactId;
+            ft.clientId = clientId;
+            ft.referenceNumber = referenceNumber;
+            ft.notes = notes;
+            ft.isRevenue = category.accountType?.isRevenue ?? ft.isRevenue;
+            ft.journalEntryType = (category.accountType?.isRevenue ?? false) ? "Credit" : "Debit";
+
+            if (newFiscalPeriodId.HasValue)
+            {
+                ft.fiscalPeriodId = newFiscalPeriodId.Value;
+            }
+
+            ft.versionNumber++;
+
+            // Null out nav properties to prevent EF tracking conflicts
+            ft.financialCategory = null;
+            ft.financialOffice = null;
+            ft.scheduledEvent = null;
+            ft.contact = null;
+            ft.client = null;
+            ft.currency = null;
+            ft.taxCode = null;
+            ft.fiscalPeriod = null;
+            ft.paymentType = null;
+
+            //
+            // 7. Write structured audit change history with field-level diffs
+            //
+            _context.FinancialTransactionChangeHistories.Add(new FinancialTransactionChangeHistory
+            {
+                financialTransactionId = ft.id,
+                versionNumber = ft.versionNumber,
+                timeStamp = DateTime.UtcNow,
+                userId = userId,
+                tenantGuid = tenantGuid,
+                data = BuildAuditJson("Updated", beforeClone, ft)
+            });
+
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "Transaction {Id} updated by user {UserId}. Version: {Version}.",
+                        ft.id, userId, ft.versionNumber);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to update transaction {Id}", transactionId);
+                    return FinancialOperationResult.Fail($"Update failed: {ex.Message}");
+                }
+            }
+
+            return FinancialOperationResult.Ok(new Dictionary<string, object>
+            {
+                ["financialTransactionId"] = ft.id,
+                ["versionNumber"] = ft.versionNumber
+            });
+        }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  VoidTransaction
+        //
+        //  Replaces soft-delete with an auditable void-with-reason.
+        //    - Rejects if fiscal period is closed
+        //    - Records void reason in change history
+        //    - Sets deleted = true (existing soft-delete pattern)
+        //    - Financial transactions should never be truly deleted
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        public async Task<FinancialOperationResult> VoidTransactionAsync(
+            Guid tenantGuid,
+            int transactionId,
+            int userId,
+            string reason,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                return FinancialOperationResult.Fail("A reason is required to void a transaction.");
+            }
+
+            //
+            // 1. Load existing transaction
+            //
+            var ft = await _context.FinancialTransactions
+                .Where(t => t.id == transactionId && t.tenantGuid == tenantGuid
+                         && t.active == true && t.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (ft == null)
+            {
+                return FinancialOperationResult.Fail("Transaction not found or already voided.");
+            }
+
+            //
+            // 2. Validate fiscal period is open
+            //
+            var periodCheck = await ValidateFiscalPeriodOpenAsync(tenantGuid, ft.transactionDate, cancellationToken);
+            if (!periodCheck.Success)
+            {
+                return FinancialOperationResult.Fail(
+                    $"Cannot void — the fiscal period is closed. {periodCheck.ErrorMessage}");
+            }
+
+            //
+            // 3. Clone BEFORE state for audit diff
+            //
+            var beforeClone = ft.Clone();
+
+            //
+            // 4. Mark as voided
+            //
+            ft.deleted = true;
+            ft.notes = string.IsNullOrWhiteSpace(ft.notes)
+                ? $"VOIDED: {reason}"
+                : $"{ft.notes}\n\nVOIDED: {reason}";
+            ft.versionNumber++;
+
+            // Null out nav properties
+            ft.financialCategory = null;
+            ft.financialOffice = null;
+            ft.scheduledEvent = null;
+            ft.contact = null;
+            ft.client = null;
+            ft.currency = null;
+            ft.taxCode = null;
+            ft.fiscalPeriod = null;
+            ft.paymentType = null;
+
+            //
+            // 5. Write structured audit change history with void reason
+            //
+            _context.FinancialTransactionChangeHistories.Add(new FinancialTransactionChangeHistory
+            {
+                financialTransactionId = ft.id,
+                versionNumber = ft.versionNumber,
+                timeStamp = DateTime.UtcNow,
+                userId = userId,
+                tenantGuid = tenantGuid,
+                data = BuildAuditJson("Voided", beforeClone, ft, reason)
+            });
+
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    // Post reversal to General Ledger
+                    await PostReversalToGLAsync(tenantGuid, ft.id, userId, reason, cancellationToken);
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "Transaction {Id} voided by user {UserId}. Reason: {Reason}",
+                        ft.id, userId, reason);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to void transaction {Id}", transactionId);
+                    return FinancialOperationResult.Fail($"Void failed: {ex.Message}");
+                }
+            }
+
+            return FinancialOperationResult.Ok(new Dictionary<string, object>
+            {
+                ["financialTransactionId"] = ft.id,
+                ["voided"] = true
             });
         }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
@@ -128,5 +128,10 @@ public partial class SchedulerContext : DbContext
             //
             return false;
         }
+    }
+
+
+    partial void OnModelCreatingPartial(ModelBuilder modelBuilder)
+    {
     }
 }

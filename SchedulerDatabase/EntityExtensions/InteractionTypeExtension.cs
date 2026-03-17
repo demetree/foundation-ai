@@ -97,7 +97,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a InteractionType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the InteractionTypeEntity type directly.
+		/// Converts a InteractionType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the InteractionType Entity type directly.
 		///
 		/// </summary>
 		public InteractionTypeOutputDTO ToOutputDTO()

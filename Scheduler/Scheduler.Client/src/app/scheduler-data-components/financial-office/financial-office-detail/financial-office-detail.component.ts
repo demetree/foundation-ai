@@ -27,6 +27,7 @@ import { FinancialOfficeChangeHistoryService } from '../../../scheduler-data-ser
 import { FinancialCategoryService } from '../../../scheduler-data-services/financial-category.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { BudgetService } from '../../../scheduler-data-services/budget.service';
+import { GeneralLedgerEntryService } from '../../../scheduler-data-services/general-ledger-entry.service';
 import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -106,6 +107,7 @@ export class FinancialOfficeDetailComponent implements OnInit, CanComponentDeact
   public financialCategories$ = this.financialCategoryService.GetFinancialCategoryList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public budgets$ = this.budgetService.GetBudgetList();
+  public generalLedgerEntries$ = this.generalLedgerEntryService.GetGeneralLedgerEntryList();
   public invoices$ = this.invoiceService.GetInvoiceList();
 
   private destroy$ = new Subject<void>();
@@ -116,6 +118,7 @@ export class FinancialOfficeDetailComponent implements OnInit, CanComponentDeact
     public financialCategoryService: FinancialCategoryService,
     public financialTransactionService: FinancialTransactionService,
     public budgetService: BudgetService,
+    public generalLedgerEntryService: GeneralLedgerEntryService,
     public invoiceService: InvoiceService,
     private authService: AuthService,
     private route: ActivatedRoute,

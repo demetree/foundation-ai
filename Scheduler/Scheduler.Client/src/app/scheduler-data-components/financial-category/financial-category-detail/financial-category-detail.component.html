@@ -191,6 +191,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="generalLedgerLineService.userIsSchedulerGeneralLedgerLineReader()">
+                            <button ngbNavLink>General Ledger Lines
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialCategoryData?.GeneralLedgerLinesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-general-ledger-line-table [queryParams]="{ financialCategoryId: financialCategoryData?.id }" [showAddButton]="true" [preSeededData]="{ financialCategoryId: financialCategoryData?.id }" [hiddenFields]="['financialCategoryId']"></app-general-ledger-line-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="invoiceLineItemService.userIsSchedulerInvoiceLineItemReader()">
                             <button ngbNavLink>Invoice Line Items
                                 <span class="badge bg-primary ms-2">

@@ -105,7 +105,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a VolunteerStatus to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the VolunteerStatusEntity type directly.
+		/// Converts a VolunteerStatus to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the VolunteerStatus Entity type directly.
 		///
 		/// </summary>
 		public VolunteerStatusOutputDTO ToOutputDTO()

@@ -296,6 +296,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[GeneralLedgerEntry]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[GeneralLedgerLine]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Gift]",
          "ObjectType": 0
       },

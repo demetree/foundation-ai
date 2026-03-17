@@ -79,6 +79,8 @@ import {FiscalPeriodService} from  './fiscal-period.service';
 import {FiscalPeriodChangeHistoryService} from  './fiscal-period-change-history.service';
 import {FundService} from  './fund.service';
 import {FundChangeHistoryService} from  './fund-change-history.service';
+import {GeneralLedgerEntryService} from  './general-ledger-entry.service';
+import {GeneralLedgerLineService} from  './general-ledger-line.service';
 import {GiftService} from  './gift.service';
 import {GiftChangeHistoryService} from  './gift-change-history.service';
 import {HouseholdService} from  './household.service';
@@ -254,6 +256,8 @@ export class SchedulerDataServiceManagerService  {
               , public fiscalPeriodChangeHistoryService: FiscalPeriodChangeHistoryService
               , public fundService: FundService
               , public fundChangeHistoryService: FundChangeHistoryService
+              , public generalLedgerEntryService: GeneralLedgerEntryService
+              , public generalLedgerLineService: GeneralLedgerLineService
               , public giftService: GiftService
               , public giftChangeHistoryService: GiftChangeHistoryService
               , public householdService: HouseholdService
@@ -427,6 +431,8 @@ export class SchedulerDataServiceManagerService  {
         this.fiscalPeriodChangeHistoryService.ClearAllCaches();
         this.fundService.ClearAllCaches();
         this.fundChangeHistoryService.ClearAllCaches();
+        this.generalLedgerEntryService.ClearAllCaches();
+        this.generalLedgerLineService.ClearAllCaches();
         this.giftService.ClearAllCaches();
         this.giftChangeHistoryService.ClearAllCaches();
         this.householdService.ClearAllCaches();

@@ -202,6 +202,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="generalLedgerEntryService.userIsSchedulerGeneralLedgerEntryReader()">
+                            <button ngbNavLink>General Ledger Entries
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialTransactionData?.GeneralLedgerEntriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-general-ledger-entry-table [queryParams]="{ financialTransactionId: financialTransactionData?.id }" [showAddButton]="true" [preSeededData]="{ financialTransactionId: financialTransactionData?.id }" [hiddenFields]="['financialTransactionId']"></app-general-ledger-entry-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="paymentTransactionService.userIsSchedulerPaymentTransactionReader()">
                             <button ngbNavLink>Payment Transactions
                                 <span class="badge bg-primary ms-2">

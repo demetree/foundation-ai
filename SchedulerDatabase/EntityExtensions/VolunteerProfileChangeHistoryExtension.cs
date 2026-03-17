@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a VolunteerProfileChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the VolunteerProfileChangeHistoryEntity type directly.
+		/// Converts a VolunteerProfileChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the VolunteerProfileChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public VolunteerProfileChangeHistoryOutputDTO ToOutputDTO()

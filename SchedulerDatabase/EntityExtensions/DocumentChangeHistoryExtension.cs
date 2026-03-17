@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a DocumentChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the DocumentChangeHistoryEntity type directly.
+		/// Converts a DocumentChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the DocumentChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public DocumentChangeHistoryOutputDTO ToOutputDTO()

@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a GiftChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the GiftChangeHistoryEntity type directly.
+		/// Converts a GiftChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the GiftChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public GiftChangeHistoryOutputDTO ToOutputDTO()

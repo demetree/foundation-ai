@@ -3184,6 +3184,61 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             budgetTable.AddUniqueConstraint(new List<string>() { "tenantGuid", "financialCategoryId", "fiscalPeriodId" }, true);
 
+
+            //
+            // General Ledger Entry — Double-entry journal entries (Phase 3)
+            // Each entry contains two or more lines whose debits and credits must balance.
+            //
+            Database.Table generalLedgerEntryTable = database.AddTable("GeneralLedgerEntry");
+            generalLedgerEntryTable.comment = @"====================================================================================================
+ GENERAL LEDGER ENTRY (Double-Entry Journal Entry)
+ Every financial operation (expense, revenue, void) creates a balanced journal entry in this table.
+ Each entry has two or more GeneralLedgerLines whose total debits must equal total credits.
+
+ The GL is the authoritative ledger for financial reporting (trial balance, P&L, balance sheet).
+ FinancialTransaction remains the source document; this table is the accounting record.
+
+ DESIGN NOTE: reversalOfId links void/correction entries back to the original entry they reverse.
+ ====================================================================================================";
+
+            generalLedgerEntryTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            generalLedgerEntryTable.AddIdField();
+            generalLedgerEntryTable.AddMultiTenantSupport();
+            generalLedgerEntryTable.AddIntField("journalEntryNumber", false).AddScriptComments("Auto-incrementing per-tenant journal entry number for human reference.");
+            generalLedgerEntryTable.AddDateTimeField("transactionDate", false).AddScriptComments("The date of the underlying financial event (UTC).").CreateIndex();
+            generalLedgerEntryTable.AddString500Field("description", true).AddScriptComments("Description of the journal entry (e.g., 'Expense: Office Supplies', 'Revenue: Hall Rental').");
+            generalLedgerEntryTable.AddString100Field("referenceNumber", true).AddScriptComments("External reference — cheque number, receipt number, etc.");
+            generalLedgerEntryTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Links back to the originating FinancialTransaction, if any.");
+            generalLedgerEntryTable.AddForeignKeyField(fiscalPeriodTable, true, true).AddScriptComments("The fiscal period this entry belongs to.");
+            generalLedgerEntryTable.AddForeignKeyField(financialOfficeTable, true, true).AddScriptComments("Optional link to FinancialOffice for departmental reporting.");
+            generalLedgerEntryTable.AddIntField("postedBy", false).AddScriptComments("Security user id who posted this entry.");
+            generalLedgerEntryTable.AddDateTimeField("postedDate", false).AddScriptComments("When this entry was posted (UTC).");
+            generalLedgerEntryTable.AddIntField("reversalOfId", true).AddScriptComments("If this is a reversal/correction, points to the original GeneralLedgerEntry id.");
+            generalLedgerEntryTable.AddControlFields();
+
+
+            //
+            // General Ledger Line — Individual debit or credit within a journal entry (Phase 3)
+            // Exactly one of debitAmount/creditAmount should be non-zero per line.
+            //
+            Database.Table generalLedgerLineTable = database.AddTable("GeneralLedgerLine");
+            generalLedgerLineTable.comment = @"====================================================================================================
+ GENERAL LEDGER LINE
+ Individual debit or credit line within a GeneralLedgerEntry.
+ Each line posts to a specific FinancialCategory (account).
+
+ CONSTRAINT: Within each GeneralLedgerEntry, sum(debitAmount) must equal sum(creditAmount).
+ Exactly one of debitAmount/creditAmount should be non-zero per line.
+ ====================================================================================================";
+
+            generalLedgerLineTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            generalLedgerLineTable.AddIdField();
+            generalLedgerLineTable.AddForeignKeyField(generalLedgerEntryTable, false, true).AddScriptComments("The parent journal entry this line belongs to.");
+            generalLedgerLineTable.AddForeignKeyField(financialCategoryTable, false, true).AddScriptComments("The account (FinancialCategory) this line posts to.");
+            generalLedgerLineTable.AddMoneyField("debitAmount", false, 0, true).AddScriptComments("Debit amount. Zero if this line is a credit.");
+            generalLedgerLineTable.AddMoneyField("creditAmount", false, 0, true).AddScriptComments("Credit amount. Zero if this line is a debit.");
+            generalLedgerLineTable.AddString500Field("description", true).AddScriptComments("Optional line-level description.");
+
             #endregion
 
 

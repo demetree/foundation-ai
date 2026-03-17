@@ -97,7 +97,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a SchedulingTargetType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SchedulingTargetTypeEntity type directly.
+		/// Converts a SchedulingTargetType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SchedulingTargetType Entity type directly.
 		///
 		/// </summary>
 		public SchedulingTargetTypeOutputDTO ToOutputDTO()

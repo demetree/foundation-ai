@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a ScheduledEventTemplateChargeChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ScheduledEventTemplateChargeChangeHistoryEntity type directly.
+		/// Converts a ScheduledEventTemplateChargeChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ScheduledEventTemplateChargeChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public ScheduledEventTemplateChargeChangeHistoryOutputDTO ToOutputDTO()

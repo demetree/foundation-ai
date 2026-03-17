@@ -47,5 +47,7 @@ public partial class FiscalPeriod
 
     public virtual ICollection<FiscalPeriodChangeHistory> FiscalPeriodChangeHistories { get; set; } = new List<FiscalPeriodChangeHistory>();
 
+    public virtual ICollection<GeneralLedgerEntry> GeneralLedgerEntries { get; set; } = new List<GeneralLedgerEntry>();
+
     public virtual PeriodStatus periodStatus { get; set; }
 }

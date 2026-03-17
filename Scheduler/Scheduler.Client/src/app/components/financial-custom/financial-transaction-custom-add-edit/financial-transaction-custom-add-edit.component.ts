@@ -350,7 +350,8 @@ export class FinancialTransactionCustomAddEditComponent {
         };
 
         if (this.isEditMode) {
-            this.transactionService.PutFinancialTransaction(this.editId, submitData).subscribe({
+            // Route edits through FinancialManagementService for fiscal period validation + audit trail
+            this.putViaService(fv).subscribe({
                 next: () => {
                     this.alertService.showMessage('Transaction updated successfully', '', MessageSeverity.success);
                     this.isSaving = false;
@@ -359,7 +360,8 @@ export class FinancialTransactionCustomAddEditComponent {
                     this.financialTransactionChanged.emit();
                 },
                 error: (err) => {
-                    this.alertService.showMessage('Failed to update transaction', JSON.stringify(err), MessageSeverity.error);
+                    const msg = err?.error?.error || 'Failed to update transaction';
+                    this.alertService.showMessage('Update failed', msg, MessageSeverity.error);
                     this.isSaving = false;
                 }
             });
@@ -488,6 +490,32 @@ export class FinancialTransactionCustomAddEditComponent {
         const headers = this.authService.GetAuthenticationHeaders()
             .set('Content-Type', 'application/json');
         return this.http.post(`${this.baseUrl}api/FinancialTransactions/${endpoint}`, body, { headers });
+    }
+
+
+    /**
+     * Routes transaction edits through FinancialManagementService.
+     * Uses PUT /api/FinancialTransactions/{id}/Update for fiscal period
+     * validation, change history, and structured audit logging.
+     */
+    private putViaService(fv: any) {
+        const body = {
+            financialCategoryId: Number(fv.financialCategoryId),
+            transactionDate: dateTimeLocalToIsoUtc(fv.transactionDate!.trim()),
+            amount: Number(fv.amount),
+            taxAmount: Number(fv.taxAmount),
+            description: fv.description!.trim(),
+            currencyId: Number(fv.currencyId),
+            financialOfficeId: fv.financialOfficeId ? Number(fv.financialOfficeId) : null,
+            scheduledEventId: fv.scheduledEventId ? Number(fv.scheduledEventId) : null,
+            contactId: fv.contactId ? Number(fv.contactId) : null,
+            clientId: fv.clientId ? Number(fv.clientId) : null,
+            referenceNumber: fv.referenceNumber?.trim() || null,
+            notes: fv.notes?.trim() || null,
+        };
+        const headers = this.authService.GetAuthenticationHeaders()
+            .set('Content-Type', 'application/json');
+        return this.http.put(`${this.baseUrl}api/FinancialTransactions/${this.editId}/Update`, body, { headers });
     }
 
 

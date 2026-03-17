@@ -102,7 +102,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a Tag to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the TagEntity type directly.
+		/// Converts a Tag to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the Tag Entity type directly.
 		///
 		/// </summary>
 		public TagOutputDTO ToOutputDTO()

@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a SoftCreditChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SoftCreditChangeHistoryEntity type directly.
+		/// Converts a SoftCreditChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SoftCreditChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public SoftCreditChangeHistoryOutputDTO ToOutputDTO()

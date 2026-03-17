@@ -110,7 +110,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a TimeZone to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the TimeZoneEntity type directly.
+		/// Converts a TimeZone to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the TimeZone Entity type directly.
 		///
 		/// </summary>
 		public TimeZoneOutputDTO ToOutputDTO()

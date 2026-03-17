@@ -26,6 +26,7 @@ import { FiscalPeriodData } from './fiscal-period.service';
 import { PaymentTypeData } from './payment-type.service';
 import { CurrencyData } from './currency.service';
 import { FinancialTransactionChangeHistoryService, FinancialTransactionChangeHistoryData } from './financial-transaction-change-history.service';
+import { GeneralLedgerEntryService, GeneralLedgerEntryData } from './general-ledger-entry.service';
 import { PaymentTransactionService, PaymentTransactionData } from './payment-transaction.service';
 import { ReceiptService, ReceiptData } from './receipt.service';
 import { DocumentService, DocumentData } from './document.service';
@@ -214,6 +215,11 @@ export class FinancialTransactionData {
     private _financialTransactionChangeHistoriesSubject = new BehaviorSubject<FinancialTransactionChangeHistoryData[] | null>(null);
 
                 
+    private _generalLedgerEntries: GeneralLedgerEntryData[] | null = null;
+    private _generalLedgerEntriesPromise: Promise<GeneralLedgerEntryData[]> | null  = null;
+    private _generalLedgerEntriesSubject = new BehaviorSubject<GeneralLedgerEntryData[] | null>(null);
+
+                
     private _paymentTransactions: PaymentTransactionData[] | null = null;
     private _paymentTransactionsPromise: Promise<PaymentTransactionData[]> | null  = null;
     private _paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
@@ -266,6 +272,31 @@ export class FinancialTransactionData {
             });
         }
         return this._financialTransactionChangeHistoriesCount$;
+    }
+
+
+
+    public GeneralLedgerEntries$ = this._generalLedgerEntriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._generalLedgerEntries === null && this._generalLedgerEntriesPromise === null) {
+            this.loadGeneralLedgerEntries(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _generalLedgerEntriesCount$: Observable<bigint | number> | null = null;
+    public get GeneralLedgerEntriesCount$(): Observable<bigint | number> {
+        if (this._generalLedgerEntriesCount$ === null) {
+            this._generalLedgerEntriesCount$ = GeneralLedgerEntryService.Instance.GetGeneralLedgerEntriesRowCount({financialTransactionId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._generalLedgerEntriesCount$;
     }
 
 
@@ -388,6 +419,11 @@ export class FinancialTransactionData {
      this._financialTransactionChangeHistoriesSubject.next(null);
      this._financialTransactionChangeHistoriesCount$ = null;
 
+     this._generalLedgerEntries = null;
+     this._generalLedgerEntriesPromise = null;
+     this._generalLedgerEntriesSubject.next(null);
+     this._generalLedgerEntriesCount$ = null;
+
      this._paymentTransactions = null;
      this._paymentTransactionsPromise = null;
      this._paymentTransactionsSubject.next(null);
@@ -474,6 +510,71 @@ export class FinancialTransactionData {
 
     public get HasFinancialTransactionChangeHistories(): Promise<boolean> {
         return this.FinancialTransactionChangeHistories.then(financialTransactionChangeHistories => financialTransactionChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the GeneralLedgerEntries for this FinancialTransaction.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.financialTransaction.GeneralLedgerEntries.then(financialTransactions => { ... })
+     *   or
+     *   await this.financialTransaction.financialTransactions
+     *
+    */
+    public get GeneralLedgerEntries(): Promise<GeneralLedgerEntryData[]> {
+        if (this._generalLedgerEntries !== null) {
+            return Promise.resolve(this._generalLedgerEntries);
+        }
+
+        if (this._generalLedgerEntriesPromise !== null) {
+            return this._generalLedgerEntriesPromise;
+        }
+
+        // Start the load
+        this.loadGeneralLedgerEntries();
+
+        return this._generalLedgerEntriesPromise!;
+    }
+
+
+
+    private loadGeneralLedgerEntries(): void {
+
+        this._generalLedgerEntriesPromise = lastValueFrom(
+            FinancialTransactionService.Instance.GetGeneralLedgerEntriesForFinancialTransaction(this.id)
+        )
+        .then(GeneralLedgerEntries => {
+            this._generalLedgerEntries = GeneralLedgerEntries ?? [];
+            this._generalLedgerEntriesSubject.next(this._generalLedgerEntries);
+            return this._generalLedgerEntries;
+         })
+        .catch(err => {
+            this._generalLedgerEntries = [];
+            this._generalLedgerEntriesSubject.next(this._generalLedgerEntries);
+            throw err;
+        })
+        .finally(() => {
+            this._generalLedgerEntriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached GeneralLedgerEntry. Call after mutations to force refresh.
+     */
+    public ClearGeneralLedgerEntriesCache(): void {
+        this._generalLedgerEntries = null;
+        this._generalLedgerEntriesPromise = null;
+        this._generalLedgerEntriesSubject.next(this._generalLedgerEntries);      // Emit to observable
+    }
+
+    public get HasGeneralLedgerEntries(): Promise<boolean> {
+        return this.GeneralLedgerEntries.then(generalLedgerEntries => generalLedgerEntries.length > 0);
     }
 
 
@@ -751,6 +852,7 @@ export class FinancialTransactionService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private financialTransactionChangeHistoryService: FinancialTransactionChangeHistoryService,
+        private generalLedgerEntryService: GeneralLedgerEntryService,
         private paymentTransactionService: PaymentTransactionService,
         private receiptService: ReceiptService,
         private documentService: DocumentService,
@@ -1244,6 +1346,16 @@ export class FinancialTransactionService extends SecureEndpointBase {
     }
 
 
+    public GetGeneralLedgerEntriesForFinancialTransaction(financialTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GeneralLedgerEntryData[]> {
+        return this.generalLedgerEntryService.GetGeneralLedgerEntryList({
+            financialTransactionId: financialTransactionId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetPaymentTransactionsForFinancialTransaction(financialTransactionId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<PaymentTransactionData[]> {
         return this.paymentTransactionService.GetPaymentTransactionList({
             financialTransactionId: financialTransactionId,
@@ -1313,6 +1425,10 @@ export class FinancialTransactionService extends SecureEndpointBase {
     (revived as any)._financialTransactionChangeHistoriesPromise = null;
     (revived as any)._financialTransactionChangeHistoriesSubject = new BehaviorSubject<FinancialTransactionChangeHistoryData[] | null>(null);
 
+    (revived as any)._generalLedgerEntries = null;
+    (revived as any)._generalLedgerEntriesPromise = null;
+    (revived as any)._generalLedgerEntriesSubject = new BehaviorSubject<GeneralLedgerEntryData[] | null>(null);
+
     (revived as any)._paymentTransactions = null;
     (revived as any)._paymentTransactionsPromise = null;
     (revived as any)._paymentTransactionsSubject = new BehaviorSubject<PaymentTransactionData[] | null>(null);
@@ -1347,6 +1463,18 @@ export class FinancialTransactionService extends SecureEndpointBase {
       );
 
     (revived as any)._financialTransactionChangeHistoriesCount$ = null;
+
+
+    (revived as any).GeneralLedgerEntries$ = (revived as any)._generalLedgerEntriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._generalLedgerEntries === null && (revived as any)._generalLedgerEntriesPromise === null) {
+                (revived as any).loadGeneralLedgerEntries();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._generalLedgerEntriesCount$ = null;
 
 
     (revived as any).PaymentTransactions$ = (revived as any)._paymentTransactionsSubject.asObservable().pipe(

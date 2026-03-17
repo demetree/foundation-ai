@@ -92,7 +92,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a TributeType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the TributeTypeEntity type directly.
+		/// Converts a TributeType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the TributeType Entity type directly.
 		///
 		/// </summary>
 		public TributeTypeOutputDTO ToOutputDTO()

@@ -27,6 +27,7 @@ import { PeriodStatusService } from '../../../scheduler-data-services/period-sta
 import { FiscalPeriodChangeHistoryService } from '../../../scheduler-data-services/fiscal-period-change-history.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { BudgetService } from '../../../scheduler-data-services/budget.service';
+import { GeneralLedgerEntryService } from '../../../scheduler-data-services/general-ledger-entry.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -111,6 +112,7 @@ export class FiscalPeriodDetailComponent implements OnInit, CanComponentDeactiva
   public fiscalPeriodChangeHistories$ = this.fiscalPeriodChangeHistoryService.GetFiscalPeriodChangeHistoryList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public budgets$ = this.budgetService.GetBudgetList();
+  public generalLedgerEntries$ = this.generalLedgerEntryService.GetGeneralLedgerEntryList();
 
   private destroy$ = new Subject<void>();
 
@@ -120,6 +122,7 @@ export class FiscalPeriodDetailComponent implements OnInit, CanComponentDeactiva
     public fiscalPeriodChangeHistoryService: FiscalPeriodChangeHistoryService,
     public financialTransactionService: FinancialTransactionService,
     public budgetService: BudgetService,
+    public generalLedgerEntryService: GeneralLedgerEntryService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

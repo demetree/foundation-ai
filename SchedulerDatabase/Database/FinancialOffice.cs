@@ -43,5 +43,7 @@ public partial class FinancialOffice
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
+    public virtual ICollection<GeneralLedgerEntry> GeneralLedgerEntries { get; set; } = new List<GeneralLedgerEntry>();
+
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 }

@@ -123,6 +123,7 @@ import { PledgeDashboardComponent } from './components/financial-custom/pledge-d
 import { AccountantReportsComponent } from './components/financial-custom/accountant-reports/accountant-reports.component';
 import { RentalAgreementTrackerComponent } from './components/scheduler-custom/rental-agreement-tracker/rental-agreement-tracker.component';
 import { FiscalPeriodCloseComponent } from './components/financial-custom/fiscal-period-close/fiscal-period-close.component';
+import { AuditLogViewerComponent } from './components/financial-custom/audit-log-viewer/audit-log-viewer.component';
 
 
 //
@@ -268,6 +269,10 @@ import { FundListingComponent } from './scheduler-data-components/fund/fund-list
 import { FundDetailComponent } from './scheduler-data-components/fund/fund-detail/fund-detail.component';
 import { FundChangeHistoryListingComponent } from './scheduler-data-components/fund-change-history/fund-change-history-listing/fund-change-history-listing.component';
 import { FundChangeHistoryDetailComponent } from './scheduler-data-components/fund-change-history/fund-change-history-detail/fund-change-history-detail.component';
+import { GeneralLedgerEntryListingComponent } from './scheduler-data-components/general-ledger-entry/general-ledger-entry-listing/general-ledger-entry-listing.component';
+import { GeneralLedgerEntryDetailComponent } from './scheduler-data-components/general-ledger-entry/general-ledger-entry-detail/general-ledger-entry-detail.component';
+import { GeneralLedgerLineListingComponent } from './scheduler-data-components/general-ledger-line/general-ledger-line-listing/general-ledger-line-listing.component';
+import { GeneralLedgerLineDetailComponent } from './scheduler-data-components/general-ledger-line/general-ledger-line-detail/general-ledger-line-detail.component';
 import { GiftListingComponent } from './scheduler-data-components/gift/gift-listing/gift-listing.component';
 import { GiftDetailComponent } from './scheduler-data-components/gift/gift-detail/gift-detail.component';
 import { GiftChangeHistoryListingComponent } from './scheduler-data-components/gift-change-history/gift-change-history-listing/gift-change-history-listing.component';
@@ -597,6 +602,7 @@ const routes: Routes = [
   { path: 'finances/pnl-report', component: PnlReportComponent, canActivate: [AuthGuard], title: 'Income Statement' },
   { path: 'finances/accountant-reports', component: AccountantReportsComponent, canActivate: [AuthGuard], title: 'Accountant Reports' },
   { path: 'finances/fiscal-period-close', component: FiscalPeriodCloseComponent, canActivate: [AuthGuard], title: 'Fiscal Period Close' },
+  { path: 'finances/audit-log', component: AuditLogViewerComponent, canActivate: [AuthGuard], title: 'Audit Trail' },
   { path: 'finances/ar-aging', component: ArAgingReportComponent, canActivate: [AuthGuard], title: 'A/R Aging Report' },
   { path: 'finances/revenue-by-client', component: RevenueByClientReportComponent, canActivate: [AuthGuard], title: 'Revenue by Client' },
   { path: 'finances/gift-entry', component: GiftEntryComponent, canActivate: [AuthGuard], title: 'Record Gift' },
@@ -962,6 +968,16 @@ const routes: Routes = [
   {path: 'fundchangehistories/:fundChangeHistoryId', component: FundChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fund Change History' },
   {path: 'fundchangehistory/:fundChangeHistoryId', component: FundChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Fund Change History' },
   {path: 'fundchangehistory',  redirectTo: 'fundchangehistories'},
+  {path: 'generalledgerentries', component: GeneralLedgerEntryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'General Ledger Entries' },
+  {path: 'generalledgerentries/new', component: GeneralLedgerEntryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create General Ledger Entry' },
+  {path: 'generalledgerentries/:generalLedgerEntryId', component: GeneralLedgerEntryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit General Ledger Entry' },
+  {path: 'generalledgerentry/:generalLedgerEntryId', component: GeneralLedgerEntryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit General Ledger Entry' },
+  {path: 'generalledgerentry',  redirectTo: 'generalledgerentries'},
+  {path: 'generalledgerlines', component: GeneralLedgerLineListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'General Ledger Lines' },
+  {path: 'generalledgerlines/new', component: GeneralLedgerLineDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create General Ledger Line' },
+  {path: 'generalledgerlines/:generalLedgerLineId', component: GeneralLedgerLineDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit General Ledger Line' },
+  {path: 'generalledgerline/:generalLedgerLineId', component: GeneralLedgerLineDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit General Ledger Line' },
+  {path: 'generalledgerline',  redirectTo: 'generalledgerlines'},
   {path: 'gifts', component: GiftListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Gifts' },
   {path: 'gifts/new', component: GiftDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Gift' },
   {path: 'gifts/:giftId', component: GiftDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Gift' },

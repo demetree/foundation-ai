@@ -90,7 +90,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a AttributeDefinitionEntity to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AttributeDefinitionEntityEntity type directly.
+		/// Converts a AttributeDefinitionEntity to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AttributeDefinitionEntity Entity type directly.
 		///
 		/// </summary>
 		public AttributeDefinitionEntityOutputDTO ToOutputDTO()

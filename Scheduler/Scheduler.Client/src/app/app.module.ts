@@ -214,6 +214,7 @@ import { PledgeDashboardComponent } from './components/financial-custom/pledge-d
 import { AccountantReportsComponent } from './components/financial-custom/accountant-reports/accountant-reports.component';
 import { RentalAgreementTrackerComponent } from './components/scheduler-custom/rental-agreement-tracker/rental-agreement-tracker.component';
 import { FiscalPeriodCloseComponent } from './components/financial-custom/fiscal-period-close/fiscal-period-close.component';
+import { AuditLogViewerComponent } from './components/financial-custom/audit-log-viewer/audit-log-viewer.component';
 
 
 //
@@ -391,6 +392,8 @@ import { FiscalPeriodService } from './scheduler-data-services/fiscal-period.ser
 import { FiscalPeriodChangeHistoryService } from './scheduler-data-services/fiscal-period-change-history.service';
 import { FundService } from './scheduler-data-services/fund.service';
 import { FundChangeHistoryService } from './scheduler-data-services/fund-change-history.service';
+import { GeneralLedgerEntryService } from './scheduler-data-services/general-ledger-entry.service';
+import { GeneralLedgerLineService } from './scheduler-data-services/general-ledger-line.service';
 import { GiftService } from './scheduler-data-services/gift.service';
 import { GiftChangeHistoryService } from './scheduler-data-services/gift-change-history.service';
 import { HouseholdService } from './scheduler-data-services/household.service';
@@ -778,6 +781,14 @@ import { FundChangeHistoryListingComponent } from './scheduler-data-components/f
 import { FundChangeHistoryAddEditComponent } from './scheduler-data-components/fund-change-history/fund-change-history-add-edit/fund-change-history-add-edit.component';
 import { FundChangeHistoryDetailComponent } from './scheduler-data-components/fund-change-history/fund-change-history-detail/fund-change-history-detail.component';
 import { FundChangeHistoryTableComponent } from './scheduler-data-components/fund-change-history/fund-change-history-table/fund-change-history-table.component';
+import { GeneralLedgerEntryListingComponent } from './scheduler-data-components/general-ledger-entry/general-ledger-entry-listing/general-ledger-entry-listing.component';
+import { GeneralLedgerEntryAddEditComponent } from './scheduler-data-components/general-ledger-entry/general-ledger-entry-add-edit/general-ledger-entry-add-edit.component';
+import { GeneralLedgerEntryDetailComponent } from './scheduler-data-components/general-ledger-entry/general-ledger-entry-detail/general-ledger-entry-detail.component';
+import { GeneralLedgerEntryTableComponent } from './scheduler-data-components/general-ledger-entry/general-ledger-entry-table/general-ledger-entry-table.component';
+import { GeneralLedgerLineListingComponent } from './scheduler-data-components/general-ledger-line/general-ledger-line-listing/general-ledger-line-listing.component';
+import { GeneralLedgerLineAddEditComponent } from './scheduler-data-components/general-ledger-line/general-ledger-line-add-edit/general-ledger-line-add-edit.component';
+import { GeneralLedgerLineDetailComponent } from './scheduler-data-components/general-ledger-line/general-ledger-line-detail/general-ledger-line-detail.component';
+import { GeneralLedgerLineTableComponent } from './scheduler-data-components/general-ledger-line/general-ledger-line-table/general-ledger-line-table.component';
 import { GiftListingComponent } from './scheduler-data-components/gift/gift-listing/gift-listing.component';
 import { GiftAddEditComponent } from './scheduler-data-components/gift/gift-add-edit/gift-add-edit.component';
 import { GiftDetailComponent } from './scheduler-data-components/gift/gift-detail/gift-detail.component';
@@ -1351,6 +1362,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     RentalAgreementTrackerComponent,
     FiscalPeriodCloseComponent,
+    AuditLogViewerComponent,
 
 
     //
@@ -1704,6 +1716,14 @@ FundChangeHistoryListingComponent,
 FundChangeHistoryAddEditComponent,
 FundChangeHistoryDetailComponent,
 FundChangeHistoryTableComponent,
+GeneralLedgerEntryListingComponent,
+GeneralLedgerEntryAddEditComponent,
+GeneralLedgerEntryDetailComponent,
+GeneralLedgerEntryTableComponent,
+GeneralLedgerLineListingComponent,
+GeneralLedgerLineAddEditComponent,
+GeneralLedgerLineDetailComponent,
+GeneralLedgerLineTableComponent,
 GiftListingComponent,
 GiftAddEditComponent,
 GiftDetailComponent,
@@ -2258,6 +2278,8 @@ FiscalPeriodService,
 FiscalPeriodChangeHistoryService,
 FundService,
 FundChangeHistoryService,
+GeneralLedgerEntryService,
+GeneralLedgerLineService,
 GiftService,
 GiftChangeHistoryService,
 HouseholdService,

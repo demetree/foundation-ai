@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a NotificationSubscriptionChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the NotificationSubscriptionChangeHistoryEntity type directly.
+		/// Converts a NotificationSubscriptionChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the NotificationSubscriptionChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public NotificationSubscriptionChangeHistoryOutputDTO ToOutputDTO()

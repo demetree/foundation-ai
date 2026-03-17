@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a RateSheetChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the RateSheetChangeHistoryEntity type directly.
+		/// Converts a RateSheetChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the RateSheetChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public RateSheetChangeHistoryOutputDTO ToOutputDTO()

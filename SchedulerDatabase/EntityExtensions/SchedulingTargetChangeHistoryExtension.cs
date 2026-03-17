@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a SchedulingTargetChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SchedulingTargetChangeHistoryEntity type directly.
+		/// Converts a SchedulingTargetChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SchedulingTargetChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public SchedulingTargetChangeHistoryOutputDTO ToOutputDTO()

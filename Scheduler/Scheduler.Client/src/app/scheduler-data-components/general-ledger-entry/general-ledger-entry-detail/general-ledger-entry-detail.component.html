@@ -1,0 +1,133 @@
+<div class="container-fluid p-1 m-0 general-ledger-entry-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="general-ledger-entry-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">General Ledger Entry</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit General Ledger Entry' : 'Add General Ledger Entry'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerGeneralLedgerEntryReader()">
+                <div class="col m-2 general-ledger-entry-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="generalLedgerEntryForm" (ngSubmit)="submitForm()" class="general-ledger-entry-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('journalEntryNumber')">
+                                <label for="GeneralLedgerEntry-journalEntryNumber" id="label-GeneralLedgerEntry-journalEntryNumber"><span class="text-danger">*</span>Journal Entry Number</label>
+                                <input type="number" id="GeneralLedgerEntry-journalEntryNumber" formControlName="journalEntryNumber" placeholder="Enter Journal Entry Number" class="form-control general-ledger-entry-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" aria-labelledby="label-journalEntryNumber" />
+                                <div *ngIf="generalLedgerEntryForm.get('journalEntryNumber')?.invalid && generalLedgerEntryForm.get('journalEntryNumber')?.touched" class="text-danger">
+                                    Journal Entry Number is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('transactionDate')">
+                                <label for="GeneralLedgerEntry-transactionDate" id="label-GeneralLedgerEntry-transactionDate"><span class="text-danger">*</span>Transaction Date</label>
+                                <input type="datetime-local" id="GeneralLedgerEntry-transactionDate" formControlName="transactionDate" placeholder="Enter Transaction Date" class="form-control general-ledger-entry-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" aria-labelledby="label-transactionDate" />
+                                <div *ngIf="generalLedgerEntryForm.get('transactionDate')?.invalid && generalLedgerEntryForm.get('transactionDate')?.touched" class="text-danger">
+                                    Transaction Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="GeneralLedgerEntry-description" id="label-GeneralLedgerEntry-description">Description</label>
+                                <textarea id="GeneralLedgerEntry-description" formControlName="description" placeholder="Enter Description" class="form-control general-ledger-entry-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('referenceNumber')">
+                                <label for="GeneralLedgerEntry-referenceNumber" id="label-GeneralLedgerEntry-referenceNumber">Reference Number</label>
+                                <input type="text" id="GeneralLedgerEntry-referenceNumber" formControlName="referenceNumber" placeholder="Enter Reference Number" class="form-control general-ledger-entry-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" aria-labelledby="label-referenceNumber" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('financialTransactionId')">
+                                <label for="GeneralLedgerEntry-financialTransactionId" id="label-GeneralLedgerEntry-financialTransactionId">Financial Transaction</label>
+                                <select id="GeneralLedgerEntry-financialTransactionId" formControlName="financialTransactionId" class="form-select general-ledger-entry-select" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()">
+                                    <option [ngValue]="null">Select Financial Transaction</option>
+                                    <option *ngFor="let financialTransaction of financialTransactions$ | async" [ngValue]="financialTransaction.id">{{financialTransaction.contactRole}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('fiscalPeriodId')">
+                                <label for="GeneralLedgerEntry-fiscalPeriodId" id="label-GeneralLedgerEntry-fiscalPeriodId">Fiscal Period</label>
+                                <select id="GeneralLedgerEntry-fiscalPeriodId" formControlName="fiscalPeriodId" class="form-select general-ledger-entry-select" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()">
+                                    <option [ngValue]="null">Select Fiscal Period</option>
+                                    <option *ngFor="let fiscalPeriod of fiscalPeriods$ | async" [ngValue]="fiscalPeriod.id">{{fiscalPeriod.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('financialOfficeId')">
+                                <label for="GeneralLedgerEntry-financialOfficeId" id="label-GeneralLedgerEntry-financialOfficeId">Financial Office</label>
+                                <select id="GeneralLedgerEntry-financialOfficeId" formControlName="financialOfficeId" class="form-select general-ledger-entry-select" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()">
+                                    <option [ngValue]="null">Select Financial Office</option>
+                                    <option *ngFor="let financialOffice of financialOffices$ | async" [ngValue]="financialOffice.id">{{financialOffice.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('postedBy')">
+                                <label for="GeneralLedgerEntry-postedBy" id="label-GeneralLedgerEntry-postedBy"><span class="text-danger">*</span>Posted By</label>
+                                <input type="number" id="GeneralLedgerEntry-postedBy" formControlName="postedBy" placeholder="Enter Posted By" class="form-control general-ledger-entry-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" aria-labelledby="label-postedBy" />
+                                <div *ngIf="generalLedgerEntryForm.get('postedBy')?.invalid && generalLedgerEntryForm.get('postedBy')?.touched" class="text-danger">
+                                    Posted By is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('postedDate')">
+                                <label for="GeneralLedgerEntry-postedDate" id="label-GeneralLedgerEntry-postedDate"><span class="text-danger">*</span>Posted Date</label>
+                                <input type="datetime-local" id="GeneralLedgerEntry-postedDate" formControlName="postedDate" placeholder="Enter Posted Date" class="form-control general-ledger-entry-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" aria-labelledby="label-postedDate" />
+                                <div *ngIf="generalLedgerEntryForm.get('postedDate')?.invalid && generalLedgerEntryForm.get('postedDate')?.touched" class="text-danger">
+                                    Posted Date is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reversalOfId')">
+                                <label for="GeneralLedgerEntry-reversalOfId" id="label-GeneralLedgerEntry-reversalOfId">Reversal Of Id</label>
+                                <input type="number" id="GeneralLedgerEntry-reversalOfId" formControlName="reversalOfId" placeholder="Enter Reversal Of Id" class="form-control general-ledger-entry-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" aria-labelledby="label-reversalOfId" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="GeneralLedgerEntry-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" />
+                                <label for="GeneralLedgerEntry-active" class="form-check-label" id="label-GeneralLedgerEntry-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="GeneralLedgerEntry-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerGeneralLedgerEntryWriter()" />
+                                <label for="GeneralLedgerEntry-deleted" class="form-check-label" id="label-GeneralLedgerEntry-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="general-ledger-entry-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="generalLedgerEntryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload General Ledger Entry">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !generalLedgerEntryForm.valid || !generalLedgerEntryForm.dirty || generalLedgerEntryForm.pristine  || userIsSchedulerGeneralLedgerEntryWriter() == false " ngbTooltip="Save the General Ledger Entry changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add General Ledger Entry' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerGeneralLedgerEntryReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 general-ledger-entry-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="generalLedgerLineService.userIsSchedulerGeneralLedgerLineReader()">
+                            <button ngbNavLink>General Ledger Lines
+                                <span class="badge bg-primary ms-2">
+                                    {{ (generalLedgerEntryData?.GeneralLedgerLinesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-general-ledger-line-table [queryParams]="{ generalLedgerEntryId: generalLedgerEntryData?.id }" [showAddButton]="true" [preSeededData]="{ generalLedgerEntryId: generalLedgerEntryData?.id }" [hiddenFields]="['generalLedgerEntryId']"></app-general-ledger-line-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject } from '@angular/core';
 import { Observable, map, finalize, startWith, shareReplay } from 'rxjs';
 import { BreakpointObserver } from '@angular/cdk/layout';
 import { NavigationService } from '../../../utility-services/navigation.service';
@@ -9,6 +9,7 @@ import { AuthService } from '../../../services/auth.service';
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
 import { FinancialTransactionCustomAddEditComponent } from '../financial-transaction-custom-add-edit/financial-transaction-custom-add-edit.component';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 
 @Component({
@@ -45,6 +46,11 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
     public offices: FinancialOfficeData[] = [];
     public selectedOfficeId: number | null = null;
 
+    // Void state
+    public voidTarget: FinancialTransactionData | null = null;
+    public voidReason = '';
+    public isVoiding = false;
+
     constructor(
         private transactionService: FinancialTransactionService,
         private categoryService: FinancialCategoryService,
@@ -53,7 +59,9 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
         private authService: AuthService,
         private navigationService: NavigationService,
         private breakpointObserver: BreakpointObserver,
-        private router: Router
+        private router: Router,
+        private http: HttpClient,
+        @Inject('BASE_URL') private baseUrl: string
     ) { }
 
     @ViewChild('txAddEdit') txAddEdit!: FinancialTransactionCustomAddEditComponent;
@@ -263,5 +271,44 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
 
     public onTransactionChanged(): void {
         this.loadData();
+    }
+
+
+    public requestVoid(tx: FinancialTransactionData, event: Event): void {
+        event.stopPropagation();
+        this.voidTarget = tx;
+        this.voidReason = '';
+    }
+
+    public cancelVoid(): void {
+        this.voidTarget = null;
+        this.voidReason = '';
+    }
+
+    public executeVoid(): void {
+        if (!this.voidTarget || !this.voidReason.trim() || this.isVoiding) return;
+        this.isVoiding = true;
+
+        const headers = this.authService.GetAuthenticationHeaders()
+            .set('Content-Type', 'application/json');
+        this.http.post<any>(
+            `${this.baseUrl}api/FinancialTransactions/${this.voidTarget.id}/Void`,
+            { reason: this.voidReason.trim() },
+            { headers }
+        ).subscribe({
+            next: () => {
+                this.alertService.showMessage(
+                    `Transaction voided`, this.voidTarget?.description ?? '', MessageSeverity.success);
+                this.cancelVoid();
+                this.isVoiding = false;
+                this.transactionService.ClearAllCaches();
+                this.loadData();
+            },
+            error: (err: any) => {
+                const msg = err?.error?.error || 'Failed to void transaction';
+                this.alertService.showMessage('Void failed', msg, MessageSeverity.error);
+                this.isVoiding = false;
+            }
+        });
     }
 }

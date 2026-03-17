@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a FinancialCategoryChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the FinancialCategoryChangeHistoryEntity type directly.
+		/// Converts a FinancialCategoryChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the FinancialCategoryChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public FinancialCategoryChangeHistoryOutputDTO ToOutputDTO()

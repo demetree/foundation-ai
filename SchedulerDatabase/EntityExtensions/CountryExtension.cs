@@ -99,7 +99,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a Country to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the CountryEntity type directly.
+		/// Converts a Country to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the Country Entity type directly.
 		///
 		/// </summary>
 		public CountryOutputDTO ToOutputDTO()

@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a ShiftPatternDayChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ShiftPatternDayChangeHistoryEntity type directly.
+		/// Converts a ShiftPatternDayChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ShiftPatternDayChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public ShiftPatternDayChangeHistoryOutputDTO ToOutputDTO()

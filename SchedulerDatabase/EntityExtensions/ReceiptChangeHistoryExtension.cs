@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a ReceiptChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ReceiptChangeHistoryEntity type directly.
+		/// Converts a ReceiptChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ReceiptChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public ReceiptChangeHistoryOutputDTO ToOutputDTO()

@@ -1020,5 +1020,273 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             return Ok(result.Data);
         }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  Audit Log
+        //
+        //  GET /api/FinancialTransactions/AuditLog
+        //  Returns structured audit entries with field-level diffs.
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        [HttpGet]
+        [Route("api/FinancialTransactions/AuditLog")]
+        public async Task<IActionResult> GetAuditLog(
+            [FromQuery] int? transactionId = null,
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null,
+            [FromQuery] int maxResults = 200,
+            CancellationToken cancellationToken = default)
+        {
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.GetAuditLogAsync(
+                userTenantGuid,
+                transactionId,
+                fromDate,
+                toDate,
+                maxResults,
+                cancellationToken);
+
+            return Ok(result);
+        }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  GL Trial Balance
+        //
+        //  GET /api/FinancialTransactions/GLTrialBalance
+        //  Returns debits/credits per account from the General Ledger.
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        [HttpGet]
+        [Route("api/FinancialTransactions/GLTrialBalance")]
+        public async Task<IActionResult> GetGLTrialBalance(
+            [FromQuery] int? fiscalPeriodId = null,
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null,
+            CancellationToken cancellationToken = default)
+        {
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+            }
+            catch (Exception)
+            {
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.GetTrialBalanceFromGLAsync(
+                userTenantGuid,
+                fiscalPeriodId,
+                fromDate,
+                toDate,
+                cancellationToken);
+
+            return Ok(result);
+        }
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  Service-Routed Update
+        //
+        //  PUT /api/FinancialTransactions/{id}/Update
+        //  Routes transaction edits through FinancialManagementService
+        //  for fiscal period validation, category checks, and audit trail.
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        public class UpdateTransactionRequest
+        {
+            public int FinancialCategoryId { get; set; }
+            public DateTime TransactionDate { get; set; }
+            public decimal Amount { get; set; }
+            public decimal TaxAmount { get; set; }
+            public string Description { get; set; }
+            public int CurrencyId { get; set; }
+            public int? FinancialOfficeId { get; set; }
+            public int? ScheduledEventId { get; set; }
+            public int? ContactId { get; set; }
+            public int? ClientId { get; set; }
+            public string ReferenceNumber { get; set; }
+            public string Notes { get; set; }
+        }
+
+
+        [HttpPut]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/FinancialTransactions/{id}/Update")]
+        public async Task<IActionResult> UpdateTransaction(
+            int id,
+            [FromBody] UpdateTransactionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+            int userId;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                userId = securityUser.id;
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "Attempt to update transaction by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.UpdateTransactionAsync(
+                userTenantGuid,
+                id,
+                userId,
+                request.FinancialCategoryId,
+                request.TransactionDate,
+                request.Amount,
+                request.TaxAmount,
+                request.Description,
+                request.CurrencyId,
+                request.FinancialOfficeId,
+                request.ScheduledEventId,
+                request.ContactId,
+                request.ClientId,
+                request.ReferenceNumber,
+                request.Notes,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            await CreateAuditEventAsync(AuditType.Miscellaneous,
+                $"Transaction {id} updated via FinancialManagementService.");
+
+            return Ok(result.Data);
+        }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  Service-Routed Void
+        //
+        //  POST /api/FinancialTransactions/{id}/Void
+        //  Replaces soft-delete with auditable void-with-reason.
+        //
+        // ────────────────────────────────────────────────────────────────────────
+
+        public class VoidTransactionRequest
+        {
+            public string Reason { get; set; }
+        }
+
+
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/FinancialTransactions/{id}/Void")]
+        public async Task<IActionResult> VoidTransaction(
+            int id,
+            [FromBody] VoidTransactionRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+            int userId;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                userId = securityUser.id;
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "Attempt to void transaction by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.VoidTransactionAsync(
+                userTenantGuid,
+                id,
+                userId,
+                request?.Reason,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            await CreateAuditEventAsync(AuditType.Miscellaneous,
+                $"Transaction {id} voided via FinancialManagementService. Reason: {request?.Reason}");
+
+            return Ok(result.Data);
+        }
     }
 }

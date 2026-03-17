@@ -96,7 +96,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a AssignmentRole to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AssignmentRoleEntity type directly.
+		/// Converts a AssignmentRole to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AssignmentRole Entity type directly.
 		///
 		/// </summary>
 		public AssignmentRoleOutputDTO ToOutputDTO()

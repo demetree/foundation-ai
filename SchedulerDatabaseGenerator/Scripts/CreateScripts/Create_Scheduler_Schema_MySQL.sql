@@ -69,6 +69,8 @@ USE `Scheduler`;
 -- DROP TABLE `PaymentProviderChangeHistory`
 -- DROP TABLE `PaymentProvider`
 -- DROP TABLE `PaymentMethod`
+-- DROP TABLE `GeneralLedgerLine`
+-- DROP TABLE `GeneralLedgerEntry`
 -- DROP TABLE `BudgetChangeHistory`
 -- DROP TABLE `Budget`
 -- DROP TABLE `FinancialTransactionChangeHistory`
@@ -239,6 +241,8 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `PaymentProviderChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `PaymentProvider` DISABLE
 -- ALTER INDEX ALL ON `PaymentMethod` DISABLE
+-- ALTER INDEX ALL ON `GeneralLedgerLine` DISABLE
+-- ALTER INDEX ALL ON `GeneralLedgerEntry` DISABLE
 -- ALTER INDEX ALL ON `BudgetChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `Budget` DISABLE
 -- ALTER INDEX ALL ON `FinancialTransactionChangeHistory` DISABLE
@@ -409,6 +413,8 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `PaymentProviderChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `PaymentProvider` REBUILD
 -- ALTER INDEX ALL ON `PaymentMethod` REBUILD
+-- ALTER INDEX ALL ON `GeneralLedgerLine` REBUILD
+-- ALTER INDEX ALL ON `GeneralLedgerEntry` REBUILD
 -- ALTER INDEX ALL ON `BudgetChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `Budget` REBUILD
 -- ALTER INDEX ALL ON `FinancialTransactionChangeHistory` REBUILD
@@ -4811,6 +4817,87 @@ CREATE INDEX `I_BudgetChangeHistory_tenantGuid_userId` ON `BudgetChangeHistory` 
 
 -- Index on the BudgetChangeHistory table's tenantGuid,budgetId fields.
 CREATE INDEX `I_BudgetChangeHistory_tenantGuid_budgetId` ON `BudgetChangeHistory` (`tenantGuid`, `budgetId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+====================================================================================================
+ GENERAL LEDGER ENTRY (Double-Entry Journal Entry)
+ Every financial operation (expense, revenue, void) creates a balanced journal entry in this table.
+ Each entry has two or more GeneralLedgerLines whose total debits must equal total credits.
+
+ The GL is the authoritative ledger for financial reporting (trial balance, P&L, balance sheet).
+ FinancialTransaction remains the source document; this table is the accounting record.
+
+ DESIGN NOTE: reversalOfId links void/correction entries back to the original entry they reverse.
+ ====================================================================================================
+*/
+CREATE TABLE `GeneralLedgerEntry`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`journalEntryNumber` INT NOT NULL,		-- Auto-incrementing per-tenant journal entry number for human reference.
+	`transactionDate` DATETIME NOT NULL,		-- The date of the underlying financial event (UTC).
+	`description` VARCHAR(500) NULL,		-- Description of the journal entry (e.g., 'Expense: Office Supplies', 'Revenue: Hall Rental').
+	`referenceNumber` VARCHAR(100) NULL,		-- External reference — cheque number, receipt number, etc.
+	`financialTransactionId` INT NULL,		-- Links back to the originating FinancialTransaction, if any.
+	`fiscalPeriodId` INT NULL,		-- The fiscal period this entry belongs to.
+	`financialOfficeId` INT NULL,		-- Optional link to FinancialOffice for departmental reporting.
+	`postedBy` INT NOT NULL,		-- Security user id who posted this entry.
+	`postedDate` DATETIME NOT NULL,		-- When this entry was posted (UTC).
+	`reversalOfId` INT NULL,		-- If this is a reversal/correction, points to the original GeneralLedgerEntry id.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`financialTransactionId`) REFERENCES `FinancialTransaction`(`id`),		-- Foreign key to the FinancialTransaction table.
+	FOREIGN KEY (`fiscalPeriodId`) REFERENCES `FiscalPeriod`(`id`),		-- Foreign key to the FiscalPeriod table.
+	FOREIGN KEY (`financialOfficeId`) REFERENCES `FinancialOffice`(`id`)		-- Foreign key to the FinancialOffice table.
+);
+-- Index on the GeneralLedgerEntry table's tenantGuid field.
+CREATE INDEX `I_GeneralLedgerEntry_tenantGuid` ON `GeneralLedgerEntry` (`tenantGuid`);
+
+-- Index on the GeneralLedgerEntry table's tenantGuid,transactionDate fields.
+CREATE INDEX `I_GeneralLedgerEntry_tenantGuid_transactionDate` ON `GeneralLedgerEntry` (`tenantGuid`, `transactionDate`);
+
+-- Index on the GeneralLedgerEntry table's tenantGuid,financialTransactionId fields.
+CREATE INDEX `I_GeneralLedgerEntry_tenantGuid_financialTransactionId` ON `GeneralLedgerEntry` (`tenantGuid`, `financialTransactionId`);
+
+-- Index on the GeneralLedgerEntry table's tenantGuid,fiscalPeriodId fields.
+CREATE INDEX `I_GeneralLedgerEntry_tenantGuid_fiscalPeriodId` ON `GeneralLedgerEntry` (`tenantGuid`, `fiscalPeriodId`);
+
+-- Index on the GeneralLedgerEntry table's tenantGuid,financialOfficeId fields.
+CREATE INDEX `I_GeneralLedgerEntry_tenantGuid_financialOfficeId` ON `GeneralLedgerEntry` (`tenantGuid`, `financialOfficeId`);
+
+-- Index on the GeneralLedgerEntry table's tenantGuid,active fields.
+CREATE INDEX `I_GeneralLedgerEntry_tenantGuid_active` ON `GeneralLedgerEntry` (`tenantGuid`, `active`);
+
+-- Index on the GeneralLedgerEntry table's tenantGuid,deleted fields.
+CREATE INDEX `I_GeneralLedgerEntry_tenantGuid_deleted` ON `GeneralLedgerEntry` (`tenantGuid`, `deleted`);
+
+
+/*
+====================================================================================================
+ GENERAL LEDGER LINE
+ Individual debit or credit line within a GeneralLedgerEntry.
+ Each line posts to a specific FinancialCategory (account).
+
+ CONSTRAINT: Within each GeneralLedgerEntry, sum(debitAmount) must equal sum(creditAmount).
+ Exactly one of debitAmount/creditAmount should be non-zero per line.
+ ====================================================================================================
+*/
+CREATE TABLE `GeneralLedgerLine`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`generalLedgerEntryId` INT NOT NULL,		-- The parent journal entry this line belongs to.
+	`financialCategoryId` INT NOT NULL,		-- The account (FinancialCategory) this line posts to.
+	`debitAmount` DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Debit amount. Zero if this line is a credit.
+	`creditAmount` DECIMAL(11,2) NOT NULL DEFAULT 0,		-- Credit amount. Zero if this line is a debit.
+	`description` VARCHAR(500) NULL,		-- Optional line-level description.
+	FOREIGN KEY (`generalLedgerEntryId`) REFERENCES `GeneralLedgerEntry`(`id`),		-- Foreign key to the GeneralLedgerEntry table.
+	FOREIGN KEY (`financialCategoryId`) REFERENCES `FinancialCategory`(`id`)		-- Foreign key to the FinancialCategory table.
+);
+-- Index on the GeneralLedgerLine table's generalLedgerEntryId field.
+CREATE INDEX `I_GeneralLedgerLine_generalLedgerEntryId` ON `GeneralLedgerLine` (`generalLedgerEntryId`);
+
+-- Index on the GeneralLedgerLine table's financialCategoryId field.
+CREATE INDEX `I_GeneralLedgerLine_financialCategoryId` ON `GeneralLedgerLine` (`financialCategoryId`);
 
 
 -- Master list of payment methods (Cash, E-Transfer, Credit Card, Debit Card, Cheque).

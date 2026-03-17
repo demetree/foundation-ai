@@ -94,7 +94,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a DocumentType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the DocumentTypeEntity type directly.
+		/// Converts a DocumentType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the DocumentType Entity type directly.
 		///
 		/// </summary>
 		public DocumentTypeOutputDTO ToOutputDTO()

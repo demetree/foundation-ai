@@ -20,6 +20,7 @@ import { PeriodStatusData } from './period-status.service';
 import { FiscalPeriodChangeHistoryService, FiscalPeriodChangeHistoryData } from './fiscal-period-change-history.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { BudgetService, BudgetData } from './budget.service';
+import { GeneralLedgerEntryService, GeneralLedgerEntryData } from './general-ledger-entry.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -174,6 +175,11 @@ export class FiscalPeriodData {
     private _budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
                 
+    private _generalLedgerEntries: GeneralLedgerEntryData[] | null = null;
+    private _generalLedgerEntriesPromise: Promise<GeneralLedgerEntryData[]> | null  = null;
+    private _generalLedgerEntriesSubject = new BehaviorSubject<GeneralLedgerEntryData[] | null>(null);
+
+                
 
 
     //
@@ -265,6 +271,31 @@ export class FiscalPeriodData {
 
 
 
+    public GeneralLedgerEntries$ = this._generalLedgerEntriesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._generalLedgerEntries === null && this._generalLedgerEntriesPromise === null) {
+            this.loadGeneralLedgerEntries(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _generalLedgerEntriesCount$: Observable<bigint | number> | null = null;
+    public get GeneralLedgerEntriesCount$(): Observable<bigint | number> {
+        if (this._generalLedgerEntriesCount$ === null) {
+            this._generalLedgerEntriesCount$ = GeneralLedgerEntryService.Instance.GetGeneralLedgerEntriesRowCount({fiscalPeriodId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._generalLedgerEntriesCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -317,6 +348,11 @@ export class FiscalPeriodData {
      this._budgetsPromise = null;
      this._budgetsSubject.next(null);
      this._budgetsCount$ = null;
+
+     this._generalLedgerEntries = null;
+     this._generalLedgerEntriesPromise = null;
+     this._generalLedgerEntriesSubject.next(null);
+     this._generalLedgerEntriesCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -522,6 +558,71 @@ export class FiscalPeriodData {
     }
 
 
+    /**
+     *
+     * Gets the GeneralLedgerEntries for this FiscalPeriod.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.fiscalPeriod.GeneralLedgerEntries.then(fiscalPeriods => { ... })
+     *   or
+     *   await this.fiscalPeriod.fiscalPeriods
+     *
+    */
+    public get GeneralLedgerEntries(): Promise<GeneralLedgerEntryData[]> {
+        if (this._generalLedgerEntries !== null) {
+            return Promise.resolve(this._generalLedgerEntries);
+        }
+
+        if (this._generalLedgerEntriesPromise !== null) {
+            return this._generalLedgerEntriesPromise;
+        }
+
+        // Start the load
+        this.loadGeneralLedgerEntries();
+
+        return this._generalLedgerEntriesPromise!;
+    }
+
+
+
+    private loadGeneralLedgerEntries(): void {
+
+        this._generalLedgerEntriesPromise = lastValueFrom(
+            FiscalPeriodService.Instance.GetGeneralLedgerEntriesForFiscalPeriod(this.id)
+        )
+        .then(GeneralLedgerEntries => {
+            this._generalLedgerEntries = GeneralLedgerEntries ?? [];
+            this._generalLedgerEntriesSubject.next(this._generalLedgerEntries);
+            return this._generalLedgerEntries;
+         })
+        .catch(err => {
+            this._generalLedgerEntries = [];
+            this._generalLedgerEntriesSubject.next(this._generalLedgerEntries);
+            throw err;
+        })
+        .finally(() => {
+            this._generalLedgerEntriesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached GeneralLedgerEntry. Call after mutations to force refresh.
+     */
+    public ClearGeneralLedgerEntriesCache(): void {
+        this._generalLedgerEntries = null;
+        this._generalLedgerEntriesPromise = null;
+        this._generalLedgerEntriesSubject.next(this._generalLedgerEntries);      // Emit to observable
+    }
+
+    public get HasGeneralLedgerEntries(): Promise<boolean> {
+        return this.GeneralLedgerEntries.then(generalLedgerEntries => generalLedgerEntries.length > 0);
+    }
+
+
 
 
     //
@@ -603,6 +704,7 @@ export class FiscalPeriodService extends SecureEndpointBase {
         private fiscalPeriodChangeHistoryService: FiscalPeriodChangeHistoryService,
         private financialTransactionService: FinancialTransactionService,
         private budgetService: BudgetService,
+        private generalLedgerEntryService: GeneralLedgerEntryService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1102,6 +1204,16 @@ export class FiscalPeriodService extends SecureEndpointBase {
     }
 
 
+    public GetGeneralLedgerEntriesForFiscalPeriod(fiscalPeriodId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<GeneralLedgerEntryData[]> {
+        return this.generalLedgerEntryService.GetGeneralLedgerEntryList({
+            fiscalPeriodId: fiscalPeriodId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full FiscalPeriodData instance.
@@ -1149,6 +1261,10 @@ export class FiscalPeriodService extends SecureEndpointBase {
     (revived as any)._budgetsPromise = null;
     (revived as any)._budgetsSubject = new BehaviorSubject<BudgetData[] | null>(null);
 
+    (revived as any)._generalLedgerEntries = null;
+    (revived as any)._generalLedgerEntriesPromise = null;
+    (revived as any)._generalLedgerEntriesSubject = new BehaviorSubject<GeneralLedgerEntryData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1195,6 +1311,18 @@ export class FiscalPeriodService extends SecureEndpointBase {
       );
 
     (revived as any)._budgetsCount$ = null;
+
+
+    (revived as any).GeneralLedgerEntries$ = (revived as any)._generalLedgerEntriesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._generalLedgerEntries === null && (revived as any)._generalLedgerEntriesPromise === null) {
+                (revived as any).loadGeneralLedgerEntries();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._generalLedgerEntriesCount$ = null;
 
 
 

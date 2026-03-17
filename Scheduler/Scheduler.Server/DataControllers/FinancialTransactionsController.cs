@@ -1149,6 +1149,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 					financialTransaction.Documents = null;
 					financialTransaction.FinancialTransactionChangeHistories = null;
+					financialTransaction.GeneralLedgerEntries = null;
 					financialTransaction.PaymentTransactions = null;
 					financialTransaction.Receipts = null;
 					financialTransaction.client = null;
@@ -1276,6 +1277,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				cloneOfExisting.Documents = null;
 				cloneOfExisting.FinancialTransactionChangeHistories = null;
+				cloneOfExisting.GeneralLedgerEntries = null;
 				cloneOfExisting.PaymentTransactions = null;
 				cloneOfExisting.Receipts = null;
 				cloneOfExisting.client = null;

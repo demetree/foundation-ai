@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a AppealChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AppealChangeHistoryEntity type directly.
+		/// Converts a AppealChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AppealChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public AppealChangeHistoryOutputDTO ToOutputDTO()

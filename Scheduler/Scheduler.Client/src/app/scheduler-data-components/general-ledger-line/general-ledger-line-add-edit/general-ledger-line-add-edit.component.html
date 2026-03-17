@@ -1,0 +1,76 @@
+<div class="add-general-ledger-line" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-general-ledger-line me-2"
+        (click)="openModal()"
+        ngbTooltip="Add General Ledger Line" 
+        *ngIf="userIsSchedulerGeneralLedgerLineWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #generalLedgerLineModal let-modal>
+   <div class="modal-header general-ledger-line-modal-header">
+      <h5 class="modal-title mb-0" id="generalLedgerLineModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit General Ledger Line' : 'Add General Ledger Line' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body general-ledger-line-modal-body">
+      <form [formGroup]="generalLedgerLineForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('generalLedgerEntryId')">
+                <label for="GeneralLedgerLine-generalLedgerEntryId" id="label-GeneralLedgerLine-generalLedgerEntryId"><span class="text-danger">*</span>General Ledger Entry</label>
+                <select id="GeneralLedgerLine-generalLedgerEntryId" formControlName="generalLedgerEntryId" class="form-select general-ledger-line-select" [disabled]="!userIsSchedulerGeneralLedgerLineWriter()">
+                    <option [ngValue]="null">Select General Ledger Entry</option>
+                    <option *ngFor="let generalLedgerEntry of generalLedgerEntries$ | async" [ngValue]="generalLedgerEntry.id">{{generalLedgerEntry.description}}</option>
+                </select>
+                <div *ngIf="generalLedgerLineForm.get('generalLedgerEntryId')?.invalid && generalLedgerLineForm.get('generalLedgerEntryId')?.touched" class="text-danger">
+                    General Ledger Entry is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('financialCategoryId')">
+                <label for="GeneralLedgerLine-financialCategoryId" id="label-GeneralLedgerLine-financialCategoryId"><span class="text-danger">*</span>Financial Category</label>
+                <select id="GeneralLedgerLine-financialCategoryId" formControlName="financialCategoryId" class="form-select general-ledger-line-select" [disabled]="!userIsSchedulerGeneralLedgerLineWriter()">
+                    <option [ngValue]="null">Select Financial Category</option>
+                    <option *ngFor="let financialCategory of financialCategories$ | async" [ngValue]="financialCategory.id">{{financialCategory.name}}</option>
+                </select>
+                <div *ngIf="generalLedgerLineForm.get('financialCategoryId')?.invalid && generalLedgerLineForm.get('financialCategoryId')?.touched" class="text-danger">
+                    Financial Category is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('debitAmount')">
+                <label for="GeneralLedgerLine-debitAmount" id="label-GeneralLedgerLine-debitAmount"><span class="text-danger">*</span>Debit Amount</label>
+                <input type="number" id="GeneralLedgerLine-debitAmount" formControlName="debitAmount" placeholder="Enter Debit Amount" class="form-control general-ledger-line-input" [disabled]="!userIsSchedulerGeneralLedgerLineWriter()" aria-labelledby="label-debitAmount" />
+                <div *ngIf="generalLedgerLineForm.get('debitAmount')?.invalid && generalLedgerLineForm.get('debitAmount')?.touched" class="text-danger">
+                    Debit Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('creditAmount')">
+                <label for="GeneralLedgerLine-creditAmount" id="label-GeneralLedgerLine-creditAmount"><span class="text-danger">*</span>Credit Amount</label>
+                <input type="number" id="GeneralLedgerLine-creditAmount" formControlName="creditAmount" placeholder="Enter Credit Amount" class="form-control general-ledger-line-input" [disabled]="!userIsSchedulerGeneralLedgerLineWriter()" aria-labelledby="label-creditAmount" />
+                <div *ngIf="generalLedgerLineForm.get('creditAmount')?.invalid && generalLedgerLineForm.get('creditAmount')?.touched" class="text-danger">
+                    Credit Amount is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="GeneralLedgerLine-description" id="label-GeneralLedgerLine-description">Description</label>
+                <textarea id="GeneralLedgerLine-description" formControlName="description" placeholder="Enter Description" class="form-control general-ledger-line-input" [disabled]="!userIsSchedulerGeneralLedgerLineWriter()"></textarea>
+            </div>
+         <div class="modal-footer general-ledger-line-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the General Ledger Line changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !generalLedgerLineForm.valid || generalLedgerLineForm.pristine  || userIsSchedulerGeneralLedgerLineWriter() == false " ngbTooltip="Save the General Ledger Line changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add General Ledger Line' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

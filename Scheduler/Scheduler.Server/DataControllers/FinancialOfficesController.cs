@@ -823,6 +823,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					financialOffice.FinancialCategories = null;
 					financialOffice.FinancialOfficeChangeHistories = null;
 					financialOffice.FinancialTransactions = null;
+					financialOffice.GeneralLedgerEntries = null;
 					financialOffice.Invoices = null;
 
 
@@ -942,6 +943,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.FinancialCategories = null;
 				cloneOfExisting.FinancialOfficeChangeHistories = null;
 				cloneOfExisting.FinancialTransactions = null;
+				cloneOfExisting.GeneralLedgerEntries = null;
 				cloneOfExisting.Invoices = null;
 
 				if (versionNumber >= financialOffice.versionNumber)

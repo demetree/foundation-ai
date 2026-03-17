@@ -94,7 +94,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a AssignmentStatus to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AssignmentStatusEntity type directly.
+		/// Converts a AssignmentStatus to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AssignmentStatus Entity type directly.
 		///
 		/// </summary>
 		public AssignmentStatusOutputDTO ToOutputDTO()

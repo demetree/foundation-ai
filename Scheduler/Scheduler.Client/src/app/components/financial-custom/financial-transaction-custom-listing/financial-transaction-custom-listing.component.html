@@ -110,6 +110,7 @@
                             Amount <i class="fa-solid ms-1" [ngClass]="getSortIcon('totalAmount')"></i>
                         </th>
                         <th class="text-end pe-4">Tax</th>
+                        <th class="text-center" style="width: 60px;"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -140,6 +141,12 @@
                         </td>
                         <td class="text-end pe-4">
                             <span class="text-muted small">{{ tx.taxAmount | currency:'CAD':'symbol':'1.2-2' }}</span>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-void-icon" title="Void transaction"
+                                (click)="requestVoid(tx, $event)">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
                         </td>
                     </tr>
                 </tbody>
@@ -172,6 +179,10 @@
                     <span class="fw-bold" [ngClass]="tx.isRevenue ? 'text-success' : 'text-danger'">
                         {{ tx.isRevenue ? '+' : '-' }}{{ tx.totalAmount | currency:'CAD':'symbol':'1.2-2' }}
                     </span>
+                    <button class="btn btn-sm btn-void-icon ms-2" title="Void"
+                        (click)="requestVoid(tx, $event)">
+                        <i class="fa-solid fa-ban"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -183,3 +194,29 @@
 <app-financial-transaction-custom-add-edit #txAddEdit [navigateToDetailsAfterAdd]="false" [showAddButton]="false"
     (financialTransactionChanged)="onTransactionChanged()">
 </app-financial-transaction-custom-add-edit>
+
+<!-- Void Confirmation Overlay -->
+<div class="void-overlay" *ngIf="voidTarget" (click)="cancelVoid()">
+    <div class="void-dialog" (click)="$event.stopPropagation()">
+        <h5><i class="fa-solid fa-ban me-2 text-danger"></i>Void Transaction?</h5>
+        <p>
+            Are you sure you want to void
+            <strong>{{ voidTarget.description }}</strong>
+            for <strong>{{ voidTarget.totalAmount | currency:'CAD':'symbol':'1.2-2' }}</strong>?
+        </p>
+        <p class="text-muted small">Voided transactions cannot be edited. They remain in the audit trail.</p>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Reason for voiding <span class="text-danger">*</span></label>
+            <textarea class="form-control form-control-sm" rows="2" [(ngModel)]="voidReason"
+                placeholder="e.g. Duplicate entry, incorrect amount, wrong category..."></textarea>
+        </div>
+        <div class="d-flex gap-2 justify-content-end">
+            <button class="btn btn-sm btn-outline-secondary" (click)="cancelVoid()" [disabled]="isVoiding">Cancel</button>
+            <button class="btn btn-sm btn-danger" (click)="executeVoid()"
+                [disabled]="isVoiding || !voidReason.trim()">
+                <span *ngIf="isVoiding" class="spinner-border spinner-border-sm me-1"></span>
+                {{ isVoiding ? 'Voiding...' : 'Void Transaction' }}
+            </button>
+        </div>
+    </div>
+</div>

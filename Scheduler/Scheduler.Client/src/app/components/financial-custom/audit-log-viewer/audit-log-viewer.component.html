@@ -1,0 +1,182 @@
+<div class="page-container">
+
+    <!-- Premium Header -->
+    <div class="card mb-3 header-card premium-header shadow-lg border-0">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+            <div class="header-left">
+                <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                    *ngIf="canGoBack()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="text-white">
+                    <h3 class="page-title mb-0 fw-bold text-shadow">
+                        <i class="fa-solid fa-clipboard-list me-2"></i>Audit Trail
+                    </h3>
+                    <small class="text-white-50">Field-level change history for all financial transactions</small>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="btn btn-sm btn-glass" (click)="goToDashboard()">
+                    <i class="fa-solid fa-chart-line me-1"></i> Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2 px-3 d-flex flex-wrap align-items-end gap-2">
+            <div>
+                <label class="form-label small mb-0 text-muted">Transaction ID</label>
+                <input type="number" class="form-control form-control-sm" style="width: 100px;"
+                    [(ngModel)]="filterTransactionId" placeholder="All">
+            </div>
+            <div>
+                <label class="form-label small mb-0 text-muted">Action</label>
+                <select class="form-select form-select-sm" style="width: 120px;" [(ngModel)]="filterAction">
+                    <option value="">All</option>
+                    <option value="Created">Created</option>
+                    <option value="Updated">Updated</option>
+                    <option value="Voided">Voided</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label small mb-0 text-muted">User</label>
+                <input type="text" class="form-control form-control-sm" style="width: 140px;"
+                    [(ngModel)]="filterUser" placeholder="Search...">
+            </div>
+            <div>
+                <label class="form-label small mb-0 text-muted">From</label>
+                <input type="date" class="form-control form-control-sm" style="width: 140px;"
+                    [(ngModel)]="filterDateFrom">
+            </div>
+            <div>
+                <label class="form-label small mb-0 text-muted">To</label>
+                <input type="date" class="form-control form-control-sm" style="width: 140px;"
+                    [(ngModel)]="filterDateTo">
+            </div>
+            <button class="btn btn-sm btn-primary" (click)="onFilterApply()">
+                <i class="fa-solid fa-filter me-1"></i> Apply
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" (click)="clearFilters()">Clear</button>
+            <div class="ms-auto">
+                <small class="text-muted">{{ filteredEntries.length }} entries</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="text-center py-5" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="card border-0 shadow-sm text-center py-5" *ngIf="!isLoading && filteredEntries.length === 0">
+        <div class="card-body">
+            <i class="fa-solid fa-clipboard-list fa-3x text-muted opacity-25 mb-3"></i>
+            <h5 class="text-muted">No Audit Entries Found</h5>
+            <p class="text-muted">Try adjusting your filters or creating a transaction.</p>
+        </div>
+    </div>
+
+    <!-- Audit Log Table -->
+    <div class="card border-0 shadow-sm" *ngIf="!isLoading && filteredEntries.length > 0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle audit-table">
+                <thead class="bg-light">
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th>Timestamp</th>
+                        <th>Action</th>
+                        <th>Transaction</th>
+                        <th>User</th>
+                        <th>Changes</th>
+                        <th>Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ng-container *ngFor="let entry of filteredEntries; trackBy: trackById">
+                        <!-- Summary Row -->
+                        <tr class="audit-row" (click)="toggleExpand(entry.id)" style="cursor: pointer;">
+                            <td class="ps-3">
+                                <i class="fa-solid fa-xs"
+                                    [ngClass]="isExpanded(entry.id) ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                            </td>
+                            <td>
+                                <span class="fw-medium">{{ entry.timestamp | date:'short' }}</span>
+                            </td>
+                            <td>
+                                <span class="badge action-badge" [ngClass]="getActionBadgeClass(entry.action)">
+                                    <i class="fa-solid me-1" [ngClass]="getActionIcon(entry.action)"></i>
+                                    {{ entry.action }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-muted small">#{{ entry.financialTransactionId }}</span>
+                                <small class="text-muted ms-1">v{{ entry.versionNumber }}</small>
+                            </td>
+                            <td>
+                                <span class="fw-medium">{{ entry.userName }}</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small" *ngIf="entry.fieldChanges?.length">
+                                    {{ entry.fieldChanges.length }} field{{ entry.fieldChanges.length === 1 ? '' : 's' }}
+                                </span>
+                                <span class="text-muted small" *ngIf="!entry.fieldChanges?.length">—</span>
+                            </td>
+                            <td>
+                                <span class="text-muted small text-truncate d-inline-block"
+                                    style="max-width: 200px;" *ngIf="entry.reason">{{ entry.reason }}</span>
+                                <span class="text-muted small" *ngIf="!entry.reason">—</span>
+                            </td>
+                        </tr>
+
+                        <!-- Expanded Detail Row -->
+                        <tr *ngIf="isExpanded(entry.id)" class="detail-row">
+                            <td colspan="7" class="p-0">
+                                <div class="diff-panel px-4 py-3">
+                                    <div *ngIf="entry.reason" class="mb-2">
+                                        <span class="fw-bold small text-danger">
+                                            <i class="fa-solid fa-comment-dots me-1"></i>Reason:
+                                        </span>
+                                        <span class="small">{{ entry.reason }}</span>
+                                    </div>
+
+                                    <table class="table table-sm table-bordered diff-table mb-0"
+                                        *ngIf="entry.fieldChanges?.length">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 30%;">Field</th>
+                                                <th style="width: 35%;">Before</th>
+                                                <th style="width: 35%;">After</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let change of entry.fieldChanges">
+                                                <td class="fw-medium">{{ getFieldLabel(change.field) }}</td>
+                                                <td class="diff-old">
+                                                    {{ formatValue(change.field, change.oldValue) }}
+                                                </td>
+                                                <td class="diff-new">
+                                                    {{ formatValue(change.field, change.newValue) }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <div *ngIf="!entry.fieldChanges?.length"
+                                        class="text-muted small text-center py-2">
+                                        No field-level diff available (legacy entry or no changes detected)
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-container>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

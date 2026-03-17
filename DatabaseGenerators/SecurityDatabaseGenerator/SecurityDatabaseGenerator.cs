@@ -1080,7 +1080,7 @@ This will ensure that the Security system's configuration controls the Data Visi
 
         /*
          * 
-         *  This adds tables for a notification system.  It depends on the data visibility tables to exist first.
+         *  This adds tables for a notification system.  It depends on the multi tenancy to exist first.
          *  
          *  The notification table will not have foreign key fields to any other entity.
          *  
@@ -1103,9 +1103,6 @@ This will ensure that the Security system's configuration controls the Data Visi
          *     If all of the 4 data visibility field are left null would imply distribution to all users in the tenant.  fields are (orgid, depid, teamid, userid),
          *     
          *          If a userId is provided the distribution is meant only to that user
-         *          else if a team id is provided, the distribution is meant for all users of that team.  User is defined as a reader.
-         *          else if a department id is provided, the distribution is meant for all users of that department.  User is defined as a reader
-         *          else if an organization id is provided, the distribution is meant for all users of that organization.  User is defined as a reader
          *          
          *     The distributed field is set to false, until the distribution process is done, and then it can flip it to true.  If the distribution is built into the creation process
          *     then the distributed flag can be created with a value of true.
@@ -1125,15 +1122,11 @@ This will ensure that the Security system's configuration controls the Data Visi
         public static void AddNotificationTablesToDatabase(DatabaseGenerator.Database database)
         {
 
-            Database.Table organizationTable = database.GetTable("Organization");
-            Database.Table departmentTable = database.GetTable("Department");
-            Database.Table teamTable = database.GetTable("Team");
-            Database.Table userTable = database.GetTable("User");
-
-            if (organizationTable == null || departmentTable == null || teamTable == null || userTable == null)
-            {
-                throw new Exception("Data visibility must be in schema before notification tables are added");
-            }
+            //
+            // Note: This method no longer requires Data Visibility tables.
+            // User references are plain int columns resolved at runtime by IMessagingUserResolver.
+            // Only multi-tenancy (AddMultiTenantSupport) is required.
+            //
 
 
             //
@@ -1143,7 +1136,7 @@ This will ensure that the Security system's configuration controls the Data Visi
             notificationTypeTable.comment = @"This table defines the types of notifications that are available.  It is part of the Foundation Notification system.";
 
             notificationTypeTable.isWritable = false;
-            notificationTypeTable.SetMinimumPermissionLevels(SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            notificationTypeTable.SetMinimumPermissionLevels(100, 100);
             notificationTypeTable.AddIdField();
             notificationTypeTable.AddNameAndDescriptionFields(true, true);
             notificationTypeTable.AddControlFields();
@@ -1177,13 +1170,13 @@ This will ensure that the Security system's configuration controls the Data Visi
             //
             Database.Table notificationTable = database.AddTable("Notification");
             notificationTable.comment = @"This table store Notifications.  It is part of the Foundation Notification system.";
-            notificationTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            notificationTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            notificationTable.minimumReadPermissionLevel = 50;
+            notificationTable.minimumWritePermissionLevel = 50;
             notificationTable.adminAccessNeededToWrite = true;
             notificationTable.AddIdField();
             notificationTable.AddMultiTenantSupport();
             notificationTable.AddForeignKeyField("notificationTypeId", notificationTypeTable, true);
-            notificationTable.AddForeignKeyField("createdByUserId", userTable, true).AddScriptComments("The user that created this notification.  Nullable so that the 'system' can create them to.");
+            notificationTable.AddIntField("createdByUserId", true).AddScriptComments("The user that created this notification.  Nullable so that the 'system' can create them too.  Resolved by IMessagingUserResolver.");
             notificationTable.AddTextField("message", false);
             notificationTable.AddIntField("priority", false, 100).AddScriptComments("The intent here is that the lower the priority number, the more urgent the notification is.");
             notificationTable.AddString250Field("entity", true).comment = "The name of the entity that this notification is about.";
@@ -1192,7 +1185,7 @@ This will ensure that the Security system's configuration controls the Data Visi
             notificationTable.AddDateTimeField("dateTimeCreated", false).comment = "When the notification was created.";
             notificationTable.AddDateTimeField("dateTimeDistributed", true).comment = "When the notification was distributed.";
             notificationTable.AddBoolField("distributionCompleted", false, false).AddScriptComments("Control flag to mark whether or not this notification has been distributed to the notificationUser table or not");
-            notificationTable.AddDataVisibilitySupport();           // intent here is to add the target the audience of this notification.  These fields are here to define the target for default distribution.
+            notificationTable.AddIntField("userId", true).AddScriptComments("Optional target user for this notification.  Resolved by IMessagingUserResolver.");
             notificationTable.AddVersionControl();
             notificationTable.AddControlFields();
 
@@ -1204,13 +1197,13 @@ This will ensure that the Security system's configuration controls the Data Visi
 
             Database.Table notificationAttachmentTable = database.AddTable("NotificationAttachment");
             notificationAttachmentTable.comment = @"This table stores attachments for notifications.  It is part of the Foundation Notification system.";
-            notificationAttachmentTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            notificationAttachmentTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            notificationAttachmentTable.minimumReadPermissionLevel = 50;
+            notificationAttachmentTable.minimumWritePermissionLevel = 50;
             notificationAttachmentTable.adminAccessNeededToWrite = true;
             notificationAttachmentTable.AddIdField();
             notificationAttachmentTable.AddMultiTenantSupport();
             notificationAttachmentTable.AddForeignKeyField("notificationId", notificationTable, false).comment = "The notification for this attachment.";
-            notificationAttachmentTable.AddForeignKeyField("userId", userTable, false).comment = "The user that created this attachment.";
+            notificationAttachmentTable.AddIntField("userId", false).comment = "The user that created this attachment.  Resolved by IMessagingUserResolver.";
             notificationAttachmentTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this notification attachment was created.");
             notificationAttachmentTable.AddBinaryDataFields("content", false);
             notificationAttachmentTable.AddVersionControl();
@@ -1226,13 +1219,13 @@ This will ensure that the Security system's configuration controls the Data Visi
 
             Database.Table notificationDistributionTable = database.AddTable("NotificationDistribution");
             notificationDistributionTable.comment = @"This table defines the distribution for a notification.  It is part of the Foundation Notification system.";
-            notificationDistributionTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            notificationDistributionTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            notificationDistributionTable.minimumReadPermissionLevel = 50;
+            notificationDistributionTable.minimumWritePermissionLevel = 50;
             notificationDistributionTable.adminAccessNeededToWrite = true;
             notificationDistributionTable.AddIdField();
             notificationDistributionTable.AddMultiTenantSupport();
             notificationDistributionTable.AddForeignKeyField("notificationId", notificationTable, false).comment = "The notification that is being distributed.";
-            notificationDistributionTable.AddForeignKeyField("userId", userTable, false).comment = "The user to distribute the notification to.";
+            notificationDistributionTable.AddIntField("userId", false).comment = "The user to distribute the notification to.  Resolved by IMessagingUserResolver.";
             notificationDistributionTable.AddBoolField("acknowledged", false, false).comment = "Whether or not the notification has been acknowledged.";
             notificationDistributionTable.AddDateTimeField("dateTimeAcknowledged", true).comment = "When the notification was acknowledged.";
             notificationDistributionTable.AddControlFields();
@@ -1248,15 +1241,11 @@ This will ensure that the Security system's configuration controls the Data Visi
         public static void AddConversationTablesToDatabase(DatabaseGenerator.Database database)
         {
 
-            Database.Table organizationTable = database.GetTable("Organization");
-            Database.Table departmentTable = database.GetTable("Department");
-            Database.Table teamTable = database.GetTable("Team");
-            Database.Table userTable = database.GetTable("User");
-
-            if (organizationTable == null || departmentTable == null || teamTable == null || userTable == null)
-            {
-                throw new Exception("Data visibility must be in schema before conversation tables are added");
-            }
+            //
+            // Note: This method no longer requires Data Visibility tables.
+            // User references are plain int columns resolved at runtime by IMessagingUserResolver.
+            // Only multi-tenancy (AddMultiTenantSupport) is required.
+            //
 
 
             //
@@ -1267,7 +1256,7 @@ This will ensure that the Security system's configuration controls the Data Visi
 
 It is part of the Foundation's Conversation/Messaging system.";
             conversationTypeTable.isWritable = false;
-            conversationTypeTable.SetMinimumPermissionLevels(SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL, SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            conversationTypeTable.SetMinimumPermissionLevels(100, 100);
             conversationTypeTable.AddIdField();
             conversationTypeTable.AddNameAndDescriptionFields(true, true);
             conversationTypeTable.AddControlFields();
@@ -1294,13 +1283,13 @@ It is part of the Foundation's Conversation/Messaging system.";
             //
             Database.Table conversationTable = database.AddTable("Conversation");
             conversationTable.comment = "This is the main Conversation table.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            conversationTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationTable.minimumReadPermissionLevel = 50;
+            conversationTable.minimumWritePermissionLevel = 50;
             conversationTable.adminAccessNeededToWrite = true;
 
             conversationTable.AddIdField();
             conversationTable.AddMultiTenantSupport();
-            conversationTable.AddForeignKeyField("createdByUserId", userTable, true).AddScriptComments("The user that started the conversation.  Will also get a conversation User record.  Null support will allow a bit of flexibility, maybe for system started conversaations being implied if the created by user is null");
+            conversationTable.AddIntField("createdByUserId", true).AddScriptComments("The user that started the conversation.  Resolved by IMessagingUserResolver.  Nullable for system-started conversations.");
             conversationTable.AddForeignKeyField("conversationTypeId", conversationTypeTable, true);
             conversationTable.AddIntField("priority", false, 100).AddScriptComments("The intent here is that the lower the priority number, the more urgent the conversation is.");
             conversationTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When the conversation was created.");
@@ -1308,7 +1297,7 @@ It is part of the Foundation's Conversation/Messaging system.";
             conversationTable.AddIntField("entityId", true).AddScriptComments("The id of the entity that the conversation is about");
             conversationTable.AddString1000Field("externalURL", true);
 
-            conversationTable.AddDataVisibilitySupport();       // Similar to the notifications schema the intent here is to add the target the audience of this conversation.  These fields are here to define the target for default conversation distribution.
+            conversationTable.AddIntField("userId", true).AddScriptComments("Optional target user for this conversation.  Resolved by IMessagingUserResolver.");
             conversationTable.AddControlFields();
 
             Database.Table.Index conversationIdActiveDeletedIndex = conversationTable.CreateIndex("I_Conversation_id_active_deleted");
@@ -1320,13 +1309,13 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationUserTable = database.AddTable("ConversationUser");
             conversationUserTable.comment = "This is the ConversationUser table.  It tracks the users that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationUserTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            conversationUserTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationUserTable.minimumReadPermissionLevel = 50;
+            conversationUserTable.minimumWritePermissionLevel = 50;
             conversationUserTable.adminAccessNeededToWrite = true;
             conversationUserTable.AddIdField();
             conversationUserTable.AddMultiTenantSupport();
             conversationUserTable.AddForeignKeyField("conversationId", conversationTable, false);
-            conversationUserTable.AddForeignKeyField("userId", userTable, false);
+            conversationUserTable.AddIntField("userId", false).AddScriptComments("The user in this conversation.  Resolved by IMessagingUserResolver.");
             conversationUserTable.AddDateTimeField("dateTimeAdded", false).AddScriptComments("When this user was added to the conversation.");
             conversationUserTable.AddControlFields();
 
@@ -1339,14 +1328,14 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationMessageTable = database.AddTable("ConversationMessage");
             conversationMessageTable.comment = "This is the ConversationMessage table.  It tracks the messages that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationMessageTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            conversationMessageTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationMessageTable.minimumReadPermissionLevel = 50;
+            conversationMessageTable.minimumWritePermissionLevel = 50;
             conversationMessageTable.adminAccessNeededToWrite = true;
             conversationMessageTable.AddIdField();
             conversationMessageTable.AddMultiTenantSupport();
             conversationMessageTable.AddForeignKeyField("conversationId", conversationTable, false);
-            conversationMessageTable.AddForeignKeyField("userId", userTable, false);
-            conversationMessageTable.AddForeignKeyField("parentConversationMessageId", conversationMessageTable, false);
+            conversationMessageTable.AddIntField("userId", false).AddScriptComments("The user that sent this message.  Resolved by IMessagingUserResolver.");
+            conversationMessageTable.AddForeignKeyField("parentConversationMessageId", conversationMessageTable, true);
             conversationMessageTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this message was created.");
             conversationMessageTable.AddTextField("message", false);
             conversationMessageTable.AddString250Field("entity", true).AddScriptComments("The in case the conversation message is to do with an entity, it is named here");
@@ -1364,13 +1353,13 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationMessageAttachmentTable = database.AddTable("ConversationMessageAttachment");
             conversationMessageAttachmentTable.comment = "This is the ConversationMessageAttachment table.  It tracks the attachments that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationMessageAttachmentTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            conversationMessageAttachmentTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationMessageAttachmentTable.minimumReadPermissionLevel = 50;
+            conversationMessageAttachmentTable.minimumWritePermissionLevel = 50;
             conversationMessageAttachmentTable.adminAccessNeededToWrite = true;
             conversationMessageAttachmentTable.AddIdField();
             conversationMessageAttachmentTable.AddMultiTenantSupport();
             conversationMessageAttachmentTable.AddForeignKeyField("conversationMessageId", conversationMessageTable, false);
-            conversationMessageAttachmentTable.AddForeignKeyField("userId", userTable, false);
+            conversationMessageAttachmentTable.AddIntField("userId", false).AddScriptComments("The user that uploaded this attachment.  Resolved by IMessagingUserResolver.");
             conversationMessageAttachmentTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this conversation message attachment was created.");
             conversationMessageAttachmentTable.AddBinaryDataFields("content", false);
             conversationMessageAttachmentTable.AddVersionControl();
@@ -1385,13 +1374,13 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             Database.Table conversationMessageUserTable = database.AddTable("ConversationMessageUser");
             conversationMessageUserTable.comment = "This is the ConversationMessageUser table.  It tracks the users that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.";
-            conversationMessageUserTable.minimumReadPermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
-            conversationMessageUserTable.minimumWritePermissionLevel = SECURITY_SUPER_ADMIN_WRITER_PERMISSION_LEVEL;
+            conversationMessageUserTable.minimumReadPermissionLevel = 50;
+            conversationMessageUserTable.minimumWritePermissionLevel = 50;
             conversationMessageUserTable.adminAccessNeededToWrite = true;
             conversationMessageUserTable.AddIdField();
             conversationMessageUserTable.AddMultiTenantSupport();
             conversationMessageUserTable.AddForeignKeyField("conversationMessageId", conversationMessageTable, false);
-            conversationMessageUserTable.AddForeignKeyField("userId", userTable, false);
+            conversationMessageUserTable.AddIntField("userId", false).AddScriptComments("The target user for this message.  Resolved by IMessagingUserResolver.");
             conversationMessageUserTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this conversation message user was created.");
             conversationMessageUserTable.AddBoolField("acknowledged", false, false);
             conversationMessageUserTable.AddDateTimeField("dateTimeAcknowledged", false).AddScriptComments("When this conversation message user was acknowledge by the user.  For messages, this may be auto acknowledged once the data is read and shown.  Up to the UI to decide when to mark it as acknowledged..");
@@ -1402,6 +1391,170 @@ It is part of the Foundation's Conversation/Messaging system.";
             conversationMessageUserIdActiveDeletedIndex.AddField("active");
             conversationMessageUserIdActiveDeletedIndex.AddField("deleted");
 
+        }
+
+
+        /*
+         * 
+         *  This adds tables for enhanced messaging features on top of the conversation system.
+         *  It depends on the conversation tables to exist first.
+         *  
+         *  These tables extend the conversation system with:
+         *  - Channels (persistent named conversations, like Teams/Slack channels)
+         *  - Message reactions (emoji reactions to reduce message noise)
+         *  - Pinned messages (bookmark important messages within a conversation)
+         *  - User presence (online/offline/away status tracking)
+         *  
+         *  It also adds new ConversationType seed data for "Channel" and "Direct Message" types.
+         * 
+         * */
+        public static void AddMessagingTablesToDatabase(DatabaseGenerator.Database database)
+        {
+
+            Database.Table conversationTable = database.GetTable("Conversation");
+            Database.Table conversationMessageTable = database.GetTable("ConversationMessage");
+            Database.Table conversationTypeTable = database.GetTable("ConversationType");
+
+            if (conversationTable == null || conversationMessageTable == null || conversationTypeTable == null)
+            {
+                throw new Exception("Conversation tables must be in schema before messaging tables are added");
+            }
+
+
+            //
+            // Additional ConversationType seed data for the messaging system
+            //
+            conversationTypeTable.AddData(new Dictionary<string, string> { { "name", "Channel" },
+                                                                    { "description", "A persistent named conversation (like a Teams/Slack channel)" },
+                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+
+
+            conversationTypeTable.AddData(new Dictionary<string, string> { { "name", "Direct Message" },
+                                                                    { "description", "A 1:1 or small group direct message conversation" },
+                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+
+
+
+            //
+            // ConversationChannel - Extends conversations to support persistent named channels.
+            // A channel is a specialized conversation with a name, topic, and optional scope to an organization, department, or team.
+            //
+            Database.Table conversationChannelTable = database.AddTable("ConversationChannel");
+            conversationChannelTable.comment = @"This table extends a Conversation record to be a named Channel.  It is part of the Foundation's Messaging system.
+
+A channel is a persistent, named conversation that users can browse and join.  It links to the base Conversation record 
+and adds channel-specific fields like name, topic, and privacy.";
+
+            conversationChannelTable.minimumReadPermissionLevel = 50;
+            conversationChannelTable.minimumWritePermissionLevel = 50;
+            conversationChannelTable.adminAccessNeededToWrite = true;
+            conversationChannelTable.AddIdField();
+            conversationChannelTable.AddMultiTenantSupport();
+            conversationChannelTable.AddForeignKeyField("conversationId", conversationTable, false).AddScriptComments("The base conversation record that this channel extends.");
+            conversationChannelTable.AddString250Field("name", false).AddScriptComments("The display name for the channel.");
+            conversationChannelTable.AddString1000Field("topic", true).AddScriptComments("The current topic or description of the channel.  Can be changed over time.");
+            conversationChannelTable.AddBoolField("isPrivate", false, false).AddScriptComments("Whether or not this channel is private.  Private channels are invitation-only and do not appear in the channel browser.");
+            conversationChannelTable.AddBoolField("isPinned", false, false).AddScriptComments("Whether or not this channel is pinned in the UI.  Pinned channels appear at the top of the channel list.");
+
+            conversationChannelTable.AddVersionControl();
+            conversationChannelTable.AddControlFields();
+
+            Database.Table.Index conversationChannelIdActiveDeletedIndex = conversationChannelTable.CreateIndex("I_ConversationChannel_id_active_deleted");
+            conversationChannelIdActiveDeletedIndex.AddField("id");
+            conversationChannelIdActiveDeletedIndex.AddField("active");
+            conversationChannelIdActiveDeletedIndex.AddField("deleted");
+
+
+
+            //
+            // ConversationMessageReaction - Lightweight emoji reactions to messages.
+            // Reduces noise compared to sending separate "thumbs up" messages.
+            //
+            Database.Table conversationMessageReactionTable = database.AddTable("ConversationMessageReaction");
+            conversationMessageReactionTable.comment = @"This table stores emoji reactions to conversation messages.  It is part of the Foundation's Messaging system.
+
+Reactions provide a lightweight way for users to respond to messages without creating additional message records.  
+Each reaction is a short string representing an emoji code or shortname.";
+
+            conversationMessageReactionTable.minimumReadPermissionLevel = 50;
+            conversationMessageReactionTable.minimumWritePermissionLevel = 50;
+            conversationMessageReactionTable.AddIdField();
+            conversationMessageReactionTable.AddMultiTenantSupport();
+            conversationMessageReactionTable.AddForeignKeyField("conversationMessageId", conversationMessageTable, false).AddScriptComments("The message that this reaction is for.");
+            conversationMessageReactionTable.AddIntField("userId", false).AddScriptComments("The user who reacted.  Resolved by IMessagingUserResolver.");
+            conversationMessageReactionTable.AddString50Field("reaction", false).AddScriptComments("The emoji code or shortname for the reaction, for example 'thumbsup', 'heart', 'laughing'.");
+            conversationMessageReactionTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this reaction was created.");
+            conversationMessageReactionTable.AddControlFields();
+
+            Database.Table.Index conversationMessageReactionIdActiveDeletedIndex = conversationMessageReactionTable.CreateIndex("I_ConversationMessageReaction_id_active_deleted");
+            conversationMessageReactionIdActiveDeletedIndex.AddField("id");
+            conversationMessageReactionIdActiveDeletedIndex.AddField("active");
+            conversationMessageReactionIdActiveDeletedIndex.AddField("deleted");
+
+            // Composite index to efficiently query reactions for a message
+            conversationMessageReactionTable.CreateIndexForFields(new List<string> { "conversationMessageId", "active", "deleted" });
+
+
+
+            //
+            // ConversationPin - Pin important messages within a conversation for easy reference.
+            //
+            Database.Table conversationPinTable = database.AddTable("ConversationPin");
+            conversationPinTable.comment = @"This table tracks pinned messages within a conversation.  It is part of the Foundation's Messaging system.
+
+Pinned messages are highlighted in the conversation and can be browsed separately, providing a way to bookmark 
+important messages, decisions, or reference information within a conversation.";
+
+            conversationPinTable.minimumReadPermissionLevel = 50;
+            conversationPinTable.minimumWritePermissionLevel = 50;
+            conversationPinTable.AddIdField();
+            conversationPinTable.AddMultiTenantSupport();
+            conversationPinTable.AddForeignKeyField("conversationId", conversationTable, false).AddScriptComments("The conversation that this pin belongs to.");
+            conversationPinTable.AddForeignKeyField("conversationMessageId", conversationMessageTable, false).AddScriptComments("The message that is pinned.");
+            conversationPinTable.AddIntField("pinnedByUserId", false).AddScriptComments("The user who pinned this message.  Resolved by IMessagingUserResolver.");
+            conversationPinTable.AddDateTimeField("dateTimePinned", false).AddScriptComments("When this message was pinned.");
+            conversationPinTable.AddControlFields();
+
+            Database.Table.Index conversationPinIdActiveDeletedIndex = conversationPinTable.CreateIndex("I_ConversationPin_id_active_deleted");
+            conversationPinIdActiveDeletedIndex.AddField("id");
+            conversationPinIdActiveDeletedIndex.AddField("active");
+            conversationPinIdActiveDeletedIndex.AddField("deleted");
+
+            // Composite index to efficiently query pins for a conversation
+            conversationPinTable.CreateIndexForFields(new List<string> { "conversationId", "active", "deleted" });
+
+
+
+            //
+            // UserPresence - Track user online/offline status and activity.
+            // This table is updated on SignalR hub connect/disconnect events.
+            //
+            Database.Table userPresenceTable = database.AddTable("UserPresence");
+            userPresenceTable.comment = @"This table tracks user online/offline status and activity for the messaging system.  It is part of the Foundation's Messaging system.
+
+Presence records are updated when users connect to or disconnect from the MessagingHub.  The connectionCount field supports 
+multi-device presence (a user connected from both a browser and a mobile app would have connectionCount = 2).  
+When connectionCount drops to 0, the user is considered offline.";
+
+            userPresenceTable.minimumReadPermissionLevel = 50;
+            userPresenceTable.minimumWritePermissionLevel = 50;
+            userPresenceTable.AddIdField();
+            userPresenceTable.AddMultiTenantSupport();
+            userPresenceTable.AddIntField("userId", false).AddScriptComments("The user whose presence is being tracked.  Resolved by IMessagingUserResolver.");
+            userPresenceTable.AddString50Field("status", false).AddScriptComments("The current status: 'online', 'away', 'busy', 'offline', 'doNotDisturb'.");
+            userPresenceTable.AddString250Field("customStatusMessage", true).AddScriptComments("Optional custom status message, for example 'In a meeting until 3pm'.");
+            userPresenceTable.AddDateTimeField("lastSeenDateTime", false).AddScriptComments("The last time this user was seen connected.");
+            userPresenceTable.AddDateTimeField("lastActivityDateTime", false).AddScriptComments("The last time this user performed an action (sent a message, reacted, etc).");
+            userPresenceTable.AddIntField("connectionCount", false, 0).AddScriptComments("The number of active connections for this user.  Supports multi-device presence.");
+            userPresenceTable.AddControlFields();
+
+            Database.Table.Index userPresenceIdActiveDeletedIndex = userPresenceTable.CreateIndex("I_UserPresence_id_active_deleted");
+            userPresenceIdActiveDeletedIndex.AddField("id");
+            userPresenceIdActiveDeletedIndex.AddField("active");
+            userPresenceIdActiveDeletedIndex.AddField("deleted");
+
+            // Index to quickly look up presence by user
+            userPresenceTable.CreateIndexForFields(new List<string> { "userId", "active", "deleted" });
         }
     }
 }

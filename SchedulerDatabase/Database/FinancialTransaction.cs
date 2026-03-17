@@ -67,6 +67,8 @@ public partial class FinancialTransaction
 
     public virtual ICollection<FinancialTransactionChangeHistory> FinancialTransactionChangeHistories { get; set; } = new List<FinancialTransactionChangeHistory>();
 
+    public virtual ICollection<GeneralLedgerEntry> GeneralLedgerEntries { get; set; } = new List<GeneralLedgerEntry>();
+
     public virtual ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();

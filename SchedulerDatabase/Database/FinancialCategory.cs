@@ -49,6 +49,8 @@ public partial class FinancialCategory
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
+    public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; } = new List<GeneralLedgerLine>();
+
     public virtual ICollection<FinancialCategory> InverseparentFinancialCategory { get; set; } = new List<FinancialCategory>();
 
     public virtual ICollection<InvoiceLineItem> InvoiceLineItems { get; set; } = new List<InvoiceLineItem>();

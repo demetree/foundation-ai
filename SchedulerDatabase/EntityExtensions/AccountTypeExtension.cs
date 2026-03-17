@@ -99,7 +99,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a AccountType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AccountTypeEntity type directly.
+		/// Converts a AccountType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the AccountType Entity type directly.
 		///
 		/// </summary>
 		public AccountTypeOutputDTO ToOutputDTO()

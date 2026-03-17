@@ -33,6 +33,7 @@ import { FiscalPeriodService } from '../../../scheduler-data-services/fiscal-per
 import { PaymentTypeService } from '../../../scheduler-data-services/payment-type.service';
 import { CurrencyService } from '../../../scheduler-data-services/currency.service';
 import { FinancialTransactionChangeHistoryService } from '../../../scheduler-data-services/financial-transaction-change-history.service';
+import { GeneralLedgerEntryService } from '../../../scheduler-data-services/general-ledger-entry.service';
 import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
 import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
@@ -148,6 +149,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
   public paymentTypes$ = this.paymentTypeService.GetPaymentTypeList();
   public currencies$ = this.currencyService.GetCurrencyList();
   public financialTransactionChangeHistories$ = this.financialTransactionChangeHistoryService.GetFinancialTransactionChangeHistoryList();
+  public generalLedgerEntries$ = this.generalLedgerEntryService.GetGeneralLedgerEntryList();
   public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
   public receipts$ = this.receiptService.GetReceiptList();
   public documents$ = this.documentService.GetDocumentList();
@@ -166,6 +168,7 @@ export class FinancialTransactionDetailComponent implements OnInit, CanComponent
     public paymentTypeService: PaymentTypeService,
     public currencyService: CurrencyService,
     public financialTransactionChangeHistoryService: FinancialTransactionChangeHistoryService,
+    public generalLedgerEntryService: GeneralLedgerEntryService,
     public paymentTransactionService: PaymentTransactionService,
     public receiptService: ReceiptService,
     public documentService: DocumentService,

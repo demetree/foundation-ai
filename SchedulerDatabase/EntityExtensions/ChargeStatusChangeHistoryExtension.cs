@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a ChargeStatusChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ChargeStatusChangeHistoryEntity type directly.
+		/// Converts a ChargeStatusChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ChargeStatusChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public ChargeStatusChangeHistoryOutputDTO ToOutputDTO()

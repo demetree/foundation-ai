@@ -97,7 +97,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a PaymentMethod to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the PaymentMethodEntity type directly.
+		/// Converts a PaymentMethod to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the PaymentMethod Entity type directly.
 		///
 		/// </summary>
 		public PaymentMethodOutputDTO ToOutputDTO()

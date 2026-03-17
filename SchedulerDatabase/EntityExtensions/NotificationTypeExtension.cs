@@ -94,7 +94,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a NotificationType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the NotificationTypeEntity type directly.
+		/// Converts a NotificationType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the NotificationType Entity type directly.
 		///
 		/// </summary>
 		public NotificationTypeOutputDTO ToOutputDTO()

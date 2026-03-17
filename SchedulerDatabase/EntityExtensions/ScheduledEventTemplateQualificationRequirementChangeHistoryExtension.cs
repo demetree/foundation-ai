@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a ScheduledEventTemplateQualificationRequirementChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ScheduledEventTemplateQualificationRequirementChangeHistoryEntity type directly.
+		/// Converts a ScheduledEventTemplateQualificationRequirementChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ScheduledEventTemplateQualificationRequirementChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public ScheduledEventTemplateQualificationRequirementChangeHistoryOutputDTO ToOutputDTO()

@@ -97,7 +97,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a ContactType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ContactTypeEntity type directly.
+		/// Converts a ContactType to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the ContactType Entity type directly.
 		///
 		/// </summary>
 		public ContactTypeOutputDTO ToOutputDTO()

@@ -92,7 +92,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a RecurrenceFrequency to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the RecurrenceFrequencyEntity type directly.
+		/// Converts a RecurrenceFrequency to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the RecurrenceFrequency Entity type directly.
 		///
 		/// </summary>
 		public RecurrenceFrequencyOutputDTO ToOutputDTO()

@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a RecurrenceExceptionChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the RecurrenceExceptionChangeHistoryEntity type directly.
+		/// Converts a RecurrenceExceptionChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the RecurrenceExceptionChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public RecurrenceExceptionChangeHistoryOutputDTO ToOutputDTO()

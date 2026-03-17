@@ -97,7 +97,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a Priority to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the PriorityEntity type directly.
+		/// Converts a Priority to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the Priority Entity type directly.
 		///
 		/// </summary>
 		public PriorityOutputDTO ToOutputDTO()

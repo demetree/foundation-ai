@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a CrewChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the CrewChangeHistoryEntity type directly.
+		/// Converts a CrewChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the CrewChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public CrewChangeHistoryOutputDTO ToOutputDTO()

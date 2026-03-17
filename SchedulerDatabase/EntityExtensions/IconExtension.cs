@@ -91,7 +91,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a Icon to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the IconEntity type directly.
+		/// Converts a Icon to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the Icon Entity type directly.
 		///
 		/// </summary>
 		public IconOutputDTO ToOutputDTO()

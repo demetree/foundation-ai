@@ -51,6 +51,37 @@ namespace Foundation.Scheduler.Database
             return new ChangeHistoryToolset<SchedulingTargetAddress, SchedulingTargetAddressChangeHistory>(context, securityUser.id, insideTransaction, cancellationToken);
         }
 
+
+        /// <summary>
+        /// 
+        /// Gets the a Change History toolset for the user that support write and read operations.  (Async variant)
+        /// 
+        /// </summary>
+        /// <param name="context">A context object that contains the entities</param>
+        /// <param name="securityUser">The security user that the changes will be made on behalf of.</param>
+        /// <param name="insideTransaction">Whether or not there is a transaction in process by the using function</param>
+        /// <returns>A change history toolset instance to interact with the change history of the entity</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        public static Task<ChangeHistoryToolset<SchedulingTargetAddress, SchedulingTargetAddressChangeHistory>> GetChangeHistoryToolsetForWritingAsync(SchedulerContext context, Foundation.Security.Database.SecurityUser securityUser, bool insideTransaction = false, CancellationToken cancellationToken = default)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (securityUser == null)
+            {
+                throw new ArgumentNullException(nameof(securityUser));
+            }
+
+            //
+            // This table does not have data visibility enabled, therefore the user ID is to be taken directly from the security user object.
+            // No async work is needed — return completed task.
+            // 
+            return Task.FromResult(new ChangeHistoryToolset<SchedulingTargetAddress, SchedulingTargetAddressChangeHistory>(context, securityUser.id, insideTransaction, cancellationToken));
+        }
+
         /// <summary>
         /// 
         /// Gets the a Change History toolset for read only purposes.
@@ -380,7 +411,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a SchedulingTargetAddress to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SchedulingTargetAddressEntity type directly.
+		/// Converts a SchedulingTargetAddress to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SchedulingTargetAddress Entity type directly.
 		///
 		/// </summary>
 		public SchedulingTargetAddressOutputDTO ToOutputDTO()

@@ -101,7 +101,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a BatchChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the BatchChangeHistoryEntity type directly.
+		/// Converts a BatchChangeHistory to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the BatchChangeHistory Entity type directly.
 		///
 		/// </summary>
 		public BatchChangeHistoryOutputDTO ToOutputDTO()

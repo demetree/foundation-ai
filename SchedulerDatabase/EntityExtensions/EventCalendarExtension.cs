@@ -92,7 +92,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a EventCalendar to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the EventCalendarEntity type directly.
+		/// Converts a EventCalendar to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the EventCalendar Entity type directly.
 		///
 		/// </summary>
 		public EventCalendarOutputDTO ToOutputDTO()

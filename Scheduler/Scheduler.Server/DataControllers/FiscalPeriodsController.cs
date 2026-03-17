@@ -890,6 +890,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					fiscalPeriod.Budgets = null;
 					fiscalPeriod.FinancialTransactions = null;
 					fiscalPeriod.FiscalPeriodChangeHistories = null;
+					fiscalPeriod.GeneralLedgerEntries = null;
 					fiscalPeriod.periodStatus = null;
 
 
@@ -1008,6 +1009,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.Budgets = null;
 				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.FiscalPeriodChangeHistories = null;
+				cloneOfExisting.GeneralLedgerEntries = null;
 				cloneOfExisting.periodStatus = null;
 
 				if (versionNumber >= fiscalPeriod.versionNumber)

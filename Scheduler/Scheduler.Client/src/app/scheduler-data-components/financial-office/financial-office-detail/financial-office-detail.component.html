@@ -167,6 +167,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="generalLedgerEntryService.userIsSchedulerGeneralLedgerEntryReader()">
+                            <button ngbNavLink>General Ledger Entries
+                                <span class="badge bg-primary ms-2">
+                                    {{ (financialOfficeData?.GeneralLedgerEntriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-general-ledger-entry-table [queryParams]="{ financialOfficeId: financialOfficeData?.id }" [showAddButton]="true" [preSeededData]="{ financialOfficeId: financialOfficeData?.id }" [hiddenFields]="['financialOfficeId']"></app-general-ledger-entry-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="invoiceService.userIsSchedulerInvoiceReader()">
                             <button ngbNavLink>Invoices
                                 <span class="badge bg-primary ms-2">

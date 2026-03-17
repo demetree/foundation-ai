@@ -1,0 +1,128 @@
+.page-container {
+    background-color: var(--sch-bg);
+    min-height: 100%;
+    padding: 1.5rem;
+}
+
+// Premium Header — Audit deep blue/slate gradient
+$gradient-audit: linear-gradient(135deg, #334155 0%, #1e293b 50%, #0f172a 100%);
+
+.premium-header {
+    background: $gradient-audit;
+    border-radius: 16px;
+    overflow: hidden;
+
+    .card-header {
+        padding: 1.5rem 2rem;
+    }
+
+    .page-title {
+        color: white;
+        font-size: 1.75rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    }
+}
+
+.btn-glass {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+    }
+}
+
+
+// Action badges
+.action-badge {
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 0.35em 0.75em;
+    border-radius: 6px;
+    letter-spacing: 0.03em;
+}
+
+.badge-created {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+}
+
+.badge-updated {
+    background: rgba(59, 130, 246, 0.12);
+    color: #2563eb;
+}
+
+.badge-voided {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+}
+
+.badge-unknown {
+    background: rgba(107, 114, 128, 0.12);
+    color: #6b7280;
+}
+
+
+// Table
+.audit-table {
+    font-size: 0.88rem;
+}
+
+.audit-row {
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: #f8fafc;
+    }
+}
+
+
+// Detail row diff panel
+.detail-row {
+    background: #f1f5f9 !important;
+
+    &:hover {
+        background: #f1f5f9 !important;
+    }
+}
+
+.diff-panel {
+    border-left: 4px solid #3b82f6;
+}
+
+.diff-table {
+    font-size: 0.82rem;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+
+    th {
+        background: #e2e8f0;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #475569;
+        padding: 0.4rem 0.6rem;
+    }
+
+    td {
+        padding: 0.35rem 0.6rem;
+    }
+}
+
+.diff-old {
+    color: #dc2626;
+    background: rgba(239, 68, 68, 0.04);
+    text-decoration: line-through;
+    text-decoration-color: rgba(220, 38, 38, 0.3);
+}
+
+.diff-new {
+    color: #059669;
+    background: rgba(16, 185, 129, 0.04);
+    font-weight: 500;
+}

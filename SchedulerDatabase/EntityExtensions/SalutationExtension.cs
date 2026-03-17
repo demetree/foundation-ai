@@ -92,7 +92,7 @@ namespace Foundation.Scheduler.Database
 
 		/// <summary>
 		///
-		/// Converts a Salutation to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the SalutationEntity type directly.
+		/// Converts a Salutation to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the Salutation Entity type directly.
 		///
 		/// </summary>
 		public SalutationOutputDTO ToOutputDTO()

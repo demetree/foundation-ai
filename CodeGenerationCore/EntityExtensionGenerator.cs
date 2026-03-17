@@ -316,6 +316,37 @@ namespace Foundation.CodeGeneration
             return new ChangeHistoryToolset<{entity}, {entity}ChangeHistory>(context, securityUser.id, insideTransaction, cancellationToken);
         }}
 
+
+        /// <summary>
+        /// 
+        /// Gets the a Change History toolset for the user that support write and read operations.  (Async variant)
+        /// 
+        /// </summary>
+        /// <param name=""context"">A context object that contains the entities</param>
+        /// <param name=""securityUser"">The security user that the changes will be made on behalf of.</param>
+        /// <param name=""insideTransaction"">Whether or not there is a transaction in process by the using function</param>
+        /// <returns>A change history toolset instance to interact with the change history of the entity</returns>
+        /// <exception cref=""ArgumentNullException""></exception>
+        /// <exception cref=""Exception""></exception>
+        public static Task<ChangeHistoryToolset<{entity}, {entity}ChangeHistory>> GetChangeHistoryToolsetForWritingAsync({module}Context context, Foundation.Security.Database.SecurityUser securityUser, bool insideTransaction = false, CancellationToken cancellationToken = default)
+        {{
+            if (context == null)
+            {{
+                throw new ArgumentNullException(nameof(context));
+            }}
+
+            if (securityUser == null)
+            {{
+                throw new ArgumentNullException(nameof(securityUser));
+            }}
+
+            //
+            // This table does not have data visibility enabled, therefore the user ID is to be taken directly from the security user object.
+            // No async work is needed — return completed task.
+            // 
+            return Task.FromResult(new ChangeHistoryToolset<{entity}, {entity}ChangeHistory>(context, securityUser.id, insideTransaction, cancellationToken));
+        }}
+
         /// <summary>
         /// 
         /// Gets the a Change History toolset for read only purposes.
@@ -789,7 +820,7 @@ namespace Foundation.CodeGeneration
                     }
                 }
             }
-            
+
             sb.AppendLine("\t\t/// <summary>");
             sb.AppendLine("\t\t///");
             sb.AppendLine("\t\t/// INPUT Data Transfer Object intended to be used for posting data into the system from the outside.  It only contains user editable value type properties.");
@@ -836,7 +867,7 @@ namespace Foundation.CodeGeneration
                 //
                 sb.Append(propertyType.Name);
 
-                    
+
 
                 // Detect nullable fields, and also make the active and deleted fields on the DTO nullable so that they are not required for each submission (defaults will be assigned instead)
                 bool isNullable = prop.PropertyType.Name.StartsWith("Nullable") || prop.Name.ToUpper() == "ACTIVE" || prop.Name.ToUpper() == "DELETED";
@@ -979,7 +1010,7 @@ namespace Foundation.CodeGeneration
 
             sb.AppendLine("\t\t/// <summary>");
             sb.AppendLine("\t\t///");
-            sb.AppendLine($"\t\t/// Converts a {entity} to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the {entity }Entity type directly.");
+            sb.AppendLine($"\t\t/// Converts a {entity} to an OUTPUT Data Transfer Object.  This is the format to be used when serializing data to send back to client requests with nav properties to avoid using the {entity} Entity type directly.");
             sb.AppendLine("\t\t///");
             sb.AppendLine("\t\t/// </summary>");
             sb.AppendLine("\t\tpublic " + entity + "OutputDTO ToOutputDTO()");
