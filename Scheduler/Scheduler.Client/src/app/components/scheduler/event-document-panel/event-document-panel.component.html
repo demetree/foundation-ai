@@ -1,0 +1,184 @@
+<!-- event-document-panel.component.html -->
+
+<div class="document-panel">
+
+  <!-- ── Header ── -->
+  <div class="panel-header">
+    <div class="d-flex align-items-center">
+      <i class="fa-solid fa-folder-open panel-icon"></i>
+      <h6 class="mb-0 ms-2">Documents</h6>
+      <span class="badge doc-count-badge ms-2" *ngIf="documents.length > 0">
+        {{ documents.length }}
+      </span>
+    </div>
+    <button class="btn btn-sm btn-upload" (click)="triggerFileInput()" [disabled]="uploading"
+      id="docPanelUploadBtn">
+      <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload
+    </button>
+  </div>
+
+
+  <!-- ── Loading ── -->
+  <div class="text-center py-4" *ngIf="loading">
+    <span class="spinner-border spinner-border-sm me-2"></span>
+    <span class="text-muted">Loading documents...</span>
+  </div>
+
+
+  <!-- ── Document List ── -->
+  <div class="document-list" *ngIf="!loading">
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="documents.length === 0 && !showUploadForm">
+      <i class="fa-solid fa-file-circle-plus empty-icon"></i>
+      <p class="mb-1">No documents attached</p>
+      <small class="text-muted">Drag a file here or click Upload to attach documents to this event</small>
+    </div>
+
+    <!-- Document Cards -->
+    <div class="doc-card" *ngFor="let doc of documents">
+      <div class="doc-card-left">
+        <div class="doc-type-indicator" [style.background-color]="getDocumentTypeColor(doc)">
+          <i class="fa-solid" [ngClass]="getFileIcon(doc.mimeType)"></i>
+        </div>
+        <div class="doc-info">
+          <div class="doc-name">{{ doc.name }}</div>
+          <div class="doc-meta">
+            <span class="doc-type-label" [style.color]="getDocumentTypeColor(doc)">
+              {{ getDocumentTypeName(doc) }}
+            </span>
+            <span class="meta-separator">·</span>
+            <span>{{ formatFileSize(doc.fileSizeBytes) }}</span>
+            <span class="meta-separator">·</span>
+            <span>{{ doc.uploadedDate | date:'MMM d, y' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc-card-right">
+        <!-- Status Badge -->
+        <div class="status-dropdown" ngbDropdown>
+          <button class="btn btn-sm status-badge" [ngClass]="getStatusClass(doc.status)"
+            ngbDropdownToggle id="docStatus_{{ doc.id }}">
+            <i class="fa-solid" [ngClass]="getStatusIcon(doc.status)"></i>
+            {{ doc.status || 'Uploaded' }}
+          </button>
+          <div ngbDropdownMenu>
+            <button ngbDropdownItem *ngFor="let status of statusOptions"
+              (click)="updateStatus(doc, status)"
+              [class.active]="doc.status === status">
+              {{ status }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="doc-actions">
+          <button class="btn btn-sm btn-action" (click)="openPreview(doc)"
+            *ngIf="isPreviewable(doc)" title="Preview">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+          <button class="btn btn-sm btn-action" (click)="downloadDocument(doc)" title="Download">
+            <i class="fa-solid fa-download"></i>
+          </button>
+          <button class="btn btn-sm btn-action btn-action-danger" (click)="deleteDocument(doc)" title="Delete">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── Drop Zone (always visible as bottom area when not uploading) ── -->
+  <div class="drop-zone" *ngIf="!showUploadForm && !loading"
+    [class.drag-over]="dragOver"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    (click)="triggerFileInput()">
+    <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+    <span>Drop files here or click to browse</span>
+    <small class="text-muted">PDF, images, Word docs — up to 10MB</small>
+  </div>
+
+  <input type="file" #fileInput class="d-none" (change)="onFileSelected($event)"
+    accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.txt">
+
+
+  <!-- ── Upload Form (shown after file selection) ── -->
+  <div class="upload-form" *ngIf="showUploadForm && pendingUpload">
+    <div class="upload-form-header">
+      <i class="fa-solid fa-file-arrow-up me-2"></i>
+      <strong>{{ pendingUpload.file.name }}</strong>
+      <small class="text-muted ms-2">({{ formatFileSize(pendingUpload.file.size) }})</small>
+    </div>
+
+    <div class="row g-2 mt-2">
+      <div class="col-md-6">
+        <label class="form-label small">Document Type <span class="text-danger">*</span></label>
+        <select class="form-select form-select-sm" [(ngModel)]="pendingUpload.documentTypeId"
+          id="docUploadTypeSelect">
+          <option [ngValue]="null" disabled>Select type...</option>
+          <option *ngFor="let dt of documentTypes" [ngValue]="dt.id">
+            {{ dt.name }}
+          </option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label small">Notes (optional)</label>
+        <input type="text" class="form-control form-control-sm" [(ngModel)]="pendingUpload.notes"
+          placeholder="e.g., Signed copy, original on file">
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-3">
+      <button class="btn btn-sm btn-outline-secondary" (click)="cancelUpload()" [disabled]="uploading">
+        Cancel
+      </button>
+      <button class="btn btn-sm btn-primary" (click)="uploadDocument()"
+        [disabled]="uploading || !pendingUpload.documentTypeId" id="docUploadConfirmBtn">
+        <span *ngIf="!uploading">
+          <i class="fa-solid fa-upload me-1"></i> Upload
+        </span>
+        <span *ngIf="uploading">
+          <span class="spinner-border spinner-border-sm me-1"></span> Uploading...
+        </span>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ── Preview Overlay ── -->
+  <div class="preview-overlay" *ngIf="previewDocument" (click)="closePreview()">
+    <div class="preview-container" (click)="$event.stopPropagation()">
+      <div class="preview-header">
+        <h6 class="mb-0">{{ previewDocument.name }}</h6>
+        <button class="btn btn-sm btn-close-preview" (click)="closePreview()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <div class="preview-body">
+        <!-- Image Preview -->
+        <img *ngIf="isImage(previewDocument) && previewUrl"
+          [src]="previewUrl" alt="Document preview" class="preview-image">
+
+        <!-- PDF Preview -->
+        <iframe *ngIf="isPdf(previewDocument) && previewUrl"
+          [src]="previewUrl" class="preview-pdf" title="PDF preview"></iframe>
+
+        <!-- No preview -->
+        <div class="no-preview" *ngIf="!previewUrl">
+          <i class="fa-solid fa-file-circle-question"></i>
+          <p>Preview not available</p>
+        </div>
+      </div>
+      <div class="preview-footer">
+        <button class="btn btn-sm btn-outline-secondary" (click)="downloadDocument(previewDocument)">
+          <i class="fa-solid fa-download me-1"></i> Download
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -23,7 +23,10 @@ import { EventCalendarService, EventCalendarSubmitData } from '../../../schedule
 import { EventChargeService, EventChargeData } from '../../../scheduler-data-services/event-charge.service';
 import { ResourceTypeService, ResourceTypeData } from '../../../scheduler-data-services/resource-type.service';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
+import { DocumentService, DocumentSubmitData } from '../../../scheduler-data-services/document.service';
+import { DocumentTypeService, DocumentTypeData } from '../../../scheduler-data-services/document-type.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-private-rental-booking',
@@ -60,6 +63,11 @@ export class PrivateRentalBookingComponent implements OnInit {
   rentalAgreementSigned = false;
   markAsPaid = false;
 
+  // Optional rental agreement file attachment
+  pendingAgreementFile: File | null = null;
+  pendingAgreementBase64: string | null = null;
+  documentTypes: DocumentTypeData[] = [];
+
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -72,7 +80,10 @@ export class PrivateRentalBookingComponent implements OnInit {
     private eventChargeService: EventChargeService,
     private resourceTypeService: ResourceTypeService,
     private resourceService: ResourceService,
-    private alertService: AlertService
+    private documentService: DocumentService,
+    private documentTypeService: DocumentTypeService,
+    private alertService: AlertService,
+    private authService: AuthService
   ) {}
 
 
@@ -173,6 +184,17 @@ export class PrivateRentalBookingComponent implements OnInit {
     // Load facility resources — find the "Facility" ResourceType, then get its resources
     //
     await this.loadFacilityResources();
+
+    //
+    // Load document types (for optional rental agreement attachment)
+    //
+    try {
+      this.documentTypes = await lastValueFrom(
+        this.documentTypeService.GetDocumentTypeList({ active: true, deleted: false })
+      );
+    } catch (err) {
+      console.error('Failed to load document types', err);
+    }
   }
 
 
@@ -213,6 +235,46 @@ export class PrivateRentalBookingComponent implements OnInit {
       console.error('Failed to load facility resources', err);
       this.facilityLoadWarning = 'Could not load facility resources.';
     }
+  }
+
+
+
+  // -----------------------------------------------------------------------
+  // Rental Agreement File Handling
+  // -----------------------------------------------------------------------
+
+  onAgreementFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    if (file.size > maxSize) {
+      this.alertService.showMessage('File Too Large', 'Maximum file size is 10MB.', MessageSeverity.warn);
+      return;
+    }
+
+    this.pendingAgreementFile = file;
+
+    // Read as base64
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      this.pendingAgreementBase64 = result.split(',')[1];
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeAgreementFile(): void {
+    this.pendingAgreementFile = null;
+    this.pendingAgreementBase64 = null;
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
 
@@ -372,6 +434,46 @@ export class PrivateRentalBookingComponent implements OnInit {
           await lastValueFrom(
             this.eventChargeService.PostEventCharge(depositSubmit)
           );
+        }
+      }
+
+      //
+      // 4. Upload rental agreement document if one was attached
+      //
+      if (this.pendingAgreementFile && this.pendingAgreementBase64) {
+        try {
+          const rentalAgreementType = this.documentTypes.find(dt =>
+            dt.name.toLowerCase().includes('rental')
+          );
+
+          if (rentalAgreementType) {
+            const docSubmit = new DocumentSubmitData();
+            docSubmit.name = this.pendingAgreementFile.name.replace(/\.[^/.]+$/, '');
+            docSubmit.description = 'Rental agreement attached during booking';
+            docSubmit.fileName = this.pendingAgreementFile.name;
+            docSubmit.mimeType = this.pendingAgreementFile.type || 'application/octet-stream';
+            docSubmit.fileSizeBytes = this.pendingAgreementFile.size;
+            docSubmit.fileDataFileName = this.pendingAgreementFile.name;
+            docSubmit.fileDataSize = this.pendingAgreementFile.size;
+            docSubmit.fileDataData = this.pendingAgreementBase64;
+            docSubmit.fileDataMimeType = this.pendingAgreementFile.type || 'application/octet-stream';
+            docSubmit.documentTypeId = rentalAgreementType.id as number;
+            docSubmit.scheduledEventId = savedEvent.id as number;
+            docSubmit.status = 'Uploaded';
+            docSubmit.statusDate = new Date().toISOString();
+            docSubmit.uploadedDate = new Date().toISOString();
+            docSubmit.uploadedBy = this.authService.currentUser?.userName || 'Unknown';
+            docSubmit.versionNumber = 0;
+            docSubmit.active = true;
+            docSubmit.deleted = false;
+
+            await lastValueFrom(
+              this.documentService.PostDocument(docSubmit)
+            );
+          }
+        } catch (docErr) {
+          console.warn('Failed to upload rental agreement document', docErr);
+          // Don't fail the booking, just warn
         }
       }
 

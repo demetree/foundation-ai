@@ -98,6 +98,11 @@
         </span>
       </button>
     </li>
+    <li class="nav-item" *ngIf="isEditMode">
+      <button class="nav-link" [class.active]="activeTab === 'documents'" (click)="setActiveTab('documents')">
+        <i class="bi bi-folder2-open me-1"></i>Documents
+      </button>
+    </li>
   </ul>
 
   <form [formGroup]="eventForm">
@@ -1003,6 +1008,13 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- DOCUMENTS TAB -->
+    <!-- ============================================================== -->
+    <div class="tab-pane-content" *ngIf="activeTab === 'documents'">
+      <app-event-document-panel [event]="event!"></app-event-document-panel>
     </div>
   </form>
 </div>

@@ -1381,6 +1381,42 @@ namespace Foundation.Scheduler.CodeGeneration
 
 
                 //
+                // Document Types
+                //
+                var documentTypeSeedData = new[]
+                {
+                    (Name: "Rental Agreement",       Description: "Signed rental agreement / contract for facility bookings",  Color: "#7C3AED", Sequence: 1),
+                    (Name: "Insurance Certificate",  Description: "Liability insurance certificate for event coverage",       Color: "#2563EB", Sequence: 2),
+                    (Name: "Permit",                 Description: "Required permits (liquor license, fire permit, etc.)",     Color: "#D97706", Sequence: 3),
+                    (Name: "Receipt",                Description: "Payment receipt or proof of payment",                     Color: "#059669", Sequence: 4),
+                    (Name: "Other",                  Description: "Miscellaneous supporting documents",                      Color: "#6B7280", Sequence: 5)
+                };
+
+                foreach (var dtSeed in documentTypeSeedData)
+                {
+                    DocumentType docType = (from dt in context.DocumentTypes where dt.name == dtSeed.Name && dt.tenantGuid == PHMCTenantGuid select dt).FirstOrDefault();
+
+                    if (docType == null)
+                    {
+                        docType = new DocumentType();
+                        docType.name = dtSeed.Name;
+                        docType.description = dtSeed.Description;
+                        docType.color = dtSeed.Color;
+                        docType.sequence = dtSeed.Sequence;
+                        docType.versionNumber = 0;
+                        docType.tenantGuid = PHMCTenantGuid;
+                        docType.objectGuid = Guid.NewGuid();
+                        docType.active = true;
+                        docType.deleted = false;
+
+                        context.DocumentTypes.Add(docType);
+                    }
+                }
+
+                context.SaveChanges();
+
+
+                //
                 // Tax Codes
                 //
                 TaxCode hstTaxCode = (from tc in context.TaxCodes where tc.code == "HST" && tc.tenantGuid == PHMCTenantGuid select tc).FirstOrDefault();

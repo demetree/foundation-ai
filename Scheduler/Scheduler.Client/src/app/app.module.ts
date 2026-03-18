@@ -87,6 +87,7 @@ import { SchedulerCalendarComponent } from './components/scheduler/scheduler-cal
 import { EventAddEditModalComponent } from './components/scheduler/event-add-edit-modal/event-add-edit-modal.component';
 import { PrivateRentalBookingComponent } from './components/scheduler/private-rental-booking/private-rental-booking.component';
 import { CommitteeEventBookingComponent } from './components/scheduler/committee-event-booking/committee-event-booking.component';
+import { EventDocumentPanelComponent } from './components/scheduler/event-document-panel/event-document-panel.component';
 import { AdministrationComponent } from './components/administration/administration.component';
 import { AddTenantProfileComponent } from './components/add-tenant-profile/add-tenant-profile.component';
 import { RecurrenceBuilderComponent } from './components/scheduler/recurrence-builder/recurrence-builder.component';
@@ -1235,6 +1236,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     SchedulerCalendarComponent,
     EventAddEditModalComponent,
     PrivateRentalBookingComponent,
+    EventDocumentPanelComponent,
     CommitteeEventBookingComponent,
     RecurrenceBuilderComponent,
     TemplateManagerComponent,
