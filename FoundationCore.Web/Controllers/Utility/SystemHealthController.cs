@@ -802,7 +802,7 @@ namespace Foundation.Controllers.WebAPI
                         }
                         catch
                         {
-                            // Process may have exited or access denied
+                            // Process may have exited or access denied, which throws an InvalidOperationException
                         }
                     }
 
