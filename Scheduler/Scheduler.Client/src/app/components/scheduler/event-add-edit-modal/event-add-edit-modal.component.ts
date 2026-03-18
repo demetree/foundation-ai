@@ -1070,6 +1070,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         eventStatusId: formVal.eventStatusId || 1,
         bookingSourceTypeId: formVal.bookingSourceTypeId || null,
         officeId: formVal.officeId || null,
+        eventTypeId: formVal.eventTypeId || null,
         partySize: null,
         bookingContactName: formVal.bookingContactName?.trim() || null,
         bookingContactEmail: formVal.bookingContactEmail?.trim() || null,

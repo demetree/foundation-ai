@@ -1018,7 +1018,7 @@ $accent-secondary: #764ba2;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.15);
+  background: var(--sch-modal-backdrop);
   z-index: 1049;
 }
 
@@ -1026,9 +1026,10 @@ $accent-secondary: #764ba2;
   position: fixed;
   z-index: 1050;
   width: 280px;
-  background: white;
+  background: var(--sch-bg-card);
   border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--sch-border);
+  box-shadow: var(--sch-shadow-lg);
   overflow: hidden;
   animation: chooserSlideIn 0.2s ease-out;
 
@@ -1036,14 +1037,14 @@ $accent-secondary: #764ba2;
     padding: 0.85rem 1rem;
     font-weight: 600;
     font-size: 0.85rem;
-    color: #374151;
+    color: var(--sch-text-primary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid var(--sch-border);
 
     i {
-      color: #6b7280;
+      color: var(--sch-text-secondary);
     }
   }
 
@@ -1060,11 +1061,11 @@ $accent-secondary: #764ba2;
     transition: background 0.15s;
 
     &:hover {
-      background: #f9fafb;
+      background: var(--sch-bg-hover);
     }
 
     &:not(:last-child) {
-      border-bottom: 1px solid #f9fafb;
+      border-bottom: 1px solid var(--sch-border);
     }
 
     .chooser-icon {
@@ -1085,43 +1086,44 @@ $accent-secondary: #764ba2;
       .chooser-title {
         font-weight: 600;
         font-size: 0.85rem;
-        color: #1f2937;
+        color: var(--sch-text-primary);
       }
       .chooser-desc {
         font-size: 0.72rem;
-        color: #9ca3af;
+        color: var(--sch-text-muted);
         margin-top: 1px;
       }
     }
 
     .chooser-arrow {
-      color: #d1d5db;
+      color: var(--sch-text-muted);
       font-size: 0.7rem;
     }
   }
 
+  // Icon accent colors — stay distinct per type but use theme-aware opacity
   .chooser-rental .chooser-icon {
-    background: rgba(107, 92, 231, 0.12);
-    color: #6b5ce7;
+    background: var(--sch-accent-glow-soft);
+    color: var(--sch-primary);
   }
   .chooser-rental:hover .chooser-icon {
-    background: rgba(107, 92, 231, 0.2);
+    background: var(--sch-accent-glow);
   }
 
   .chooser-committee .chooser-icon {
-    background: rgba(16, 185, 129, 0.12);
-    color: #059669;
+    background: var(--sch-accent-glow-soft);
+    color: var(--sch-success);
   }
   .chooser-committee:hover .chooser-icon {
-    background: rgba(16, 185, 129, 0.2);
+    background: var(--sch-accent-glow);
   }
 
   .chooser-custom .chooser-icon {
-    background: rgba(99, 137, 227, 0.12);
-    color: #6389e3;
+    background: var(--sch-accent-glow-soft);
+    color: var(--sch-accent);
   }
   .chooser-custom:hover .chooser-icon {
-    background: rgba(99, 137, 227, 0.2);
+    background: var(--sch-accent-glow);
   }
 }
 

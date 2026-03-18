@@ -1,12 +1,13 @@
 /* committee-event-booking.component.scss */
+/* Uses the Scheduler's --sch-* theme tokens for full theme compatibility */
 
 .committee-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
-  color: white;
+  background: var(--sch-gradient-primary);
+  color: #fff;
   border-radius: 0.5rem 0.5rem 0 0;
 
   .header-icon-badge {
@@ -34,7 +35,7 @@
 
 .committee-body {
   padding: 1.5rem;
-  background: #f8fdf9;
+  background: var(--sch-bg-deep);
   max-height: 70vh;
   overflow-y: auto;
 
@@ -42,22 +43,25 @@
     width: 6px;
   }
   &::-webkit-scrollbar-thumb {
-    background: rgba(5, 150, 105, 0.3);
+    background: var(--sch-scrollbar-thumb);
     border-radius: 3px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--sch-scrollbar-thumb-hover);
   }
 }
 
 .booking-section {
-  background: white;
+  background: var(--sch-bg-card);
   border-radius: 12px;
   padding: 1.25rem;
   margin-bottom: 1rem;
-  border: 1px solid rgba(16, 185, 129, 0.08);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--sch-border);
+  box-shadow: var(--sch-shadow-sm);
   transition: box-shadow 0.2s ease;
 
   &:hover {
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+    box-shadow: var(--sch-shadow-md);
   }
 
   .section-header {
@@ -67,10 +71,10 @@
     margin-bottom: 1rem;
     font-weight: 600;
     font-size: 0.9rem;
-    color: #374151;
+    color: var(--sch-text-primary);
 
     i {
-      color: #059669;
+      color: var(--sch-primary);
       font-size: 0.85rem;
     }
   }
@@ -79,48 +83,77 @@
 .form-label {
   font-weight: 500;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--sch-text-secondary);
   margin-bottom: 0.25rem;
 }
 
 .form-control, .form-select {
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  background-color: var(--sch-input-bg);
+  border: 1px solid var(--sch-input-border);
+  color: var(--sch-text-primary);
   font-size: 0.9rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus {
-    border-color: #10b981;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+    border-color: var(--sch-input-focus-border);
+    box-shadow: var(--sch-input-focus-shadow);
+    background-color: var(--sch-input-bg);
+    color: var(--sch-text-primary);
+  }
+
+  &::placeholder {
+    color: var(--sch-text-muted);
   }
 }
 
 .form-check-input:checked {
-  background-color: #059669;
-  border-color: #059669;
+  background-color: var(--sch-primary);
+  border-color: var(--sch-primary);
+}
+
+.form-check-label {
+  color: var(--sch-text-primary);
+}
+
+.input-group-text {
+  background-color: var(--sch-bg-elevated);
+  border-color: var(--sch-input-border);
+  color: var(--sch-text-secondary);
 }
 
 .committee-footer {
   padding: 1rem 1.5rem;
-  background: white;
-  border-top: 1px solid #f0f5f0;
+  background: var(--sch-bg-card);
+  border-top: 1px solid var(--sch-border);
   border-radius: 0 0 0.5rem 0.5rem;
 
   .btn-schedule {
-    background: linear-gradient(135deg, #059669, #10b981);
+    background: var(--sch-gradient-primary);
     border: none;
     padding: 0.5rem 1.5rem;
     font-weight: 600;
     border-radius: 8px;
+    box-shadow: var(--sch-btn-shadow);
     transition: transform 0.15s, box-shadow 0.15s;
 
     &:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+      box-shadow: var(--sch-btn-shadow-hover);
     }
 
     &:disabled {
       opacity: 0.6;
+    }
+  }
+
+  .btn-outline-secondary {
+    color: var(--sch-text-secondary);
+    border-color: var(--sch-border);
+
+    &:hover {
+      background-color: var(--sch-bg-hover);
+      color: var(--sch-text-primary);
     }
   }
 }
