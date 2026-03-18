@@ -81,6 +81,14 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   selectedCalendarIds: Set<number> = new Set();
   private readonly CALENDAR_SELECTION_KEY = 'scheduler-selected-calendars';
 
+  //
+  // Last known view range — used when loadEvents() is called without explicit range
+  //
+  private lastRangeStart: string | null = null;
+  private lastRangeEnd: string | null = null;
+  private lastUsedCalendarIds: number[] | undefined = undefined;
+  private hasLoadedOnce = false;
+
 
   //
   // Availability Overlay state
@@ -297,6 +305,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     }
 
     this.saveCalendarSelection();
+    this.lastUsedCalendarIds = this.selectedCalendarIds.size > 0 ? Array.from(this.selectedCalendarIds) : undefined;
     this.loadEvents();
   }
 
@@ -326,6 +335,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   selectAllCalendars(): void {
     this.selectedCalendarIds = new Set(this.availableCalendars.map(c => Number(c.id)));
     this.saveCalendarSelection();
+    this.lastUsedCalendarIds = Array.from(this.selectedCalendarIds);
     this.loadEvents();
   }
 
@@ -336,6 +346,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   clearCalendarSelection(): void {
     this.selectedCalendarIds.clear();
     this.saveCalendarSelection();
+    this.lastUsedCalendarIds = undefined;
     this.loadEvents();
   }
 
@@ -350,6 +361,8 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   handleDatesSet(dateInfo: any): void {
     this.currentTitle = dateInfo.view.title;
     this.currentView = dateInfo.view.type;
+    this.lastRangeStart = dateInfo.startStr;
+    this.lastRangeEnd = dateInfo.endStr;
     this.loadEvents(dateInfo.startStr, dateInfo.endStr);
   }
 
@@ -357,28 +370,68 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   private loadEvents(rangeStart?: string, rangeEnd?: string): void {
 
     //
-    // If no range provided, use a default window
+    // Track whether this is a reload (no-arg call after save) vs. an explicit load
+    // (from handleDatesSet or sidebar toggle). Must check BEFORE the range fallback.
+    //
+    const isReload = (rangeStart == null && rangeEnd == null);
+
+
+    //
+    // Clear service-level shareReplay caches to ensure fresh HTTP calls.
+    // Without this, forkJoin's observables may return stale cached data
+    // after creating, editing, or deleting events.
+    //
+    this.scheduledEventService.ClearAllCaches();
+    this.dependencyService.ClearAllCaches();
+
+    //
+    // Clear hover cache so popover data is fresh after mutations
+    //
+    this.assignmentsCache.clear();
+
+    //
+    // If no range provided, use the last known view range (or fallback to 9-month window)
     //
     if (rangeStart == null || rangeEnd == null) {
-      const today = new Date();
-      const defaultStart = new Date(today.getFullYear(), today.getMonth() - 3, 1);
-      const defaultEnd = new Date(today.getFullYear(), today.getMonth() + 6, 0);
+      if (this.lastRangeStart && this.lastRangeEnd) {
+        rangeStart = this.lastRangeStart;
+        rangeEnd = this.lastRangeEnd;
+      } else {
+        const today = new Date();
+        const defaultStart = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+        const defaultEnd = new Date(today.getFullYear(), today.getMonth() + 6, 0);
 
-      rangeStart = defaultStart.toISOString();
-      rangeEnd = defaultEnd.toISOString();
+        rangeStart = defaultStart.toISOString();
+        rangeEnd = defaultEnd.toISOString();
+      }
     }
 
     //
-    // Build calendarIds filter from sidebar selection
+    // Determine calendarIds filter.
+    // On explicit loads (handleDatesSet, sidebar toggle) use the current selection.
+    // On reloads (no-arg calls after modal save), reuse whatever was used last
+    // so the view stays consistent.
     //
-    const calendarIds = this.selectedCalendarIds.size > 0
-      ? Array.from(this.selectedCalendarIds)
-      : undefined;
+    let calendarIds: number[] | undefined;
+    if (!isReload) {
+      // Explicit call with range → recalculate from current sidebar selection
+      calendarIds = this.selectedCalendarIds.size > 0
+        ? Array.from(this.selectedCalendarIds)
+        : undefined;
+      this.lastUsedCalendarIds = calendarIds;
+      this.hasLoadedOnce = true;
+    } else {
+      // No-arg reload (after save) → reuse last successful params
+      calendarIds = this.hasLoadedOnce ? this.lastUsedCalendarIds : undefined;
+    }
+
 
     forkJoin({
       events: this.schedulerHelperService.GetCalendarEvents(rangeStart, rangeEnd, calendarIds),
       deps: this.dependencyService.GetScheduledEventDependencyList({ active: true, deleted: false })
-    }).subscribe(({ events, deps }) => {
+    }).subscribe({
+      next: ({ events, deps }) => {
+
 
       //
       // Store for availability overlay use
@@ -429,11 +482,19 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       //
       // Merge in availability background events if toggle is active
       //
-      if (this.showAvailability && this.cachedAvailabilityEvents.length > 0) {
-        this.calendarOptions.events = [...mappedEvents, ...this.cachedAvailabilityEvents];
-      } else {
-        this.calendarOptions.events = mappedEvents;
-      }
+      const finalEvents = this.showAvailability && this.cachedAvailabilityEvents.length > 0
+        ? [...mappedEvents, ...this.cachedAvailabilityEvents]
+        : mappedEvents;
+
+
+      //
+      // IMPORTANT: Spread to create a new object reference.
+      // FullCalendar's Angular wrapper uses @Input() change detection,
+      // which only fires when the object reference changes — simply
+      // mutating calendarOptions.events won't trigger a re-render.
+      //
+      this.calendarOptions = { ...this.calendarOptions, events: finalEvents };
+
 
       //
       // Load availability overlay if toggle is active and not yet cached
@@ -441,6 +502,10 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       if (this.showAvailability && this.cachedBlackouts.length === 0) {
         this.loadAvailabilityOverlay(rangeStart!, rangeEnd!);
       }
+    },
+    error: (err) => {
+      console.error('[loadEvents] forkJoin ERROR', err);
+    }
     });
   }
 
@@ -674,10 +739,10 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
         this.conflictEventIds = this.conflictDetectionService.getConflictEventIds(this.conflicts);
         this.enrichConflictNames();
 
-        // Merge background events with regular events
+        // Merge background events with regular events (new reference for change detection)
         const currentEvents = (this.calendarOptions.events as any[]) || [];
         const regularEvents = currentEvents.filter((e: any) => !e.extendedProps?.isOverlay);
-        this.calendarOptions.events = [...regularEvents, ...backgroundEvents];
+        this.calendarOptions = { ...this.calendarOptions, events: [...regularEvents, ...backgroundEvents] };
       });
     });
   }
@@ -952,7 +1017,11 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
 
   private openEditModal(eventData: ScheduledEventData): void {
-    const modalRef = this.modalService.open(EventAddEditModalComponent, { size: 'lg' });
+    const modalRef = this.modalService.open(EventAddEditModalComponent, {
+      size: 'xl',
+      backdrop: 'static',
+      keyboard: false
+    });
     modalRef.componentInstance.event = eventData;
 
     modalRef.result.then((updated) => {
