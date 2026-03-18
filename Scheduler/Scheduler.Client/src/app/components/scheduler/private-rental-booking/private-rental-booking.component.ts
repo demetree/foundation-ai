@@ -8,6 +8,7 @@
  *   - Auto-populates fields from the selected EventType
  *   - Handles payment, deposit, rental agreement, bar service
  *   - Client special requests free-form text
+ *   - Facility resource selection (auto-selected when only one)
  */
 
 import { Component, OnInit, Input } from '@angular/core';
@@ -20,6 +21,8 @@ import { EventStatusService, EventStatusData } from '../../../scheduler-data-ser
 import { CalendarService, CalendarData } from '../../../scheduler-data-services/calendar.service';
 import { EventCalendarService, EventCalendarSubmitData } from '../../../scheduler-data-services/event-calendar.service';
 import { EventChargeService, EventChargeData } from '../../../scheduler-data-services/event-charge.service';
+import { ResourceTypeService, ResourceTypeData } from '../../../scheduler-data-services/resource-type.service';
+import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
 @Component({
@@ -47,6 +50,11 @@ export class PrivateRentalBookingComponent implements OnInit {
   calendars: CalendarData[] = [];
   selectedEventType: EventTypeData | null = null;
 
+  // Facility resource picker
+  facilityResources: ResourceData[] = [];
+  selectedFacilityId: number | bigint | null = null;
+  facilityLoadWarning: string | null = null;  // Warning shown when no facility resources exist
+
   // UI toggles driven by EventType flags (with per-event overrides)
   needsBarService = false;
   rentalAgreementSigned = false;
@@ -62,6 +70,8 @@ export class PrivateRentalBookingComponent implements OnInit {
     private calendarService: CalendarService,
     private eventCalendarService: EventCalendarService,
     private eventChargeService: EventChargeService,
+    private resourceTypeService: ResourceTypeService,
+    private resourceService: ResourceService,
     private alertService: AlertService
   ) {}
 
@@ -158,6 +168,51 @@ export class PrivateRentalBookingComponent implements OnInit {
     } catch (err) {
       console.error('Failed to load calendars', err);
     }
+
+    //
+    // Load facility resources — find the "Facility" ResourceType, then get its resources
+    //
+    await this.loadFacilityResources();
+  }
+
+
+  /**
+   * Finds the "Facility" resource type and loads active resources of that type.
+   * Auto-selects if there is exactly one. Shows a warning if there are none.
+   */
+  private async loadFacilityResources(): Promise<void> {
+    try {
+      const resourceTypes = await lastValueFrom(
+        this.resourceTypeService.GetResourceTypeList({ active: true, deleted: false })
+      );
+
+      const facilityType = resourceTypes.find(rt =>
+        rt.name.toLowerCase().includes('facility')
+      );
+
+      if (!facilityType) {
+        this.facilityLoadWarning = 'No "Facility" resource type is configured. The booking will be created without a facility assignment.';
+        return;
+      }
+
+      const resources = await lastValueFrom(
+        this.resourceService.GetResourceList({ resourceTypeId: facilityType.id, active: true, deleted: false })
+      );
+
+      this.facilityResources = resources;
+
+      if (resources.length === 0) {
+        this.facilityLoadWarning = 'No facility resources are configured. The booking will be created without a facility assignment.';
+      } else if (resources.length === 1) {
+        // Auto-select the only facility
+        this.selectedFacilityId = resources[0].id;
+      }
+      // If multiple, the user picks from the dropdown
+
+    } catch (err) {
+      console.error('Failed to load facility resources', err);
+      this.facilityLoadWarning = 'Could not load facility resources.';
+    }
   }
 
 
@@ -249,6 +304,7 @@ export class PrivateRentalBookingComponent implements OnInit {
       eventSubmit.partySize = form.partySize || null;
       eventSubmit.notes = form.specialRequests || null;
       eventSubmit.attributes = Object.keys(attributes).length > 0 ? JSON.stringify(attributes) : null;
+      eventSubmit.resourceId = this.selectedFacilityId as number || null;
       eventSubmit.active = true;
       eventSubmit.deleted = false;
 

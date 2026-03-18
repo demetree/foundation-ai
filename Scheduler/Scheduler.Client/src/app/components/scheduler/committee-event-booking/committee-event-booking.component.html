@@ -76,6 +76,42 @@
       </div>
     </div>
 
+    <!-- ── Facility ── -->
+    <!-- Warning: no facility resources configured -->
+    <div class="alert alert-warning d-flex align-items-center mb-3" role="alert" *ngIf="facilityLoadWarning">
+      <i class="fa-solid fa-triangle-exclamation me-2"></i>
+      <small>{{ facilityLoadWarning }}</small>
+    </div>
+
+    <!-- Facility picker: only shown when there are 2+ facility resources -->
+    <div class="booking-section" *ngIf="facilityResources.length > 1">
+      <div class="section-header">
+        <i class="fa-solid fa-building"></i>
+        <span>Facility</span>
+      </div>
+
+      <select class="form-select" [(ngModel)]="selectedFacilityId" [ngModelOptions]="{standalone: true}"
+        id="committeeFacilitySelect">
+        <option [ngValue]="null" disabled>Select facility...</option>
+        <option *ngFor="let r of facilityResources" [ngValue]="r.id">
+          {{ r.name }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Auto-selected facility badge (one facility, read-only) -->
+    <div class="booking-section" *ngIf="facilityResources.length === 1">
+      <div class="section-header">
+        <i class="fa-solid fa-building"></i>
+        <span>Facility</span>
+      </div>
+      <div class="d-flex align-items-center">
+        <i class="fa-solid fa-check-circle text-success me-2"></i>
+        <span>{{ facilityResources[0].name }}</span>
+        <span class="badge bg-secondary ms-2">Auto-selected</span>
+      </div>
+    </div>
+
     <!-- ── Bar Service Toggle ── -->
     <div class="booking-section">
       <div class="section-header">
