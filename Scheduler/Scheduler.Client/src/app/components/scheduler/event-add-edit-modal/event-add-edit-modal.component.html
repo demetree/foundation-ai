@@ -11,8 +11,19 @@
       <small class="header-subtitle" *ngIf="isEditMode && event">{{ event.name }}</small>
     </div>
   </div>
-  <button type="button" class="btn-close btn-close-white" aria-label="Close"
-    (click)="activeModal.dismiss('cancel')"></button>
+  <div class="d-flex align-items-center gap-2">
+    <!-- Simple / Advanced Toggle -->
+    <button type="button" class="btn btn-sm border-0 text-white-50 d-flex align-items-center gap-1"
+      (click)="toggleEventEditorMode()" style="font-size: 0.75rem; opacity: 0.8;"
+      [ngbTooltip]="isSimpleMode ? 'Switch to Advanced mode for more options' : 'Switch to Simple mode'"
+      placement="bottom">
+      <i class="fa-solid" [ngClass]="isSimpleMode ? 'fa-toggle-off' : 'fa-toggle-on'"
+         [style.color]="isSimpleMode ? '#9ca3af' : '#0dcaf0'" style="font-size: 1rem;"></i>
+      <span>{{ isSimpleMode ? 'Simple' : 'Advanced' }}</span>
+    </button>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close"
+      (click)="activeModal.dismiss('cancel')"></button>
+  </div>
 </div>
 
 <div class="modal-body event-modal-body">

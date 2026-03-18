@@ -242,6 +242,15 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Toggles the event editor between simple and advanced mode.
+   * This sets a component-level override independent of the global mode.
+   */
+  toggleEventEditorMode(): void {
+    const newMode = this.isSimpleMode ? 'advanced' : 'simple';
+    this.schedulerModeService.setComponentOverride('eventEditor', newMode);
+  }
+
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }

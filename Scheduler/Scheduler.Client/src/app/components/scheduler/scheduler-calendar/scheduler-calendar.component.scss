@@ -179,9 +179,9 @@ $accent-secondary: #764ba2;
         border-color: var(--sch-border) !important;
     }
 
-    // Column header (day names)
+    // Column header (day names) — weekly/daily/month views
     .fc-col-header-cell {
-        background: var(--sch-table-header-bg);
+        background: var(--sch-table-header-bg) !important;
         border-bottom: 2px solid var(--sch-border) !important;
         padding: 0.6rem 0;
 
@@ -195,13 +195,31 @@ $accent-secondary: #764ba2;
         }
     }
 
+    // Header row container (timegrid section header)
+    .fc-scrollgrid-section-header {
+        > td,
+        > th {
+            background: var(--sch-table-header-bg) !important;
+        }
+    }
+
+    // Axis cell (top-left corner in timegrid, and time axis column)
+    .fc-timegrid-axis {
+        background: var(--sch-table-header-bg) !important;
+    }
+
+    // All-day section header
+    .fc-daygrid-body {
+        background: var(--sch-bg-card) !important;
+    }
+
     // Today column highlight
     .fc-day-today {
         background: rgba($accent-primary, 0.03) !important;
     }
 
     .fc-col-header-cell.fc-day-today {
-        background: rgba($accent-primary, 0.08) !important;
+        background: rgba($accent-primary, 0.15) !important;
 
         .fc-col-header-cell-cushion {
             color: $accent-primary;
