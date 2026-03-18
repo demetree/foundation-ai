@@ -1,0 +1,256 @@
+/* event-timeline-panel.component.scss */
+/* Uses --sch-* theme tokens for consistency across all themes */
+
+.timeline-panel {
+  padding: 1rem;
+}
+
+
+/* ── Summary Badges ────────────────────────────────────────────────────── */
+
+.summary-row {
+  .summary-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    background: var(--sch-bg-offset, #f8f9fa);
+    border: 1px solid var(--sch-input-border, #dee2e6);
+    font-size: 0.85rem;
+
+    i { opacity: 0.5; }
+  }
+}
+
+
+/* ── Chart Container ──────────────────────────────────────────────────── */
+
+.chart-container {
+  height: 120px;
+  padding: 0.75rem;
+  border-radius: 10px;
+  background: var(--sch-bg-offset, #f8f9fa);
+  border: 1px solid var(--sch-input-border, #dee2e6);
+}
+
+
+/* ── Activity Table ───────────────────────────────────────────────────── */
+
+.activity-table-container {
+  border-radius: 10px;
+  border: 1px solid var(--sch-input-border, #dee2e6);
+  overflow: hidden;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  thead {
+    th {
+      background: var(--sch-bg-offset, #f8f9fa);
+      color: var(--sch-text-secondary, #6c757d);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid var(--sch-input-border, #dee2e6);
+    }
+  }
+
+  .entry-row {
+    transition: background 0.15s ease;
+    border-bottom: 1px solid var(--sch-input-border, rgba(222, 226, 230, 0.5));
+
+    &.clickable {
+      cursor: pointer;
+
+      &:hover {
+        background: var(--sch-bg-offset, #f8f9fa);
+      }
+    }
+
+    &.expanded {
+      background: var(--sch-bg-offset, #f8f9fa);
+    }
+
+    td {
+      padding: 0.6rem 0.75rem;
+      vertical-align: middle;
+    }
+  }
+
+  .diff-row {
+    td {
+      padding: 0;
+      background: var(--sch-bg-card, #fff);
+    }
+  }
+}
+
+
+/* Column widths */
+.col-when { width: 120px; }
+.col-who { width: 150px; }
+.col-entity { width: 140px; }
+.col-action { width: 100px; }
+.col-changes { min-width: 120px; }
+
+
+/* ── Entity Badge ─────────────────────────────────────────────────────── */
+
+.entity-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: color-mix(in srgb, var(--entity-color, #6366f1) 12%, transparent);
+  color: var(--entity-color, #6366f1);
+}
+
+
+/* ── Action Badge ─────────────────────────────────────────────────────── */
+
+.action-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  &.created {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+
+  &.updated {
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+  }
+}
+
+
+/* ── Relative Time ────────────────────────────────────────────────────── */
+
+.time-relative {
+  color: var(--sch-text-secondary, #6c757d);
+  font-size: 0.82rem;
+  cursor: help;
+}
+
+
+/* ── User Name ────────────────────────────────────────────────────────── */
+
+.user-name {
+  font-size: 0.82rem;
+  color: var(--sch-text-primary, #212529);
+}
+
+
+/* ── Diff Count / Expand Icon ─────────────────────────────────────────── */
+
+.diff-count {
+  color: var(--sch-text-primary, #212529);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.expand-icon {
+  font-size: 0.65rem;
+  transition: transform 0.2s ease;
+
+  &.rotated {
+    transform: rotate(180deg);
+  }
+}
+
+
+/* ── Diff Container ───────────────────────────────────────────────────── */
+
+.diff-container {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--sch-input-border, #dee2e6);
+  animation: slideDown 0.2s ease;
+}
+
+.diff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+
+  thead tr th {
+    font-weight: 600;
+    color: var(--sch-text-secondary, #6c757d);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    padding: 0.3rem 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--sch-input-border, #dee2e6);
+  }
+
+  tbody tr td {
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid var(--sch-input-border, rgba(222, 226, 230, 0.4));
+  }
+
+  .diff-field {
+    font-weight: 500;
+    color: var(--sch-text-primary, #212529);
+    width: 180px;
+  }
+
+  .diff-arrow {
+    width: 30px;
+    text-align: center;
+    font-size: 0.7rem;
+  }
+
+  .diff-value {
+    font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+    font-size: 0.78rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    word-break: break-word;
+
+    &.removed {
+      background: rgba(220, 53, 69, 0.08);
+      color: #dc3545;
+      text-decoration: line-through;
+    }
+
+    &.added {
+      background: rgba(25, 135, 84, 0.08);
+      color: #198754;
+    }
+  }
+}
+
+
+/* ── Empty State ──────────────────────────────────────────────────────── */
+
+.empty-state i {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+
+/* ── Animation ────────────────────────────────────────────────────────── */
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+    transform: translateY(0);
+  }
+}

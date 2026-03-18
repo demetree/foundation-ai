@@ -22,6 +22,7 @@ import { RagProviderResolver } from './services/resolvers/rag-provider.resolver'
 import { GeminiGroundingProvider } from './services/providers/gemini-grounding.provider';
 import { IntelligenceModalComponent } from './components/shared/intelligence-modal/intelligence-modal.component';
 import { ChangeHistoryViewerComponent } from './components/shared/change-history-viewer/change-history-viewer.component';
+import { EventTimelinePanelComponent } from './components/scheduler/event-timeline-panel/event-timeline-panel.component';
 import { LocationMapComponent } from './components/shared/location-map/location-map.component';
 
 import { AppRoutingModule } from './app-routing.module';
@@ -1209,6 +1210,8 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     DynamicFieldRendererComponent,
     IntelligenceModalComponent,
     ChangeHistoryViewerComponent,
+    EventDocumentPanelComponent,
+    EventTimelinePanelComponent,
     LocationMapComponent,
 
     EqualValidator,
@@ -2157,6 +2160,8 @@ VolunteerStatusTableComponent,
     OverviewCoordinatorTabComponent,
     IntelligenceModalComponent,
     ChangeHistoryViewerComponent,
+    EventDocumentPanelComponent,
+    EventTimelinePanelComponent,
     LocationMapComponent,
     ConfirmationDialogComponent,
     InputDialogComponent,

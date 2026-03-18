@@ -1,0 +1,151 @@
+<!-- event-timeline-panel.component.html -->
+
+<div class="timeline-panel">
+
+  <!-- ── Loading ── -->
+  <div class="text-center py-5" *ngIf="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading timeline...</span>
+    </div>
+    <p class="text-muted mt-2 mb-0">Building event timeline...</p>
+  </div>
+
+  <!-- ── Empty State ── -->
+  <div class="empty-state text-center py-5" *ngIf="!loading && timelineEntries.length === 0">
+    <i class="bi bi-clock-history display-4 text-muted opacity-25"></i>
+    <p class="text-muted mt-2 mb-0">No change history available for this event.</p>
+  </div>
+
+  <!-- ── Content ── -->
+  <div *ngIf="!loading && timelineEntries.length > 0">
+
+    <!-- ── Summary Badges ── -->
+    <div class="summary-row d-flex flex-wrap gap-3 mb-4">
+      <div class="summary-badge">
+        <i class="bi bi-activity me-1"></i>
+        <span class="fw-semibold">{{ totalChanges }}</span>
+        <span class="text-muted ms-1">change{{ totalChanges !== 1 ? 's' : '' }}</span>
+      </div>
+      <div class="summary-badge">
+        <i class="bi bi-people me-1"></i>
+        <span class="fw-semibold">{{ uniqueContributors }}</span>
+        <span class="text-muted ms-1">contributor{{ uniqueContributors !== 1 ? 's' : '' }}</span>
+      </div>
+      <div class="summary-badge" *ngIf="dateRange">
+        <i class="bi bi-calendar-range me-1"></i>
+        <span class="text-muted">{{ dateRange }}</span>
+      </div>
+    </div>
+
+
+    <!-- ── Timeline Chart ── -->
+    <div class="chart-container mb-4">
+      <canvas baseChart
+        [type]="chartType"
+        [data]="chartData"
+        [options]="chartOptions">
+      </canvas>
+    </div>
+
+
+    <!-- ── Activity Table ── -->
+    <div class="activity-table-container">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th class="col-when">When</th>
+            <th class="col-who">Who</th>
+            <th class="col-entity">Entity</th>
+            <th class="col-action">Action</th>
+            <th class="col-changes">Changes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let entry of timelineEntries; let i = index; trackBy: trackByIndex">
+            <!-- Main Row -->
+            <tr class="entry-row" [class.expanded]="expandedIndex === i"
+              (click)="entry.diffs.length > 0 ? toggleExpand(i) : null"
+              [class.clickable]="entry.diffs.length > 0">
+
+              <!-- When -->
+              <td class="col-when">
+                <span class="time-relative" [title]="entry.timestamp | date:'yyyy-MM-dd HH:mm:ss'">
+                  {{ getRelativeTime(entry.timestamp) }}
+                </span>
+              </td>
+
+              <!-- Who -->
+              <td class="col-who">
+                <span class="user-name">
+                  <i class="bi bi-person-circle me-1 text-muted"></i>{{ entry.userName }}
+                </span>
+              </td>
+
+              <!-- Entity -->
+              <td class="col-entity">
+                <span class="entity-badge" [style.--entity-color]="entry.entityTypeColor">
+                  <i class="bi {{ entry.entityTypeIcon }} me-1"></i>{{ entry.entityType }}
+                </span>
+              </td>
+
+              <!-- Action -->
+              <td class="col-action">
+                <span class="action-badge" [class.created]="entry.action === 'Created'"
+                  [class.updated]="entry.action === 'Updated'">
+                  {{ entry.action }}
+                </span>
+              </td>
+
+              <!-- Changes -->
+              <td class="col-changes">
+                <span *ngIf="entry.action === 'Created'" class="text-muted small">
+                  Initial creation
+                </span>
+                <span *ngIf="entry.action === 'Updated' && entry.diffs.length > 0" class="diff-count">
+                  {{ entry.diffs.length }} field{{ entry.diffs.length !== 1 ? 's' : '' }}
+                  <i class="bi bi-chevron-down expand-icon ms-1" [class.rotated]="expandedIndex === i"></i>
+                </span>
+                <span *ngIf="entry.action === 'Updated' && entry.diffs.length === 0" class="text-muted small">
+                  No field changes detected
+                </span>
+              </td>
+            </tr>
+
+            <!-- Expanded Diff Row -->
+            <tr class="diff-row" *ngIf="expandedIndex === i && entry.diffs.length > 0">
+              <td colspan="5">
+                <div class="diff-container">
+                  <table class="diff-table">
+                    <thead>
+                      <tr>
+                        <th>Field</th>
+                        <th>Previous</th>
+                        <th></th>
+                        <th>Updated</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let diff of entry.diffs">
+                        <td class="diff-field">{{ diff.label }}</td>
+                        <td class="diff-old">
+                          <span class="diff-value removed">{{ formatValue(diff.oldValue) }}</span>
+                        </td>
+                        <td class="diff-arrow">
+                          <i class="bi bi-arrow-right text-muted"></i>
+                        </td>
+                        <td class="diff-new">
+                          <span class="diff-value added">{{ formatValue(diff.newValue) }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
