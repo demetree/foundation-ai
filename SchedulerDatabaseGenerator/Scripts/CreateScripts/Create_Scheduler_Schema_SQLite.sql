@@ -80,6 +80,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "ChargeStatus"
 -- DROP TABLE "ScheduledEventChangeHistory"
 -- DROP TABLE "ScheduledEvent"
+-- DROP TABLE "EventTypeChangeHistory"
+-- DROP TABLE "EventType"
 -- DROP TABLE "ScheduledEventTemplateQualificationRequirementChangeHistory"
 -- DROP TABLE "ScheduledEventTemplateQualificationRequirement"
 -- DROP TABLE "ScheduledEventTemplateChargeChangeHistory"
@@ -252,6 +254,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "ChargeStatus" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEvent" DISABLE
+-- ALTER INDEX ALL ON "EventTypeChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "EventType" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirementChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirement" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventTemplateChargeChangeHistory" DISABLE
@@ -424,6 +428,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "ChargeStatus" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEvent" REBUILD
+-- ALTER INDEX ALL ON "EventTypeChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "EventType" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirementChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirement" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventTemplateChargeChangeHistory" REBUILD
@@ -4776,6 +4782,103 @@ CREATE INDEX "I_lfctnRqurmntChngHstry_tnntGud_schduldvntTmpltQulfctnRqurmntd" ON
 
 
 /*
+====================================================================================================
+ EVENT TYPE
+ Tenant-configurable categories of scheduled events that drive the booking workflow.
+ Each event type has boolean flags indicating what is required (rental agreement,
+ external contact info, payment, deposit, bar service) and what is allowed (ticket sales).
+ The isInternalEvent flag distinguishes committee-run events from private rentals.
+
+ DESIGN NOTE: defaultPrice and defaultChargeTypeId enable auto-creation of EventCharge
+ records when a new event is created with this type, streamlining the booking flow for
+ facility rental scenarios.
+ =====================================================================================================
+*/
+CREATE TABLE "EventType"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL COLLATE NOCASE,
+	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
+	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display and calendar event color-coding.
+	"iconId" INTEGER NULL,		-- Icon to use for UI display.
+	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"requiresRentalAgreement" BIT NOT NULL DEFAULT 0,		-- Whether events of this type require a signed rental agreement.
+	"requiresExternalContact" BIT NOT NULL DEFAULT 0,		-- Whether events of this type require external contact info (name, email, phone).
+	"requiresPayment" BIT NOT NULL DEFAULT 0,		-- Whether events of this type require payment tracking.
+	"requiresDeposit" BIT NOT NULL DEFAULT 0,		-- Whether events of this type require a deposit (uses EventCharge.isDeposit).
+	"requiresBarService" BIT NOT NULL DEFAULT 0,		-- Whether events of this type default to needing bar service (alcohol + bartender staffing). Can be overridden per event.
+	"allowsTicketSales" BIT NOT NULL DEFAULT 0,		-- Whether events of this type support ticket sales tracking.
+	"isInternalEvent" BIT NOT NULL DEFAULT 0,		-- True for committee-run events; false for private rentals. Drives which booking flow is shown in simple mode.
+	"defaultPrice" NUMERIC NULL,		-- Default rental price for events of this type. Used to auto-populate charges in the booking flow.
+	"chargeTypeId" INTEGER NULL,		-- Default charge type for auto-created charges.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("iconId") REFERENCES "Icon"("id"),		-- Foreign key to the Icon table.
+	FOREIGN KEY ("chargeTypeId") REFERENCES "ChargeType"("id"),		-- Foreign key to the ChargeType table.
+	UNIQUE ( "tenantGuid", "name") 		-- Uniqueness enforced on the EventType table's tenantGuid and name fields.
+);
+-- Index on the EventType table's tenantGuid field.
+CREATE INDEX "I_EventType_tenantGuid" ON "EventType" ("tenantGuid")
+;
+
+-- Index on the EventType table's tenantGuid,name fields.
+CREATE INDEX "I_EventType_tenantGuid_name" ON "EventType" ("tenantGuid", "name")
+;
+
+-- Index on the EventType table's tenantGuid,iconId fields.
+CREATE INDEX "I_EventType_tenantGuid_iconId" ON "EventType" ("tenantGuid", "iconId")
+;
+
+-- Index on the EventType table's tenantGuid,chargeTypeId fields.
+CREATE INDEX "I_EventType_tenantGuid_chargeTypeId" ON "EventType" ("tenantGuid", "chargeTypeId")
+;
+
+-- Index on the EventType table's tenantGuid,active fields.
+CREATE INDEX "I_EventType_tenantGuid_active" ON "EventType" ("tenantGuid", "active")
+;
+
+-- Index on the EventType table's tenantGuid,deleted fields.
+CREATE INDEX "I_EventType_tenantGuid_deleted" ON "EventType" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the EventType table.
+CREATE TABLE "EventTypeChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"eventTypeId" INTEGER NOT NULL,		-- Link to the EventType table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("eventTypeId") REFERENCES "EventType"("id")		-- Foreign key to the EventType table.
+);
+-- Index on the EventTypeChangeHistory table's tenantGuid field.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid" ON "EventTypeChangeHistory" ("tenantGuid")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_versionNumber" ON "EventTypeChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_timeStamp" ON "EventTypeChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_userId" ON "EventTypeChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,eventTypeId fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_eventTypeId" ON "EventTypeChangeHistory" ("tenantGuid", "eventTypeId", "versionNumber", "timeStamp", "userId")
+;
+
+
+/*
 Core scheduling entity – any planned activity with a defined time range.  This manages recurrences with the 'Detachment Model'
 
 How it works:
@@ -4810,6 +4913,7 @@ CREATE TABLE "ScheduledEvent"
 	"crewId" INTEGER NULL,		-- Optional primary/lead crew for the event
 	"priorityId" INTEGER NULL,		-- Optional priority
 	"bookingSourceTypeId" INTEGER NULL,		-- Optional booking source for reservation type workflows.
+	"eventTypeId" INTEGER NULL,		-- Event type category — drives UI behavior (rental vs committee event flow, required fields, default pricing).
 	"partySize" INTEGER NULL,		-- Optional for use when running as a reservation system
 	"bookingContactName" VARCHAR(250) NULL COLLATE NOCASE,		-- Name of the person booking (e.g., hall renter). Supports quick data entry without creating a full Contact.
 	"bookingContactEmail" VARCHAR(250) NULL COLLATE NOCASE,		-- Email of the person booking.
@@ -4836,6 +4940,7 @@ CREATE TABLE "ScheduledEvent"
 	FOREIGN KEY ("crewId") REFERENCES "Crew"("id"),		-- Foreign key to the Crew table.
 	FOREIGN KEY ("priorityId") REFERENCES "Priority"("id"),		-- Foreign key to the Priority table.
 	FOREIGN KEY ("bookingSourceTypeId") REFERENCES "BookingSourceType"("id"),		-- Foreign key to the BookingSourceType table.
+	FOREIGN KEY ("eventTypeId") REFERENCES "EventType"("id"),		-- Foreign key to the EventType table.
 	UNIQUE ( "tenantGuid", "name", "startDateTime") 		-- Uniqueness enforced on the ScheduledEvent table's tenantGuid and name and startDateTime fields.
 );
 -- Index on the ScheduledEvent table's tenantGuid field.
@@ -4904,6 +5009,10 @@ CREATE INDEX "I_ScheduledEvent_tenantGuid_priorityId" ON "ScheduledEvent" ("tena
 
 -- Index on the ScheduledEvent table's tenantGuid,bookingSourceTypeId fields.
 CREATE INDEX "I_ScheduledEvent_tenantGuid_bookingSourceTypeId" ON "ScheduledEvent" ("tenantGuid", "bookingSourceTypeId")
+;
+
+-- Index on the ScheduledEvent table's tenantGuid,eventTypeId fields.
+CREATE INDEX "I_ScheduledEvent_tenantGuid_eventTypeId" ON "ScheduledEvent" ("tenantGuid", "eventTypeId")
 ;
 
 -- Index on the ScheduledEvent table's tenantGuid,active fields.

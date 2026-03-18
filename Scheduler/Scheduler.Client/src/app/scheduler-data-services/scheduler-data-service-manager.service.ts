@@ -69,6 +69,8 @@ import {EventChargeChangeHistoryService} from  './event-charge-change-history.se
 import {EventResourceAssignmentService} from  './event-resource-assignment.service';
 import {EventResourceAssignmentChangeHistoryService} from  './event-resource-assignment-change-history.service';
 import {EventStatusService} from  './event-status.service';
+import {EventTypeService} from  './event-type.service';
+import {EventTypeChangeHistoryService} from  './event-type-change-history.service';
 import {FinancialCategoryService} from  './financial-category.service';
 import {FinancialCategoryChangeHistoryService} from  './financial-category-change-history.service';
 import {FinancialOfficeService} from  './financial-office.service';
@@ -246,6 +248,8 @@ export class SchedulerDataServiceManagerService  {
               , public eventResourceAssignmentService: EventResourceAssignmentService
               , public eventResourceAssignmentChangeHistoryService: EventResourceAssignmentChangeHistoryService
               , public eventStatusService: EventStatusService
+              , public eventTypeService: EventTypeService
+              , public eventTypeChangeHistoryService: EventTypeChangeHistoryService
               , public financialCategoryService: FinancialCategoryService
               , public financialCategoryChangeHistoryService: FinancialCategoryChangeHistoryService
               , public financialOfficeService: FinancialOfficeService
@@ -421,6 +425,8 @@ export class SchedulerDataServiceManagerService  {
         this.eventResourceAssignmentService.ClearAllCaches();
         this.eventResourceAssignmentChangeHistoryService.ClearAllCaches();
         this.eventStatusService.ClearAllCaches();
+        this.eventTypeService.ClearAllCaches();
+        this.eventTypeChangeHistoryService.ClearAllCaches();
         this.financialCategoryService.ClearAllCaches();
         this.financialCategoryChangeHistoryService.ClearAllCaches();
         this.financialOfficeService.ClearAllCaches();

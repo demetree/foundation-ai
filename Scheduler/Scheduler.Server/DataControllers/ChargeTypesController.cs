@@ -888,6 +888,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					chargeType.ChargeTypeChangeHistories = null;
 					chargeType.EventCharges = null;
 					chargeType.EventResourceAssignments = null;
+					chargeType.EventTypes = null;
 					chargeType.ScheduledEventTemplateCharges = null;
 					chargeType.currency = null;
 					chargeType.financialCategory = null;
@@ -1010,6 +1011,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.ChargeTypeChangeHistories = null;
 				cloneOfExisting.EventCharges = null;
 				cloneOfExisting.EventResourceAssignments = null;
+				cloneOfExisting.EventTypes = null;
 				cloneOfExisting.ScheduledEventTemplateCharges = null;
 				cloneOfExisting.currency = null;
 				cloneOfExisting.financialCategory = null;

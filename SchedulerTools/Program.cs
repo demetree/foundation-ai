@@ -1093,6 +1093,294 @@ namespace Foundation.Scheduler.CodeGeneration
 
 
                 //
+                // Facility Resource Type + Recreation Centre
+                //
+                ResourceType facilityResourceType = (from rt in context.ResourceTypes where rt.name == "Facility" && rt.tenantGuid == PHMCTenantGuid select rt).FirstOrDefault();
+                if (facilityResourceType == null)
+                {
+                    facilityResourceType = new ResourceType();
+
+                    facilityResourceType.name = "Facility";
+                    facilityResourceType.description = "Rentable facility or building";
+
+                    facilityResourceType.isBillable = true;
+                    facilityResourceType.sequence = 6;
+
+                    facilityResourceType.iconId = 56;           // Building / Office
+                    facilityResourceType.color = "#6b5ce7";
+
+                    facilityResourceType.tenantGuid = PHMCTenantGuid;
+                    facilityResourceType.objectGuid = Guid.NewGuid();
+                    facilityResourceType.active = true;
+                    facilityResourceType.deleted = false;
+
+                    context.ResourceTypes.Add(facilityResourceType);
+
+                    context.SaveChanges();
+                }
+
+
+                Resource recCentreResource = (from r in context.Resources where r.name == "Petty Harbour Recreation Centre" && r.tenantGuid == PHMCTenantGuid select r).FirstOrDefault();
+                if (recCentreResource == null)
+                {
+                    recCentreResource = new Resource();
+
+                    recCentreResource.name = "Petty Harbour Recreation Centre";
+                    recCentreResource.description = "The Petty Harbour Recreation Centre — community hall available for private rentals and committee events";
+                    recCentreResource.resourceTypeId = facilityResourceType.id;
+
+                    recCentreResource.timeZoneId = nlTimeZone.id;
+                    recCentreResource.tenantGuid = PHMCTenantGuid;
+                    recCentreResource.objectGuid = Guid.NewGuid();
+                    recCentreResource.active = true;
+                    recCentreResource.deleted = false;
+
+                    context.Resources.Add(recCentreResource);
+                    context.SaveChanges();
+                }
+
+
+                //
+                // Charge Type for Hall Rentals (needed by EventType seed data)
+                //
+                ChargeType hallRentalChargeType = context.ChargeTypes
+                    .FirstOrDefault(ct => ct.name == "Hall Rental" && ct.tenantGuid == PHMCTenantGuid);
+
+                if (hallRentalChargeType == null)
+                {
+                    hallRentalChargeType = new ChargeType();
+
+                    hallRentalChargeType.tenantGuid = PHMCTenantGuid;
+                    hallRentalChargeType.name = "Hall Rental";
+                    hallRentalChargeType.description = "Recreation centre hall rental fee";
+                    hallRentalChargeType.isRevenue = true;
+                    hallRentalChargeType.isTaxable = false;
+                    hallRentalChargeType.currencyId = canadianCurrency.id;
+                    hallRentalChargeType.sequence = 1;
+                    hallRentalChargeType.versionNumber = 0;
+                    hallRentalChargeType.objectGuid = Guid.NewGuid();
+                    hallRentalChargeType.active = true;
+                    hallRentalChargeType.deleted = false;
+
+                    context.ChargeTypes.Add(hallRentalChargeType);
+                    context.SaveChanges();
+                }
+
+                
+                //
+                // Event Types — drive booking flow behavior
+                //
+                // NOTE: This requires the EventType entity to exist (run code gen + rescaffold first)
+                //
+                EventType kidsBirthdayType = (from et in context.EventTypes where et.name == "Kids Birthday Party" && et.tenantGuid == PHMCTenantGuid select et).FirstOrDefault();
+                if (kidsBirthdayType == null)
+                {
+                    kidsBirthdayType = new EventType();
+
+                    kidsBirthdayType.name = "Kids Birthday Party";
+                    kidsBirthdayType.description = "Children's birthday party rental (morning or evening slot)";
+                    kidsBirthdayType.color = "#f472b6";
+
+                    kidsBirthdayType.requiresRentalAgreement = true;
+                    kidsBirthdayType.requiresExternalContact = true;
+                    kidsBirthdayType.requiresPayment = true;
+                    kidsBirthdayType.requiresDeposit = true;
+                    kidsBirthdayType.requiresBarService = false;
+                    kidsBirthdayType.allowsTicketSales = false;
+                    kidsBirthdayType.isInternalEvent = false;
+                    kidsBirthdayType.defaultPrice = 150.00m;
+                    kidsBirthdayType.chargeTypeId = hallRentalChargeType.id;
+
+                    kidsBirthdayType.sequence = 1;
+                    kidsBirthdayType.versionNumber = 0;
+                    kidsBirthdayType.tenantGuid = PHMCTenantGuid;
+                    kidsBirthdayType.objectGuid = Guid.NewGuid();
+                    kidsBirthdayType.active = true;
+                    kidsBirthdayType.deleted = false;
+
+                    context.EventTypes.Add(kidsBirthdayType);
+                }
+
+
+                EventType kidsBirthdayAfternoonType = (from et in context.EventTypes where et.name == "Kids Birthday Party (Afternoon)" && et.tenantGuid == PHMCTenantGuid select et).FirstOrDefault();
+                if (kidsBirthdayAfternoonType == null)
+                {
+                    kidsBirthdayAfternoonType = new EventType();
+
+                    kidsBirthdayAfternoonType.name = "Kids Birthday Party (Afternoon)";
+                    kidsBirthdayAfternoonType.description = "Children's birthday party rental (afternoon slot — higher rate)";
+                    kidsBirthdayAfternoonType.color = "#f9a8d4";
+
+                    kidsBirthdayAfternoonType.requiresRentalAgreement = true;
+                    kidsBirthdayAfternoonType.requiresExternalContact = true;
+                    kidsBirthdayAfternoonType.requiresPayment = true;
+                    kidsBirthdayAfternoonType.requiresDeposit = true;
+                    kidsBirthdayAfternoonType.requiresBarService = false;
+                    kidsBirthdayAfternoonType.allowsTicketSales = false;
+                    kidsBirthdayAfternoonType.isInternalEvent = false;
+                    kidsBirthdayAfternoonType.defaultPrice = 225.00m;
+                    kidsBirthdayAfternoonType.chargeTypeId = hallRentalChargeType.id;
+
+                    kidsBirthdayAfternoonType.sequence = 2;
+                    kidsBirthdayAfternoonType.versionNumber = 0;
+                    kidsBirthdayAfternoonType.tenantGuid = PHMCTenantGuid;
+                    kidsBirthdayAfternoonType.objectGuid = Guid.NewGuid();
+                    kidsBirthdayAfternoonType.active = true;
+                    kidsBirthdayAfternoonType.deleted = false;
+
+                    context.EventTypes.Add(kidsBirthdayAfternoonType);
+                }
+
+
+                EventType weddingType = (from et in context.EventTypes where et.name == "Wedding / Reception" && et.tenantGuid == PHMCTenantGuid select et).FirstOrDefault();
+                if (weddingType == null)
+                {
+                    weddingType = new EventType();
+
+                    weddingType.name = "Wedding / Reception";
+                    weddingType.description = "Wedding ceremony, reception, or both";
+                    weddingType.color = "#c084fc";
+
+                    weddingType.requiresRentalAgreement = true;
+                    weddingType.requiresExternalContact = true;
+                    weddingType.requiresPayment = true;
+                    weddingType.requiresDeposit = true;
+                    weddingType.requiresBarService = true;
+                    weddingType.allowsTicketSales = false;
+                    weddingType.isInternalEvent = false;
+                    weddingType.defaultPrice = 400.00m;
+                    weddingType.chargeTypeId = hallRentalChargeType.id;
+
+                    weddingType.sequence = 3;
+                    weddingType.versionNumber = 0;
+                    weddingType.tenantGuid = PHMCTenantGuid;
+                    weddingType.objectGuid = Guid.NewGuid();
+                    weddingType.active = true;
+                    weddingType.deleted = false;
+
+                    context.EventTypes.Add(weddingType);
+                }
+
+
+                EventType bridalShowerType = (from et in context.EventTypes where et.name == "Bridal Shower" && et.tenantGuid == PHMCTenantGuid select et).FirstOrDefault();
+                if (bridalShowerType == null)
+                {
+                    bridalShowerType = new EventType();
+
+                    bridalShowerType.name = "Bridal Shower";
+                    bridalShowerType.description = "Bridal shower event";
+                    bridalShowerType.color = "#a78bfa";
+
+                    bridalShowerType.requiresRentalAgreement = true;
+                    bridalShowerType.requiresExternalContact = true;
+                    bridalShowerType.requiresPayment = true;
+                    bridalShowerType.requiresDeposit = true;
+                    bridalShowerType.requiresBarService = false;
+                    bridalShowerType.allowsTicketSales = false;
+                    bridalShowerType.isInternalEvent = false;
+                    bridalShowerType.defaultPrice = 150.00m;
+                    bridalShowerType.chargeTypeId = hallRentalChargeType.id;
+
+                    bridalShowerType.sequence = 4;
+                    bridalShowerType.versionNumber = 0;
+                    bridalShowerType.tenantGuid = PHMCTenantGuid;
+                    bridalShowerType.objectGuid = Guid.NewGuid();
+                    bridalShowerType.active = true;
+                    bridalShowerType.deleted = false;
+
+                    context.EventTypes.Add(bridalShowerType);
+                }
+
+
+                EventType privateEventType = (from et in context.EventTypes where et.name == "Private Event" && et.tenantGuid == PHMCTenantGuid select et).FirstOrDefault();
+                if (privateEventType == null)
+                {
+                    privateEventType = new EventType();
+
+                    privateEventType.name = "Private Event";
+                    privateEventType.description = "General private event or gathering";
+                    privateEventType.color = "#818cf8";
+
+                    privateEventType.requiresRentalAgreement = true;
+                    privateEventType.requiresExternalContact = true;
+                    privateEventType.requiresPayment = true;
+                    privateEventType.requiresDeposit = true;
+                    privateEventType.requiresBarService = false;
+                    privateEventType.allowsTicketSales = false;
+                    privateEventType.isInternalEvent = false;
+                    privateEventType.defaultPrice = 150.00m;
+                    privateEventType.chargeTypeId = hallRentalChargeType.id;
+
+                    privateEventType.sequence = 5;
+                    privateEventType.versionNumber = 0;
+                    privateEventType.tenantGuid = PHMCTenantGuid;
+                    privateEventType.objectGuid = Guid.NewGuid();
+                    privateEventType.active = true;
+                    privateEventType.deleted = false;
+
+                    context.EventTypes.Add(privateEventType);
+                }
+
+
+                EventType communityEventType = (from et in context.EventTypes where et.name == "Community Event" && et.tenantGuid == PHMCTenantGuid select et).FirstOrDefault();
+                if (communityEventType == null)
+                {
+                    communityEventType = new EventType();
+
+                    communityEventType.name = "Community Event";
+                    communityEventType.description = "Committee-organized community event (breakfast, holiday gathering, etc.)";
+                    communityEventType.color = "#34d399";
+
+                    communityEventType.requiresRentalAgreement = false;
+                    communityEventType.requiresExternalContact = false;
+                    communityEventType.requiresPayment = false;
+                    communityEventType.requiresDeposit = false;
+                    communityEventType.requiresBarService = false;
+                    communityEventType.allowsTicketSales = false;
+                    communityEventType.isInternalEvent = true;
+
+                    communityEventType.sequence = 6;
+                    communityEventType.versionNumber = 0;
+                    communityEventType.tenantGuid = PHMCTenantGuid;
+                    communityEventType.objectGuid = Guid.NewGuid();
+                    communityEventType.active = true;
+                    communityEventType.deleted = false;
+
+                    context.EventTypes.Add(communityEventType);
+                }
+
+
+                EventType fundraiserType = (from et in context.EventTypes where et.name == "Fundraiser / Bingo" && et.tenantGuid == PHMCTenantGuid select et).FirstOrDefault();
+                if (fundraiserType == null)
+                {
+                    fundraiserType = new EventType();
+
+                    fundraiserType.name = "Fundraiser / Bingo";
+                    fundraiserType.description = "Fundraising event, bingo night, or similar revenue-generating committee event";
+                    fundraiserType.color = "#fbbf24";
+
+                    fundraiserType.requiresRentalAgreement = false;
+                    fundraiserType.requiresExternalContact = false;
+                    fundraiserType.requiresPayment = false;
+                    fundraiserType.requiresDeposit = false;
+                    fundraiserType.requiresBarService = false;
+                    fundraiserType.allowsTicketSales = true;
+                    fundraiserType.isInternalEvent = true;
+
+                    fundraiserType.sequence = 7;
+                    fundraiserType.versionNumber = 0;
+                    fundraiserType.tenantGuid = PHMCTenantGuid;
+                    fundraiserType.objectGuid = Guid.NewGuid();
+                    fundraiserType.active = true;
+                    fundraiserType.deleted = false;
+
+                    context.EventTypes.Add(fundraiserType);
+                }
+
+                context.SaveChanges();
+
+
+                //
                 // Tax Codes
                 //
                 TaxCode hstTaxCode = (from tc in context.TaxCodes where tc.code == "HST" && tc.tenantGuid == PHMCTenantGuid select tc).FirstOrDefault();

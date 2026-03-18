@@ -86,6 +86,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? crewId = null,
 			int? priorityId = null,
 			int? bookingSourceTypeId = null,
+			int? eventTypeId = null,
 			int? partySize = null,
 			string bookingContactName = null,
 			string bookingContactEmail = null,
@@ -244,6 +245,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(se => se.bookingSourceTypeId == bookingSourceTypeId.Value);
 			}
+			if (eventTypeId.HasValue == true)
+			{
+				query = query.Where(se => se.eventTypeId == eventTypeId.Value);
+			}
 			if (partySize.HasValue == true)
 			{
 				query = query.Where(se => se.partySize == partySize.Value);
@@ -364,6 +369,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.eventStatus.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.eventStatus.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.eventStatus.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.eventType.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.eventType.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.eventType.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.office.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.office.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.office.addressLine1.Contains(anyStringContains))
@@ -424,6 +432,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Include(x => x.client);
 				query = query.Include(x => x.crew);
 				query = query.Include(x => x.eventStatus);
+				query = query.Include(x => x.eventType);
 				query = query.Include(x => x.office);
 				query = query.Include(x => x.parentScheduledEvent);
 				query = query.Include(x => x.priority);
@@ -501,6 +510,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? crewId = null,
 			int? priorityId = null,
 			int? bookingSourceTypeId = null,
+			int? eventTypeId = null,
 			int? partySize = null,
 			string bookingContactName = null,
 			string bookingContactEmail = null,
@@ -639,6 +649,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(se => se.bookingSourceTypeId == bookingSourceTypeId.Value);
 			}
+			if (eventTypeId.HasValue == true)
+			{
+				query = query.Where(se => se.eventTypeId == eventTypeId.Value);
+			}
 			if (partySize.HasValue == true)
 			{
 				query = query.Where(se => se.partySize == partySize.Value);
@@ -756,6 +770,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.eventStatus.name.Contains(anyStringContains)
 			       || x.eventStatus.description.Contains(anyStringContains)
 			       || x.eventStatus.color.Contains(anyStringContains)
+			       || x.eventType.name.Contains(anyStringContains)
+			       || x.eventType.description.Contains(anyStringContains)
+			       || x.eventType.color.Contains(anyStringContains)
 			       || x.office.name.Contains(anyStringContains)
 			       || x.office.description.Contains(anyStringContains)
 			       || x.office.addressLine1.Contains(anyStringContains)
@@ -875,6 +892,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					query = query.Include(x => x.client);
 					query = query.Include(x => x.crew);
 					query = query.Include(x => x.eventStatus);
+					query = query.Include(x => x.eventType);
 					query = query.Include(x => x.office);
 					query = query.Include(x => x.parentScheduledEvent);
 					query = query.Include(x => x.priority);
@@ -1311,6 +1329,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					scheduledEvent.client = null;
 					scheduledEvent.crew = null;
 					scheduledEvent.eventStatus = null;
+					scheduledEvent.eventType = null;
 					scheduledEvent.office = null;
 					scheduledEvent.parentScheduledEvent = null;
 					scheduledEvent.priority = null;
@@ -1451,6 +1470,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.client = null;
 				cloneOfExisting.crew = null;
 				cloneOfExisting.eventStatus = null;
+				cloneOfExisting.eventType = null;
 				cloneOfExisting.office = null;
 				cloneOfExisting.parentScheduledEvent = null;
 				cloneOfExisting.priority = null;
@@ -1506,6 +1526,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    scheduledEvent.crewId = oldScheduledEvent.crewId;
 				    scheduledEvent.priorityId = oldScheduledEvent.priorityId;
 				    scheduledEvent.bookingSourceTypeId = oldScheduledEvent.bookingSourceTypeId;
+				    scheduledEvent.eventTypeId = oldScheduledEvent.eventTypeId;
 				    scheduledEvent.partySize = oldScheduledEvent.partySize;
 				    scheduledEvent.bookingContactName = oldScheduledEvent.bookingContactName;
 				    scheduledEvent.bookingContactEmail = oldScheduledEvent.bookingContactEmail;
@@ -1978,6 +1999,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? crewId = null,
 			int? priorityId = null,
 			int? bookingSourceTypeId = null,
+			int? eventTypeId = null,
 			int? partySize = null,
 			string bookingContactName = null,
 			string bookingContactEmail = null,
@@ -2135,6 +2157,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(se => se.bookingSourceTypeId == bookingSourceTypeId.Value);
 			}
+			if (eventTypeId.HasValue == true)
+			{
+				query = query.Where(se => se.eventTypeId == eventTypeId.Value);
+			}
 			if (partySize.HasValue == true)
 			{
 				query = query.Where(se => se.partySize == partySize.Value);
@@ -2253,6 +2279,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.eventStatus.name.Contains(anyStringContains)
 			       || x.eventStatus.description.Contains(anyStringContains)
 			       || x.eventStatus.color.Contains(anyStringContains)
+			       || x.eventType.name.Contains(anyStringContains)
+			       || x.eventType.description.Contains(anyStringContains)
+			       || x.eventType.color.Contains(anyStringContains)
 			       || x.office.name.Contains(anyStringContains)
 			       || x.office.description.Contains(anyStringContains)
 			       || x.office.addressLine1.Contains(anyStringContains)

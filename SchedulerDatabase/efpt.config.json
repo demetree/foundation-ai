@@ -256,6 +256,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[EventType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventTypeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[FinancialCategory]",
          "ObjectType": 0
       },

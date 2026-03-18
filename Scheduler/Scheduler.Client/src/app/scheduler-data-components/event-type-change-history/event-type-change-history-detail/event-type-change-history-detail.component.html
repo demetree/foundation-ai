@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 event-type-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="event-type-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Event Type Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Event Type Change History' : 'Add Event Type Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerEventTypeChangeHistoryReader()">
+                <div class="col m-2 event-type-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="eventTypeChangeHistoryForm" (ngSubmit)="submitForm()" class="event-type-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('eventTypeId')">
+                                <label for="EventTypeChangeHistory-eventTypeId" id="label-EventTypeChangeHistory-eventTypeId"><span class="text-danger">*</span>Event Type</label>
+                                <select id="EventTypeChangeHistory-eventTypeId" formControlName="eventTypeId" class="form-select event-type-change-history-select" [disabled]="!userIsSchedulerEventTypeChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Event Type</option>
+                                    <option *ngFor="let eventType of eventTypes$ | async" [ngValue]="eventType.id">{{eventType.name}}</option>
+                                </select>
+                                <div *ngIf="eventTypeChangeHistoryForm.get('eventTypeId')?.invalid && eventTypeChangeHistoryForm.get('eventTypeId')?.touched" class="text-danger">
+                                    Event Type is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="EventTypeChangeHistory-versionNumber" id="label-EventTypeChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="EventTypeChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-type-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="EventTypeChangeHistory-timeStamp" id="label-EventTypeChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="EventTypeChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control event-type-change-history-input" [disabled]="!userIsSchedulerEventTypeChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="eventTypeChangeHistoryForm.get('timeStamp')?.invalid && eventTypeChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="EventTypeChangeHistory-userId" id="label-EventTypeChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="EventTypeChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control event-type-change-history-input" [disabled]="!userIsSchedulerEventTypeChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="eventTypeChangeHistoryForm.get('userId')?.invalid && eventTypeChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="EventTypeChangeHistory-data" id="label-EventTypeChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="EventTypeChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control event-type-change-history-input" [disabled]="!userIsSchedulerEventTypeChangeHistoryWriter()"></textarea>
+                                <div *ngIf="eventTypeChangeHistoryForm.get('data')?.invalid && eventTypeChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="event-type-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="eventTypeChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Event Type Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventTypeChangeHistoryForm.valid || !eventTypeChangeHistoryForm.dirty || eventTypeChangeHistoryForm.pristine  || userIsSchedulerEventTypeChangeHistoryWriter() == false " ngbTooltip="Save the Event Type Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Event Type Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

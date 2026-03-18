@@ -141,6 +141,13 @@
                                     <option *ngFor="let bookingSourceType of bookingSourceTypes$ | async" [ngValue]="bookingSourceType.id">{{bookingSourceType.name}}</option>
                                 </select>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('eventTypeId')">
+                                <label for="ScheduledEvent-eventTypeId" id="label-ScheduledEvent-eventTypeId">Event Type</label>
+                                <select id="ScheduledEvent-eventTypeId" formControlName="eventTypeId" class="form-select scheduled-event-select" [disabled]="!userIsSchedulerScheduledEventWriter()">
+                                    <option [ngValue]="null">Select Event Type</option>
+                                    <option *ngFor="let eventType of eventTypes$ | async" [ngValue]="eventType.id">{{eventType.name}}</option>
+                                </select>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('partySize')">
                                 <label for="ScheduledEvent-partySize" id="label-ScheduledEvent-partySize">Party Size</label>
                                 <input type="number" id="ScheduledEvent-partySize" formControlName="partySize" placeholder="Enter Party Size" class="form-control scheduled-event-input" [disabled]="!userIsSchedulerScheduledEventWriter()" aria-labelledby="label-partySize" />

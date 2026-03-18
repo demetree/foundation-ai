@@ -103,6 +103,10 @@
                 Booking  Source  Type
                 <span *ngIf="sortColumn === 'bookingSourceType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('eventType.name')">
+                Event  Type
+                <span *ngIf="sortColumn === 'eventType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('partySize')">
                 Party  Size
                 <span *ngIf="sortColumn === 'partySize'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -247,6 +251,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/crew', scheduledEvent.crewId]" class="btn btn-link text-left" ngbTooltip="Open Crew details">{{scheduledEvent.crew?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/priority', scheduledEvent.priorityId]" class="btn btn-link text-left" ngbTooltip="Open Priority details">{{scheduledEvent.priority?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/bookingsourcetype', scheduledEvent.bookingSourceTypeId]" class="btn btn-link text-left" ngbTooltip="Open Booking Source Type details">{{scheduledEvent.bookingSourceType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/eventtype', scheduledEvent.eventTypeId]" class="btn btn-link text-left" ngbTooltip="Open Event Type details">{{scheduledEvent.eventType?.name}}</a></td>
             <td class="text-truncate">{{scheduledEvent.partySize | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{scheduledEvent.bookingContactName}}</td>
             <td class="text-truncate"><a href="mailto:{{scheduledEvent?.bookingContactEmail}}" ngbTooltip="Send Email to {{scheduledEvent?.bookingContactEmail}}">{{scheduledEvent.bookingContactEmail}}</a></td>
@@ -479,6 +484,10 @@ End of commented block for alternate definition option -->
             <p class="scheduled-event-info" *ngIf="scheduledEvent.bookingSourceTypeId != null">
               <strong>Booking Source Type: </strong>
               <a [routerLink]="['/bookingsourcetype', scheduledEvent.bookingSourceTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Booking Source Type details">{{scheduledEvent.bookingSourceType?.name}}</a>
+            </p>
+            <p class="scheduled-event-info" *ngIf="scheduledEvent.eventTypeId != null">
+              <strong>Event Type: </strong>
+              <a [routerLink]="['/eventtype', scheduledEvent.eventTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Event Type details">{{scheduledEvent.eventType?.name}}</a>
             </p>
             <p class="scheduled-event-info" *ngIf="scheduledEvent.partySize != null">
               <strong>Party Size: </strong>

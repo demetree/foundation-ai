@@ -22,6 +22,7 @@ import { FinancialCategoryData } from './financial-category.service';
 import { TaxCodeData } from './tax-code.service';
 import { ChargeTypeChangeHistoryService, ChargeTypeChangeHistoryData } from './charge-type-change-history.service';
 import { ScheduledEventTemplateChargeService, ScheduledEventTemplateChargeData } from './scheduled-event-template-charge.service';
+import { EventTypeService, EventTypeData } from './event-type.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
@@ -182,6 +183,11 @@ export class ChargeTypeData {
     private _scheduledEventTemplateChargesSubject = new BehaviorSubject<ScheduledEventTemplateChargeData[] | null>(null);
 
                 
+    private _eventTypes: EventTypeData[] | null = null;
+    private _eventTypesPromise: Promise<EventTypeData[]> | null  = null;
+    private _eventTypesSubject = new BehaviorSubject<EventTypeData[] | null>(null);
+
+                
     private _eventCharges: EventChargeData[] | null = null;
     private _eventChargesPromise: Promise<EventChargeData[]> | null  = null;
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
@@ -254,6 +260,31 @@ export class ChargeTypeData {
             });
         }
         return this._scheduledEventTemplateChargesCount$;
+    }
+
+
+
+    public EventTypes$ = this._eventTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._eventTypes === null && this._eventTypesPromise === null) {
+            this.loadEventTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _eventTypesCount$: Observable<bigint | number> | null = null;
+    public get EventTypesCount$(): Observable<bigint | number> {
+        if (this._eventTypesCount$ === null) {
+            this._eventTypesCount$ = EventTypeService.Instance.GetEventTypesRowCount({chargeTypeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventTypesCount$;
     }
 
 
@@ -355,6 +386,11 @@ export class ChargeTypeData {
      this._scheduledEventTemplateChargesPromise = null;
      this._scheduledEventTemplateChargesSubject.next(null);
      this._scheduledEventTemplateChargesCount$ = null;
+
+     this._eventTypes = null;
+     this._eventTypesPromise = null;
+     this._eventTypesSubject.next(null);
+     this._eventTypesCount$ = null;
 
      this._eventCharges = null;
      this._eventChargesPromise = null;
@@ -502,6 +538,71 @@ export class ChargeTypeData {
 
     public get HasScheduledEventTemplateCharges(): Promise<boolean> {
         return this.ScheduledEventTemplateCharges.then(scheduledEventTemplateCharges => scheduledEventTemplateCharges.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the EventTypes for this ChargeType.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.chargeType.EventTypes.then(chargeTypes => { ... })
+     *   or
+     *   await this.chargeType.chargeTypes
+     *
+    */
+    public get EventTypes(): Promise<EventTypeData[]> {
+        if (this._eventTypes !== null) {
+            return Promise.resolve(this._eventTypes);
+        }
+
+        if (this._eventTypesPromise !== null) {
+            return this._eventTypesPromise;
+        }
+
+        // Start the load
+        this.loadEventTypes();
+
+        return this._eventTypesPromise!;
+    }
+
+
+
+    private loadEventTypes(): void {
+
+        this._eventTypesPromise = lastValueFrom(
+            ChargeTypeService.Instance.GetEventTypesForChargeType(this.id)
+        )
+        .then(EventTypes => {
+            this._eventTypes = EventTypes ?? [];
+            this._eventTypesSubject.next(this._eventTypes);
+            return this._eventTypes;
+         })
+        .catch(err => {
+            this._eventTypes = [];
+            this._eventTypesSubject.next(this._eventTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._eventTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached EventType. Call after mutations to force refresh.
+     */
+    public ClearEventTypesCache(): void {
+        this._eventTypes = null;
+        this._eventTypesPromise = null;
+        this._eventTypesSubject.next(this._eventTypes);      // Emit to observable
+    }
+
+    public get HasEventTypes(): Promise<boolean> {
+        return this.EventTypes.then(eventTypes => eventTypes.length > 0);
     }
 
 
@@ -715,6 +816,7 @@ export class ChargeTypeService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private chargeTypeChangeHistoryService: ChargeTypeChangeHistoryService,
         private scheduledEventTemplateChargeService: ScheduledEventTemplateChargeService,
+        private eventTypeService: EventTypeService,
         private eventChargeService: EventChargeService,
         private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
@@ -1208,6 +1310,16 @@ export class ChargeTypeService extends SecureEndpointBase {
     }
 
 
+    public GetEventTypesForChargeType(chargeTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventTypeData[]> {
+        return this.eventTypeService.GetEventTypeList({
+            chargeTypeId: chargeTypeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetEventChargesForChargeType(chargeTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventChargeData[]> {
         return this.eventChargeService.GetEventChargeList({
             chargeTypeId: chargeTypeId,
@@ -1271,6 +1383,10 @@ export class ChargeTypeService extends SecureEndpointBase {
     (revived as any)._scheduledEventTemplateChargesPromise = null;
     (revived as any)._scheduledEventTemplateChargesSubject = new BehaviorSubject<ScheduledEventTemplateChargeData[] | null>(null);
 
+    (revived as any)._eventTypes = null;
+    (revived as any)._eventTypesPromise = null;
+    (revived as any)._eventTypesSubject = new BehaviorSubject<EventTypeData[] | null>(null);
+
     (revived as any)._eventCharges = null;
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
@@ -1313,6 +1429,18 @@ export class ChargeTypeService extends SecureEndpointBase {
       );
 
     (revived as any)._scheduledEventTemplateChargesCount$ = null;
+
+
+    (revived as any).EventTypes$ = (revived as any)._eventTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventTypes === null && (revived as any)._eventTypesPromise === null) {
+                (revived as any).loadEventTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._eventTypesCount$ = null;
 
 
     (revived as any).EventCharges$ = (revived as any)._eventChargesSubject.asObservable().pipe(

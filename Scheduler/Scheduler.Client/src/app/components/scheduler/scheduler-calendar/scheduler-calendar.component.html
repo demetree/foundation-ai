@@ -234,4 +234,50 @@
     </ng-container>
   </div>
 
-</div>
+
+  <!-- Booking Type Chooser (Simple Mode) -->
+  <div class="booking-chooser-backdrop" *ngIf="showBookingChooser" (click)="dismissBookingChooser()"></div>
+  <div class="booking-chooser" *ngIf="showBookingChooser"
+    [style.top.px]="bookingChooserPosition.top" [style.left.px]="bookingChooserPosition.left">
+
+    <div class="chooser-header">
+      <i class="bi bi-plus-circle"></i>
+      What would you like to schedule?
+    </div>
+
+    <button class="chooser-option chooser-rental" (click)="openPrivateRental()" id="chooserPrivateRental">
+      <div class="chooser-icon">
+        <i class="fa-solid fa-key"></i>
+      </div>
+      <div class="chooser-text">
+        <div class="chooser-title">Book a Private Rental</div>
+        <div class="chooser-desc">Birthday, wedding, private event</div>
+      </div>
+      <i class="bi bi-chevron-right chooser-arrow"></i>
+    </button>
+
+    <button class="chooser-option chooser-committee" (click)="openCommitteeEvent()" id="chooserCommitteeEvent">
+      <div class="chooser-icon">
+        <i class="fa-solid fa-people-group"></i>
+      </div>
+      <div class="chooser-text">
+        <div class="chooser-title">Schedule a Committee Event</div>
+        <div class="chooser-desc">Fundraiser, community event, bingo</div>
+      </div>
+      <i class="bi bi-chevron-right chooser-arrow"></i>
+    </button>
+
+    <button class="chooser-option chooser-custom" (click)="openCustomEvent()" id="chooserCustomEvent">
+      <div class="chooser-icon">
+        <i class="bi bi-calendar-event"></i>
+      </div>
+      <div class="chooser-text">
+        <div class="chooser-title">Custom Event</div>
+        <div class="chooser-desc">Full event editor with all options</div>
+      </div>
+      <i class="bi bi-chevron-right chooser-arrow"></i>
+    </button>
+
+  </div>
+
+</div>

@@ -249,6 +249,10 @@ import { EventResourceAssignmentChangeHistoryListingComponent } from './schedule
 import { EventResourceAssignmentChangeHistoryDetailComponent } from './scheduler-data-components/event-resource-assignment-change-history/event-resource-assignment-change-history-detail/event-resource-assignment-change-history-detail.component';
 import { EventStatusListingComponent } from './scheduler-data-components/event-status/event-status-listing/event-status-listing.component';
 import { EventStatusDetailComponent } from './scheduler-data-components/event-status/event-status-detail/event-status-detail.component';
+import { EventTypeListingComponent } from './scheduler-data-components/event-type/event-type-listing/event-type-listing.component';
+import { EventTypeDetailComponent } from './scheduler-data-components/event-type/event-type-detail/event-type-detail.component';
+import { EventTypeChangeHistoryListingComponent } from './scheduler-data-components/event-type-change-history/event-type-change-history-listing/event-type-change-history-listing.component';
+import { EventTypeChangeHistoryDetailComponent } from './scheduler-data-components/event-type-change-history/event-type-change-history-detail/event-type-change-history-detail.component';
 import { FinancialCategoryListingComponent } from './scheduler-data-components/financial-category/financial-category-listing/financial-category-listing.component';
 import { FinancialCategoryDetailComponent } from './scheduler-data-components/financial-category/financial-category-detail/financial-category-detail.component';
 import { FinancialCategoryChangeHistoryListingComponent } from './scheduler-data-components/financial-category-change-history/financial-category-change-history-listing/financial-category-change-history-listing.component';
@@ -918,6 +922,16 @@ const routes: Routes = [
   {path: 'eventstatuses/:eventStatusId', component: EventStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Status' },
   {path: 'eventstatus/:eventStatusId', component: EventStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Status' },
   {path: 'eventstatus',  redirectTo: 'eventstatuses'},
+  {path: 'eventtypes', component: EventTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Event Types' },
+  {path: 'eventtypes/new', component: EventTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Event Type' },
+  {path: 'eventtypes/:eventTypeId', component: EventTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Type' },
+  {path: 'eventtype/:eventTypeId', component: EventTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Type' },
+  {path: 'eventtype',  redirectTo: 'eventtypes'},
+  {path: 'eventtypechangehistories', component: EventTypeChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Event Type Change Histories' },
+  {path: 'eventtypechangehistories/new', component: EventTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Event Type Change History' },
+  {path: 'eventtypechangehistories/:eventTypeChangeHistoryId', component: EventTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Type Change History' },
+  {path: 'eventtypechangehistory/:eventTypeChangeHistoryId', component: EventTypeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Type Change History' },
+  {path: 'eventtypechangehistory',  redirectTo: 'eventtypechangehistories'},
   {path: 'financialcategories', component: FinancialCategoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Financial Categories' },
   {path: 'financialcategories/new', component: FinancialCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Financial Category' },
   {path: 'financialcategories/:financialCategoryId', component: FinancialCategoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Financial Category' },

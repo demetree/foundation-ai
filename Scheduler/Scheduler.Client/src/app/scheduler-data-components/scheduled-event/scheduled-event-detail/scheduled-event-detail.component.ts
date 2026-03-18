@@ -34,6 +34,7 @@ import { ResourceService } from '../../../scheduler-data-services/resource.servi
 import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { PriorityService } from '../../../scheduler-data-services/priority.service';
 import { BookingSourceTypeService } from '../../../scheduler-data-services/booking-source-type.service';
+import { EventTypeService } from '../../../scheduler-data-services/event-type.service';
 import { ScheduledEventChangeHistoryService } from '../../../scheduler-data-services/scheduled-event-change-history.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
@@ -76,6 +77,7 @@ interface ScheduledEventFormValues {
   crewId: number | bigint | null,       // For FK link number
   priorityId: number | bigint | null,       // For FK link number
   bookingSourceTypeId: number | bigint | null,       // For FK link number
+  eventTypeId: number | bigint | null,       // For FK link number
   partySize: string | null,     // Stored as string for form input, converted to number on submit.
   bookingContactName: string | null,
   bookingContactEmail: string | null,
@@ -135,6 +137,7 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
         crewId: [null],
         priorityId: [null],
         bookingSourceTypeId: [null],
+        eventTypeId: [null],
         partySize: [''],
         bookingContactName: [''],
         bookingContactEmail: [''],
@@ -173,6 +176,7 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
   public crews$ = this.crewService.GetCrewList();
   public priorities$ = this.priorityService.GetPriorityList();
   public bookingSourceTypes$ = this.bookingSourceTypeService.GetBookingSourceTypeList();
+  public eventTypes$ = this.eventTypeService.GetEventTypeList();
   public scheduledEventChangeHistories$ = this.scheduledEventChangeHistoryService.GetScheduledEventChangeHistoryList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
@@ -201,6 +205,7 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
     public crewService: CrewService,
     public priorityService: PriorityService,
     public bookingSourceTypeService: BookingSourceTypeService,
+    public eventTypeService: EventTypeService,
     public scheduledEventChangeHistoryService: ScheduledEventChangeHistoryService,
     public eventChargeService: EventChargeService,
     public financialTransactionService: FinancialTransactionService,
@@ -513,6 +518,7 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
         crewId: null,
         priorityId: null,
         bookingSourceTypeId: null,
+        eventTypeId: null,
         partySize: '',
         bookingContactName: '',
         bookingContactEmail: '',
@@ -554,6 +560,7 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
         crewId: scheduledEventData.crewId,
         priorityId: scheduledEventData.priorityId,
         bookingSourceTypeId: scheduledEventData.bookingSourceTypeId,
+        eventTypeId: scheduledEventData.eventTypeId,
         partySize: scheduledEventData.partySize?.toString() ?? '',
         bookingContactName: scheduledEventData.bookingContactName ?? '',
         bookingContactEmail: scheduledEventData.bookingContactEmail ?? '',
@@ -645,6 +652,7 @@ export class ScheduledEventDetailComponent implements OnInit, CanComponentDeacti
         crewId: formValue.crewId ? Number(formValue.crewId) : null,
         priorityId: formValue.priorityId ? Number(formValue.priorityId) : null,
         bookingSourceTypeId: formValue.bookingSourceTypeId ? Number(formValue.bookingSourceTypeId) : null,
+        eventTypeId: formValue.eventTypeId ? Number(formValue.eventTypeId) : null,
         partySize: formValue.partySize ? Number(formValue.partySize) : null,
         bookingContactName: formValue.bookingContactName?.trim() || null,
         bookingContactEmail: formValue.bookingContactEmail?.trim() || null,

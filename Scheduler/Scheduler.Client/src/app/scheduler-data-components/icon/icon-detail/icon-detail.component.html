@@ -287,6 +287,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="eventTypeService.userIsSchedulerEventTypeReader()">
+                            <button ngbNavLink>Event Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.EventTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-type-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-event-type-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="fundService.userIsSchedulerFundReader()">
                             <button ngbNavLink>Funds
                                 <span class="badge bg-primary ms-2">

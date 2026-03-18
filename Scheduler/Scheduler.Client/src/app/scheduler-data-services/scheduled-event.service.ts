@@ -27,6 +27,7 @@ import { ResourceData } from './resource.service';
 import { CrewData } from './crew.service';
 import { PriorityData } from './priority.service';
 import { BookingSourceTypeData } from './booking-source-type.service';
+import { EventTypeData } from './event-type.service';
 import { ScheduledEventChangeHistoryService, ScheduledEventChangeHistoryData } from './scheduled-event-change-history.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
@@ -69,6 +70,7 @@ export class ScheduledEventQueryParameters {
     crewId: bigint | number | null | undefined = null;
     priorityId: bigint | number | null | undefined = null;
     bookingSourceTypeId: bigint | number | null | undefined = null;
+    eventTypeId: bigint | number | null | undefined = null;
     partySize: bigint | number | null | undefined = null;
     bookingContactName: string | null | undefined = null;
     bookingContactEmail: string | null | undefined = null;
@@ -114,6 +116,7 @@ export class ScheduledEventSubmitData {
     crewId: bigint | number | null = null;
     priorityId: bigint | number | null = null;
     bookingSourceTypeId: bigint | number | null = null;
+    eventTypeId: bigint | number | null = null;
     partySize: bigint | number | null = null;
     bookingContactName: string | null = null;
     bookingContactEmail: string | null = null;
@@ -213,6 +216,7 @@ export class ScheduledEventData {
     crewId!: bigint | number;
     priorityId!: bigint | number;
     bookingSourceTypeId!: bigint | number;
+    eventTypeId!: bigint | number;
     partySize!: bigint | number;
     bookingContactName!: string | null;
     bookingContactEmail!: string | null;
@@ -231,6 +235,7 @@ export class ScheduledEventData {
     client: ClientData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     crew: CrewData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     eventStatus: EventStatusData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    eventType: EventTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     office: OfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     priority: PriorityData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     recurrenceRule: RecurrenceRuleData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
@@ -1768,6 +1773,7 @@ export class ScheduledEventService extends SecureEndpointBase {
         output.crewId = data.crewId;
         output.priorityId = data.priorityId;
         output.bookingSourceTypeId = data.bookingSourceTypeId;
+        output.eventTypeId = data.eventTypeId;
         output.partySize = data.partySize;
         output.bookingContactName = data.bookingContactName;
         output.bookingContactEmail = data.bookingContactEmail;

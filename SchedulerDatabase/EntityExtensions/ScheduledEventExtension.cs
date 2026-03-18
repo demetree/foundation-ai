@@ -335,6 +335,7 @@ namespace Foundation.Scheduler.Database
 			public Int32? crewId { get; set; }
 			public Int32? priorityId { get; set; }
 			public Int32? bookingSourceTypeId { get; set; }
+			public Int32? eventTypeId { get; set; }
 			public Int32? partySize { get; set; }
 			public String bookingContactName { get; set; }
 			public String bookingContactEmail { get; set; }
@@ -365,6 +366,7 @@ namespace Foundation.Scheduler.Database
 			public Client.ClientDTO client { get; set; }
 			public Crew.CrewDTO crew { get; set; }
 			public EventStatus.EventStatusDTO eventStatus { get; set; }
+			public EventType.EventTypeDTO eventType { get; set; }
 			public Office.OfficeDTO office { get; set; }
 			public ScheduledEvent.ScheduledEventDTO parentScheduledEvent { get; set; }
 			public Priority.PriorityDTO priority { get; set; }
@@ -407,6 +409,7 @@ namespace Foundation.Scheduler.Database
 				crewId = this.crewId,
 				priorityId = this.priorityId,
 				bookingSourceTypeId = this.bookingSourceTypeId,
+				eventTypeId = this.eventTypeId,
 				partySize = this.partySize,
 				bookingContactName = this.bookingContactName,
 				bookingContactEmail = this.bookingContactEmail,
@@ -479,6 +482,7 @@ namespace Foundation.Scheduler.Database
 				crewId = this.crewId,
 				priorityId = this.priorityId,
 				bookingSourceTypeId = this.bookingSourceTypeId,
+				eventTypeId = this.eventTypeId,
 				partySize = this.partySize,
 				bookingContactName = this.bookingContactName,
 				bookingContactEmail = this.bookingContactEmail,
@@ -497,6 +501,7 @@ namespace Foundation.Scheduler.Database
 				client = this.client?.ToDTO(),
 				crew = this.crew?.ToDTO(),
 				eventStatus = this.eventStatus?.ToDTO(),
+				eventType = this.eventType?.ToDTO(),
 				office = this.office?.ToDTO(),
 				parentScheduledEvent = this.parentScheduledEvent?.ToDTO(),
 				priority = this.priority?.ToDTO(),
@@ -563,6 +568,7 @@ namespace Foundation.Scheduler.Database
 				crewId = dto.crewId,
 				priorityId = dto.priorityId,
 				bookingSourceTypeId = dto.bookingSourceTypeId,
+				eventTypeId = dto.eventTypeId,
 				partySize = dto.partySize,
 				bookingContactName = dto.bookingContactName,
 				bookingContactEmail = dto.bookingContactEmail,
@@ -612,6 +618,7 @@ namespace Foundation.Scheduler.Database
 			this.crewId = dto.crewId;
 			this.priorityId = dto.priorityId;
 			this.bookingSourceTypeId = dto.bookingSourceTypeId;
+			this.eventTypeId = dto.eventTypeId;
 			this.partySize = dto.partySize;
 			this.bookingContactName = dto.bookingContactName;
 			this.bookingContactEmail = dto.bookingContactEmail;
@@ -667,6 +674,7 @@ namespace Foundation.Scheduler.Database
 				crewId = this.crewId,
 				priorityId = this.priorityId,
 				bookingSourceTypeId = this.bookingSourceTypeId,
+				eventTypeId = this.eventTypeId,
 				partySize = this.partySize,
 				bookingContactName = this.bookingContactName,
 				bookingContactEmail = this.bookingContactEmail,
@@ -753,6 +761,7 @@ namespace Foundation.Scheduler.Database
 				crewId = scheduledEvent.crewId,
 				priorityId = scheduledEvent.priorityId,
 				bookingSourceTypeId = scheduledEvent.bookingSourceTypeId,
+				eventTypeId = scheduledEvent.eventTypeId,
 				partySize = scheduledEvent.partySize,
 				bookingContactName = scheduledEvent.bookingContactName,
 				bookingContactEmail = scheduledEvent.bookingContactEmail,
@@ -806,6 +815,7 @@ namespace Foundation.Scheduler.Database
 				crewId = scheduledEvent.crewId,
 				priorityId = scheduledEvent.priorityId,
 				bookingSourceTypeId = scheduledEvent.bookingSourceTypeId,
+				eventTypeId = scheduledEvent.eventTypeId,
 				partySize = scheduledEvent.partySize,
 				bookingContactName = scheduledEvent.bookingContactName,
 				bookingContactEmail = scheduledEvent.bookingContactEmail,
@@ -824,6 +834,7 @@ namespace Foundation.Scheduler.Database
 				client = Client.CreateMinimalAnonymous(scheduledEvent.client),
 				crew = Crew.CreateMinimalAnonymous(scheduledEvent.crew),
 				eventStatus = EventStatus.CreateMinimalAnonymous(scheduledEvent.eventStatus),
+				eventType = EventType.CreateMinimalAnonymous(scheduledEvent.eventType),
 				office = Office.CreateMinimalAnonymous(scheduledEvent.office),
 				parentScheduledEvent = ScheduledEvent.CreateMinimalAnonymous(scheduledEvent.parentScheduledEvent),
 				priority = Priority.CreateMinimalAnonymous(scheduledEvent.priority),

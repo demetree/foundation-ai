@@ -1,0 +1,136 @@
+<div class="add-event-type" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-event-type me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Event Type" 
+        *ngIf="userIsSchedulerEventTypeWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #eventTypeModal let-modal>
+   <div class="modal-header event-type-modal-header">
+      <h5 class="modal-title mb-0" id="eventTypeModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Event Type' : 'Add Event Type' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body event-type-modal-body">
+      <form [formGroup]="eventTypeForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="EventType-name" id="label-EventType-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="EventType-name" formControlName="name" placeholder="Enter Name" class="form-control event-type-input" [disabled]="!userIsSchedulerEventTypeWriter()" aria-labelledby="label-name" />
+                <div *ngIf="eventTypeForm.get('name')?.invalid && eventTypeForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="EventType-description" id="label-EventType-description"><span class="text-danger">*</span>Description</label>
+                <textarea id="EventType-description" formControlName="description" placeholder="Enter Description" class="form-control event-type-input" [disabled]="!userIsSchedulerEventTypeWriter()"></textarea>
+                <div *ngIf="eventTypeForm.get('description')?.invalid && eventTypeForm.get('description')?.touched" class="text-danger">
+                    Description is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="EventType-color" id="label-EventType-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="EventType-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerEventTypeWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="eventTypeForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="EventType-iconId" id="label-EventType-iconId">Icon</label>
+                <select id="EventType-iconId" formControlName="iconId" class="form-select event-type-select" [disabled]="!userIsSchedulerEventTypeWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="EventType-sequence" id="label-EventType-sequence">Sequence</label>
+                <input type="number" id="EventType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control event-type-input" [disabled]="!userIsSchedulerEventTypeWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('requiresRentalAgreement')">
+                <input type="checkbox" id="EventType-requiresRentalAgreement" formControlName="requiresRentalAgreement" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-requiresRentalAgreement" class="form-check-label" id="label-EventType-requiresRentalAgreement"><span class="text-danger">*</span>Requires Rental Agreement</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('requiresExternalContact')">
+                <input type="checkbox" id="EventType-requiresExternalContact" formControlName="requiresExternalContact" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-requiresExternalContact" class="form-check-label" id="label-EventType-requiresExternalContact"><span class="text-danger">*</span>Requires External Contact</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('requiresPayment')">
+                <input type="checkbox" id="EventType-requiresPayment" formControlName="requiresPayment" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-requiresPayment" class="form-check-label" id="label-EventType-requiresPayment"><span class="text-danger">*</span>Requires Payment</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('requiresDeposit')">
+                <input type="checkbox" id="EventType-requiresDeposit" formControlName="requiresDeposit" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-requiresDeposit" class="form-check-label" id="label-EventType-requiresDeposit"><span class="text-danger">*</span>Requires Deposit</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('requiresBarService')">
+                <input type="checkbox" id="EventType-requiresBarService" formControlName="requiresBarService" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-requiresBarService" class="form-check-label" id="label-EventType-requiresBarService"><span class="text-danger">*</span>Requires Bar Service</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('allowsTicketSales')">
+                <input type="checkbox" id="EventType-allowsTicketSales" formControlName="allowsTicketSales" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-allowsTicketSales" class="form-check-label" id="label-EventType-allowsTicketSales"><span class="text-danger">*</span>Allows Ticket Sales</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isInternalEvent')">
+                <input type="checkbox" id="EventType-isInternalEvent" formControlName="isInternalEvent" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-isInternalEvent" class="form-check-label" id="label-EventType-isInternalEvent"><span class="text-danger">*</span>Is Internal Event</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('defaultPrice')">
+                <label for="EventType-defaultPrice" id="label-EventType-defaultPrice">Default Price</label>
+                <input type="number" id="EventType-defaultPrice" formControlName="defaultPrice" placeholder="Enter Default Price" class="form-control event-type-input" [disabled]="!userIsSchedulerEventTypeWriter()" aria-labelledby="label-defaultPrice" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('chargeTypeId')">
+                <label for="EventType-chargeTypeId" id="label-EventType-chargeTypeId">Charge Type</label>
+                <select id="EventType-chargeTypeId" formControlName="chargeTypeId" class="form-select event-type-select" [disabled]="!userIsSchedulerEventTypeWriter()">
+                    <option [ngValue]="null">Select Charge Type</option>
+                    <option *ngFor="let chargeType of chargeTypes$ | async" [ngValue]="chargeType.id">{{chargeType.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="EventType-versionNumber" id="label-EventType-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="EventType-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-type-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-active" class="form-check-label" id="label-EventType-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventType-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerEventTypeWriter()" />
+                <label for="EventType-deleted" class="form-check-label" id="label-EventType-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer event-type-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Event Type changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventTypeForm.valid || eventTypeForm.pristine  || userIsSchedulerEventTypeWriter() == false " ngbTooltip="Save the Event Type changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Event Type' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

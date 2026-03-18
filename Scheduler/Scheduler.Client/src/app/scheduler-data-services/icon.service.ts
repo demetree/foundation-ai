@@ -32,6 +32,7 @@ import { AssignmentRoleService, AssignmentRoleData } from './assignment-role.ser
 import { SchedulingTargetTypeService, SchedulingTargetTypeData } from './scheduling-target-type.service';
 import { CrewService, CrewData } from './crew.service';
 import { CrewMemberService, CrewMemberData } from './crew-member.service';
+import { EventTypeService, EventTypeData } from './event-type.service';
 import { FundService, FundData } from './fund.service';
 import { CampaignService, CampaignData } from './campaign.service';
 import { AppealService, AppealData } from './appeal.service';
@@ -210,6 +211,11 @@ export class IconData {
     private _crewMembers: CrewMemberData[] | null = null;
     private _crewMembersPromise: Promise<CrewMemberData[]> | null  = null;
     private _crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
+
+                
+    private _eventTypes: EventTypeData[] | null = null;
+    private _eventTypesPromise: Promise<EventTypeData[]> | null  = null;
+    private _eventTypesSubject = new BehaviorSubject<EventTypeData[] | null>(null);
 
                 
     private _funds: FundData[] | null = null;
@@ -664,6 +670,31 @@ export class IconData {
 
 
 
+    public EventTypes$ = this._eventTypesSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._eventTypes === null && this._eventTypesPromise === null) {
+            this.loadEventTypes(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _eventTypesCount$: Observable<bigint | number> | null = null;
+    public get EventTypesCount$(): Observable<bigint | number> {
+        if (this._eventTypesCount$ === null) {
+            this._eventTypesCount$ = EventTypeService.Instance.GetEventTypesRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._eventTypesCount$;
+    }
+
+
+
     public Funds$ = this._fundsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -1006,6 +1037,11 @@ export class IconData {
      this._crewMembersPromise = null;
      this._crewMembersSubject.next(null);
      this._crewMembersCount$ = null;
+
+     this._eventTypes = null;
+     this._eventTypesPromise = null;
+     this._eventTypesSubject.next(null);
+     this._eventTypesCount$ = null;
 
      this._funds = null;
      this._fundsPromise = null;
@@ -2100,6 +2136,71 @@ export class IconData {
 
     /**
      *
+     * Gets the EventTypes for this Icon.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.icon.EventTypes.then(icons => { ... })
+     *   or
+     *   await this.icon.icons
+     *
+    */
+    public get EventTypes(): Promise<EventTypeData[]> {
+        if (this._eventTypes !== null) {
+            return Promise.resolve(this._eventTypes);
+        }
+
+        if (this._eventTypesPromise !== null) {
+            return this._eventTypesPromise;
+        }
+
+        // Start the load
+        this.loadEventTypes();
+
+        return this._eventTypesPromise!;
+    }
+
+
+
+    private loadEventTypes(): void {
+
+        this._eventTypesPromise = lastValueFrom(
+            IconService.Instance.GetEventTypesForIcon(this.id)
+        )
+        .then(EventTypes => {
+            this._eventTypes = EventTypes ?? [];
+            this._eventTypesSubject.next(this._eventTypes);
+            return this._eventTypes;
+         })
+        .catch(err => {
+            this._eventTypes = [];
+            this._eventTypesSubject.next(this._eventTypes);
+            throw err;
+        })
+        .finally(() => {
+            this._eventTypesPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached EventType. Call after mutations to force refresh.
+     */
+    public ClearEventTypesCache(): void {
+        this._eventTypes = null;
+        this._eventTypesPromise = null;
+        this._eventTypesSubject.next(this._eventTypes);      // Emit to observable
+    }
+
+    public get HasEventTypes(): Promise<boolean> {
+        return this.EventTypes.then(eventTypes => eventTypes.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the Funds for this Icon.
      *
      * If already loaded, returns cached array.
@@ -2734,6 +2835,7 @@ export class IconService extends SecureEndpointBase {
         private schedulingTargetTypeService: SchedulingTargetTypeService,
         private crewService: CrewService,
         private crewMemberService: CrewMemberService,
+        private eventTypeService: EventTypeService,
         private fundService: FundService,
         private campaignService: CampaignService,
         private appealService: AppealService,
@@ -3261,6 +3363,16 @@ export class IconService extends SecureEndpointBase {
     }
 
 
+    public GetEventTypesForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventTypeData[]> {
+        return this.eventTypeService.GetEventTypeList({
+            iconId: iconId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetFundsForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<FundData[]> {
         return this.fundService.GetFundList({
             iconId: iconId,
@@ -3449,6 +3561,10 @@ export class IconService extends SecureEndpointBase {
     (revived as any)._crewMembers = null;
     (revived as any)._crewMembersPromise = null;
     (revived as any)._crewMembersSubject = new BehaviorSubject<CrewMemberData[] | null>(null);
+
+    (revived as any)._eventTypes = null;
+    (revived as any)._eventTypesPromise = null;
+    (revived as any)._eventTypesSubject = new BehaviorSubject<EventTypeData[] | null>(null);
 
     (revived as any)._funds = null;
     (revived as any)._fundsPromise = null;
@@ -3688,6 +3804,18 @@ export class IconService extends SecureEndpointBase {
       );
 
     (revived as any)._crewMembersCount$ = null;
+
+
+    (revived as any).EventTypes$ = (revived as any)._eventTypesSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._eventTypes === null && (revived as any)._eventTypesPromise === null) {
+                (revived as any).loadEventTypes();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._eventTypesCount$ = null;
 
 
     (revived as any).Funds$ = (revived as any)._fundsSubject.asObservable().pipe(

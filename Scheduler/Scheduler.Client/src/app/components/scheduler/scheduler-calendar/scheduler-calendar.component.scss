@@ -1006,3 +1006,132 @@ $accent-secondary: #764ba2;
         }
     }
 }
+
+
+// ==========================================================================
+// Booking Type Chooser (Simple Mode overlay)
+// ==========================================================================
+
+.booking-chooser-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1049;
+}
+
+.booking-chooser {
+  position: fixed;
+  z-index: 1050;
+  width: 280px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  animation: chooserSlideIn 0.2s ease-out;
+
+  .chooser-header {
+    padding: 0.85rem 1rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #f3f4f6;
+
+    i {
+      color: #6b7280;
+    }
+  }
+
+  .chooser-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #f9fafb;
+    }
+
+    &:not(:last-child) {
+      border-bottom: 1px solid #f9fafb;
+    }
+
+    .chooser-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.9rem;
+    }
+
+    .chooser-text {
+      flex: 1;
+      min-width: 0;
+
+      .chooser-title {
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #1f2937;
+      }
+      .chooser-desc {
+        font-size: 0.72rem;
+        color: #9ca3af;
+        margin-top: 1px;
+      }
+    }
+
+    .chooser-arrow {
+      color: #d1d5db;
+      font-size: 0.7rem;
+    }
+  }
+
+  .chooser-rental .chooser-icon {
+    background: rgba(107, 92, 231, 0.12);
+    color: #6b5ce7;
+  }
+  .chooser-rental:hover .chooser-icon {
+    background: rgba(107, 92, 231, 0.2);
+  }
+
+  .chooser-committee .chooser-icon {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+  }
+  .chooser-committee:hover .chooser-icon {
+    background: rgba(16, 185, 129, 0.2);
+  }
+
+  .chooser-custom .chooser-icon {
+    background: rgba(99, 137, 227, 0.12);
+    color: #6389e3;
+  }
+  .chooser-custom:hover .chooser-icon {
+    background: rgba(99, 137, 227, 0.2);
+  }
+}
+
+@keyframes chooserSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

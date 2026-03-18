@@ -39,6 +39,7 @@ import { AssignmentRoleService } from '../../../scheduler-data-services/assignme
 import { SchedulingTargetTypeService } from '../../../scheduler-data-services/scheduling-target-type.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { CrewMemberService } from '../../../scheduler-data-services/crew-member.service';
+import { EventTypeService } from '../../../scheduler-data-services/event-type.service';
 import { FundService } from '../../../scheduler-data-services/fund.service';
 import { CampaignService } from '../../../scheduler-data-services/campaign.service';
 import { AppealService } from '../../../scheduler-data-services/appeal.service';
@@ -126,6 +127,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
   public schedulingTargetTypes$ = this.schedulingTargetTypeService.GetSchedulingTargetTypeList();
   public crews$ = this.crewService.GetCrewList();
   public crewMembers$ = this.crewMemberService.GetCrewMemberList();
+  public eventTypes$ = this.eventTypeService.GetEventTypeList();
   public funds$ = this.fundService.GetFundList();
   public campaigns$ = this.campaignService.GetCampaignList();
   public appeals$ = this.appealService.GetAppealList();
@@ -156,6 +158,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
     public schedulingTargetTypeService: SchedulingTargetTypeService,
     public crewService: CrewService,
     public crewMemberService: CrewMemberService,
+    public eventTypeService: EventTypeService,
     public fundService: FundService,
     public campaignService: CampaignService,
     public appealService: AppealService,

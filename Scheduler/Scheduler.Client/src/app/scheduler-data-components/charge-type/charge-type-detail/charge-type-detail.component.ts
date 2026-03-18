@@ -29,6 +29,7 @@ import { FinancialCategoryService } from '../../../scheduler-data-services/finan
 import { TaxCodeService } from '../../../scheduler-data-services/tax-code.service';
 import { ChargeTypeChangeHistoryService } from '../../../scheduler-data-services/charge-type-change-history.service';
 import { ScheduledEventTemplateChargeService } from '../../../scheduler-data-services/scheduled-event-template-charge.service';
+import { EventTypeService } from '../../../scheduler-data-services/event-type.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AuthService } from '../../../services/auth.service';
@@ -121,6 +122,7 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
   public taxCodes$ = this.taxCodeService.GetTaxCodeList();
   public chargeTypeChangeHistories$ = this.chargeTypeChangeHistoryService.GetChargeTypeChangeHistoryList();
   public scheduledEventTemplateCharges$ = this.scheduledEventTemplateChargeService.GetScheduledEventTemplateChargeList();
+  public eventTypes$ = this.eventTypeService.GetEventTypeList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
   public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
 
@@ -134,6 +136,7 @@ export class ChargeTypeDetailComponent implements OnInit, CanComponentDeactivate
     public taxCodeService: TaxCodeService,
     public chargeTypeChangeHistoryService: ChargeTypeChangeHistoryService,
     public scheduledEventTemplateChargeService: ScheduledEventTemplateChargeService,
+    public eventTypeService: EventTypeService,
     public eventChargeService: EventChargeService,
     public eventResourceAssignmentService: EventResourceAssignmentService,
     private authService: AuthService,

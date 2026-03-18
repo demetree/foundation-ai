@@ -35,6 +35,7 @@ import { ResourceService } from '../../../scheduler-data-services/resource.servi
 import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { PriorityService } from '../../../scheduler-data-services/priority.service';
 import { BookingSourceTypeService } from '../../../scheduler-data-services/booking-source-type.service';
+import { EventTypeService } from '../../../scheduler-data-services/event-type.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -64,6 +65,7 @@ interface ScheduledEventFormValues {
   crewId: number | bigint | null,       // For FK link number
   priorityId: number | bigint | null,       // For FK link number
   bookingSourceTypeId: number | bigint | null,       // For FK link number
+  eventTypeId: number | bigint | null,       // For FK link number
   partySize: string | null,     // Stored as string for form input, converted to number on submit.
   bookingContactName: string | null,
   bookingContactEmail: string | null,
@@ -126,6 +128,7 @@ export class ScheduledEventAddEditComponent {
         crewId: [null],
         priorityId: [null],
         bookingSourceTypeId: [null],
+        eventTypeId: [null],
         partySize: [''],
         bookingContactName: [''],
         bookingContactEmail: [''],
@@ -160,6 +163,7 @@ export class ScheduledEventAddEditComponent {
   crews$ = this.crewService.GetCrewList();
   priorities$ = this.priorityService.GetPriorityList();
   bookingSourceTypes$ = this.bookingSourceTypeService.GetBookingSourceTypeList();
+  eventTypes$ = this.eventTypeService.GetEventTypeList();
 
   constructor(
     private modalService: NgbModal,
@@ -175,6 +179,7 @@ export class ScheduledEventAddEditComponent {
     private crewService: CrewService,
     private priorityService: PriorityService,
     private bookingSourceTypeService: BookingSourceTypeService,
+    private eventTypeService: EventTypeService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -313,6 +318,7 @@ export class ScheduledEventAddEditComponent {
         crewId: formValue.crewId ? Number(formValue.crewId) : null,
         priorityId: formValue.priorityId ? Number(formValue.priorityId) : null,
         bookingSourceTypeId: formValue.bookingSourceTypeId ? Number(formValue.bookingSourceTypeId) : null,
+        eventTypeId: formValue.eventTypeId ? Number(formValue.eventTypeId) : null,
         partySize: formValue.partySize ? Number(formValue.partySize) : null,
         bookingContactName: formValue.bookingContactName?.trim() || null,
         bookingContactEmail: formValue.bookingContactEmail?.trim() || null,
@@ -471,6 +477,7 @@ export class ScheduledEventAddEditComponent {
         crewId: null,
         priorityId: null,
         bookingSourceTypeId: null,
+        eventTypeId: null,
         partySize: '',
         bookingContactName: '',
         bookingContactEmail: '',
@@ -512,6 +519,7 @@ export class ScheduledEventAddEditComponent {
         crewId: scheduledEventData.crewId,
         priorityId: scheduledEventData.priorityId,
         bookingSourceTypeId: scheduledEventData.bookingSourceTypeId,
+        eventTypeId: scheduledEventData.eventTypeId,
         partySize: scheduledEventData.partySize?.toString() ?? '',
         bookingContactName: scheduledEventData.bookingContactName ?? '',
         bookingContactEmail: scheduledEventData.bookingContactEmail ?? '',

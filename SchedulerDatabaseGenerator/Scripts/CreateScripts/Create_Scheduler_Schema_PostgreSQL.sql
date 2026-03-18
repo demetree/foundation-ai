@@ -96,6 +96,8 @@ CREATE SCHEMA "Scheduler"
 -- DROP TABLE "Scheduler"."ChargeStatus"
 -- DROP TABLE "Scheduler"."ScheduledEventChangeHistory"
 -- DROP TABLE "Scheduler"."ScheduledEvent"
+-- DROP TABLE "Scheduler"."EventTypeChangeHistory"
+-- DROP TABLE "Scheduler"."EventType"
 -- DROP TABLE "Scheduler"."ScheduledEventTemplateQualificationRequirementChangeHistory"
 -- DROP TABLE "Scheduler"."ScheduledEventTemplateQualificationRequirement"
 -- DROP TABLE "Scheduler"."ScheduledEventTemplateChargeChangeHistory"
@@ -268,6 +270,8 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "ChargeStatus" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEvent" DISABLE
+-- ALTER INDEX ALL ON "EventTypeChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "EventType" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirementChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirement" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventTemplateChargeChangeHistory" DISABLE
@@ -440,6 +444,8 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "ChargeStatus" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEvent" REBUILD
+-- ALTER INDEX ALL ON "EventTypeChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "EventType" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirementChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventTemplateQualificationRequirement" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventTemplateChargeChangeHistory" REBUILD
@@ -4792,6 +4798,103 @@ CREATE INDEX "I_ScheduledEventTemplateQualificationRequirementChangeHistory_t" O
 
 
 /*
+====================================================================================================
+ EVENT TYPE
+ Tenant-configurable categories of scheduled events that drive the booking workflow.
+ Each event type has boolean flags indicating what is required (rental agreement,
+ external contact info, payment, deposit, bar service) and what is allowed (ticket sales).
+ The isInternalEvent flag distinguishes committee-run events from private rentals.
+
+ DESIGN NOTE: defaultPrice and defaultChargeTypeId enable auto-creation of EventCharge
+ records when a new event is created with this type, streamlining the booking flow for
+ facility rental scenarios.
+ =====================================================================================================
+*/
+CREATE TABLE "Scheduler"."EventType"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"name" VARCHAR(100) NOT NULL,
+	"description" VARCHAR(500) NOT NULL,
+	"color" VARCHAR(10) NULL,		-- Hex color for UI display and calendar event color-coding.
+	"iconId" INT NULL,		-- Icon to use for UI display.
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"requiresRentalAgreement" BOOLEAN NOT NULL DEFAULT false,		-- Whether events of this type require a signed rental agreement.
+	"requiresExternalContact" BOOLEAN NOT NULL DEFAULT false,		-- Whether events of this type require external contact info (name, email, phone).
+	"requiresPayment" BOOLEAN NOT NULL DEFAULT false,		-- Whether events of this type require payment tracking.
+	"requiresDeposit" BOOLEAN NOT NULL DEFAULT false,		-- Whether events of this type require a deposit (uses EventCharge.isDeposit).
+	"requiresBarService" BOOLEAN NOT NULL DEFAULT false,		-- Whether events of this type default to needing bar service (alcohol + bartender staffing). Can be overridden per event.
+	"allowsTicketSales" BOOLEAN NOT NULL DEFAULT false,		-- Whether events of this type support ticket sales tracking.
+	"isInternalEvent" BOOLEAN NOT NULL DEFAULT false,		-- True for committee-run events; false for private rentals. Drives which booking flow is shown in simple mode.
+	"defaultPrice" DECIMAL(11,2) NULL,		-- Default rental price for events of this type. Used to auto-populate charges in the booking flow.
+	"chargeTypeId" INT NULL,		-- Default charge type for auto-created charges.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "iconId" FOREIGN KEY ("iconId") REFERENCES "Scheduler"."Icon"("id"),		-- Foreign key to the Icon table.
+	CONSTRAINT "chargeTypeId" FOREIGN KEY ("chargeTypeId") REFERENCES "Scheduler"."ChargeType"("id"),		-- Foreign key to the ChargeType table.
+	CONSTRAINT "UC_EventType_tenantGuid_name" UNIQUE ( "tenantGuid", "name") 		-- Uniqueness enforced on the EventType table's tenantGuid and name fields.
+);
+-- Index on the EventType table's tenantGuid field.
+CREATE INDEX "I_EventType_tenantGuid" ON "Scheduler"."EventType" ("tenantGuid")
+;
+
+-- Index on the EventType table's tenantGuid,name fields.
+CREATE INDEX "I_EventType_tenantGuid_name" ON "Scheduler"."EventType" ("tenantGuid", "name")
+;
+
+-- Index on the EventType table's tenantGuid,iconId fields.
+CREATE INDEX "I_EventType_tenantGuid_iconId" ON "Scheduler"."EventType" ("tenantGuid", "iconId")
+;
+
+-- Index on the EventType table's tenantGuid,chargeTypeId fields.
+CREATE INDEX "I_EventType_tenantGuid_chargeTypeId" ON "Scheduler"."EventType" ("tenantGuid", "chargeTypeId")
+;
+
+-- Index on the EventType table's tenantGuid,active fields.
+CREATE INDEX "I_EventType_tenantGuid_active" ON "Scheduler"."EventType" ("tenantGuid", "active")
+;
+
+-- Index on the EventType table's tenantGuid,deleted fields.
+CREATE INDEX "I_EventType_tenantGuid_deleted" ON "Scheduler"."EventType" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the EventType table.
+CREATE TABLE "Scheduler"."EventTypeChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"eventTypeId" INT NOT NULL,		-- Link to the EventType table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "eventTypeId" FOREIGN KEY ("eventTypeId") REFERENCES "Scheduler"."EventType"("id")		-- Foreign key to the EventType table.
+);
+-- Index on the EventTypeChangeHistory table's tenantGuid field.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid" ON "Scheduler"."EventTypeChangeHistory" ("tenantGuid")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."EventTypeChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."EventTypeChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_userId" ON "Scheduler"."EventTypeChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the EventTypeChangeHistory table's tenantGuid,eventTypeId fields.
+CREATE INDEX "I_EventTypeChangeHistory_tenantGuid_eventTypeId" ON "Scheduler"."EventTypeChangeHistory" ("tenantGuid", "eventTypeId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+/*
 Core scheduling entity – any planned activity with a defined time range.  This manages recurrences with the 'Detachment Model'
 
 How it works:
@@ -4826,6 +4929,7 @@ CREATE TABLE "Scheduler"."ScheduledEvent"
 	"crewId" INT NULL,		-- Optional primary/lead crew for the event
 	"priorityId" INT NULL,		-- Optional priority
 	"bookingSourceTypeId" INT NULL,		-- Optional booking source for reservation type workflows.
+	"eventTypeId" INT NULL,		-- Event type category — drives UI behavior (rental vs committee event flow, required fields, default pricing).
 	"partySize" INT NULL,		-- Optional for use when running as a reservation system
 	"bookingContactName" VARCHAR(250) NULL,		-- Name of the person booking (e.g., hall renter). Supports quick data entry without creating a full Contact.
 	"bookingContactEmail" VARCHAR(250) NULL,		-- Email of the person booking.
@@ -4852,6 +4956,7 @@ CREATE TABLE "Scheduler"."ScheduledEvent"
 	CONSTRAINT "crewId" FOREIGN KEY ("crewId") REFERENCES "Scheduler"."Crew"("id"),		-- Foreign key to the Crew table.
 	CONSTRAINT "priorityId" FOREIGN KEY ("priorityId") REFERENCES "Scheduler"."Priority"("id"),		-- Foreign key to the Priority table.
 	CONSTRAINT "bookingSourceTypeId" FOREIGN KEY ("bookingSourceTypeId") REFERENCES "Scheduler"."BookingSourceType"("id"),		-- Foreign key to the BookingSourceType table.
+	CONSTRAINT "eventTypeId" FOREIGN KEY ("eventTypeId") REFERENCES "Scheduler"."EventType"("id"),		-- Foreign key to the EventType table.
 	CONSTRAINT "UC_ScheduledEvent_tenantGuid_name_startDateTime" UNIQUE ( "tenantGuid", "name", "startDateTime") 		-- Uniqueness enforced on the ScheduledEvent table's tenantGuid and name and startDateTime fields.
 );
 -- Index on the ScheduledEvent table's tenantGuid field.
@@ -4920,6 +5025,10 @@ CREATE INDEX "I_ScheduledEvent_tenantGuid_priorityId" ON "Scheduler"."ScheduledE
 
 -- Index on the ScheduledEvent table's tenantGuid,bookingSourceTypeId fields.
 CREATE INDEX "I_ScheduledEvent_tenantGuid_bookingSourceTypeId" ON "Scheduler"."ScheduledEvent" ("tenantGuid", "bookingSourceTypeId")
+;
+
+-- Index on the ScheduledEvent table's tenantGuid,eventTypeId fields.
+CREATE INDEX "I_ScheduledEvent_tenantGuid_eventTypeId" ON "Scheduler"."ScheduledEvent" ("tenantGuid", "eventTypeId")
 ;
 
 -- Index on the ScheduledEvent table's tenantGuid,active fields.

@@ -49,6 +49,8 @@ public partial class ScheduledEvent
 
     public int? bookingSourceTypeId { get; set; }
 
+    public int? eventTypeId { get; set; }
+
     public int? partySize { get; set; }
 
     public string bookingContactName { get; set; }
@@ -112,6 +114,8 @@ public partial class ScheduledEvent
     public virtual Crew crew { get; set; }
 
     public virtual EventStatus eventStatus { get; set; }
+
+    public virtual EventType eventType { get; set; }
 
     public virtual Office office { get; set; }
 

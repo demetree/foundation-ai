@@ -277,6 +277,7 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(EventResourceAssignmentsController));
                 controllers.Add(typeof(EventResourceAssignmentChangeHistoriesController));
                 controllers.Add(typeof(EventStatusesController));
+                controllers.Add(typeof(EventTypesController));
                 controllers.Add(typeof(FinancialCategoriesController));
                 controllers.Add(typeof(FinancialCategoryChangeHistoriesController));
                 controllers.Add(typeof(FinancialOfficesController));

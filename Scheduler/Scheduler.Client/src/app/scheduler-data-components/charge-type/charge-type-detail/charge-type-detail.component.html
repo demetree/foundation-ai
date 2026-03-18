@@ -171,6 +171,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="eventTypeService.userIsSchedulerEventTypeReader()">
+                            <button ngbNavLink>Event Types
+                                <span class="badge bg-primary ms-2">
+                                    {{ (chargeTypeData?.EventTypesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-event-type-table [queryParams]="{ chargeTypeId: chargeTypeData?.id }" [showAddButton]="true" [preSeededData]="{ chargeTypeId: chargeTypeData?.id }" [hiddenFields]="['chargeTypeId']"></app-event-type-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="eventChargeService.userIsSchedulerEventChargeReader()">
                             <button ngbNavLink>Event Charges
                                 <span class="badge bg-primary ms-2">

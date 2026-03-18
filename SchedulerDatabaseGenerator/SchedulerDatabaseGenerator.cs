@@ -2831,6 +2831,51 @@ Hierarchy Logic (System should look for the first match in this order):
 
 
 
+            //
+            // EVENT TYPE — Tenant-configurable categories of scheduled events.
+            // Drives which UI sections/fields are shown in the booking flows.
+            // Requirement flags tell the UI what's needed for each event type
+            // (e.g., private rentals need agreements and payment; committee events don't).
+            //
+            Database.Table eventTypeTable = database.AddTable("EventType");
+            eventTypeTable.comment = @"====================================================================================================
+ EVENT TYPE
+ Tenant-configurable categories of scheduled events that drive the booking workflow.
+ Each event type has boolean flags indicating what is required (rental agreement,
+ external contact info, payment, deposit, bar service) and what is allowed (ticket sales).
+ The isInternalEvent flag distinguishes committee-run events from private rentals.
+
+ DESIGN NOTE: defaultPrice and defaultChargeTypeId enable auto-creation of EventCharge
+ records when a new event is created with this type, streamlining the booking flow for
+ facility rental scenarios.
+ =====================================================================================================";
+            eventTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_CONFIG_WRITER_PERMISSION_LEVEL);
+            eventTypeTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
+            eventTypeTable.AddIdField();
+            eventTypeTable.AddMultiTenantSupport();
+            eventTypeTable.AddNameAndDescriptionFields(true, true, false);
+            eventTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display and calendar event color-coding.");
+            eventTypeTable.AddForeignKeyField(iconTable, true).AddScriptComments("Icon to use for UI display.");
+            eventTypeTable.AddSequenceField();
+
+            // Requirement flags — drive which UI sections are shown
+            eventTypeTable.AddBoolField("requiresRentalAgreement", false, false).AddScriptComments("Whether events of this type require a signed rental agreement.");
+            eventTypeTable.AddBoolField("requiresExternalContact", false, false).AddScriptComments("Whether events of this type require external contact info (name, email, phone).");
+            eventTypeTable.AddBoolField("requiresPayment", false, false).AddScriptComments("Whether events of this type require payment tracking.");
+            eventTypeTable.AddBoolField("requiresDeposit", false, false).AddScriptComments("Whether events of this type require a deposit (uses EventCharge.isDeposit).");
+            eventTypeTable.AddBoolField("requiresBarService", false, false).AddScriptComments("Whether events of this type default to needing bar service (alcohol + bartender staffing). Can be overridden per event.");
+            eventTypeTable.AddBoolField("allowsTicketSales", false, false).AddScriptComments("Whether events of this type support ticket sales tracking.");
+            eventTypeTable.AddBoolField("isInternalEvent", false, false).AddScriptComments("True for committee-run events; false for private rentals. Drives which booking flow is shown in simple mode.");
+
+            // Default pricing — auto-creates an EventCharge when an event is booked with this type
+            eventTypeTable.AddMoneyField("defaultPrice", true, true).AddScriptComments("Default rental price for events of this type. Used to auto-populate charges in the booking flow.");
+            eventTypeTable.AddForeignKeyField(chargeTypeTable, true, true).AddScriptComments("Default charge type for auto-created charges.");
+
+            eventTypeTable.AddVersionControl();
+            eventTypeTable.AddControlFields();
+
+
+
             Database.Table scheduledEventTable = database.AddTable("ScheduledEvent");
 
 
@@ -2896,6 +2941,7 @@ You attach the specific Crew/Resource to Event B.";
             scheduledEventTable.AddForeignKeyField(crewTable, true, true).AddScriptComments("Optional primary/lead crew for the event");
             scheduledEventTable.AddForeignKeyField(priorityTable, true, true).AddScriptComments("Optional priority");
             scheduledEventTable.AddForeignKeyField(bookingSourceTypeTable, true, true).AddScriptComments("Optional booking source for reservation type workflows.");
+            scheduledEventTable.AddForeignKeyField(eventTypeTable, true, true).AddScriptComments("Event type category — drives UI behavior (rental vs committee event flow, required fields, default pricing).");
             scheduledEventTable.AddIntField("partySize", true, null).AddScriptComments("Optional for use when running as a reservation system");
 
             // Booking contact — lightweight inline fields for quick entry of renter/booker

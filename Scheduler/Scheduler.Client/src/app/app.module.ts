@@ -85,6 +85,8 @@ import { SystemHealthService } from './services/system-health.service';
 //
 import { SchedulerCalendarComponent } from './components/scheduler/scheduler-calendar/scheduler-calendar.component';
 import { EventAddEditModalComponent } from './components/scheduler/event-add-edit-modal/event-add-edit-modal.component';
+import { PrivateRentalBookingComponent } from './components/scheduler/private-rental-booking/private-rental-booking.component';
+import { CommitteeEventBookingComponent } from './components/scheduler/committee-event-booking/committee-event-booking.component';
 import { AdministrationComponent } from './components/administration/administration.component';
 import { AddTenantProfileComponent } from './components/add-tenant-profile/add-tenant-profile.component';
 import { RecurrenceBuilderComponent } from './components/scheduler/recurrence-builder/recurrence-builder.component';
@@ -382,6 +384,8 @@ import { EventChargeChangeHistoryService } from './scheduler-data-services/event
 import { EventResourceAssignmentService } from './scheduler-data-services/event-resource-assignment.service';
 import { EventResourceAssignmentChangeHistoryService } from './scheduler-data-services/event-resource-assignment-change-history.service';
 import { EventStatusService } from './scheduler-data-services/event-status.service';
+import { EventTypeService } from './scheduler-data-services/event-type.service';
+import { EventTypeChangeHistoryService } from './scheduler-data-services/event-type-change-history.service';
 import { FinancialCategoryService } from './scheduler-data-services/financial-category.service';
 import { FinancialCategoryChangeHistoryService } from './scheduler-data-services/financial-category-change-history.service';
 import { FinancialOfficeService } from './scheduler-data-services/financial-office.service';
@@ -741,6 +745,14 @@ import { EventStatusListingComponent } from './scheduler-data-components/event-s
 import { EventStatusAddEditComponent } from './scheduler-data-components/event-status/event-status-add-edit/event-status-add-edit.component';
 import { EventStatusDetailComponent } from './scheduler-data-components/event-status/event-status-detail/event-status-detail.component';
 import { EventStatusTableComponent } from './scheduler-data-components/event-status/event-status-table/event-status-table.component';
+import { EventTypeListingComponent } from './scheduler-data-components/event-type/event-type-listing/event-type-listing.component';
+import { EventTypeAddEditComponent } from './scheduler-data-components/event-type/event-type-add-edit/event-type-add-edit.component';
+import { EventTypeDetailComponent } from './scheduler-data-components/event-type/event-type-detail/event-type-detail.component';
+import { EventTypeTableComponent } from './scheduler-data-components/event-type/event-type-table/event-type-table.component';
+import { EventTypeChangeHistoryListingComponent } from './scheduler-data-components/event-type-change-history/event-type-change-history-listing/event-type-change-history-listing.component';
+import { EventTypeChangeHistoryAddEditComponent } from './scheduler-data-components/event-type-change-history/event-type-change-history-add-edit/event-type-change-history-add-edit.component';
+import { EventTypeChangeHistoryDetailComponent } from './scheduler-data-components/event-type-change-history/event-type-change-history-detail/event-type-change-history-detail.component';
+import { EventTypeChangeHistoryTableComponent } from './scheduler-data-components/event-type-change-history/event-type-change-history-table/event-type-change-history-table.component';
 import { FinancialCategoryListingComponent } from './scheduler-data-components/financial-category/financial-category-listing/financial-category-listing.component';
 import { FinancialCategoryAddEditComponent } from './scheduler-data-components/financial-category/financial-category-add-edit/financial-category-add-edit.component';
 import { FinancialCategoryDetailComponent } from './scheduler-data-components/financial-category/financial-category-detail/financial-category-detail.component';
@@ -1222,6 +1234,8 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     SchedulerCalendarComponent,
     EventAddEditModalComponent,
+    PrivateRentalBookingComponent,
+    CommitteeEventBookingComponent,
     RecurrenceBuilderComponent,
     TemplateManagerComponent,
     TemplateAddEditModalComponent,
@@ -1676,6 +1690,14 @@ EventStatusListingComponent,
 EventStatusAddEditComponent,
 EventStatusDetailComponent,
 EventStatusTableComponent,
+EventTypeListingComponent,
+EventTypeAddEditComponent,
+EventTypeDetailComponent,
+EventTypeTableComponent,
+EventTypeChangeHistoryListingComponent,
+EventTypeChangeHistoryAddEditComponent,
+EventTypeChangeHistoryDetailComponent,
+EventTypeChangeHistoryTableComponent,
 FinancialCategoryListingComponent,
 FinancialCategoryAddEditComponent,
 FinancialCategoryDetailComponent,
@@ -2268,6 +2290,8 @@ EventChargeChangeHistoryService,
 EventResourceAssignmentService,
 EventResourceAssignmentChangeHistoryService,
 EventStatusService,
+EventTypeService,
+EventTypeChangeHistoryService,
 FinancialCategoryService,
 FinancialCategoryChangeHistoryService,
 FinancialOfficeService,

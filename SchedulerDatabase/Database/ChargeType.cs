@@ -51,6 +51,8 @@ public partial class ChargeType
 
     public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
 
+    public virtual ICollection<EventType> EventTypes { get; set; } = new List<EventType>();
+
     public virtual ICollection<ScheduledEventTemplateCharge> ScheduledEventTemplateCharges { get; set; } = new List<ScheduledEventTemplateCharge>();
 
     public virtual Currency currency { get; set; }

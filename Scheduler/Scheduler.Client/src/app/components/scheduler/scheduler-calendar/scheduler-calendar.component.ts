@@ -24,8 +24,10 @@ import { SchedulerHelperService } from '../../../services/scheduler-helper.servi
 import { CalendarService, CalendarData } from '../../../scheduler-data-services/calendar.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-edit-modal.component';
+import { PrivateRentalBookingComponent } from '../private-rental-booking/private-rental-booking.component';
+import { CommitteeEventBookingComponent } from '../committee-event-booking/committee-event-booking.component';
 import { format, parseISO } from 'date-fns';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { ConflictDetectionService, ScheduleConflict, BlackoutPeriod, ShiftViolation } from '../../../services/conflict-detection.service';
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
@@ -34,6 +36,7 @@ import { EventResourceAssignmentService, EventResourceAssignmentData } from '../
 import { ResourceAvailabilityService, ResourceAvailabilityData } from '../../../scheduler-data-services/resource-availability.service';
 import { ResourceShiftService, ResourceShiftData } from '../../../scheduler-data-services/resource-shift.service';
 import { NavigationService } from '../../../utility-services/navigation.service';
+import { SchedulerModeService } from '../../../services/scheduler-mode.service';
 
 @Component({
   selector: 'app-scheduler-calendar',
@@ -91,6 +94,15 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
 
   //
+  // Simple Mode + Booking Chooser
+  //
+  isSimpleMode = true;
+  showBookingChooser = false;
+  bookingChooserPosition = { top: 0, left: 0 };
+  private pendingSelectInfo: any = null;
+  private modeSubscription: Subscription | null = null;
+
+  //
   // Availability Overlay state
   //
   showAvailability: boolean = false;
@@ -144,12 +156,19 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     private resourceAvailabilityService: ResourceAvailabilityService,
     private resourceShiftService: ResourceShiftService,
     private navigationService: NavigationService,
+    private schedulerModeService: SchedulerModeService,
     private route: ActivatedRoute,
     private router: Router
   ) { }
 
 
   ngOnInit(): void {
+    //
+    // Subscribe to simple/advanced mode
+    //
+    this.modeSubscription = this.schedulerModeService.isSimpleMode()
+      .subscribe(simple => this.isSimpleMode = simple);
+
     //
     // Load available calendars for the sidebar filter
     //
@@ -184,6 +203,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearPopoverTimers();
+    this.modeSubscription?.unsubscribe();
   }
 
 
@@ -950,14 +970,94 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     //
     this.hoveredEvent = null;
 
+    //
+    // In Simple Mode, show the booking type chooser instead of directly opening the modal
+    //
+    if (this.isSimpleMode) {
+      this.pendingSelectInfo = selectInfo;
+      this.showBookingChooser = true;
+
+      //
+      // Position the chooser near the click (use jsEvent if available)
+      //
+      if (selectInfo.jsEvent) {
+        this.bookingChooserPosition = {
+          top: Math.min(selectInfo.jsEvent.clientY, window.innerHeight - 200),
+          left: Math.min(selectInfo.jsEvent.clientX, window.innerWidth - 280)
+        };
+      }
+      return;
+    }
+
+    this.openFullEventModal(selectInfo.startStr, selectInfo.endStr || selectInfo.startStr);
+  }
+
+
+  /**
+   * Booking type chooser actions
+   */
+  openPrivateRental(): void {
+    this.showBookingChooser = false;
+    const info = this.pendingSelectInfo;
+
+    const modalRef = this.modalService.open(PrivateRentalBookingComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.componentInstance.initialStart = info.startStr;
+    modalRef.componentInstance.initialEnd = info.endStr || info.startStr;
+
+    modalRef.result.then(
+      (result) => { if (result === true) this.loadEvents(); },
+      () => { /* dismissed */ }
+    );
+  }
+
+
+  openCommitteeEvent(): void {
+    this.showBookingChooser = false;
+    const info = this.pendingSelectInfo;
+
+    const modalRef = this.modalService.open(CommitteeEventBookingComponent, {
+      size: 'lg',
+      backdrop: 'static',
+      keyboard: false
+    });
+
+    modalRef.componentInstance.initialStart = info.startStr;
+    modalRef.componentInstance.initialEnd = info.endStr || info.startStr;
+
+    modalRef.result.then(
+      (result) => { if (result === true) this.loadEvents(); },
+      () => { /* dismissed */ }
+    );
+  }
+
+
+  openCustomEvent(): void {
+    this.showBookingChooser = false;
+    const info = this.pendingSelectInfo;
+    this.openFullEventModal(info.startStr, info.endStr || info.startStr);
+  }
+
+
+  dismissBookingChooser(): void {
+    this.showBookingChooser = false;
+    this.pendingSelectInfo = null;
+  }
+
+
+  private openFullEventModal(startStr: string, endStr: string): void {
     const modalRef = this.modalService.open(EventAddEditModalComponent, {
       size: 'xl',
       backdrop: 'static',
       keyboard: false
     });
 
-    modalRef.componentInstance.initialStart = selectInfo.startStr;
-    modalRef.componentInstance.initialEnd = selectInfo.endStr || selectInfo.startStr;
+    modalRef.componentInstance.initialStart = startStr;
+    modalRef.componentInstance.initialEnd = endStr;
 
     modalRef.result.then(
       (result) => {
