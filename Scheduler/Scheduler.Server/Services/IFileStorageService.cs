@@ -109,6 +109,16 @@ namespace Scheduler.Server.Services
         Task<DocumentTag> CreateTagAsync(DocumentTag tag, int securityUserId, CancellationToken ct = default);
 
         /// <summary>
+        /// Updates an existing tag (name, color, description, etc.).
+        /// </summary>
+        Task<DocumentTag> UpdateTagAsync(DocumentTag tag, int securityUserId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Deletes a tag and removes all document-tag associations.
+        /// </summary>
+        Task DeleteTagAsync(int tagId, Guid tenantGuid, int securityUserId, CancellationToken ct = default);
+
+        /// <summary>
         /// Adds a tag to a document.
         /// </summary>
         Task AddTagToDocumentAsync(int documentId, int tagId, Guid tenantGuid, int securityUserId, CancellationToken ct = default);

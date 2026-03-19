@@ -4,7 +4,7 @@
   AI-Developed — This file was significantly developed with AI assistance.
 
   Explorer-like file manager with folder tree, document grid, search bar,
-  upload (drag-and-drop), context menus, and breadcrumbs.
+  upload (drag-and-drop), context menus, tags, and breadcrumbs.
 
   Uses the standard page-container + premium-header pattern for consistency
   with other Scheduler components.
@@ -18,7 +18,6 @@
   <div class="card mb-0 header-card premium-header shadow-lg border-0">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
       <div class="header-left">
-        <!-- Title -->
         <div class="text-white">
           <h3 class="page-title mb-0 fw-bold text-shadow">
             <i class="fa-solid fa-folder-tree me-2"></i>File Manager
@@ -28,16 +27,13 @@
       </div>
 
       <div class="header-right">
-        <!-- Count badge -->
         <span class="badge badge-glass mx-2">
-          {{ documents.length }} file{{ documents.length !== 1 ? 's' : '' }}
+          {{ filteredDocuments.length }} file{{ filteredDocuments.length !== 1 ? 's' : '' }}
           <span *ngIf="childFolders.length > 0 && !isSearching">,
             {{ childFolders.length }} folder{{ childFolders.length !== 1 ? 's' : '' }}
           </span>
-          <span *ngIf="isSearching"> result{{ documents.length !== 1 ? 's' : '' }}</span>
         </span>
 
-        <!-- Search Input -->
         <div class="search-bar me-2 position-relative">
           <i class="fa fa-search search-icon text-white-50"></i>
           <input type="text" class="form-control search-input glass-input"
@@ -50,7 +46,6 @@
           </button>
         </div>
 
-        <!-- Upload Button -->
         <button class="btn btn-sm btn-glass" (click)="triggerUpload()">
           <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload
         </button>
@@ -64,7 +59,7 @@
        ═══════════════════════════════════════════════════════════════════ -->
   <div class="fm-main">
 
-    <!-- ─── LEFT: Folder Tree ──────────────────────────────────── -->
+    <!-- ─── LEFT: Folder Tree + Tag Section ───────────────────── -->
     <div class="fm-sidebar" [class.collapsed]="sidebarCollapsed">
       <div class="fm-sidebar-header">
         <span *ngIf="!sidebarCollapsed" class="fm-sidebar-title">Folders</span>
@@ -75,7 +70,6 @@
       </div>
 
       <div class="fm-folder-tree" *ngIf="!sidebarCollapsed">
-        <!-- Root -->
         <div class="fm-folder-node" [class.active]="!currentFolderId && !isSearching"
              (click)="navigateToFolder(null)"
              (contextmenu)="onFolderContextMenu($event, null)">
@@ -83,15 +77,35 @@
           <span class="fm-folder-name">Root</span>
         </div>
 
-        <!-- Recursive folder tree -->
         <ng-container *ngFor="let folder of folderTree">
           <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: folder }"></ng-container>
         </ng-container>
       </div>
 
-      <!-- New Folder button -->
+      <!-- ─── Sidebar Tag Section (#6) ──────────────────────────── -->
+      <div class="fm-tag-section" *ngIf="!sidebarCollapsed">
+        <div class="fm-sidebar-header">
+          <span class="fm-sidebar-title">Tags</span>
+          <button class="fm-sidebar-toggle" (click)="openTagManager($event)" title="Manage tags">
+            <i class="fa-solid fa-gear"></i>
+          </button>
+        </div>
+        <div class="fm-tag-list">
+          <div class="fm-tag-sidebar-item" *ngFor="let tag of allTags"
+               (click)="toggleTagFilter(tag)"
+               [class.active]="isTagFilterActive(tag.id)">
+            <span class="fm-tag-dot" [style.background]="tag.color || '#6366f1'"></span>
+            <span class="fm-tag-sidebar-name">{{ tag.name }}</span>
+            <span class="fm-tag-count" *ngIf="tagCounts.get(tag.id)">{{ tagCounts.get(tag.id) }}</span>
+          </div>
+          <div class="fm-tag-sidebar-empty" *ngIf="allTags.length === 0" (click)="openTagManager($event)">
+            <i class="fa-solid fa-plus-circle me-1"></i> Create your first tag
+          </div>
+        </div>
+      </div>
+
       <div class="fm-sidebar-footer" *ngIf="!sidebarCollapsed">
-        <button class="btn btn-sm btn-outline-primary w-100" (click)="showNewFolderDialog()">
+        <button class="btn btn-sm btn-outline-primary w-100 mb-2" (click)="showNewFolderDialog()">
           <i class="fa-solid fa-folder-plus me-1"></i> New Folder
         </button>
       </div>
@@ -107,7 +121,6 @@
 
       <!-- Action bar -->
       <div class="fm-action-bar">
-        <!-- Breadcrumbs -->
         <nav class="fm-breadcrumbs" aria-label="Folder navigation">
           <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId">
             <i class="fa-solid fa-house-chimney"></i>
@@ -122,6 +135,14 @@
         </nav>
 
         <div class="ms-auto d-flex align-items-center gap-2">
+          <!-- Select all checkbox -->
+          <div class="form-check form-check-inline mb-0" *ngIf="filteredDocuments.length > 0">
+            <input type="checkbox" class="form-check-input" id="fm-select-all"
+                   [checked]="selectedDocIds.size === filteredDocuments.length && filteredDocuments.length > 0"
+                   (change)="selectAllDocs()" />
+            <label class="form-check-label small" for="fm-select-all">All</label>
+          </div>
+
           <button class="btn btn-sm btn-outline-secondary" (click)="showNewFolderDialog()">
             <i class="fa-solid fa-folder-plus me-1"></i> New Folder
           </button>
@@ -129,7 +150,6 @@
             <i class="fa-solid fa-arrows-rotate"></i>
           </button>
 
-          <!-- View toggle -->
           <div class="btn-group btn-group-sm">
             <button class="btn" [class.btn-secondary]="viewMode === 'grid'" [class.btn-outline-secondary]="viewMode !== 'grid'"
                     (click)="viewMode = 'grid'" title="Grid view">
@@ -143,7 +163,51 @@
         </div>
       </div>
 
-      <!-- Drop zone overlay — always in DOM, toggled via CSS class to prevent flicker -->
+      <!-- ─── Tag Filter Bar (#2) ─────────────────────────────── -->
+      <div class="fm-tag-filter-bar" *ngIf="allTags.length > 0">
+        <div class="fm-tag-filter-scroll">
+          <button class="fm-tag-pill" *ngFor="let tag of allTags"
+                  (click)="toggleTagFilter(tag)"
+                  [class.active]="isTagFilterActive(tag.id)"
+                  [style.--tag-color]="tag.color || '#6366f1'">
+            <span class="fm-tag-pill-dot" [style.background]="tag.color || '#6366f1'"></span>
+            {{ tag.name }}
+          </button>
+        </div>
+        <button class="btn btn-sm btn-link fm-tag-clear-btn" *ngIf="activeTagFilters.size > 0"
+                (click)="clearTagFilters()">
+          <i class="fa-solid fa-xmark me-1"></i>Clear
+        </button>
+      </div>
+
+      <!-- ─── Bulk Action Bar (#5) ────────────────────────────── -->
+      <div class="fm-bulk-bar" *ngIf="selectedDocIds.size > 0">
+        <span class="fm-bulk-count">{{ selectedDocIds.size }} selected</span>
+        <div class="fm-bulk-actions">
+          <div class="dropdown" (click)="$event.stopPropagation()">
+            <button class="btn btn-sm btn-outline-primary dropdown-toggle" (click)="showBulkTagDropdown = !showBulkTagDropdown">
+              <i class="fa-solid fa-tag me-1"></i> Tag
+            </button>
+            <div class="dropdown-menu" [class.show]="showBulkTagDropdown">
+              <h6 class="dropdown-header">Add tag</h6>
+              <button class="dropdown-item" *ngFor="let tag of allTags" (click)="bulkAddTag(tag)">
+                <span class="fm-tag-dot me-2" [style.background]="tag.color || '#6366f1'"></span>
+                {{ tag.name }}
+              </button>
+              <div class="dropdown-divider" *ngIf="allTags.length > 0"></div>
+              <h6 class="dropdown-header">Remove tag</h6>
+              <button class="dropdown-item text-danger" *ngFor="let tag of allTags" (click)="bulkRemoveTag(tag)">
+                <i class="fa-solid fa-xmark me-2"></i>{{ tag.name }}
+              </button>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-secondary" (click)="clearSelection()">
+            <i class="fa-solid fa-xmark me-1"></i> Clear
+          </button>
+        </div>
+      </div>
+
+      <!-- Drop zone overlay -->
       <div class="fm-drop-overlay" [class.active]="isDragOver">
         <div class="fm-drop-overlay-inner">
           <i class="fa-solid fa-cloud-arrow-up fa-3x mb-2"></i>
@@ -152,9 +216,26 @@
       </div>
 
       <!-- Loading spinner -->
-      <div class="fm-loading" *ngIf="isLoading">
+      <div class="fm-loading" *ngIf="isLoading && !importProgress">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Import progress overlay -->
+      <div class="fm-import-progress" *ngIf="importProgress">
+        <div class="fm-import-card">
+          <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+          <div class="fm-import-info">
+            <div class="fm-import-phase">{{ importProgress.phase }}</div>
+            <div class="fm-import-detail">{{ importProgress.detail }}</div>
+            <div class="fm-import-bar-wrap" *ngIf="importProgress.total > 0">
+              <div class="fm-import-bar" [style.width.%]="(importProgress.current / importProgress.total) * 100"></div>
+            </div>
+            <div class="fm-import-count" *ngIf="importProgress.total > 0">
+              {{ importProgress.current }} / {{ importProgress.total }}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -165,7 +246,7 @@
         <button class="btn btn-sm btn-link ms-2" (click)="clearSearch()">Clear</button>
       </div>
 
-      <!-- ─── Sub-folders shown as cards (when not searching) -->
+      <!-- Sub-folders -->
       <div class="fm-subfolder-row" *ngIf="!isSearching && childFolders.length > 0 && !isLoading">
         <div class="fm-subfolder-card" *ngFor="let folder of childFolders"
              (click)="navigateToFolder(folder.id)"
@@ -175,13 +256,18 @@
         </div>
       </div>
 
-      <!-- ─── Grid View ─────────────────────────────────────── -->
+      <!-- ─── Grid View (with tag dots #3) ────────────────────── -->
       <div class="fm-file-grid" *ngIf="viewMode === 'grid' && !isLoading">
-        <div class="fm-file-card" *ngFor="let doc of documents"
+        <div class="fm-file-card" *ngFor="let doc of filteredDocuments"
              (click)="selectDocument(doc)"
              (dblclick)="downloadFile(doc)"
              (contextmenu)="onDocContextMenu($event, doc)"
-             [class.selected]="selectedDocument?.id === doc.id">
+             [class.selected]="selectedDocument?.id === doc.id"
+             [class.bulk-selected]="isDocSelected(doc.id)">
+
+          <!-- Bulk checkbox -->
+          <input type="checkbox" class="fm-card-check" [checked]="isDocSelected(doc.id)"
+                 (click)="toggleDocSelection($event, doc)" (change)="$event.stopPropagation()" />
 
           <div class="fm-file-card-icon">
             <i class="fa-solid" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
@@ -189,54 +275,74 @@
           </div>
           <div class="fm-file-card-name" [title]="doc.fileName">{{ doc.fileName }}</div>
           <div class="fm-file-card-meta">{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }}</div>
+
+          <!-- Tag dots (#3) -->
+          <div class="fm-tag-dots" *ngIf="getDocTags(doc.id).length > 0">
+            <span class="fm-tag-dot-sm" *ngFor="let tag of getDocTags(doc.id)"
+                  [style.background]="tag.color || '#6366f1'"
+                  [title]="tag.name"></span>
+          </div>
         </div>
 
-        <!-- Empty state -->
-        <div class="fm-empty" *ngIf="documents.length === 0 && childFolders.length === 0">
+        <div class="fm-empty" *ngIf="filteredDocuments.length === 0 && childFolders.length === 0">
           <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
-          <p>This folder is empty</p>
-          <p class="small">Drag and drop files here, or click Upload</p>
+          <p *ngIf="activeTagFilters.size === 0">This folder is empty</p>
+          <p *ngIf="activeTagFilters.size > 0">No documents match the selected tags</p>
+          <p class="small" *ngIf="activeTagFilters.size === 0">Drag and drop files here, or click Upload</p>
+          <button class="btn btn-sm btn-outline-secondary" *ngIf="activeTagFilters.size > 0"
+                  (click)="clearTagFilters()">Clear tag filters</button>
         </div>
       </div>
 
-      <!-- ─── List View ─────────────────────────────────────── -->
+      <!-- ─── List View (with tags column #3) ─────────────────── -->
       <div class="fm-file-list" *ngIf="viewMode === 'list' && !isLoading">
         <table class="table table-sm table-hover mb-0">
           <thead>
             <tr>
-              <th style="width: 40px;"></th>
+              <th style="width: 30px;">
+                <input type="checkbox" class="form-check-input"
+                       [checked]="selectedDocIds.size === filteredDocuments.length && filteredDocuments.length > 0"
+                       (change)="selectAllDocs()" />
+              </th>
+              <th style="width: 30px;"></th>
               <th>Name</th>
-              <th style="width: 100px;">Size</th>
-              <th style="width: 160px;">Uploaded</th>
-              <th style="width: 120px;">Type</th>
+              <th style="width: 160px;">Tags</th>
+              <th style="width: 90px;">Size</th>
+              <th style="width: 150px;">Uploaded</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let doc of documents"
+            <tr *ngFor="let doc of filteredDocuments"
                 (click)="selectDocument(doc)"
                 (dblclick)="downloadFile(doc)"
                 (contextmenu)="onDocContextMenu($event, doc)"
                 [class.table-active]="selectedDocument?.id === doc.id"
+                [class.bulk-selected]="isDocSelected(doc.id)"
                 class="fm-file-row">
+              <td>
+                <input type="checkbox" class="form-check-input"
+                       [checked]="isDocSelected(doc.id)"
+                       (click)="toggleDocSelection($event, doc)" (change)="$event.stopPropagation()" />
+              </td>
               <td class="text-center">
                 <i class="fa-solid" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
                    [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
               </td>
               <td>{{ doc.fileName }}</td>
+              <td>
+                <span class="fm-tag-chip-sm" *ngFor="let tag of getDocTags(doc.id)"
+                      [style.background]="tag.color || '#6366f1'">{{ tag.name }}</span>
+              </td>
               <td>{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }}</td>
               <td>{{ doc.uploadedDate | date:'short' }}</td>
-              <td class="text-truncate" style="max-width: 120px;" [title]="doc.mimeType">
-                {{ doc.mimeType | slice:0:20 }}
-              </td>
             </tr>
           </tbody>
         </table>
 
-        <!-- Empty state for list view -->
-        <div class="fm-empty" *ngIf="documents.length === 0 && childFolders.length === 0">
+        <div class="fm-empty" *ngIf="filteredDocuments.length === 0 && childFolders.length === 0">
           <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
-          <p>This folder is empty</p>
-          <p class="small">Drag and drop files here, or click Upload</p>
+          <p *ngIf="activeTagFilters.size === 0">This folder is empty</p>
+          <p *ngIf="activeTagFilters.size > 0">No documents match the selected tags</p>
         </div>
       </div>
 
@@ -244,7 +350,7 @@
     <!-- end fm-content -->
 
 
-    <!-- ─── RIGHT DETAIL PANEL (shown when a file is selected) ─── -->
+    <!-- ─── RIGHT DETAIL PANEL (#1: Tags section) ──────────────── -->
     <div class="fm-detail-panel" *ngIf="selectedDocument" [@slidePanel]>
       <div class="fm-detail-header">
         <h6 class="mb-0 text-truncate" [title]="selectedDocument.fileName">{{ selectedDocument.fileName }}</h6>
@@ -256,6 +362,38 @@
         <div class="fm-detail-preview">
           <i class="fa-solid fa-4x" [ngClass]="fileManagerService.getFileIcon(selectedDocument.mimeType)"
              [style.color]="fileManagerService.getFileColor(selectedDocument.mimeType)"></i>
+        </div>
+
+        <!-- ─── Tags Section (#1) ───────────────────────────── -->
+        <div class="fm-detail-tags">
+          <div class="fm-detail-tags-header">
+            <span class="fm-prop-label"><i class="fa-solid fa-tags me-1"></i> Tags</span>
+            <button class="btn btn-sm btn-link p-0" (click)="toggleTagDropdown($event)">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+
+          <!-- Current tags as chips -->
+          <div class="fm-tag-chips">
+            <span class="fm-tag-chip" *ngFor="let tag of selectedDocumentTags"
+                  [style.background]="tag.color || '#6366f1'">
+              {{ tag.name }}
+              <button class="fm-tag-chip-remove" (click)="removeTagFromSelectedDoc(tag); $event.stopPropagation()">×</button>
+            </span>
+            <span class="fm-tag-empty" *ngIf="selectedDocumentTags.length === 0">No tags assigned</span>
+          </div>
+
+          <!-- Add tag dropdown -->
+          <div class="fm-tag-dropdown" *ngIf="showTagDropdown" (click)="$event.stopPropagation()">
+            <div class="fm-tag-dropdown-item" *ngFor="let tag of unassignedTags"
+                 (click)="addTagToSelectedDoc(tag)">
+              <span class="fm-tag-dot" [style.background]="tag.color || '#6366f1'"></span>
+              {{ tag.name }}
+            </div>
+            <div class="fm-tag-dropdown-empty" *ngIf="unassignedTags.length === 0">
+              All tags assigned
+            </div>
+          </div>
         </div>
 
         <!-- Properties -->
@@ -307,10 +445,8 @@
 
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       CONTEXT MENUS (rendered off-canvas, positioned via JS)
+       CONTEXT MENUS
        ═══════════════════════════════════════════════════════════════════ -->
-
-  <!-- Document context menu -->
   <div class="fm-context-menu" *ngIf="showDocContext" [style.left.px]="contextX" [style.top.px]="contextY"
        (mouseleave)="showDocContext = false">
     <ul>
@@ -320,7 +456,6 @@
     </ul>
   </div>
 
-  <!-- Folder context menu -->
   <div class="fm-context-menu" *ngIf="showFolderContext" [style.left.px]="contextX" [style.top.px]="contextY"
        (mouseleave)="showFolderContext = false">
     <ul>
@@ -332,7 +467,7 @@
 
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       NEW FOLDER DIALOG (simple modal)
+       NEW FOLDER DIALOG
        ═══════════════════════════════════════════════════════════════════ -->
   <div class="fm-modal-backdrop" *ngIf="showNewFolderModal" (click)="showNewFolderModal = false"></div>
   <div class="fm-modal" *ngIf="showNewFolderModal">
@@ -367,9 +502,72 @@
     </div>
     <div class="fm-modal-footer">
       <button class="btn btn-sm btn-secondary me-2" (click)="showRenameDocModal = false">Cancel</button>
-      <button class="btn btn-sm btn-primary" (click)="confirmRenameDoc()" [disabled]="!renameDocName.trim()">
-        Save
-      </button>
+      <button class="btn btn-sm btn-primary" (click)="confirmRenameDoc()" [disabled]="!renameDocName.trim()">Save</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TAG MANAGER MODAL (#4)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="fm-modal-backdrop" *ngIf="showTagManagerModal" (click)="showTagManagerModal = false"></div>
+  <div class="fm-modal fm-modal-wide" *ngIf="showTagManagerModal">
+    <div class="fm-modal-header">
+      <h6 class="mb-0"><i class="fa-solid fa-tags me-2"></i>Manage Tags</h6>
+      <button class="btn-close btn-sm" (click)="showTagManagerModal = false"></button>
+    </div>
+    <div class="fm-modal-body fm-tag-manager">
+      <!-- Existing tags -->
+      <div class="fm-tag-mgr-list">
+        <div class="fm-tag-mgr-row" *ngFor="let tag of allTags">
+          <ng-container *ngIf="editingTagId !== tag.id">
+            <span class="fm-tag-dot-lg" [style.background]="tag.color || '#6366f1'"></span>
+            <span class="fm-tag-mgr-name">{{ tag.name }}</span>
+            <span class="fm-tag-mgr-count">{{ tagCounts.get(tag.id) || 0 }} docs</span>
+            <button class="btn btn-sm btn-link p-0 ms-auto" (click)="startEditTag(tag, $event)" title="Edit">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="btn btn-sm btn-link text-danger p-0 ms-2" (click)="deleteExistingTag(tag)" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </ng-container>
+
+          <!-- Inline edit mode -->
+          <ng-container *ngIf="editingTagId === tag.id">
+            <div class="fm-tag-mgr-edit">
+              <div class="fm-tag-color-picker">
+                <span class="fm-tag-color-option" *ngFor="let c of tagColorOptions"
+                      [style.background]="c"
+                      [class.active]="editingTagColor === c"
+                      (click)="editingTagColor = c"></span>
+              </div>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="editingTagName"
+                     (keyup.enter)="saveEditTag(tag)" />
+              <div class="d-flex gap-1 mt-1">
+                <button class="btn btn-sm btn-primary flex-grow-1" (click)="saveEditTag(tag)">Save</button>
+                <button class="btn btn-sm btn-secondary" (click)="cancelEditTag()">Cancel</button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Create new tag -->
+      <div class="fm-tag-mgr-create">
+        <div class="fm-tag-color-picker mb-2">
+          <span class="fm-tag-color-option" *ngFor="let c of tagColorOptions"
+                [style.background]="c"
+                [class.active]="newTagColor === c"
+                (click)="newTagColor = c"></span>
+        </div>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm" placeholder="New tag name…"
+                 [(ngModel)]="newTagName" (keyup.enter)="createNewTag()" />
+          <button class="btn btn-sm btn-primary" (click)="createNewTag()" [disabled]="!newTagName.trim()">
+            <i class="fa-solid fa-plus me-1"></i>Add
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -387,20 +585,15 @@
        [style.paddingLeft.px]="16 + (folder.level || 0) * 16"
        (click)="navigateToFolder(folder.id)"
        (contextmenu)="onFolderContextMenu($event, folder)">
-
-    <!-- Expand arrow (only if has children) -->
     <i *ngIf="folder.children && folder.children.length > 0"
        class="fa-solid fm-tree-arrow"
        [ngClass]="folder.expanded ? 'fa-caret-down' : 'fa-caret-right'"
        (click)="toggleFolderExpand($event, folder)"></i>
     <span *ngIf="!folder.children || folder.children.length === 0" class="fm-tree-arrow-spacer"></span>
-
     <i class="fa-solid fm-folder-icon" [ngClass]="folder.expanded && folder.children?.length ? 'fa-folder-open' : 'fa-folder'"
        [style.color]="folder.color || '#f0ad4e'"></i>
     <span class="fm-folder-name">{{ folder.name }}</span>
   </div>
-
-  <!-- Recursively render children when expanded -->
   <ng-container *ngIf="folder.expanded && folder.children">
     <ng-container *ngFor="let child of folder.children">
       <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: child }"></ng-container>

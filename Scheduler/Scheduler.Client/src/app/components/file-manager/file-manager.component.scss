@@ -526,6 +526,71 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 
+// ─── Import Progress Overlay ─────────────────────────────────────────
+
+.fm-import-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.fm-import-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--sch-bg-card);
+  border: 1px solid var(--sch-border);
+  border-radius: 12px;
+  padding: 20px 28px;
+  box-shadow: var(--sch-shadow);
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.fm-import-info {
+  flex: 1;
+}
+
+.fm-import-phase {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--sch-text-primary);
+  margin-bottom: 2px;
+}
+
+.fm-import-detail {
+  font-size: 0.8rem;
+  color: var(--sch-text-muted);
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-import-bar-wrap {
+  height: 6px;
+  background: var(--sch-bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.fm-import-bar {
+  height: 100%;
+  background: var(--sch-primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+  min-width: 2%;
+}
+
+.fm-import-count {
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+  text-align: right;
+}
+
+
 // ─── Detail Panel ───────────────────────────────────────────────────
 .fm-detail-panel {
   width: $detail-panel-width;
@@ -677,6 +742,449 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   justify-content: flex-end;
   padding: 12px 18px;
   border-top: 1px solid var(--sch-border);
+}
+
+.fm-modal-wide {
+  max-width: 520px;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  TAG STYLES
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─── Common Tag Elements ─────────────────────────────────────────────
+
+.fm-tag-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.fm-tag-dot-sm {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 2px;
+  cursor: default;
+}
+
+.fm-tag-dot-lg {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.fm-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.fm-tag-chip-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0 0 0 2px;
+  line-height: 1;
+
+  &:hover {
+    color: white;
+  }
+}
+
+.fm-tag-chip-sm {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+  margin-right: 3px;
+}
+
+.fm-tag-empty {
+  font-size: 0.8rem;
+  color: var(--sch-text-muted);
+  font-style: italic;
+}
+
+
+// ─── Tag Filter Bar (#2) ─────────────────────────────────────────────
+
+.fm-tag-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--sch-border);
+  background: var(--sch-bg-elevated);
+  flex-shrink: 0;
+}
+
+.fm-tag-filter-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fm-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 12px;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--tag-color, #6366f1);
+  background: transparent;
+  color: var(--sch-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.1);
+  }
+
+  &.active {
+    background: var(--tag-color, #6366f1);
+    color: white;
+    border-color: var(--tag-color, #6366f1);
+
+    .fm-tag-pill-dot {
+      background: white !important;
+    }
+  }
+}
+
+.fm-tag-pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.fm-tag-clear-btn {
+  font-size: 0.75rem;
+  color: var(--sch-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: var(--sch-text-primary);
+  }
+}
+
+
+// ─── Tag Dots on File Cards (#3) ─────────────────────────────────────
+
+.fm-tag-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-top: 4px;
+  min-height: 10px;
+}
+
+
+// ─── Sidebar Tag Section (#6) ────────────────────────────────────────
+
+.fm-tag-section {
+  border-top: 1px solid var(--sch-border);
+
+  .fm-sidebar-header {
+    padding-top: 8px;
+    padding-bottom: 4px;
+  }
+}
+
+.fm-tag-list {
+  padding: 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.fm-tag-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--sch-text-primary);
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+
+  &.active {
+    background: rgba(99, 102, 241, 0.15);
+    font-weight: 600;
+  }
+}
+
+.fm-tag-sidebar-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-tag-count {
+  font-size: 0.7rem;
+  background: var(--sch-bg-elevated);
+  border-radius: 8px;
+  padding: 0 6px;
+  color: var(--sch-text-muted);
+  min-width: 20px;
+  text-align: center;
+}
+
+.fm-tag-sidebar-empty {
+  padding: 8px;
+  font-size: 0.78rem;
+  color: var(--sch-primary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background $transition-fast;
+  text-align: center;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+}
+
+
+// ─── Detail Panel Tags (#1) ─────────────────────────────────────────
+
+.fm-detail-tags {
+  padding: 0 0 8px;
+  border-bottom: 1px solid var(--sch-border);
+  margin-bottom: 8px;
+}
+
+.fm-detail-tags-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+
+  .btn-link {
+    color: var(--sch-primary);
+    font-size: 0.8rem;
+  }
+}
+
+.fm-tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.fm-tag-dropdown {
+  background: var(--sch-bg-card);
+  border: 1px solid var(--sch-border);
+  border-radius: 8px;
+  box-shadow: var(--sch-shadow);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+
+.fm-tag-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--sch-text-primary);
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+}
+
+.fm-tag-dropdown-empty {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: var(--sch-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+
+// ─── Bulk Action Bar (#5) ────────────────────────────────────────────
+
+.fm-bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: rgba(99, 102, 241, 0.08);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  flex-shrink: 0;
+}
+
+.fm-bulk-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sch-primary);
+}
+
+.fm-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .dropdown-menu {
+    background: var(--sch-bg-card);
+    border-color: var(--sch-border);
+    box-shadow: var(--sch-shadow);
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .dropdown-item {
+    color: var(--sch-text-primary);
+    font-size: 0.8rem;
+
+    &:hover {
+      background: var(--sch-bg-elevated);
+    }
+  }
+
+  .dropdown-header {
+    color: var(--sch-text-muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+// Card checkbox
+.fm-card-check {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity $transition-fast;
+}
+
+.fm-file-card {
+  position: relative;
+
+  &:hover .fm-card-check,
+  &.bulk-selected .fm-card-check {
+    opacity: 1;
+  }
+
+  &.bulk-selected {
+    outline: 2px solid var(--sch-primary);
+    outline-offset: -2px;
+  }
+}
+
+.fm-file-row.bulk-selected {
+  background-color: rgba(99, 102, 241, 0.08) !important;
+}
+
+
+// ─── Tag Management Modal (#4) ───────────────────────────────────────
+
+.fm-tag-manager {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.fm-tag-mgr-list {
+  margin-bottom: 16px;
+}
+
+.fm-tag-mgr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+}
+
+.fm-tag-mgr-name {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--sch-text-primary);
+}
+
+.fm-tag-mgr-count {
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+}
+
+.fm-tag-mgr-edit {
+  flex: 1;
+  padding: 4px 0;
+}
+
+.fm-tag-mgr-create {
+  border-top: 1px solid var(--sch-border);
+  padding-top: 12px;
+}
+
+.fm-tag-color-picker {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.fm-tag-color-option {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all $transition-fast;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.active {
+    border-color: var(--sch-text-primary);
+    box-shadow: 0 0 0 2px var(--sch-bg-card), 0 0 0 4px var(--sch-text-primary);
+  }
 }
 
 

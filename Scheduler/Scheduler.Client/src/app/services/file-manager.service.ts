@@ -304,6 +304,18 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
+    updateTag(tag: Partial<DocumentTagDTO>): Observable<DocumentTagDTO> {
+        return this.http.put<DocumentTagDTO>(`${this.base}/Tags`, tag, { headers: this.jsonHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.updateTag(tag)))
+        );
+    }
+
+    deleteTag(tagId: number): Observable<any> {
+        return this.http.delete(`${this.base}/Tags/${tagId}`, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.deleteTag(tagId)))
+        );
+    }
+
     getTagsForDocument(documentId: number): Observable<DocumentTagDTO[]> {
         return this.http.get<DocumentTagDTO[]>(`${this.base}/Documents/${documentId}/Tags`, { headers: this.authHeaders() }).pipe(
             catchError((error: any) => this.handleError(error, () => this.getTagsForDocument(documentId)))

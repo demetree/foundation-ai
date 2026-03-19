@@ -638,6 +638,67 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         /// <summary>
+        /// Updates an existing tag (name, color, description, etc.).
+        /// </summary>
+        [Route("api/FileManager/Tags")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateTag([FromBody] DocumentTag.DocumentTagDTO dto)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                DocumentTag tag = DocumentTag.FromDTO(dto);
+                tag.tenantGuid = tenantGuid;
+
+                DocumentTag updated = await _fileStorage.UpdateTagAsync(tag, securityUser.id);
+
+                return Ok(updated.ToDTO());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating tag {TagId}.", dto?.id);
+                return StatusCode(500, "Error updating tag.");
+            }
+        }
+
+
+        /// <summary>
+        /// Deletes a tag and removes all document-tag associations.
+        /// </summary>
+        [Route("api/FileManager/Tags/{tagId}")]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteTag(int tagId)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                await _fileStorage.DeleteTagAsync(tagId, tenantGuid, securityUser.id);
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting tag {TagId}.", tagId);
+                return StatusCode(500, "Error deleting tag.");
+            }
+        }
+
+
+        /// <summary>
         /// Adds a tag to a document.
         /// </summary>
         [Route("api/FileManager/Documents/{documentId}/Tags/{tagId}")]

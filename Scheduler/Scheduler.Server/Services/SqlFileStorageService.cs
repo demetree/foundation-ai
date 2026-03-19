@@ -444,6 +444,67 @@ namespace Scheduler.Server.Services
         }
 
 
+        public async Task<DocumentTag> UpdateTagAsync(DocumentTag tag, int securityUserId, CancellationToken ct = default)
+        {
+            DocumentTag existing = await _db.DocumentTags
+                .Where(t => t.id == tag.id && t.tenantGuid == tag.tenantGuid && t.deleted == false)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (existing == null)
+            {
+                throw new InvalidOperationException($"DocumentTag {tag.id} not found.");
+            }
+
+            existing.name = tag.name;
+            existing.description = tag.description;
+            existing.color = tag.color;
+            existing.sequence = tag.sequence;
+
+            var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<DocumentTag, DocumentTagChangeHistory>(_db, securityUserId, false, ct);
+            await chts.SaveEntityAsync(existing).ConfigureAwait(false);
+
+            _logger.LogInformation("Updated DocumentTag {TagId} '{TagName}' for tenant {TenantGuid}.", existing.id, existing.name, existing.tenantGuid);
+
+            return existing;
+        }
+
+
+        public async Task DeleteTagAsync(int tagId, Guid tenantGuid, int securityUserId, CancellationToken ct = default)
+        {
+            DocumentTag tag = await _db.DocumentTags
+                .Where(t => t.id == tagId && t.tenantGuid == tenantGuid && t.deleted == false)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (tag == null)
+            {
+                throw new InvalidOperationException($"DocumentTag {tagId} not found.");
+            }
+
+            // Soft-delete all junction records for this tag
+            List<DocumentDocumentTag> junctions = await _db.DocumentDocumentTags
+                .Where(ddt => ddt.documentTagId == tagId && ddt.tenantGuid == tenantGuid && ddt.deleted == false)
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
+
+            var junctionChts = new Foundation.ChangeHistory.ChangeHistoryToolset<DocumentDocumentTag, DocumentDocumentTagChangeHistory>(_db, securityUserId, false, ct);
+            foreach (DocumentDocumentTag junction in junctions)
+            {
+                junction.deleted = true;
+                await junctionChts.SaveEntityAsync(junction).ConfigureAwait(false);
+            }
+
+            // Soft-delete the tag itself
+            tag.deleted = true;
+
+            var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<DocumentTag, DocumentTagChangeHistory>(_db, securityUserId, false, ct);
+            await chts.SaveEntityAsync(tag).ConfigureAwait(false);
+
+            _logger.LogInformation("Deleted DocumentTag {TagId} for tenant {TenantGuid} ({JunctionCount} associations removed).", tagId, tenantGuid, junctions.Count);
+        }
+
+
         public async Task AddTagToDocumentAsync(int documentId, int tagId, Guid tenantGuid, int securityUserId, CancellationToken ct = default)
         {
             //
