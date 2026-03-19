@@ -107,6 +107,40 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     editingTagName = '';
     editingTagColor = '';
 
+    // ─── Entity Links ────────────────────────────────────────────────
+    //
+    // Configuration map for all 17 entity types that a document can be linked to.
+    // 'route' is null for entity types that don't yet have detail pages.
+    // TODO: Add routes for FinancialTransaction, FinancialOffice, TenantProfile,
+    //       Campaign, Household, Constituent, and Tribute once their detail pages are built.
+    //
+    readonly entityLinkConfig: {
+        fk: string; nav: string; nameField: string; label: string;
+        icon: string; route: string | null; color: string;
+    }[] = [
+        { fk: 'contactId', nav: 'contact', nameField: 'firstName', label: 'Contact', icon: 'fa-address-book', route: '/contact', color: '#3b82f6' },
+        { fk: 'resourceId', nav: 'resource', nameField: 'name', label: 'Resource', icon: 'fa-user-tie', route: '/resource', color: '#8b5cf6' },
+        { fk: 'clientId', nav: 'client', nameField: 'name', label: 'Client', icon: 'fa-building', route: '/clients', color: '#22c55e' },
+        { fk: 'officeId', nav: 'office', nameField: 'name', label: 'Office', icon: 'fa-map-marker-alt', route: '/offices', color: '#f97316' },
+        { fk: 'crewId', nav: 'crew', nameField: 'name', label: 'Crew', icon: 'fa-users', route: '/crews', color: '#06b6d4' },
+        { fk: 'schedulingTargetId', nav: 'schedulingTarget', nameField: 'name', label: 'Target', icon: 'fa-bullseye', route: '/scheduling-targets', color: '#ec4899' },
+        { fk: 'scheduledEventId', nav: 'scheduledEvent', nameField: 'name', label: 'Event', icon: 'fa-calendar', route: '/schedule', color: '#eab308' },
+        { fk: 'invoiceId', nav: 'invoice', nameField: 'invoiceNumber', label: 'Invoice', icon: 'fa-file-invoice', route: '/finances/invoices', color: '#14b8a6' },
+        { fk: 'receiptId', nav: 'receipt', nameField: 'receiptNumber', label: 'Receipt', icon: 'fa-receipt', route: '/finances/receipts', color: '#64748b' },
+        { fk: 'paymentTransactionId', nav: 'paymentTransaction', nameField: 'payerName', label: 'Payment', icon: 'fa-credit-card', route: '/finances/payments', color: '#ef4444' },
+        { fk: 'volunteerProfileId', nav: 'volunteerProfile', nameField: 'resource.name', label: 'Volunteer', icon: 'fa-hand-holding-heart', route: '/volunteers', color: '#a855f7' },
+        { fk: 'financialTransactionId', nav: 'financialTransaction', nameField: 'description', label: 'Transaction', icon: 'fa-exchange-alt', route: null, color: '#78716c' },
+        { fk: 'financialOfficeId', nav: 'financialOffice', nameField: 'name', label: 'Fin. Office', icon: 'fa-landmark', route: null, color: '#92400e' },
+        { fk: 'tenantProfileId', nav: 'tenantProfile', nameField: 'name', label: 'Tenant', icon: 'fa-id-badge', route: null, color: '#6d28d9' },
+        { fk: 'campaignId', nav: 'campaign', nameField: 'name', label: 'Campaign', icon: 'fa-bullhorn', route: null, color: '#059669' },
+        { fk: 'householdId', nav: 'household', nameField: 'name', label: 'Household', icon: 'fa-house-chimney', route: null, color: '#b45309' },
+        { fk: 'constituentId', nav: 'constituent', nameField: 'constituentNumber', label: 'Constituent', icon: 'fa-user', route: null, color: '#4338ca' },
+        { fk: 'tributeId', nav: 'tribute', nameField: 'name', label: 'Tribute', icon: 'fa-ribbon', route: null, color: '#be185d' },
+    ];
+
+    // Entity link filter (filters documents to those linked to a specific entity type)
+    activeEntityLinkFilter: string | null = null;  // FK field name, e.g. 'clientId'
+
     // Multi-select / bulk
     selectedDocIds: Set<number> = new Set();
     showBulkTagDropdown = false;
@@ -1359,15 +1393,27 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         return this.documentTagsMap.get(docId) || [];
     }
 
-    /** Get the filtered document list (applies active tag filters). */
+    /** Get the filtered document list (applies active tag filters and entity link filter). */
     get filteredDocuments(): DocumentDTO[] {
-        if (this.activeTagFilters.size === 0) return this.documents;
-        return this.documents.filter(doc => {
-            const docTags = this.documentTagsMap.get(doc.id) || [];
-            return [...this.activeTagFilters].every(tagId =>
-                docTags.some(t => t.id === tagId)
-            );
-        });
+        let docs = this.documents;
+
+        // Tag filters
+        if (this.activeTagFilters.size > 0) {
+            docs = docs.filter(doc => {
+                const docTags = this.documentTagsMap.get(doc.id) || [];
+                return [...this.activeTagFilters].every(tagId =>
+                    docTags.some(t => t.id === tagId)
+                );
+            });
+        }
+
+        // Entity link filter
+        if (this.activeEntityLinkFilter) {
+            const fkField = this.activeEntityLinkFilter;
+            docs = docs.filter(doc => (doc as any)[fkField] != null);
+        }
+
+        return docs;
     }
 
 
@@ -1676,4 +1722,116 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         '#f97316', '#eab308', '#22c55e', '#14b8a6',
         '#06b6d4', '#3b82f6', '#64748b', '#78716c'
     ];
+
+
+    // ─── Entity Link Helpers ─────────────────────────────────────────
+
+    /**
+     * Returns all active entity links for a document.
+     * Each link includes fk field, label, resolved name, icon, color, and route (null if not routable).
+     */
+    getEntityLinks(doc: DocumentDTO): { fk: string; label: string; name: string; route: any[] | null; icon: string; color: string }[] {
+        const links: { fk: string; label: string; name: string; route: any[] | null; icon: string; color: string }[] = [];
+
+        for (const config of this.entityLinkConfig) {
+            const fkValue = (doc as any)[config.fk];
+            if (fkValue == null) continue;
+
+            const entity = (doc as any)[config.nav];
+            let name = config.label;
+
+            if (entity) {
+                // Resolve nested name fields like 'resource.name' for volunteerProfile
+                const resolved = this.resolveNestedValue(entity, config.nameField);
+                if (resolved) {
+                    name = String(resolved);
+                }
+            }
+
+            links.push({
+                fk: config.fk,
+                label: config.label,
+                name,
+                route: config.route ? [config.route, fkValue] : null,
+                icon: config.icon,
+                color: config.color
+            });
+        }
+
+        return links;
+    }
+
+    /** Resolves a possibly nested value like 'resource.name' from an object. */
+    private resolveNestedValue(obj: any, path: string): any {
+        return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    }
+
+    /** Toggle entity link type filter. */
+    toggleEntityLinkFilter(fkField: string): void {
+        if (this.activeEntityLinkFilter === fkField) {
+            this.activeEntityLinkFilter = null;
+        } else {
+            this.activeEntityLinkFilter = fkField;
+        }
+    }
+
+    /** Clear entity link filter. */
+    clearEntityLinkFilter(): void {
+        this.activeEntityLinkFilter = null;
+    }
+
+    /** Returns entity link types that have at least one document linked. */
+    get activeEntityLinkTypes(): { fk: string; label: string; icon: string; color: string; count: number }[] {
+        const counts = new Map<string, number>();
+        for (const doc of this.documents) {
+            for (const config of this.entityLinkConfig) {
+                if ((doc as any)[config.fk] != null) {
+                    counts.set(config.fk, (counts.get(config.fk) || 0) + 1);
+                }
+            }
+        }
+
+        return this.entityLinkConfig
+            .filter(c => counts.has(c.fk))
+            .map(c => ({
+                fk: c.fk,
+                label: c.label,
+                icon: c.icon,
+                color: c.color,
+                count: counts.get(c.fk)!
+            }));
+    }
+
+    /**
+     * Remove an entity link from a document (sets the FK to null and saves).
+     */
+    removeEntityLink(doc: DocumentDTO, fkField: string): void {
+        const updated: Partial<DocumentDTO> = {
+            id: doc.id,
+            name: doc.name,
+            fileName: doc.fileName,
+            mimeType: doc.mimeType,
+            fileSizeBytes: doc.fileSizeBytes,
+            uploadedDate: doc.uploadedDate,
+            versionNumber: doc.versionNumber,
+            objectGuid: doc.objectGuid,
+            [fkField]: null
+        };
+
+        this.fileManagerService.updateDocumentMetadata(updated as DocumentDTO).subscribe({
+            next: () => {
+                // Update local state
+                (doc as any)[fkField] = null;
+                const config = this.entityLinkConfig.find(c => c.fk === fkField);
+                if (config) {
+                    (doc as any)[config.nav] = null;
+                }
+                this.alertService.showMessage('Link Removed', `${config?.label || 'Entity'} link removed.`, MessageSeverity.success);
+            },
+            error: (err) => {
+                console.error('Error removing entity link', err);
+                this.alertService.showMessage('Error', 'Could not remove entity link.', MessageSeverity.error);
+            }
+        });
+    }
 }

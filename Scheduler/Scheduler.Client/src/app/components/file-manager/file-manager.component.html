@@ -119,6 +119,25 @@
         </div>
       </div>
 
+      <!-- ─── Sidebar Entity Links Section ─────────────────────── -->
+      <div class="fm-tag-section" *ngIf="!sidebarCollapsed && activeEntityLinkTypes.length > 0">
+        <div class="fm-sidebar-header">
+          <span class="fm-sidebar-title"><i class="fa-solid fa-link me-1"></i> Entity Links</span>
+          <button class="fm-sidebar-toggle" *ngIf="activeEntityLinkFilter" (click)="clearEntityLinkFilter()" title="Clear filter">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="fm-tag-list">
+          <div class="fm-tag-sidebar-item" *ngFor="let linkType of activeEntityLinkTypes"
+               (click)="toggleEntityLinkFilter(linkType.fk)"
+               [class.active]="activeEntityLinkFilter === linkType.fk">
+            <i class="fa-solid me-2" [ngClass]="linkType.icon" [style.color]="linkType.color"></i>
+            <span class="fm-tag-sidebar-name">{{ linkType.label }}</span>
+            <span class="fm-tag-count">{{ linkType.count }}</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Trash section -->
       <div class="fm-trash-section" *ngIf="!sidebarCollapsed">
         <div class="fm-sidebar-header">
@@ -458,13 +477,31 @@
                   [style.background]="tag.color || '#6366f1'"
                   [title]="tag.name"></span>
           </div>
+
+          <!-- Entity link chips -->
+          <div class="fm-entity-chips" *ngIf="getEntityLinks(doc).length > 0">
+            <ng-container *ngFor="let link of getEntityLinks(doc)">
+              <a *ngIf="link.route" class="fm-entity-chip" [routerLink]="link.route"
+                 [style.borderColor]="link.color" [title]="link.label + ': ' + link.name"
+                 (click)="$event.stopPropagation()">
+                <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
+                <span>{{ link.name }}</span>
+              </a>
+              <span *ngIf="!link.route" class="fm-entity-chip"
+                    [style.borderColor]="link.color" [title]="link.label + ': ' + link.name">
+                <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
+                <span>{{ link.name }}</span>
+              </span>
+            </ng-container>
+          </div>
         </div>
 
         <div class="fm-empty" *ngIf="filteredDocuments.length === 0 && childFolders.length === 0">
           <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
-          <p *ngIf="activeTagFilters.size === 0">This folder is empty</p>
+          <p *ngIf="activeTagFilters.size === 0 && !activeEntityLinkFilter">This folder is empty</p>
           <p *ngIf="activeTagFilters.size > 0">No documents match the selected tags</p>
-          <p class="small" *ngIf="activeTagFilters.size === 0">Drag and drop files here, or click Upload</p>
+          <p *ngIf="activeEntityLinkFilter && activeTagFilters.size === 0">No documents match the selected entity filter</p>
+          <p class="small" *ngIf="activeTagFilters.size === 0 && !activeEntityLinkFilter">Drag and drop files here, or click Upload</p>
           <button class="btn btn-sm btn-outline-secondary" *ngIf="activeTagFilters.size > 0"
                   (click)="clearTagFilters()">Clear tag filters</button>
         </div>
@@ -485,6 +522,7 @@
                 Name <i class="fa-solid ms-1" [ngClass]="getSortIcon('name')"></i>
               </th>
               <th style="width: 160px;">Tags</th>
+              <th style="width: 160px;">Linked To</th>
               <th class="fm-sort-header" style="width: 90px;" (click)="toggleSort('size')">
                 Size <i class="fa-solid ms-1" [ngClass]="getSortIcon('size')"></i>
               </th>
@@ -514,6 +552,21 @@
               <td>
                 <span class="fm-tag-chip-sm" *ngFor="let tag of getDocTags(doc.id)"
                       [style.background]="tag.color || '#6366f1'">{{ tag.name }}</span>
+              </td>
+              <td>
+                <ng-container *ngFor="let link of getEntityLinks(doc)">
+                  <a *ngIf="link.route" class="fm-entity-chip-sm" [routerLink]="link.route"
+                     [style.borderColor]="link.color" [title]="link.label + ': ' + link.name"
+                     (click)="$event.stopPropagation()">
+                    <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
+                    {{ link.name }}
+                  </a>
+                  <span *ngIf="!link.route" class="fm-entity-chip-sm"
+                        [style.borderColor]="link.color" [title]="link.label + ': ' + link.name">
+                    <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
+                    {{ link.name }}
+                  </span>
+                </ng-container>
               </td>
               <td>{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }}</td>
               <td>{{ doc.uploadedDate | date:'short' }}</td>
@@ -599,6 +652,27 @@
             </div>
             <div class="fm-tag-dropdown-empty" *ngIf="unassignedTags.length === 0">
               All tags assigned
+            </div>
+          </div>
+        </div>
+
+        <!-- ─── Entity Links Section ──────────────────────────── -->
+        <div class="fm-detail-tags" *ngIf="getEntityLinks(selectedDocument).length > 0">
+          <div class="fm-detail-tags-header">
+            <span class="fm-prop-label"><i class="fa-solid fa-link me-1"></i> Entity Links</span>
+          </div>
+          <div class="fm-entity-link-list">
+            <div class="fm-entity-link-item" *ngFor="let link of getEntityLinks(selectedDocument)">
+              <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
+              <div class="fm-entity-link-info">
+                <span class="fm-entity-link-label">{{ link.label }}</span>
+                <a *ngIf="link.route" [routerLink]="link.route" class="fm-entity-link-name">{{ link.name }}</a>
+                <span *ngIf="!link.route" class="fm-entity-link-name">{{ link.name }}</span>
+              </div>
+              <button class="fm-entity-link-remove" title="Remove link"
+                      (click)="removeEntityLink(selectedDocument!, link.fk)">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
             </div>
           </div>
         </div>

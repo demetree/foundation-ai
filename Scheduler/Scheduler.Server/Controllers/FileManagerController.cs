@@ -281,10 +281,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 List<Document> documents = await _fileStorage.GetDocumentsInFolderAsync(folderId, tenantGuid);
 
                 //
-                // Use ToDTO() instead of ToOutputDTO() to keep listings lightweight
-                // Binary data is already excluded by the service layer
+                // Use ToOutputDTOList() to include entity link nav properties
+                // so the file manager can display linked entity names.
+                // Binary data is already excluded by the service layer.
                 //
-                return Ok(Document.ToDTOList(documents));
+                return Ok(Document.ToOutputDTOList(documents));
             }
             catch (Exception ex)
             {
@@ -1386,7 +1387,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 List<Document> results = await _fileStorage.SearchDocumentsAsync(q, tenantGuid);
 
-                return Ok(Document.ToDTOList(results));
+                return Ok(Document.ToOutputDTOList(results));
             }
             catch (Exception ex)
             {

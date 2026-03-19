@@ -167,11 +167,30 @@ namespace Scheduler.Server.Services
             //
             // Return metadata-only (no binary) for listing.
             // We select all columns except fileDataData to keep memory low.
+            // Entity link nav properties are included so the file manager can
+            // display linked entity names without extra round-trips.
             //
             return await _db.Documents
                 .Where(d => d.documentFolderId == folderId && d.tenantGuid == tenantGuid && d.deleted == false)
                 .Include(d => d.documentType)
                 .Include(d => d.documentFolder)
+                .Include(d => d.contact)
+                .Include(d => d.resource)
+                .Include(d => d.client)
+                .Include(d => d.office)
+                .Include(d => d.crew)
+                .Include(d => d.schedulingTarget)
+                .Include(d => d.scheduledEvent)
+                .Include(d => d.invoice)
+                .Include(d => d.receipt)
+                .Include(d => d.paymentTransaction)
+                .Include(d => d.volunteerProfile)
+                .Include(d => d.financialTransaction)
+                .Include(d => d.financialOffice)
+                .Include(d => d.campaign)
+                .Include(d => d.household)
+                .Include(d => d.constituent)
+                .Include(d => d.tribute)
                 .OrderBy(d => d.name)
                 .Select(d => new Document {
                     id = d.id,
@@ -215,9 +234,26 @@ namespace Scheduler.Server.Services
                     objectGuid = d.objectGuid,
                     active = d.active,
                     deleted = d.deleted,
-                    // Include nav object DTOs that we already eager-loaded
+                    // Nav properties for display
                     documentType = d.documentType,
-                    documentFolder = d.documentFolder
+                    documentFolder = d.documentFolder,
+                    contact = d.contact,
+                    resource = d.resource,
+                    client = d.client,
+                    office = d.office,
+                    crew = d.crew,
+                    schedulingTarget = d.schedulingTarget,
+                    scheduledEvent = d.scheduledEvent,
+                    invoice = d.invoice,
+                    receipt = d.receipt,
+                    paymentTransaction = d.paymentTransaction,
+                    volunteerProfile = d.volunteerProfile,
+                    financialTransaction = d.financialTransaction,
+                    financialOffice = d.financialOffice,
+                    campaign = d.campaign,
+                    household = d.household,
+                    constituent = d.constituent,
+                    tribute = d.tribute
                 })
                 .ToListAsync(ct)
                 .ConfigureAwait(false);
@@ -504,6 +540,8 @@ namespace Scheduler.Server.Services
             //
             // Search across name, fileName, and description.
             // Return metadata only (no binary).
+            // Entity link nav properties are included so the file manager can
+            // display linked entity names in search results.
             //
             return await _db.Documents
                 .Where(d => d.tenantGuid == tenantGuid
@@ -513,6 +551,23 @@ namespace Scheduler.Server.Services
                         || (d.description != null && d.description.ToLower().Contains(lowered))))
                 .Include(d => d.documentType)
                 .Include(d => d.documentFolder)
+                .Include(d => d.contact)
+                .Include(d => d.resource)
+                .Include(d => d.client)
+                .Include(d => d.office)
+                .Include(d => d.crew)
+                .Include(d => d.schedulingTarget)
+                .Include(d => d.scheduledEvent)
+                .Include(d => d.invoice)
+                .Include(d => d.receipt)
+                .Include(d => d.paymentTransaction)
+                .Include(d => d.volunteerProfile)
+                .Include(d => d.financialTransaction)
+                .Include(d => d.financialOffice)
+                .Include(d => d.campaign)
+                .Include(d => d.household)
+                .Include(d => d.constituent)
+                .Include(d => d.tribute)
                 .OrderBy(d => d.name)
                 .Take(100)
                 .Select(d => new Document {
@@ -528,6 +583,24 @@ namespace Scheduler.Server.Services
                     fileDataFileName = d.fileDataFileName,
                     fileDataSize = d.fileDataSize,
                     fileDataMimeType = d.fileDataMimeType,
+                    invoiceId = d.invoiceId,
+                    receiptId = d.receiptId,
+                    scheduledEventId = d.scheduledEventId,
+                    financialTransactionId = d.financialTransactionId,
+                    contactId = d.contactId,
+                    resourceId = d.resourceId,
+                    clientId = d.clientId,
+                    officeId = d.officeId,
+                    crewId = d.crewId,
+                    schedulingTargetId = d.schedulingTargetId,
+                    paymentTransactionId = d.paymentTransactionId,
+                    financialOfficeId = d.financialOfficeId,
+                    tenantProfileId = d.tenantProfileId,
+                    campaignId = d.campaignId,
+                    householdId = d.householdId,
+                    constituentId = d.constituentId,
+                    tributeId = d.tributeId,
+                    volunteerProfileId = d.volunteerProfileId,
                     uploadedDate = d.uploadedDate,
                     uploadedBy = d.uploadedBy,
                     notes = d.notes,
@@ -535,8 +608,26 @@ namespace Scheduler.Server.Services
                     objectGuid = d.objectGuid,
                     active = d.active,
                     deleted = d.deleted,
+                    // Nav properties for display
                     documentType = d.documentType,
-                    documentFolder = d.documentFolder
+                    documentFolder = d.documentFolder,
+                    contact = d.contact,
+                    resource = d.resource,
+                    client = d.client,
+                    office = d.office,
+                    crew = d.crew,
+                    schedulingTarget = d.schedulingTarget,
+                    scheduledEvent = d.scheduledEvent,
+                    invoice = d.invoice,
+                    receipt = d.receipt,
+                    paymentTransaction = d.paymentTransaction,
+                    volunteerProfile = d.volunteerProfile,
+                    financialTransaction = d.financialTransaction,
+                    financialOffice = d.financialOffice,
+                    campaign = d.campaign,
+                    household = d.household,
+                    constituent = d.constituent,
+                    tribute = d.tribute
                 })
                 .ToListAsync(ct)
                 .ConfigureAwait(false);

@@ -97,6 +97,26 @@ export interface DocumentDTO {
     // Output DTO nav properties
     documentType?: any;
     documentFolder?: any;
+
+    // Entity link nav properties (populated by output DTOs from server)
+    contact?: { id: number; firstName?: string; lastName?: string; [key: string]: any } | null;
+    resource?: { id: number; name?: string; [key: string]: any } | null;
+    client?: { id: number; name?: string; [key: string]: any } | null;
+    office?: { id: number; name?: string; [key: string]: any } | null;
+    crew?: { id: number; name?: string; [key: string]: any } | null;
+    schedulingTarget?: { id: number; name?: string; [key: string]: any } | null;
+    scheduledEvent?: { id: number; name?: string; [key: string]: any } | null;
+    invoice?: { id: number; invoiceNumber?: string; [key: string]: any } | null;
+    receipt?: { id: number; receiptNumber?: string; [key: string]: any } | null;
+    paymentTransaction?: { id: number; payerName?: string; [key: string]: any } | null;
+    volunteerProfile?: { id: number; resource?: { name?: string }; [key: string]: any } | null;
+    financialTransaction?: { id: number; description?: string; [key: string]: any } | null;
+    financialOffice?: { id: number; name?: string; [key: string]: any } | null;
+    tenantProfile?: { id: number; name?: string; [key: string]: any } | null;
+    campaign?: { id: number; name?: string; [key: string]: any } | null;
+    household?: { id: number; name?: string; [key: string]: any } | null;
+    constituent?: { id: number; constituentNumber?: string; [key: string]: any } | null;
+    tribute?: { id: number; name?: string; [key: string]: any } | null;
 }
 
 export interface DocumentTagDTO {
