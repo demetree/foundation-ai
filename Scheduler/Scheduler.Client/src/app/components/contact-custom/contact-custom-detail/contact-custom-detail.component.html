@@ -154,7 +154,12 @@
 
       <!-- Contact Interactions -->
       <li ngbNavItem="interactions">
-        <button ngbNavLink>Interactions</button>
+        <button ngbNavLink>
+          Interactions
+          <span class="badge bg-secondary ms-2">
+            {{ (contact?.ContactInteractionsCount$ | async) ?? '-' }}
+          </span>
+        </button>
         <ng-template ngbNavContent>
           <div *ngIf="contact; else loadingTemplate">
             <app-contact-interactions-tab [contact]="contact"></app-contact-interactions-tab>
@@ -172,7 +177,12 @@
 
       <!-- Contact Relationships -->
       <li ngbNavItem="relationships">
-        <button ngbNavLink>Relationships</button>
+        <button ngbNavLink>
+          Relationships
+          <span class="badge bg-secondary ms-2">
+            {{ (contact?.ContactContactsCount$ | async) ?? '-' }}
+          </span>
+        </button>
         <ng-template ngbNavContent>
           <div *ngIf="contact; else loadingTemplate">
             <app-contact-relationships-tab [contact]="contact"></app-contact-relationships-tab>
@@ -190,7 +200,12 @@
 
       <!-- Contact Financials -->
       <li ngbNavItem="financials">
-        <button ngbNavLink>Financials</button>
+        <button ngbNavLink>
+          Financials
+          <span class="badge bg-secondary ms-2">
+            {{ (contact?.FinancialTransactionsCount$ | async) ?? '-' }}
+          </span>
+        </button>
         <ng-template ngbNavContent>
           <div *ngIf="contact; else loadingTemplate">
             <app-contact-financials-tab [contact]="contact"></app-contact-financials-tab>
@@ -208,7 +223,12 @@
 
       <!-- Contact Schedule -->
       <li ngbNavItem="schedule">
-        <button ngbNavLink>Schedule</button>
+        <button ngbNavLink>
+          Schedule
+          <span class="badge bg-secondary ms-2">
+            {{ (contact?.SchedulingTargetContactsCount$ | async) ?? '-' }}
+          </span>
+        </button>
         <ng-template ngbNavContent>
           <div *ngIf="contact; else loadingTemplate">
             <app-contact-schedule-tab [contact]="contact"></app-contact-schedule-tab>
@@ -220,6 +240,29 @@
               </div>
             </div>
             <div class="mt-3">Loading schedule...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
+      <!-- Contact Documents -->
+      <li ngbNavItem="documents">
+        <button ngbNavLink>
+          Documents
+          <span class="badge bg-secondary ms-2">
+            {{ (contact?.DocumentsCount$ | async) ?? '-' }}
+          </span>
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="contact; else loadingTemplate">
+            <app-event-document-panel [ownerField]="'contactId'" [ownerId]="contact!.id"></app-event-document-panel>
+          </div>
+          <ng-template #loadingTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading documents...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading documents...</div>
           </ng-template>
         </ng-template>
       </li>

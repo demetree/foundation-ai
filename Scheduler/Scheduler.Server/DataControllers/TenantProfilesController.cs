@@ -1235,6 +1235,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					tenantProfile.companyLogoData = null;
+					tenantProfile.Documents = null;
 					tenantProfile.TenantProfileChangeHistories = null;
 					tenantProfile.country = null;
 					tenantProfile.stateProvince = null;
@@ -1365,6 +1366,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.companyLogoData = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.TenantProfileChangeHistories = null;
 				cloneOfExisting.country = null;
 				cloneOfExisting.stateProvince = null;

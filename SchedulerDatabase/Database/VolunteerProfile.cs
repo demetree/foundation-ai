@@ -57,6 +57,8 @@ public partial class VolunteerProfile
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<VolunteerProfileChangeHistory> VolunteerProfileChangeHistories { get; set; } = new List<VolunteerProfileChangeHistory>();
 
     public virtual Constituent constituent { get; set; }

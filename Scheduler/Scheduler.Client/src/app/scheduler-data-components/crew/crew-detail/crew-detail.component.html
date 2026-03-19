@@ -161,6 +161,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (crewData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ crewId: crewData?.id }" [showAddButton]="true" [preSeededData]="{ crewId: crewData?.id }" [hiddenFields]="['crewId']"></app-document-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                       <li ngbNavItem *ngIf="eventResourceAssignmentService.userIsSchedulerEventResourceAssignmentReader()">
                             <button ngbNavLink>Event Resource Assignments
                                 <span class="badge bg-primary ms-2">

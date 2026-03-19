@@ -3600,106 +3600,6 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
 
 
-            #region Document Attachments — DocumentType + Document
-
-            //
-            // Document Type — Classification of attachments
-            //
-            Database.Table documentTypeTable = database.AddTable("DocumentType");
-            documentTypeTable.comment = "Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).";
-            documentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
-            documentTypeTable.AddIdField();
-            documentTypeTable.AddNameAndDescriptionFields(true, true, false);
-            documentTypeTable.AddSequenceField();
-            documentTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
-            documentTypeTable.AddControlFields();
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Rental Agreement" },
-                { "description", "Signed rental or usage agreement" },
-                { "sequence", "1" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Receipt" },
-                { "description", "Purchase receipt or proof of payment" },
-                { "sequence", "2" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Invoice" },
-                { "description", "Invoice issued or received" },
-                { "sequence", "3" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456703" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Photo" },
-                { "description", "Photograph or image" },
-                { "sequence", "4" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456704" } });
-
-            documentTypeTable.AddData(new Dictionary<string, string> {
-                { "name", "Other" },
-                { "description", "Other document type" },
-                { "sequence", "99" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456799" } });
-
-
-            //
-            // Document — Attachment record with binary storage
-            // Supports polymorphic links to events, financial transactions, contacts, and resources.
-            // Includes status tracking for workflows like rental agreement signing.
-            //
-            Database.Table documentTable = database.AddTable("Document");
-            documentTable.comment = @"====================================================================================================
- DOCUMENT (Attachment Storage)
- Stores file attachments (images, PDFs, scans) with metadata and binary content.
- Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
-
- DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
- This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
- Azure Blob Storage or similar, storing only a reference URL here.
-
- The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
- ====================================================================================================";
-
-            documentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
-            documentTable.AddIdField();
-            documentTable.AddMultiTenantSupport();
-            documentTable.AddForeignKeyField(documentTypeTable, false, true).AddScriptComments("The type of document (Rental Agreement, Receipt, Photo, etc.).");
-
-            //
-            // Add Invoice and Receipt FKs to the Document table (defined earlier)
-            // This allows generated PDF invoices/receipts to be stored as Document records.
-            //
-            documentTable.AddForeignKeyField(invoiceTable, true, true).AddScriptComments("Optional link to an Invoice (e.g., generated invoice PDF).");
-            documentTable.AddForeignKeyField(receiptTable, true, true).AddScriptComments("Optional link to a Receipt (e.g., generated receipt PDF).");
-
-            documentTable.AddString250Field("name", false).AddScriptComments("Display name for the document.");
-            documentTable.AddString500Field("description", true).AddScriptComments("Optional description of the document.");
-            documentTable.AddString500Field("fileName", false).AddScriptComments("Original filename with extension (e.g., 'rental-agreement-smith.pdf').");
-            documentTable.AddString100Field("mimeType", false).AddScriptComments("MIME type of the file (e.g., 'application/pdf', 'image/jpeg').");
-            documentTable.AddLongField("fileSizeBytes", false).AddScriptComments("File size in bytes for UI display.");
-            documentTable.AddBinaryDataFields("fileData"); // The actual file content stored as binary data.
-
-            // Polymorphic entity links — at least one should be set
-            documentTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent (e.g., rental agreement for a booking).");
-            documentTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to a FinancialTransaction (e.g., receipt for a purchase).");
-            documentTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to a Contact.");
-            documentTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional link to a Resource.");
-
-            // Status tracking for document workflows
-            documentTable.AddString50Field("status", true).AddScriptComments("Document workflow status: pending, signed, verified, etc.");
-            documentTable.AddDateTimeField("statusDate", true).AddScriptComments("When the status was last changed.");
-            documentTable.AddString100Field("statusChangedBy", true).AddScriptComments("Who changed the status.");
-
-            documentTable.AddDateTimeField("uploadedDate", false).AddScriptComments("When the document was uploaded (UTC).");
-            documentTable.AddString100Field("uploadedBy", true).AddScriptComments("User who uploaded the document.");
-            documentTable.AddTextField("notes", true).AddScriptComments("Optional notes about the document.");
-            documentTable.AddVersionControl();
-            documentTable.AddControlFields();
-
-            #endregion
 
 
             //
@@ -4449,6 +4349,163 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             volunteerGroupMemberTable.AddUniqueConstraint("tenantGuid", "volunteerGroupId", "resourceId", false);
 
             #endregion
+
+
+            #region Document Attachments — DocumentType + Document
+
+            //
+            // Document Type — Classification of attachments
+            //
+            Database.Table documentTypeTable = database.AddTable("DocumentType");
+            documentTypeTable.comment = "Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).";
+            documentTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            documentTypeTable.AddIdField();
+            documentTypeTable.AddNameAndDescriptionFields(true, true, false);
+            documentTypeTable.AddSequenceField();
+            documentTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
+            documentTypeTable.AddControlFields();
+
+            //
+
+
+            /*
+            
+                                 (Name: "Rental Agreement",       Description: "Signed rental agreement / contract for facility bookings",  Color: "#7C3AED", Sequence: 1),
+                    (Name: "Insurance Certificate",  Description: "Liability insurance certificate for event coverage",       Color: "#2563EB", Sequence: 2),
+                    (Name: "Permit",                 Description: "Required permits (liquor license, fire permit, etc.)",     Color: "#D97706", Sequence: 3),
+                    (Name: "Receipt",                Description: "Payment receipt or proof of payment",                     Color: "#059669", Sequence: 4),
+                    (Name: "Other",                  Description: "Miscellaneous supporting documents",                      Color: "#6B7280", Sequence: 5)
+
+             * 
+             * */
+
+
+
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Rental Agreement" },
+                { "description", "Signed rental or usage agreement" },
+                { "sequence", "1" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456701" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Receipt" },
+                { "description", "Purchase receipt or proof of payment" },
+                { "sequence", "2" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456702" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Invoice" },
+                { "description", "Invoice issued or received" },
+                { "sequence", "3" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456703" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Photo" },
+                { "description", "Photograph or image" },
+                { "sequence", "4" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456704" } });
+
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Permit" },
+                { "description", "Required permits (liquor license, fire permit, etc.)" },
+                { "sequence", "5" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456705" } });
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Background Check" },
+                { "description", "Background Check supporting documentation (police etc..)" },
+                { "sequence", "6" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456706" } });
+
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Insurance Certificate" },
+                { "description", "Liability insurance certificate for event coverage" },
+                { "sequence", "7" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456707" } });
+
+
+
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Other" },
+                { "description", "Other document type" },
+                { "sequence", "99" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456799" } });
+
+
+            //
+            // Document — Attachment record with binary storage
+            // Supports polymorphic links to events, financial transactions, contacts, and resources.
+            // Includes status tracking for workflows like rental agreement signing.
+            //
+            Database.Table documentTable = database.AddTable("Document");
+            documentTable.comment = @"====================================================================================================
+ DOCUMENT (Attachment Storage)
+ Stores file attachments (images, PDFs, scans) with metadata and binary content.
+ Uses polymorphic nullable FKs to link to entities across the system.
+
+ DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
+ This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
+ Azure Blob Storage or similar, storing only a reference URL here.
+
+ The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
+ ====================================================================================================";
+
+            documentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            documentTable.AddIdField();
+            documentTable.AddMultiTenantSupport();
+            documentTable.AddForeignKeyField(documentTypeTable, false, true).AddScriptComments("The type of document (Rental Agreement, Receipt, Photo, etc.).");
+
+            //
+            // Add Invoice and Receipt FKs to the Document table (defined earlier)
+            // This allows generated PDF invoices/receipts to be stored as Document records.
+            //
+            documentTable.AddForeignKeyField(invoiceTable, true, true).AddScriptComments("Optional link to an Invoice (e.g., generated invoice PDF).");
+            documentTable.AddForeignKeyField(receiptTable, true, true).AddScriptComments("Optional link to a Receipt (e.g., generated receipt PDF).");
+
+            documentTable.AddString250Field("name", false).AddScriptComments("Display name for the document.");
+            documentTable.AddString500Field("description", true).AddScriptComments("Optional description of the document.");
+            documentTable.AddString500Field("fileName", false).AddScriptComments("Original filename with extension (e.g., 'rental-agreement-smith.pdf').");
+            documentTable.AddString100Field("mimeType", false).AddScriptComments("MIME type of the file (e.g., 'application/pdf', 'image/jpeg').");
+            documentTable.AddLongField("fileSizeBytes", false).AddScriptComments("File size in bytes for UI display.");
+            documentTable.AddBinaryDataFields("fileData"); // The actual file content stored as binary data.
+
+            // Polymorphic entity links — at least one should be set
+            documentTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent (e.g., rental agreement for a booking).");
+            documentTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to a FinancialTransaction (e.g., receipt for a purchase).");
+            documentTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to a Contact.");
+            documentTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional link to a Resource.");
+
+            // Additional polymorphic entity links
+            documentTable.AddForeignKeyField(clientTable, true, true).AddScriptComments("Optional link to a Client.");
+            documentTable.AddForeignKeyField(officeTable, true, true).AddScriptComments("Optional link to an Office.");
+            documentTable.AddForeignKeyField(crewTable, true, true).AddScriptComments("Optional link to a Crew.");
+            documentTable.AddForeignKeyField(schedulingTargetTable, true, true).AddScriptComments("Optional link to a SchedulingTarget.");
+            documentTable.AddForeignKeyField(paymentTransactionTable, true, true).AddScriptComments("Optional link to a PaymentTransaction.");
+            documentTable.AddForeignKeyField(financialOfficeTable, true, true).AddScriptComments("Optional link to a FinancialOffice.");
+            documentTable.AddForeignKeyField(tenantProfile, true, true).AddScriptComments("Optional link to a TenantProfile.");
+            documentTable.AddForeignKeyField(campaignTable, true, true).AddScriptComments("Optional link to a Campaign.");
+            documentTable.AddForeignKeyField(householdTable, true, true).AddScriptComments("Optional link to a Household.");
+            documentTable.AddForeignKeyField(constituentTable, true, true).AddScriptComments("Optional link to a Constituent.");
+            documentTable.AddForeignKeyField(tributeTable, true, true).AddScriptComments("Optional link to a Tribute.");
+            documentTable.AddForeignKeyField(volunteerProfileTable, true, true).AddScriptComments("Optional link to a VolunteerProfile.");
+
+            // Status tracking for document workflows
+            documentTable.AddString50Field("status", true).AddScriptComments("Document workflow status: pending, signed, verified, etc.");
+            documentTable.AddDateTimeField("statusDate", true).AddScriptComments("When the status was last changed.");
+            documentTable.AddString100Field("statusChangedBy", true).AddScriptComments("Who changed the status.");
+
+            documentTable.AddDateTimeField("uploadedDate", false).AddScriptComments("When the document was uploaded (UTC).");
+            documentTable.AddString100Field("uploadedBy", true).AddScriptComments("User who uploaded the document.");
+            documentTable.AddTextField("notes", true).AddScriptComments("Optional notes about the document.");
+            documentTable.AddVersionControl();
+            documentTable.AddControlFields();
+
+            #endregion
+
+
 
 
 

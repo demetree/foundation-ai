@@ -1019,7 +1019,7 @@
     <!-- DOCUMENTS TAB -->
     <!-- ============================================================== -->
     <div class="tab-pane-content" *ngIf="activeTab === 'documents'">
-      <app-event-document-panel [event]="event!"></app-event-document-panel>
+      <app-event-document-panel [ownerField]="'scheduledEventId'" [ownerId]="event!.id"></app-event-document-panel>
     </div>
 
     <!-- ============================================================== -->

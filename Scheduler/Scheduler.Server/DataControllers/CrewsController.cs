@@ -973,6 +973,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					crew.avatarData = null;
 					crew.CrewChangeHistories = null;
 					crew.CrewMembers = null;
+					crew.Documents = null;
 					crew.EventResourceAssignments = null;
 					crew.ScheduledEvents = null;
 					crew.icon = null;
@@ -1105,6 +1106,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.avatarData = null;
 				cloneOfExisting.CrewChangeHistories = null;
 				cloneOfExisting.CrewMembers = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.EventResourceAssignments = null;
 				cloneOfExisting.ScheduledEvents = null;
 				cloneOfExisting.icon = null;

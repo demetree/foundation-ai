@@ -344,20 +344,6 @@
                             </div>
                             </ng-template>
                         </li>
-                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
-                            <button ngbNavLink>Documents
-                                <span class="badge bg-primary ms-2">
-                                    {{ (contactData?.DocumentsCount$ | async) ?? '-' }}
-                                </span>
-                            </button>
-                            <ng-template ngbNavContent>
-                            <div class="d-flex flex-column gap-3 p-0">
-                                <div class="flex-grow-1">
-                                    <app-document-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-document-table>
-                                </div>
-                            </div>
-                            </ng-template>
-                        </li>
                       <li ngbNavItem *ngIf="contactInteractionService.userIsSchedulerContactInteractionReader()">
                             <button ngbNavLink>Contact Interactions
                                 <span class="badge bg-primary ms-2">
@@ -410,6 +396,20 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-constituent-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-constituent-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (contactData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ contactId: contactData?.id }" [showAddButton]="true" [preSeededData]="{ contactId: contactData?.id }" [hiddenFields]="['contactId']"></app-document-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -30,6 +30,18 @@ import { ScheduledEventService } from '../../../scheduler-data-services/schedule
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
+import { ClientService } from '../../../scheduler-data-services/client.service';
+import { OfficeService } from '../../../scheduler-data-services/office.service';
+import { CrewService } from '../../../scheduler-data-services/crew.service';
+import { SchedulingTargetService } from '../../../scheduler-data-services/scheduling-target.service';
+import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
+import { TenantProfileService } from '../../../scheduler-data-services/tenant-profile.service';
+import { CampaignService } from '../../../scheduler-data-services/campaign.service';
+import { HouseholdService } from '../../../scheduler-data-services/household.service';
+import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
+import { TributeService } from '../../../scheduler-data-services/tribute.service';
+import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { DocumentChangeHistoryService } from '../../../scheduler-data-services/document-change-history.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -58,6 +70,18 @@ interface DocumentFormValues {
   financialTransactionId: number | bigint | null,       // For FK link number
   contactId: number | bigint | null,       // For FK link number
   resourceId: number | bigint | null,       // For FK link number
+  clientId: number | bigint | null,       // For FK link number
+  officeId: number | bigint | null,       // For FK link number
+  crewId: number | bigint | null,       // For FK link number
+  schedulingTargetId: number | bigint | null,       // For FK link number
+  paymentTransactionId: number | bigint | null,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
+  tenantProfileId: number | bigint | null,       // For FK link number
+  campaignId: number | bigint | null,       // For FK link number
+  householdId: number | bigint | null,       // For FK link number
+  constituentId: number | bigint | null,       // For FK link number
+  tributeId: number | bigint | null,       // For FK link number
+  volunteerProfileId: number | bigint | null,       // For FK link number
   status: string | null,
   statusDate: string | null,
   statusChangedBy: string | null,
@@ -110,6 +134,18 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
         financialTransactionId: [null],
         contactId: [null],
         resourceId: [null],
+        clientId: [null],
+        officeId: [null],
+        crewId: [null],
+        schedulingTargetId: [null],
+        paymentTransactionId: [null],
+        financialOfficeId: [null],
+        tenantProfileId: [null],
+        campaignId: [null],
+        householdId: [null],
+        constituentId: [null],
+        tributeId: [null],
+        volunteerProfileId: [null],
         status: [''],
         statusDate: [''],
         statusChangedBy: [''],
@@ -140,6 +176,18 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
   public financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   public contacts$ = this.contactService.GetContactList();
   public resources$ = this.resourceService.GetResourceList();
+  public clients$ = this.clientService.GetClientList();
+  public offices$ = this.officeService.GetOfficeList();
+  public crews$ = this.crewService.GetCrewList();
+  public schedulingTargets$ = this.schedulingTargetService.GetSchedulingTargetList();
+  public paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
+  public financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
+  public tenantProfiles$ = this.tenantProfileService.GetTenantProfileList();
+  public campaigns$ = this.campaignService.GetCampaignList();
+  public households$ = this.householdService.GetHouseholdList();
+  public constituents$ = this.constituentService.GetConstituentList();
+  public tributes$ = this.tributeService.GetTributeList();
+  public volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
   public documentChangeHistories$ = this.documentChangeHistoryService.GetDocumentChangeHistoryList();
 
   private destroy$ = new Subject<void>();
@@ -153,6 +201,18 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
     public financialTransactionService: FinancialTransactionService,
     public contactService: ContactService,
     public resourceService: ResourceService,
+    public clientService: ClientService,
+    public officeService: OfficeService,
+    public crewService: CrewService,
+    public schedulingTargetService: SchedulingTargetService,
+    public paymentTransactionService: PaymentTransactionService,
+    public financialOfficeService: FinancialOfficeService,
+    public tenantProfileService: TenantProfileService,
+    public campaignService: CampaignService,
+    public householdService: HouseholdService,
+    public constituentService: ConstituentService,
+    public tributeService: TributeService,
+    public volunteerProfileService: VolunteerProfileService,
     public documentChangeHistoryService: DocumentChangeHistoryService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -451,6 +511,18 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
         financialTransactionId: null,
         contactId: null,
         resourceId: null,
+        clientId: null,
+        officeId: null,
+        crewId: null,
+        schedulingTargetId: null,
+        paymentTransactionId: null,
+        financialOfficeId: null,
+        tenantProfileId: null,
+        campaignId: null,
+        householdId: null,
+        constituentId: null,
+        tributeId: null,
+        volunteerProfileId: null,
         status: '',
         statusDate: '',
         statusChangedBy: '',
@@ -485,6 +557,18 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
         financialTransactionId: documentData.financialTransactionId,
         contactId: documentData.contactId,
         resourceId: documentData.resourceId,
+        clientId: documentData.clientId,
+        officeId: documentData.officeId,
+        crewId: documentData.crewId,
+        schedulingTargetId: documentData.schedulingTargetId,
+        paymentTransactionId: documentData.paymentTransactionId,
+        financialOfficeId: documentData.financialOfficeId,
+        tenantProfileId: documentData.tenantProfileId,
+        campaignId: documentData.campaignId,
+        householdId: documentData.householdId,
+        constituentId: documentData.constituentId,
+        tributeId: documentData.tributeId,
+        volunteerProfileId: documentData.volunteerProfileId,
         status: documentData.status ?? '',
         statusDate: isoUtcStringToDateTimeLocal(documentData.statusDate) ?? '',
         statusChangedBy: documentData.statusChangedBy ?? '',
@@ -569,6 +653,18 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
         financialTransactionId: formValue.financialTransactionId ? Number(formValue.financialTransactionId) : null,
         contactId: formValue.contactId ? Number(formValue.contactId) : null,
         resourceId: formValue.resourceId ? Number(formValue.resourceId) : null,
+        clientId: formValue.clientId ? Number(formValue.clientId) : null,
+        officeId: formValue.officeId ? Number(formValue.officeId) : null,
+        crewId: formValue.crewId ? Number(formValue.crewId) : null,
+        schedulingTargetId: formValue.schedulingTargetId ? Number(formValue.schedulingTargetId) : null,
+        paymentTransactionId: formValue.paymentTransactionId ? Number(formValue.paymentTransactionId) : null,
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
+        tenantProfileId: formValue.tenantProfileId ? Number(formValue.tenantProfileId) : null,
+        campaignId: formValue.campaignId ? Number(formValue.campaignId) : null,
+        householdId: formValue.householdId ? Number(formValue.householdId) : null,
+        constituentId: formValue.constituentId ? Number(formValue.constituentId) : null,
+        tributeId: formValue.tributeId ? Number(formValue.tributeId) : null,
+        volunteerProfileId: formValue.volunteerProfileId ? Number(formValue.volunteerProfileId) : null,
         status: formValue.status?.trim() || null,
         statusDate: formValue.statusDate ? dateTimeLocalToIsoUtc(formValue.statusDate.trim()) : null,
         statusChangedBy: formValue.statusChangedBy?.trim() || null,

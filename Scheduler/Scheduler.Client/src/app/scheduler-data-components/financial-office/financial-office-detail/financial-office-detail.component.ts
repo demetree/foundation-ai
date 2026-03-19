@@ -29,6 +29,7 @@ import { FinancialTransactionService } from '../../../scheduler-data-services/fi
 import { BudgetService } from '../../../scheduler-data-services/budget.service';
 import { GeneralLedgerEntryService } from '../../../scheduler-data-services/general-ledger-entry.service';
 import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -109,6 +110,7 @@ export class FinancialOfficeDetailComponent implements OnInit, CanComponentDeact
   public budgets$ = this.budgetService.GetBudgetList();
   public generalLedgerEntries$ = this.generalLedgerEntryService.GetGeneralLedgerEntryList();
   public invoices$ = this.invoiceService.GetInvoiceList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -120,6 +122,7 @@ export class FinancialOfficeDetailComponent implements OnInit, CanComponentDeact
     public budgetService: BudgetService,
     public generalLedgerEntryService: GeneralLedgerEntryService,
     public invoiceService: InvoiceService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

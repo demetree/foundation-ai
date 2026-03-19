@@ -27,6 +27,7 @@ import { StateProvinceService } from '../../../scheduler-data-services/state-pro
 import { CountryService } from '../../../scheduler-data-services/country.service';
 import { TimeZoneService } from '../../../scheduler-data-services/time-zone.service';
 import { TenantProfileChangeHistoryService } from '../../../scheduler-data-services/tenant-profile-change-history.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -139,6 +140,7 @@ export class TenantProfileDetailComponent implements OnInit, CanComponentDeactiv
   public countries$ = this.countryService.GetCountryList();
   public timeZones$ = this.timeZoneService.GetTimeZoneList();
   public tenantProfileChangeHistories$ = this.tenantProfileChangeHistoryService.GetTenantProfileChangeHistoryList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -148,6 +150,7 @@ export class TenantProfileDetailComponent implements OnInit, CanComponentDeactiv
     public countryService: CountryService,
     public timeZoneService: TimeZoneService,
     public tenantProfileChangeHistoryService: TenantProfileChangeHistoryService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

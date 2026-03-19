@@ -69,6 +69,8 @@ public partial class TenantProfile
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<TenantProfileChangeHistory> TenantProfileChangeHistories { get; set; } = new List<TenantProfileChangeHistory>();
 
     public virtual Country country { get; set; }

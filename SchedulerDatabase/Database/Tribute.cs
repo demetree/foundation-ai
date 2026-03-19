@@ -43,6 +43,8 @@ public partial class Tribute
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<Gift> Gifts { get; set; } = new List<Gift>();
 
     public virtual ICollection<TributeChangeHistory> TributeChangeHistories { get; set; } = new List<TributeChangeHistory>();

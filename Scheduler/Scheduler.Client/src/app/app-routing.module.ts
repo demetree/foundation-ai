@@ -56,6 +56,8 @@ import { OfficeCustomDetailComponent } from './components/office-custom/office-c
 import { ContactCustomListingComponent } from './components/contact-custom/contact-custom-listing/contact-custom-listing.component';
 import { ContactCustomDetailComponent } from './components/contact-custom/contact-custom-detail/contact-custom-detail.component';
 
+import { DocumentCustomListingComponent } from './components/document-custom/document-custom-listing/document-custom-listing.component';
+
 
 //
 // Calendar custom optimizations
@@ -612,6 +614,11 @@ const routes: Routes = [
   { path: 'finances/gift-entry', component: GiftEntryComponent, canActivate: [AuthGuard], title: 'Record Gift' },
   { path: 'finances/pledges', component: PledgeDashboardComponent, canActivate: [AuthGuard], title: 'Pledge Dashboard' },
   { path: 'scheduling/rental-agreements', component: RentalAgreementTrackerComponent, canActivate: [AuthGuard], title: 'Rental Agreements' },
+
+  //
+  // Document custom routes
+  //
+  { path: 'documents', component: DocumentCustomListingComponent, canActivate: [AuthGuard], title: 'Documents' },
 
 
   { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },

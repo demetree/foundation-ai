@@ -28,6 +28,7 @@ import { SchedulingTargetQualificationRequirementService, SchedulingTargetQualif
 import { RateSheetService, RateSheetData } from './rate-sheet.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
 import { HouseholdService, HouseholdData } from './household.service';
+import { DocumentService, DocumentData } from './document.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -215,6 +216,11 @@ export class SchedulingTargetData {
     private _households: HouseholdData[] | null = null;
     private _householdsPromise: Promise<HouseholdData[]> | null  = null;
     private _householdsSubject = new BehaviorSubject<HouseholdData[] | null>(null);
+
+                
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
                 
 
@@ -408,6 +414,31 @@ export class SchedulingTargetData {
 
 
 
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({schedulingTargetId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -480,6 +511,11 @@ export class SchedulingTargetData {
      this._householdsPromise = null;
      this._householdsSubject.next(null);
      this._householdsCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -945,6 +981,71 @@ export class SchedulingTargetData {
     }
 
 
+    /**
+     *
+     * Gets the Documents for this SchedulingTarget.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.schedulingTarget.Documents.then(schedulingTargets => { ... })
+     *   or
+     *   await this.schedulingTarget.schedulingTargets
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            SchedulingTargetService.Instance.GetDocumentsForSchedulingTarget(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
+    }
+
+
 
 
     //
@@ -1030,6 +1131,7 @@ export class SchedulingTargetService extends SecureEndpointBase {
         private rateSheetService: RateSheetService,
         private scheduledEventService: ScheduledEventService,
         private householdService: HouseholdService,
+        private documentService: DocumentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1573,6 +1675,16 @@ export class SchedulingTargetService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentsForSchedulingTarget(schedulingTargetId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
+            schedulingTargetId: schedulingTargetId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full SchedulingTargetData instance.
@@ -1635,6 +1747,10 @@ export class SchedulingTargetService extends SecureEndpointBase {
     (revived as any)._households = null;
     (revived as any)._householdsPromise = null;
     (revived as any)._householdsSubject = new BehaviorSubject<HouseholdData[] | null>(null);
+
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
 
     //
@@ -1730,6 +1846,18 @@ export class SchedulingTargetService extends SecureEndpointBase {
       );
 
     (revived as any)._householdsCount$ = null;
+
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
 
 
 

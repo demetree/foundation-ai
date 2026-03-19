@@ -7,6 +7,7 @@ import { IconService } from '../../../scheduler-data-services/icon.service';
 import { ContactTagData } from '../../../scheduler-data-services/contact-tag.service';
 import { AuthService } from '../../../services/auth.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, finalize, switchMap, forkJoin, shareReplay, map, of } from 'rxjs';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { ContactCustomAddEditComponent } from '../contact-custom-add-edit/contact-custom-add-edit.component';
 import { TagService } from '../../../scheduler-data-services/tag.service';
 import { ConstituentData, ConstituentService } from '../../../scheduler-data-services/constituent.service';
@@ -44,6 +45,7 @@ export class ContactCustomDetailComponent implements OnInit {
   public contactTagsWithIcons$!: Observable<Array<ContactTagData> | null>;
   public constituent$: Observable<ConstituentData | null> = new BehaviorSubject<ConstituentData | null>(null);
   public currentVersionInfo$: Observable<VersionInformation<ContactData> | null> = of(null);
+  public DocumentCount$: Observable<bigint | number> | null = null;
 
   // Change history
   public auditHistory: any[] | null = null;
@@ -61,7 +63,8 @@ export class ContactCustomDetailComponent implements OnInit {
     private currentUserService: CurrentUserService,
     private modalService: NgbModal,
     private navigationService: NavigationService,
-    private intelligenceService: IntelligenceService) {
+    private intelligenceService: IntelligenceService,
+    private documentService: DocumentService) {
 
   }
 
@@ -262,6 +265,13 @@ export class ContactCustomDetailComponent implements OnInit {
         } else {
 
           this.contact = contactData;
+
+          // Refresh document count for the Documents tab badge
+          this.DocumentCount$ = this.documentService.GetDocumentsRowCount({
+            contactId: contactData.id,
+            active: true,
+            deleted: false
+          });
 
 
           // Load and expand tags so header badges show icons/colors

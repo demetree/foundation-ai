@@ -965,6 +965,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					tribute.avatarData = null;
+					tribute.Documents = null;
 					tribute.Gifts = null;
 					tribute.TributeChangeHistories = null;
 					tribute.defaultAcknowledgee = null;
@@ -1096,6 +1097,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.avatarData = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.Gifts = null;
 				cloneOfExisting.TributeChangeHistories = null;
 				cloneOfExisting.defaultAcknowledgee = null;

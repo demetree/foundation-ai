@@ -37,6 +37,8 @@ public partial class FinancialOffice
 
     public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<FinancialCategory> FinancialCategories { get; set; } = new List<FinancialCategory>();
 
     public virtual ICollection<FinancialOfficeChangeHistory> FinancialOfficeChangeHistories { get; set; } = new List<FinancialOfficeChangeHistory>();

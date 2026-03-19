@@ -55,6 +55,8 @@ public partial class PaymentTransaction
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<PaymentTransactionChangeHistory> PaymentTransactionChangeHistories { get; set; } = new List<PaymentTransactionChangeHistory>();
 
     public virtual ICollection<Receipt> Receipts { get; set; } = new List<Receipt>();

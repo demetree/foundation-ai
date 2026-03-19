@@ -36,10 +36,10 @@ import { ResourceShiftService } from '../../../scheduler-data-services/resource-
 import { CrewMemberService } from '../../../scheduler-data-services/crew-member.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
-import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
 import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { VolunteerGroupMemberService } from '../../../scheduler-data-services/volunteer-group-member.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -142,10 +142,10 @@ export class ResourceDetailComponent implements OnInit, CanComponentDeactivate {
   public crewMembers$ = this.crewMemberService.GetCrewMemberList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
-  public documents$ = this.documentService.GetDocumentList();
   public notificationSubscriptions$ = this.notificationSubscriptionService.GetNotificationSubscriptionList();
   public volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
   public volunteerGroupMembers$ = this.volunteerGroupMemberService.GetVolunteerGroupMemberList();
+  public documents$ = this.documentService.GetDocumentList();
   public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
 
   private destroy$ = new Subject<void>();
@@ -165,10 +165,10 @@ export class ResourceDetailComponent implements OnInit, CanComponentDeactivate {
     public crewMemberService: CrewMemberService,
     public scheduledEventService: ScheduledEventService,
     public eventChargeService: EventChargeService,
-    public documentService: DocumentService,
     public notificationSubscriptionService: NotificationSubscriptionService,
     public volunteerProfileService: VolunteerProfileService,
     public volunteerGroupMemberService: VolunteerGroupMemberService,
+    public documentService: DocumentService,
     public eventResourceAssignmentService: EventResourceAssignmentService,
     private authService: AuthService,
     private route: ActivatedRoute,

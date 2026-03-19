@@ -311,20 +311,6 @@
                             </div>
                             </ng-template>
                         </li>
-                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
-                            <button ngbNavLink>Documents
-                                <span class="badge bg-primary ms-2">
-                                    {{ (scheduledEventData?.DocumentsCount$ | async) ?? '-' }}
-                                </span>
-                            </button>
-                            <ng-template ngbNavContent>
-                            <div class="d-flex flex-column gap-3 p-0">
-                                <div class="flex-grow-1">
-                                    <app-document-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-document-table>
-                                </div>
-                            </div>
-                            </ng-template>
-                        </li>
                       <li ngbNavItem *ngIf="contactInteractionService.userIsSchedulerContactInteractionReader()">
                             <button ngbNavLink>Contact Interactions
                                 <span class="badge bg-primary ms-2">
@@ -405,6 +391,20 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-recurrence-exception-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-recurrence-exception-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (scheduledEventData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ scheduledEventId: scheduledEventData?.id }" [showAddButton]="true" [preSeededData]="{ scheduledEventId: scheduledEventData?.id }" [hiddenFields]="['scheduledEventId']"></app-document-table>
                                 </div>
                             </div>
                             </ng-template>

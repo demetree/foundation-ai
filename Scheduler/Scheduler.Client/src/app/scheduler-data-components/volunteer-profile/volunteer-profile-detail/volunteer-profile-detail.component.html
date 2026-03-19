@@ -178,6 +178,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (volunteerProfileData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ volunteerProfileId: volunteerProfileData?.id }" [showAddButton]="true" [preSeededData]="{ volunteerProfileId: volunteerProfileData?.id }" [hiddenFields]="['volunteerProfileId']"></app-document-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

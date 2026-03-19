@@ -49,6 +49,8 @@ public partial class SchedulingTarget
 
     public bool deleted { get; set; }
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<Household> Households { get; set; } = new List<Household>();
 
     public virtual ICollection<RateSheet> RateSheets { get; set; } = new List<RateSheet>();

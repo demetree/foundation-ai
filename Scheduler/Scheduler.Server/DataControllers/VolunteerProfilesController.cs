@@ -789,6 +789,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					volunteerProfile.Documents = null;
 					volunteerProfile.VolunteerProfileChangeHistories = null;
 					volunteerProfile.constituent = null;
 					volunteerProfile.icon = null;
@@ -908,6 +909,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.VolunteerProfileChangeHistories = null;
 				cloneOfExisting.constituent = null;
 				cloneOfExisting.icon = null;

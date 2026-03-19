@@ -51,6 +51,8 @@ public partial class Household
 
     public virtual ICollection<Constituent> Constituents { get; set; } = new List<Constituent>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<HouseholdChangeHistory> HouseholdChangeHistories { get; set; } = new List<HouseholdChangeHistory>();
 
     public virtual Icon icon { get; set; }

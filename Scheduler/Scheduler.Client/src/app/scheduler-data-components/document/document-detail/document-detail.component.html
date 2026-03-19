@@ -117,6 +117,90 @@
                                     <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
                                 </select>
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('clientId')">
+                                <label for="Document-clientId" id="label-Document-clientId">Client</label>
+                                <select id="Document-clientId" formControlName="clientId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Client</option>
+                                    <option *ngFor="let client of clients$ | async" [ngValue]="client.id">{{client.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('officeId')">
+                                <label for="Document-officeId" id="label-Document-officeId">Office</label>
+                                <select id="Document-officeId" formControlName="officeId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Office</option>
+                                    <option *ngFor="let office of offices$ | async" [ngValue]="office.id">{{office.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('crewId')">
+                                <label for="Document-crewId" id="label-Document-crewId">Crew</label>
+                                <select id="Document-crewId" formControlName="crewId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Crew</option>
+                                    <option *ngFor="let crew of crews$ | async" [ngValue]="crew.id">{{[crew.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('schedulingTargetId')">
+                                <label for="Document-schedulingTargetId" id="label-Document-schedulingTargetId">Scheduling Target</label>
+                                <select id="Document-schedulingTargetId" formControlName="schedulingTargetId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Scheduling Target</option>
+                                    <option *ngFor="let schedulingTarget of schedulingTargets$ | async" [ngValue]="schedulingTarget.id">{{[schedulingTarget.name] | filterAndJoin}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('paymentTransactionId')">
+                                <label for="Document-paymentTransactionId" id="label-Document-paymentTransactionId">Payment Transaction</label>
+                                <select id="Document-paymentTransactionId" formControlName="paymentTransactionId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Payment Transaction</option>
+                                    <option *ngFor="let paymentTransaction of paymentTransactions$ | async" [ngValue]="paymentTransaction.id">{{paymentTransaction.status}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('financialOfficeId')">
+                                <label for="Document-financialOfficeId" id="label-Document-financialOfficeId">Financial Office</label>
+                                <select id="Document-financialOfficeId" formControlName="financialOfficeId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Financial Office</option>
+                                    <option *ngFor="let financialOffice of financialOffices$ | async" [ngValue]="financialOffice.id">{{financialOffice.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('tenantProfileId')">
+                                <label for="Document-tenantProfileId" id="label-Document-tenantProfileId">Tenant Profile</label>
+                                <select id="Document-tenantProfileId" formControlName="tenantProfileId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Tenant Profile</option>
+                                    <option *ngFor="let tenantProfile of tenantProfiles$ | async" [ngValue]="tenantProfile.id">{{tenantProfile.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('campaignId')">
+                                <label for="Document-campaignId" id="label-Document-campaignId">Campaign</label>
+                                <select id="Document-campaignId" formControlName="campaignId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Campaign</option>
+                                    <option *ngFor="let campaign of campaigns$ | async" [ngValue]="campaign.id">{{campaign.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('householdId')">
+                                <label for="Document-householdId" id="label-Document-householdId">Household</label>
+                                <select id="Document-householdId" formControlName="householdId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Household</option>
+                                    <option *ngFor="let household of households$ | async" [ngValue]="household.id">{{household.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('constituentId')">
+                                <label for="Document-constituentId" id="label-Document-constituentId">Constituent</label>
+                                <select id="Document-constituentId" formControlName="constituentId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Constituent</option>
+                                    <option *ngFor="let constituent of constituents$ | async" [ngValue]="constituent.id">{{constituent.constituentNumber}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('tributeId')">
+                                <label for="Document-tributeId" id="label-Document-tributeId">Tribute</label>
+                                <select id="Document-tributeId" formControlName="tributeId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Tribute</option>
+                                    <option *ngFor="let tribute of tributes$ | async" [ngValue]="tribute.id">{{tribute.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('volunteerProfileId')">
+                                <label for="Document-volunteerProfileId" id="label-Document-volunteerProfileId">Volunteer Profile</label>
+                                <select id="Document-volunteerProfileId" formControlName="volunteerProfileId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                                    <option [ngValue]="null">Select Volunteer Profile</option>
+                                    <option *ngFor="let volunteerProfile of volunteerProfiles$ | async" [ngValue]="volunteerProfile.id">{{volunteerProfile.availabilityPreferences}}</option>
+                                </select>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('status')">
                                 <label for="Document-status" id="label-Document-status">Status</label>
                                 <input type="text" id="Document-status" formControlName="status" placeholder="Enter Status" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-status" />

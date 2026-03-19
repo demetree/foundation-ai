@@ -31,10 +31,10 @@ import { ResourceContactService, ResourceContactData } from './resource-contact.
 import { FinancialTransactionService, FinancialTransactionData } from './financial-transaction.service';
 import { InvoiceService, InvoiceData } from './invoice.service';
 import { ReceiptService, ReceiptData } from './receipt.service';
-import { DocumentService, DocumentData } from './document.service';
 import { ContactInteractionService, ContactInteractionData } from './contact-interaction.service';
 import { NotificationSubscriptionService, NotificationSubscriptionData } from './notification-subscription.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
+import { DocumentService, DocumentData } from './document.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -271,11 +271,6 @@ export class ContactData {
     private _receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
 
                 
-    private _documents: DocumentData[] | null = null;
-    private _documentsPromise: Promise<DocumentData[]> | null  = null;
-    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
-
-                
     private _contactInteractions: ContactInteractionData[] | null = null;
     private _contactInteractionsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
@@ -293,6 +288,11 @@ export class ContactData {
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
+
+                
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
                 
     private _eventResourceAssignmentHoursApprovedByContacts: EventResourceAssignmentData[] | null = null;
@@ -589,31 +589,6 @@ export class ContactData {
 
 
 
-    public Documents$ = this._documentsSubject.asObservable().pipe(
-
-        // Trigger load on first subscription if not already loaded
-        tap(() => {
-          if (this._documents === null && this._documentsPromise === null) {
-            this.loadDocuments(); // Private method to start fetch
-          }
-        }),
-        shareReplay(1) // Cache last emit
-    );
-
-
-    private _documentsCount$: Observable<bigint | number> | null = null;
-    public get DocumentsCount$(): Observable<bigint | number> {
-        if (this._documentsCount$ === null) {
-            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({contactId: this.id,
-              active: true,
-              deleted: false
-            });
-        }
-        return this._documentsCount$;
-    }
-
-
-
     public ContactInteractions$ = this._contactInteractionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -709,6 +684,31 @@ export class ContactData {
             });
         }
         return this._constituentsCount$;
+    }
+
+
+
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({contactId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
     }
 
 
@@ -830,11 +830,6 @@ export class ContactData {
      this._receiptsSubject.next(null);
      this._receiptsCount$ = null;
 
-     this._documents = null;
-     this._documentsPromise = null;
-     this._documentsSubject.next(null);
-     this._documentsCount$ = null;
-
      this._contactInteractions = null;
      this._contactInteractionsPromise = null;
      this._contactInteractionsSubject.next(null);
@@ -854,6 +849,11 @@ export class ContactData {
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
      this._constituentsCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
 
      this._eventResourceAssignmentHoursApprovedByContacts = null;
      this._eventResourceAssignmentHoursApprovedByContactsPromise = null;
@@ -1586,71 +1586,6 @@ export class ContactData {
 
     /**
      *
-     * Gets the Documents for this Contact.
-     *
-     * If already loaded, returns cached array.
-     *
-     * If not, fetches from server and caches the result.
-     * 
-     * Usage in components:
-     *   this.contact.Documents.then(contacts => { ... })
-     *   or
-     *   await this.contact.contacts
-     *
-    */
-    public get Documents(): Promise<DocumentData[]> {
-        if (this._documents !== null) {
-            return Promise.resolve(this._documents);
-        }
-
-        if (this._documentsPromise !== null) {
-            return this._documentsPromise;
-        }
-
-        // Start the load
-        this.loadDocuments();
-
-        return this._documentsPromise!;
-    }
-
-
-
-    private loadDocuments(): void {
-
-        this._documentsPromise = lastValueFrom(
-            ContactService.Instance.GetDocumentsForContact(this.id)
-        )
-        .then(Documents => {
-            this._documents = Documents ?? [];
-            this._documentsSubject.next(this._documents);
-            return this._documents;
-         })
-        .catch(err => {
-            this._documents = [];
-            this._documentsSubject.next(this._documents);
-            throw err;
-        })
-        .finally(() => {
-            this._documentsPromise = null; // Allow retry if needed
-        });
-    }
-
-    /**
-     * Clears the cached Document. Call after mutations to force refresh.
-     */
-    public ClearDocumentsCache(): void {
-        this._documents = null;
-        this._documentsPromise = null;
-        this._documentsSubject.next(this._documents);      // Emit to observable
-    }
-
-    public get HasDocuments(): Promise<boolean> {
-        return this.Documents.then(documents => documents.length > 0);
-    }
-
-
-    /**
-     *
      * Gets the ContactInteractions for this Contact.
      *
      * If already loaded, returns cached array.
@@ -1911,6 +1846,71 @@ export class ContactData {
 
     /**
      *
+     * Gets the Documents for this Contact.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.contact.Documents.then(contacts => { ... })
+     *   or
+     *   await this.contact.contacts
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            ContactService.Instance.GetDocumentsForContact(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the EventResourceAssignmentHoursApprovedByContacts for this Contact.
      *
      * If already loaded, returns cached array.
@@ -2062,10 +2062,10 @@ export class ContactService extends SecureEndpointBase {
         private financialTransactionService: FinancialTransactionService,
         private invoiceService: InvoiceService,
         private receiptService: ReceiptService,
-        private documentService: DocumentService,
         private contactInteractionService: ContactInteractionService,
         private notificationSubscriptionService: NotificationSubscriptionService,
         private constituentService: ConstituentService,
+        private documentService: DocumentService,
         private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -2659,16 +2659,6 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    public GetDocumentsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
-        return this.documentService.GetDocumentList({
-            contactId: contactId,
-            active: active,
-            deleted: deleted,
-            includeRelations: true
-        });
-    }
-
-
     public GetContactInteractionsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ContactInteractionData[]> {
         return this.contactInteractionService.GetContactInteractionList({
             contactId: contactId,
@@ -2701,6 +2691,16 @@ export class ContactService extends SecureEndpointBase {
 
     public GetConstituentsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<ConstituentData[]> {
         return this.constituentService.GetConstituentList({
+            contactId: contactId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
+    public GetDocumentsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
             contactId: contactId,
             active: active,
             deleted: deleted,
@@ -2798,10 +2798,6 @@ export class ContactService extends SecureEndpointBase {
     (revived as any)._receiptsPromise = null;
     (revived as any)._receiptsSubject = new BehaviorSubject<ReceiptData[] | null>(null);
 
-    (revived as any)._documents = null;
-    (revived as any)._documentsPromise = null;
-    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
-
     (revived as any)._contactInteractions = null;
     (revived as any)._contactInteractionsPromise = null;
     (revived as any)._contactInteractionsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
@@ -2817,6 +2813,10 @@ export class ContactService extends SecureEndpointBase {
     (revived as any)._constituents = null;
     (revived as any)._constituentsPromise = null;
     (revived as any)._constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
+
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
     (revived as any)._eventResourceAssignmentHoursApprovedByContacts = null;
     (revived as any)._eventResourceAssignmentHoursApprovedByContactsPromise = null;
@@ -2966,18 +2966,6 @@ export class ContactService extends SecureEndpointBase {
     (revived as any)._receiptsCount$ = null;
 
 
-    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
-        tap(() => {
-              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
-                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
-              }
-        }),
-        shareReplay(1)
-      );
-
-    (revived as any)._documentsCount$ = null;
-
-
     (revived as any).ContactInteractions$ = (revived as any)._contactInteractionsSubject.asObservable().pipe(
         tap(() => {
               if ((revived as any)._contactInteractions === null && (revived as any)._contactInteractionsPromise === null) {
@@ -3024,6 +3012,18 @@ export class ContactService extends SecureEndpointBase {
       );
 
     (revived as any)._constituentsCount$ = null;
+
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
 
 
     (revived as any).EventResourceAssignmentHoursApprovedByContacts$ = (revived as any)._eventResourceAssignmentHoursApprovedByContactsSubject.asObservable().pipe(

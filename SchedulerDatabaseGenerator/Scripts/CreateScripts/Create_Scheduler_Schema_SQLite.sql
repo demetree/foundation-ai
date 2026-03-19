@@ -8,6 +8,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
 -- DROP TABLE "EventResourceAssignmentChangeHistory"
 -- DROP TABLE "EventResourceAssignment"
+-- DROP TABLE "DocumentChangeHistory"
+-- DROP TABLE "Document"
+-- DROP TABLE "DocumentType"
 -- DROP TABLE "VolunteerGroupMemberChangeHistory"
 -- DROP TABLE "VolunteerGroupMember"
 -- DROP TABLE "VolunteerGroupChangeHistory"
@@ -51,9 +54,6 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "EventCalendar"
 -- DROP TABLE "ContactInteractionChangeHistory"
 -- DROP TABLE "ContactInteraction"
--- DROP TABLE "DocumentChangeHistory"
--- DROP TABLE "Document"
--- DROP TABLE "DocumentType"
 -- DROP TABLE "ReceiptChangeHistory"
 -- DROP TABLE "Receipt"
 -- DROP TABLE "InvoiceLineItem"
@@ -182,6 +182,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "EventResourceAssignment" DISABLE
+-- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "Document" DISABLE
+-- ALTER INDEX ALL ON "DocumentType" DISABLE
 -- ALTER INDEX ALL ON "VolunteerGroupMemberChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "VolunteerGroupMember" DISABLE
 -- ALTER INDEX ALL ON "VolunteerGroupChangeHistory" DISABLE
@@ -225,9 +228,6 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "EventCalendar" DISABLE
 -- ALTER INDEX ALL ON "ContactInteractionChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ContactInteraction" DISABLE
--- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
--- ALTER INDEX ALL ON "Document" DISABLE
--- ALTER INDEX ALL ON "DocumentType" DISABLE
 -- ALTER INDEX ALL ON "ReceiptChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Receipt" DISABLE
 -- ALTER INDEX ALL ON "InvoiceLineItem" DISABLE
@@ -356,6 +356,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "EventResourceAssignment" REBUILD
+-- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "Document" REBUILD
+-- ALTER INDEX ALL ON "DocumentType" REBUILD
 -- ALTER INDEX ALL ON "VolunteerGroupMemberChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "VolunteerGroupMember" REBUILD
 -- ALTER INDEX ALL ON "VolunteerGroupChangeHistory" REBUILD
@@ -399,9 +402,6 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "EventCalendar" REBUILD
 -- ALTER INDEX ALL ON "ContactInteractionChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ContactInteraction" REBUILD
--- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
--- ALTER INDEX ALL ON "Document" REBUILD
--- ALTER INDEX ALL ON "DocumentType" REBUILD
 -- ALTER INDEX ALL ON "ReceiptChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Receipt" REBUILD
 -- ALTER INDEX ALL ON "InvoiceLineItem" REBUILD
@@ -6303,167 +6303,6 @@ CREATE INDEX "I_ReceiptChangeHistory_tenantGuid_receiptId" ON "ReceiptChangeHist
 ;
 
 
--- Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).
-CREATE TABLE "DocumentType"
-(
-	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
-	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
-	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
-	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display.
-	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
-	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
-
-);
--- Index on the DocumentType table's name field.
-CREATE INDEX "I_DocumentType_name" ON "DocumentType" ("name")
-;
-
--- Index on the DocumentType table's active field.
-CREATE INDEX "I_DocumentType_active" ON "DocumentType" ("active")
-;
-
--- Index on the DocumentType table's deleted field.
-CREATE INDEX "I_DocumentType_deleted" ON "DocumentType" ("deleted")
-;
-
-INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Rental Agreement', 'Signed rental or usage agreement', 1, 'f1a1b2c3-d4e5-6789-abcd-ef0123456701' );
-
-INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Receipt', 'Purchase receipt or proof of payment', 2, 'f1a1b2c3-d4e5-6789-abcd-ef0123456702' );
-
-INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Invoice', 'Invoice issued or received', 3, 'f1a1b2c3-d4e5-6789-abcd-ef0123456703' );
-
-INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Photo', 'Photograph or image', 4, 'f1a1b2c3-d4e5-6789-abcd-ef0123456704' );
-
-INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' );
-
-
-/*
-====================================================================================================
- DOCUMENT (Attachment Storage)
- Stores file attachments (images, PDFs, scans) with metadata and binary content.
- Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
-
- DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
- This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
- Azure Blob Storage or similar, storing only a reference URL here.
-
- The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
- ====================================================================================================
-*/
-CREATE TABLE "Document"
-(
-	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
-	"documentTypeId" INTEGER NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
-	"invoiceId" INTEGER NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
-	"receiptId" INTEGER NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
-	"name" VARCHAR(250) NOT NULL COLLATE NOCASE,		-- Display name for the document.
-	"description" VARCHAR(500) NULL COLLATE NOCASE,		-- Optional description of the document.
-	"fileName" VARCHAR(500) NOT NULL COLLATE NOCASE,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
-	"mimeType" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- MIME type of the file (e.g., 'application/pdf', 'image/jpeg').
-	"fileSizeBytes" BIGINT NOT NULL,		-- File size in bytes for UI display.
-	"fileDataFileName" VARCHAR(250) NULL COLLATE NOCASE,		-- Part of the binary data field setup
-	"fileDataSize" BIGINT NULL,		-- Part of the binary data field setup
-	"fileDataData" BLOB NULL,		-- Part of the binary data field setup
-	"fileDataMimeType" VARCHAR(100) NULL COLLATE NOCASE,		-- Part of the binary data field setup
-	"scheduledEventId" INTEGER NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
-	"financialTransactionId" INTEGER NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
-	"contactId" INTEGER NULL,		-- Optional link to a Contact.
-	"resourceId" INTEGER NULL,		-- Optional link to a Resource.
-	"status" VARCHAR(50) NULL COLLATE NOCASE,		-- Document workflow status: pending, signed, verified, etc.
-	"statusDate" DATETIME NULL,		-- When the status was last changed.
-	"statusChangedBy" VARCHAR(100) NULL COLLATE NOCASE,		-- Who changed the status.
-	"uploadedDate" DATETIME NOT NULL,		-- When the document was uploaded (UTC).
-	"uploadedBy" VARCHAR(100) NULL COLLATE NOCASE,		-- User who uploaded the document.
-	"notes" TEXT NULL COLLATE NOCASE,		-- Optional notes about the document.
-	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
-	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
-	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
-	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
-	FOREIGN KEY ("documentTypeId") REFERENCES "DocumentType"("id"),		-- Foreign key to the DocumentType table.
-	FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id"),		-- Foreign key to the Invoice table.
-	FOREIGN KEY ("receiptId") REFERENCES "Receipt"("id"),		-- Foreign key to the Receipt table.
-	FOREIGN KEY ("scheduledEventId") REFERENCES "ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
-	FOREIGN KEY ("financialTransactionId") REFERENCES "FinancialTransaction"("id"),		-- Foreign key to the FinancialTransaction table.
-	FOREIGN KEY ("contactId") REFERENCES "Contact"("id"),		-- Foreign key to the Contact table.
-	FOREIGN KEY ("resourceId") REFERENCES "Resource"("id")		-- Foreign key to the Resource table.
-);
--- Index on the Document table's tenantGuid field.
-CREATE INDEX "I_Document_tenantGuid" ON "Document" ("tenantGuid")
-;
-
--- Index on the Document table's tenantGuid,documentTypeId fields.
-CREATE INDEX "I_Document_tenantGuid_documentTypeId" ON "Document" ("tenantGuid", "documentTypeId")
-;
-
--- Index on the Document table's tenantGuid,invoiceId fields.
-CREATE INDEX "I_Document_tenantGuid_invoiceId" ON "Document" ("tenantGuid", "invoiceId")
-;
-
--- Index on the Document table's tenantGuid,receiptId fields.
-CREATE INDEX "I_Document_tenantGuid_receiptId" ON "Document" ("tenantGuid", "receiptId")
-;
-
--- Index on the Document table's tenantGuid,scheduledEventId fields.
-CREATE INDEX "I_Document_tenantGuid_scheduledEventId" ON "Document" ("tenantGuid", "scheduledEventId")
-;
-
--- Index on the Document table's tenantGuid,financialTransactionId fields.
-CREATE INDEX "I_Document_tenantGuid_financialTransactionId" ON "Document" ("tenantGuid", "financialTransactionId")
-;
-
--- Index on the Document table's tenantGuid,contactId fields.
-CREATE INDEX "I_Document_tenantGuid_contactId" ON "Document" ("tenantGuid", "contactId")
-;
-
--- Index on the Document table's tenantGuid,resourceId fields.
-CREATE INDEX "I_Document_tenantGuid_resourceId" ON "Document" ("tenantGuid", "resourceId")
-;
-
--- Index on the Document table's tenantGuid,active fields.
-CREATE INDEX "I_Document_tenantGuid_active" ON "Document" ("tenantGuid", "active")
-;
-
--- Index on the Document table's tenantGuid,deleted fields.
-CREATE INDEX "I_Document_tenantGuid_deleted" ON "Document" ("tenantGuid", "deleted")
-;
-
-
--- The change history for records from the Document table.
-CREATE TABLE "DocumentChangeHistory"
-(
-	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
-	"documentId" INTEGER NOT NULL,		-- Link to the Document table.
-	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
-	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
-	"userId" INTEGER NOT NULL,
-	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
-	FOREIGN KEY ("documentId") REFERENCES "Document"("id")		-- Foreign key to the Document table.
-);
--- Index on the DocumentChangeHistory table's tenantGuid field.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid" ON "DocumentChangeHistory" ("tenantGuid")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_versionNumber" ON "DocumentChangeHistory" ("tenantGuid", "versionNumber")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_timeStamp" ON "DocumentChangeHistory" ("tenantGuid", "timeStamp")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_userId" ON "DocumentChangeHistory" ("tenantGuid", "userId")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_documentId" ON "DocumentChangeHistory" ("tenantGuid", "documentId", "versionNumber", "timeStamp", "userId")
-;
-
-
 -- The contact interaction data
 CREATE TABLE "ContactInteraction"
 (
@@ -8287,6 +8126,245 @@ CREATE INDEX "I_VolunteerGroupMemberChangeHistory_tenantGuid_userId" ON "Volunte
 
 -- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,volunteerGroupMemberId fields.
 CREATE INDEX "I_VluntrGrupMmbrChngHstry_tnntGud_vluntrGrupMmbrd" ON "VolunteerGroupMemberChangeHistory" ("tenantGuid", "volunteerGroupMemberId", "versionNumber", "timeStamp", "userId")
+;
+
+
+-- Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).
+CREATE TABLE "DocumentType"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"description" VARCHAR(500) NOT NULL COLLATE NOCASE,
+	"sequence" INTEGER NULL,		-- Sequence to use for sorting.
+	"color" VARCHAR(10) NULL COLLATE NOCASE,		-- Hex color for UI display.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the DocumentType table's name field.
+CREATE INDEX "I_DocumentType_name" ON "DocumentType" ("name")
+;
+
+-- Index on the DocumentType table's active field.
+CREATE INDEX "I_DocumentType_active" ON "DocumentType" ("active")
+;
+
+-- Index on the DocumentType table's deleted field.
+CREATE INDEX "I_DocumentType_deleted" ON "DocumentType" ("deleted")
+;
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Rental Agreement', 'Signed rental or usage agreement', 1, 'f1a1b2c3-d4e5-6789-abcd-ef0123456701' );
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Receipt', 'Purchase receipt or proof of payment', 2, 'f1a1b2c3-d4e5-6789-abcd-ef0123456702' );
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Invoice', 'Invoice issued or received', 3, 'f1a1b2c3-d4e5-6789-abcd-ef0123456703' );
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Photo', 'Photograph or image', 4, 'f1a1b2c3-d4e5-6789-abcd-ef0123456704' );
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Permit', 'Required permits (liquor license, fire permit, etc.)', 5, 'f1a1b2c3-d4e5-6789-abcd-ef0123456705' );
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Background Check', 'Background Check supporting documentation (police etc..)', 6, 'f1a1b2c3-d4e5-6789-abcd-ef0123456706' );
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Insurance Certificate', 'Liability insurance certificate for event coverage', 7, 'f1a1b2c3-d4e5-6789-abcd-ef0123456707' );
+
+INSERT INTO "DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' );
+
+
+/*
+====================================================================================================
+ DOCUMENT (Attachment Storage)
+ Stores file attachments (images, PDFs, scans) with metadata and binary content.
+ Uses polymorphic nullable FKs to link to entities across the system.
+
+ DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
+ This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
+ Azure Blob Storage or similar, storing only a reference URL here.
+
+ The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
+ ====================================================================================================
+*/
+CREATE TABLE "Document"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"documentTypeId" INTEGER NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
+	"invoiceId" INTEGER NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
+	"receiptId" INTEGER NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
+	"name" VARCHAR(250) NOT NULL COLLATE NOCASE,		-- Display name for the document.
+	"description" VARCHAR(500) NULL COLLATE NOCASE,		-- Optional description of the document.
+	"fileName" VARCHAR(500) NOT NULL COLLATE NOCASE,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
+	"mimeType" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- MIME type of the file (e.g., 'application/pdf', 'image/jpeg').
+	"fileSizeBytes" BIGINT NOT NULL,		-- File size in bytes for UI display.
+	"fileDataFileName" VARCHAR(250) NULL COLLATE NOCASE,		-- Part of the binary data field setup
+	"fileDataSize" BIGINT NULL,		-- Part of the binary data field setup
+	"fileDataData" BLOB NULL,		-- Part of the binary data field setup
+	"fileDataMimeType" VARCHAR(100) NULL COLLATE NOCASE,		-- Part of the binary data field setup
+	"scheduledEventId" INTEGER NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
+	"financialTransactionId" INTEGER NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
+	"contactId" INTEGER NULL,		-- Optional link to a Contact.
+	"resourceId" INTEGER NULL,		-- Optional link to a Resource.
+	"clientId" INTEGER NULL,		-- Optional link to a Client.
+	"officeId" INTEGER NULL,		-- Optional link to an Office.
+	"crewId" INTEGER NULL,		-- Optional link to a Crew.
+	"schedulingTargetId" INTEGER NULL,		-- Optional link to a SchedulingTarget.
+	"paymentTransactionId" INTEGER NULL,		-- Optional link to a PaymentTransaction.
+	"financialOfficeId" INTEGER NULL,		-- Optional link to a FinancialOffice.
+	"tenantProfileId" INTEGER NULL,		-- Optional link to a TenantProfile.
+	"campaignId" INTEGER NULL,		-- Optional link to a Campaign.
+	"householdId" INTEGER NULL,		-- Optional link to a Household.
+	"constituentId" INTEGER NULL,		-- Optional link to a Constituent.
+	"tributeId" INTEGER NULL,		-- Optional link to a Tribute.
+	"volunteerProfileId" INTEGER NULL,		-- Optional link to a VolunteerProfile.
+	"status" VARCHAR(50) NULL COLLATE NOCASE,		-- Document workflow status: pending, signed, verified, etc.
+	"statusDate" DATETIME NULL,		-- When the status was last changed.
+	"statusChangedBy" VARCHAR(100) NULL COLLATE NOCASE,		-- Who changed the status.
+	"uploadedDate" DATETIME NOT NULL,		-- When the document was uploaded (UTC).
+	"uploadedBy" VARCHAR(100) NULL COLLATE NOCASE,		-- User who uploaded the document.
+	"notes" TEXT NULL COLLATE NOCASE,		-- Optional notes about the document.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("documentTypeId") REFERENCES "DocumentType"("id"),		-- Foreign key to the DocumentType table.
+	FOREIGN KEY ("invoiceId") REFERENCES "Invoice"("id"),		-- Foreign key to the Invoice table.
+	FOREIGN KEY ("receiptId") REFERENCES "Receipt"("id"),		-- Foreign key to the Receipt table.
+	FOREIGN KEY ("scheduledEventId") REFERENCES "ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
+	FOREIGN KEY ("financialTransactionId") REFERENCES "FinancialTransaction"("id"),		-- Foreign key to the FinancialTransaction table.
+	FOREIGN KEY ("contactId") REFERENCES "Contact"("id"),		-- Foreign key to the Contact table.
+	FOREIGN KEY ("resourceId") REFERENCES "Resource"("id"),		-- Foreign key to the Resource table.
+	FOREIGN KEY ("clientId") REFERENCES "Client"("id"),		-- Foreign key to the Client table.
+	FOREIGN KEY ("officeId") REFERENCES "Office"("id"),		-- Foreign key to the Office table.
+	FOREIGN KEY ("crewId") REFERENCES "Crew"("id"),		-- Foreign key to the Crew table.
+	FOREIGN KEY ("schedulingTargetId") REFERENCES "SchedulingTarget"("id"),		-- Foreign key to the SchedulingTarget table.
+	FOREIGN KEY ("paymentTransactionId") REFERENCES "PaymentTransaction"("id"),		-- Foreign key to the PaymentTransaction table.
+	FOREIGN KEY ("financialOfficeId") REFERENCES "FinancialOffice"("id"),		-- Foreign key to the FinancialOffice table.
+	FOREIGN KEY ("tenantProfileId") REFERENCES "TenantProfile"("id"),		-- Foreign key to the TenantProfile table.
+	FOREIGN KEY ("campaignId") REFERENCES "Campaign"("id"),		-- Foreign key to the Campaign table.
+	FOREIGN KEY ("householdId") REFERENCES "Household"("id"),		-- Foreign key to the Household table.
+	FOREIGN KEY ("constituentId") REFERENCES "Constituent"("id"),		-- Foreign key to the Constituent table.
+	FOREIGN KEY ("tributeId") REFERENCES "Tribute"("id"),		-- Foreign key to the Tribute table.
+	FOREIGN KEY ("volunteerProfileId") REFERENCES "VolunteerProfile"("id")		-- Foreign key to the VolunteerProfile table.
+);
+-- Index on the Document table's tenantGuid field.
+CREATE INDEX "I_Document_tenantGuid" ON "Document" ("tenantGuid")
+;
+
+-- Index on the Document table's tenantGuid,documentTypeId fields.
+CREATE INDEX "I_Document_tenantGuid_documentTypeId" ON "Document" ("tenantGuid", "documentTypeId")
+;
+
+-- Index on the Document table's tenantGuid,invoiceId fields.
+CREATE INDEX "I_Document_tenantGuid_invoiceId" ON "Document" ("tenantGuid", "invoiceId")
+;
+
+-- Index on the Document table's tenantGuid,receiptId fields.
+CREATE INDEX "I_Document_tenantGuid_receiptId" ON "Document" ("tenantGuid", "receiptId")
+;
+
+-- Index on the Document table's tenantGuid,scheduledEventId fields.
+CREATE INDEX "I_Document_tenantGuid_scheduledEventId" ON "Document" ("tenantGuid", "scheduledEventId")
+;
+
+-- Index on the Document table's tenantGuid,financialTransactionId fields.
+CREATE INDEX "I_Document_tenantGuid_financialTransactionId" ON "Document" ("tenantGuid", "financialTransactionId")
+;
+
+-- Index on the Document table's tenantGuid,contactId fields.
+CREATE INDEX "I_Document_tenantGuid_contactId" ON "Document" ("tenantGuid", "contactId")
+;
+
+-- Index on the Document table's tenantGuid,resourceId fields.
+CREATE INDEX "I_Document_tenantGuid_resourceId" ON "Document" ("tenantGuid", "resourceId")
+;
+
+-- Index on the Document table's tenantGuid,clientId fields.
+CREATE INDEX "I_Document_tenantGuid_clientId" ON "Document" ("tenantGuid", "clientId")
+;
+
+-- Index on the Document table's tenantGuid,officeId fields.
+CREATE INDEX "I_Document_tenantGuid_officeId" ON "Document" ("tenantGuid", "officeId")
+;
+
+-- Index on the Document table's tenantGuid,crewId fields.
+CREATE INDEX "I_Document_tenantGuid_crewId" ON "Document" ("tenantGuid", "crewId")
+;
+
+-- Index on the Document table's tenantGuid,schedulingTargetId fields.
+CREATE INDEX "I_Document_tenantGuid_schedulingTargetId" ON "Document" ("tenantGuid", "schedulingTargetId")
+;
+
+-- Index on the Document table's tenantGuid,paymentTransactionId fields.
+CREATE INDEX "I_Document_tenantGuid_paymentTransactionId" ON "Document" ("tenantGuid", "paymentTransactionId")
+;
+
+-- Index on the Document table's tenantGuid,financialOfficeId fields.
+CREATE INDEX "I_Document_tenantGuid_financialOfficeId" ON "Document" ("tenantGuid", "financialOfficeId")
+;
+
+-- Index on the Document table's tenantGuid,tenantProfileId fields.
+CREATE INDEX "I_Document_tenantGuid_tenantProfileId" ON "Document" ("tenantGuid", "tenantProfileId")
+;
+
+-- Index on the Document table's tenantGuid,campaignId fields.
+CREATE INDEX "I_Document_tenantGuid_campaignId" ON "Document" ("tenantGuid", "campaignId")
+;
+
+-- Index on the Document table's tenantGuid,householdId fields.
+CREATE INDEX "I_Document_tenantGuid_householdId" ON "Document" ("tenantGuid", "householdId")
+;
+
+-- Index on the Document table's tenantGuid,constituentId fields.
+CREATE INDEX "I_Document_tenantGuid_constituentId" ON "Document" ("tenantGuid", "constituentId")
+;
+
+-- Index on the Document table's tenantGuid,tributeId fields.
+CREATE INDEX "I_Document_tenantGuid_tributeId" ON "Document" ("tenantGuid", "tributeId")
+;
+
+-- Index on the Document table's tenantGuid,volunteerProfileId fields.
+CREATE INDEX "I_Document_tenantGuid_volunteerProfileId" ON "Document" ("tenantGuid", "volunteerProfileId")
+;
+
+-- Index on the Document table's tenantGuid,active fields.
+CREATE INDEX "I_Document_tenantGuid_active" ON "Document" ("tenantGuid", "active")
+;
+
+-- Index on the Document table's tenantGuid,deleted fields.
+CREATE INDEX "I_Document_tenantGuid_deleted" ON "Document" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the Document table.
+CREATE TABLE "DocumentChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"documentId" INTEGER NOT NULL,		-- Link to the Document table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("documentId") REFERENCES "Document"("id")		-- Foreign key to the Document table.
+);
+-- Index on the DocumentChangeHistory table's tenantGuid field.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid" ON "DocumentChangeHistory" ("tenantGuid")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_versionNumber" ON "DocumentChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_timeStamp" ON "DocumentChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_userId" ON "DocumentChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_documentId" ON "DocumentChangeHistory" ("tenantGuid", "documentId", "versionNumber", "timeStamp", "userId")
 ;
 
 

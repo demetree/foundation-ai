@@ -31,6 +31,7 @@ import { CrewService, CrewData } from './crew.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
 import { GiftService, GiftData } from './gift.service';
 import { VolunteerGroupService, VolunteerGroupData } from './volunteer-group.service';
+import { DocumentService, DocumentData } from './document.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -258,6 +259,11 @@ export class OfficeData {
     private _volunteerGroups: VolunteerGroupData[] | null = null;
     private _volunteerGroupsPromise: Promise<VolunteerGroupData[]> | null  = null;
     private _volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
+
+                
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
                 
     private _eventResourceAssignments: EventResourceAssignmentData[] | null = null;
@@ -531,6 +537,31 @@ export class OfficeData {
 
 
 
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({officeId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
+    }
+
+
+
     public EventResourceAssignments$ = this._eventResourceAssignmentsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
@@ -643,6 +674,11 @@ export class OfficeData {
      this._volunteerGroupsPromise = null;
      this._volunteerGroupsSubject.next(null);
      this._volunteerGroupsCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
 
      this._eventResourceAssignments = null;
      this._eventResourceAssignmentsPromise = null;
@@ -1310,6 +1346,71 @@ export class OfficeData {
 
     /**
      *
+     * Gets the Documents for this Office.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.office.Documents.then(offices => { ... })
+     *   or
+     *   await this.office.offices
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            OfficeService.Instance.GetDocumentsForOffice(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
+    }
+
+
+    /**
+     *
      * Gets the EventResourceAssignments for this Office.
      *
      * If already loaded, returns cached array.
@@ -1461,6 +1562,7 @@ export class OfficeService extends SecureEndpointBase {
         private scheduledEventService: ScheduledEventService,
         private giftService: GiftService,
         private volunteerGroupService: VolunteerGroupService,
+        private documentService: DocumentService,
         private eventResourceAssignmentService: EventResourceAssignmentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
@@ -2043,6 +2145,16 @@ export class OfficeService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentsForOffice(officeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
+            officeId: officeId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
     public GetEventResourceAssignmentsForOffice(officeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventResourceAssignmentData[]> {
         return this.eventResourceAssignmentService.GetEventResourceAssignmentList({
             officeId: officeId,
@@ -2127,6 +2239,10 @@ export class OfficeService extends SecureEndpointBase {
     (revived as any)._volunteerGroups = null;
     (revived as any)._volunteerGroupsPromise = null;
     (revived as any)._volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
+
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
     (revived as any)._eventResourceAssignments = null;
     (revived as any)._eventResourceAssignmentsPromise = null;
@@ -2262,6 +2378,18 @@ export class OfficeService extends SecureEndpointBase {
       );
 
     (revived as any)._volunteerGroupsCount$ = null;
+
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
 
 
     (revived as any).EventResourceAssignments$ = (revived as any)._eventResourceAssignmentsSubject.asObservable().pipe(

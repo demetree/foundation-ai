@@ -28,6 +28,7 @@ import { IconService } from '../../../scheduler-data-services/icon.service';
 import { CrewChangeHistoryService } from '../../../scheduler-data-services/crew-change-history.service';
 import { CrewMemberService } from '../../../scheduler-data-services/crew-member.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -112,6 +113,7 @@ export class CrewDetailComponent implements OnInit, CanComponentDeactivate {
   public crewChangeHistories$ = this.crewChangeHistoryService.GetCrewChangeHistoryList();
   public crewMembers$ = this.crewMemberService.GetCrewMemberList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
+  public documents$ = this.documentService.GetDocumentList();
   public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
 
   private destroy$ = new Subject<void>();
@@ -123,6 +125,7 @@ export class CrewDetailComponent implements OnInit, CanComponentDeactivate {
     public crewChangeHistoryService: CrewChangeHistoryService,
     public crewMemberService: CrewMemberService,
     public scheduledEventService: ScheduledEventService,
+    public documentService: DocumentService,
     public eventResourceAssignmentService: EventResourceAssignmentService,
     private authService: AuthService,
     private route: ActivatedRoute,

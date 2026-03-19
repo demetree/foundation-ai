@@ -285,6 +285,12 @@ import { SchedulingTargetCustomListingComponent } from './components/scheduling-
 import { SchedulingTargetCustomTableComponent } from './components/scheduling-target-custom/scheduling-target-custom-table/scheduling-target-custom-table.component';
 import { SchedulingTargetCustomDetailComponent } from './components/scheduling-target-custom/scheduling-target-custom-detail/scheduling-target-custom-detail.component';
 
+//
+// Document custom optimizations
+//
+import { DocumentCustomListingComponent } from './components/document-custom/document-custom-listing/document-custom-listing.component';
+import { DocumentCustomTableComponent } from './components/document-custom/document-custom-table/document-custom-table.component';
+
 
 //
 // Custom services
@@ -1449,7 +1455,11 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     ContactScheduleTabComponent,
     ConstituentJourneyUpdateModalComponent,
 
-
+    //
+    // Document custom optimizations
+    //
+    DocumentCustomListingComponent,
+    DocumentCustomTableComponent,
 
 
     //

@@ -28,6 +28,7 @@ import { ConstituentService } from '../../../scheduler-data-services/constituent
 import { IconService } from '../../../scheduler-data-services/icon.service';
 import { TributeChangeHistoryService } from '../../../scheduler-data-services/tribute-change-history.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -115,6 +116,7 @@ export class TributeDetailComponent implements OnInit, CanComponentDeactivate {
   public icons$ = this.iconService.GetIconList();
   public tributeChangeHistories$ = this.tributeChangeHistoryService.GetTributeChangeHistoryList();
   public gifts$ = this.giftService.GetGiftList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -125,6 +127,7 @@ export class TributeDetailComponent implements OnInit, CanComponentDeactivate {
     public iconService: IconService,
     public tributeChangeHistoryService: TributeChangeHistoryService,
     public giftService: GiftService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

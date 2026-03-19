@@ -1087,6 +1087,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					schedulingTarget.avatarData = null;
+					schedulingTarget.Documents = null;
 					schedulingTarget.Households = null;
 					schedulingTarget.RateSheets = null;
 					schedulingTarget.ScheduledEvents = null;
@@ -1225,6 +1226,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.avatarData = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.Households = null;
 				cloneOfExisting.RateSheets = null;
 				cloneOfExisting.ScheduledEvents = null;

@@ -23,6 +23,18 @@ import { ScheduledEventData } from './scheduled-event.service';
 import { FinancialTransactionData } from './financial-transaction.service';
 import { ContactData } from './contact.service';
 import { ResourceData } from './resource.service';
+import { ClientData } from './client.service';
+import { OfficeData } from './office.service';
+import { CrewData } from './crew.service';
+import { SchedulingTargetData } from './scheduling-target.service';
+import { PaymentTransactionData } from './payment-transaction.service';
+import { FinancialOfficeData } from './financial-office.service';
+import { TenantProfileData } from './tenant-profile.service';
+import { CampaignData } from './campaign.service';
+import { HouseholdData } from './household.service';
+import { ConstituentData } from './constituent.service';
+import { TributeData } from './tribute.service';
+import { VolunteerProfileData } from './volunteer-profile.service';
 import { DocumentChangeHistoryService, DocumentChangeHistoryData } from './document-change-history.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
@@ -50,6 +62,18 @@ export class DocumentQueryParameters {
     financialTransactionId: bigint | number | null | undefined = null;
     contactId: bigint | number | null | undefined = null;
     resourceId: bigint | number | null | undefined = null;
+    clientId: bigint | number | null | undefined = null;
+    officeId: bigint | number | null | undefined = null;
+    crewId: bigint | number | null | undefined = null;
+    schedulingTargetId: bigint | number | null | undefined = null;
+    paymentTransactionId: bigint | number | null | undefined = null;
+    financialOfficeId: bigint | number | null | undefined = null;
+    tenantProfileId: bigint | number | null | undefined = null;
+    campaignId: bigint | number | null | undefined = null;
+    householdId: bigint | number | null | undefined = null;
+    constituentId: bigint | number | null | undefined = null;
+    tributeId: bigint | number | null | undefined = null;
+    volunteerProfileId: bigint | number | null | undefined = null;
     status: string | null | undefined = null;
     statusDate: string | null | undefined = null;        // ISO 8601 (full datetime)
     statusChangedBy: string | null | undefined = null;
@@ -88,6 +112,18 @@ export class DocumentSubmitData {
     financialTransactionId: bigint | number | null = null;
     contactId: bigint | number | null = null;
     resourceId: bigint | number | null = null;
+    clientId: bigint | number | null = null;
+    officeId: bigint | number | null = null;
+    crewId: bigint | number | null = null;
+    schedulingTargetId: bigint | number | null = null;
+    paymentTransactionId: bigint | number | null = null;
+    financialOfficeId: bigint | number | null = null;
+    tenantProfileId: bigint | number | null = null;
+    campaignId: bigint | number | null = null;
+    householdId: bigint | number | null = null;
+    constituentId: bigint | number | null = null;
+    tributeId: bigint | number | null = null;
+    volunteerProfileId: bigint | number | null = null;
     status: string | null = null;
     statusDate: string | null = null;     // ISO 8601 (full datetime)
     statusChangedBy: string | null = null;
@@ -180,6 +216,18 @@ export class DocumentData {
     financialTransactionId!: bigint | number;
     contactId!: bigint | number;
     resourceId!: bigint | number;
+    clientId!: bigint | number;
+    officeId!: bigint | number;
+    crewId!: bigint | number;
+    schedulingTargetId!: bigint | number;
+    paymentTransactionId!: bigint | number;
+    financialOfficeId!: bigint | number;
+    tenantProfileId!: bigint | number;
+    campaignId!: bigint | number;
+    householdId!: bigint | number;
+    constituentId!: bigint | number;
+    tributeId!: bigint | number;
+    volunteerProfileId!: bigint | number;
     status!: string | null;
     statusDate!: string | null;   // ISO 8601 (full datetime)
     statusChangedBy!: string | null;
@@ -190,13 +238,25 @@ export class DocumentData {
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
+    campaign: CampaignData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    client: ClientData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    constituent: ConstituentData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     contact: ContactData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    crew: CrewData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     documentType: DocumentTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    financialOffice: FinancialOfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     financialTransaction: FinancialTransactionData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    household: HouseholdData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     invoice: InvoiceData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    office: OfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    paymentTransaction: PaymentTransactionData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     receipt: ReceiptData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     resource: ResourceData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     scheduledEvent: ScheduledEventData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    schedulingTarget: SchedulingTargetData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    tenantProfile: TenantProfileData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    tribute: TributeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    volunteerProfile: VolunteerProfileData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
 
     //
     // Private lazy-loading caches for related collections
@@ -516,6 +576,18 @@ export class DocumentService extends SecureEndpointBase {
         output.financialTransactionId = data.financialTransactionId;
         output.contactId = data.contactId;
         output.resourceId = data.resourceId;
+        output.clientId = data.clientId;
+        output.officeId = data.officeId;
+        output.crewId = data.crewId;
+        output.schedulingTargetId = data.schedulingTargetId;
+        output.paymentTransactionId = data.paymentTransactionId;
+        output.financialOfficeId = data.financialOfficeId;
+        output.tenantProfileId = data.tenantProfileId;
+        output.campaignId = data.campaignId;
+        output.householdId = data.householdId;
+        output.constituentId = data.constituentId;
+        output.tributeId = data.tributeId;
+        output.volunteerProfileId = data.volunteerProfileId;
         output.status = data.status;
         output.statusDate = data.statusDate;
         output.statusChangedBy = data.statusChangedBy;

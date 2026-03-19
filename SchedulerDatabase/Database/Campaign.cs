@@ -41,6 +41,8 @@ public partial class Campaign
 
     public virtual ICollection<CampaignChangeHistory> CampaignChangeHistories { get; set; } = new List<CampaignChangeHistory>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<Gift> Gifts { get; set; } = new List<Gift>();
 
     public virtual ICollection<Pledge> Pledges { get; set; } = new List<Pledge>();

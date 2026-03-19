@@ -43,6 +43,8 @@ public partial class Crew
 
     public virtual ICollection<CrewMember> CrewMembers { get; set; } = new List<CrewMember>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
 
     public virtual ICollection<ScheduledEvent> ScheduledEvents { get; set; } = new List<ScheduledEvent>();

@@ -13,22 +13,16 @@
  */
 
 import { Component, OnInit, Input, ViewChild } from '@angular/core';
-import { lastValueFrom, forkJoin, of } from 'rxjs';
+import { lastValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { ChartConfiguration, ChartData, TooltipItem } from 'chart.js';
+import 'chartjs-adapter-date-fns';
 import { BaseChartDirective } from 'ng2-charts';
-import { ScheduledEventData } from '../../../scheduler-data-services/scheduled-event.service';
-import { ScheduledEventChangeHistoryService, ScheduledEventChangeHistoryData } from '../../../scheduler-data-services/scheduled-event-change-history.service';
+import { ScheduledEventData, ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
-import { EventChargeChangeHistoryService, EventChargeChangeHistoryData } from '../../../scheduler-data-services/event-charge-change-history.service';
-import { EventCalendarService } from '../../../scheduler-data-services/event-calendar.service';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
-import { DocumentChangeHistoryService, DocumentChangeHistoryData } from '../../../scheduler-data-services/document-change-history.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
-import { EventResourceAssignmentChangeHistoryService, EventResourceAssignmentChangeHistoryData } from '../../../scheduler-data-services/event-resource-assignment-change-history.service';
 import { RecurrenceRuleService } from '../../../scheduler-data-services/recurrence-rule.service';
-import { RecurrenceRuleChangeHistoryService, RecurrenceRuleChangeHistoryData } from '../../../scheduler-data-services/recurrence-rule-change-history.service';
-import { AuthService } from '../../../services/auth.service';
 
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
@@ -114,13 +108,18 @@ export class EventTimelinePanelComponent implements OnInit {
         time: {
           tooltipFormat: 'MMM d, yyyy h:mm a',
           displayFormats: {
-            hour: 'MMM d h a',
+            hour: 'h:mm a',
             day: 'MMM d',
             month: 'MMM yyyy'
           }
         },
         title: { display: false },
-        grid: { display: false }
+        grid: { display: false },
+        ticks: {
+          maxTicksLimit: 8,
+          maxRotation: 45,
+          font: { size: 10 }
+        }
       },
       y: {
         display: false,
@@ -154,17 +153,11 @@ export class EventTimelinePanelComponent implements OnInit {
 
 
   constructor(
-    private scheduledEventChangeHistoryService: ScheduledEventChangeHistoryService,
+    private scheduledEventService: ScheduledEventService,
     private eventChargeService: EventChargeService,
-    private eventChargeChangeHistoryService: EventChargeChangeHistoryService,
-    private eventCalendarService: EventCalendarService,
     private documentService: DocumentService,
-    private documentChangeHistoryService: DocumentChangeHistoryService,
     private eventResourceAssignmentService: EventResourceAssignmentService,
-    private eventResourceAssignmentChangeHistoryService: EventResourceAssignmentChangeHistoryService,
-    private recurrenceRuleService: RecurrenceRuleService,
-    private recurrenceRuleChangeHistoryService: RecurrenceRuleChangeHistoryService,
-    private authService: AuthService
+    private recurrenceRuleService: RecurrenceRuleService
   ) {}
 
 
@@ -181,28 +174,27 @@ export class EventTimelinePanelComponent implements OnInit {
     const eventId = this.event.id as number;
 
     try {
-      // 1. ScheduledEvent change history (direct — has scheduledEventId FK)
+      // 1. ScheduledEvent audit history (includes resolved user info)
       const eventHistory = await lastValueFrom(
-        this.scheduledEventChangeHistoryService.GetScheduledEventChangeHistoryList({ scheduledEventId: eventId })
-          .pipe(catchError(() => of([] as ScheduledEventChangeHistoryData[])))
+        this.scheduledEventService.GetScheduledEventAuditHistory(eventId, true)
+          .pipe(catchError(() => of([])))
       );
-      this.processChangeHistoryGroup(eventHistory, 'Event', entries, 'scheduledEventId');
+      this.processAuditHistoryGroup(eventHistory, 'Event', entries);
 
-      // 2. EventCharge — first get charges for this event, then their histories
+      // 2. EventCharge — get charges for this event, then their audit histories
       const charges = await lastValueFrom(
         this.eventChargeService.GetEventChargeList({ scheduledEventId: eventId })
           .pipe(catchError(() => of([])))
       );
       for (const charge of charges) {
         const chargeHistory = await lastValueFrom(
-          this.eventChargeChangeHistoryService.GetEventChargeChangeHistoryList({ eventChargeId: charge.id })
-            .pipe(catchError(() => of([] as EventChargeChangeHistoryData[])))
+          this.eventChargeService.GetEventChargeAuditHistory(charge.id as number, true)
+            .pipe(catchError(() => of([])))
         );
-        this.processChangeHistoryGroup(chargeHistory, 'Charge', entries, 'eventChargeId');
+        this.processAuditHistoryGroup(chargeHistory, 'Charge', entries);
       }
 
-      // 3. EventCalendar — no change history table exists, so just note their existence
-      //    Calendar link records are static (created once), so we can show creation time from the entity itself
+      // 3. EventCalendar — no change history table exists
       // (Skipped — EventCalendarChangeHistory service not available)
 
       // 4. Documents
@@ -212,10 +204,10 @@ export class EventTimelinePanelComponent implements OnInit {
       );
       for (const doc of docs) {
         const docHistory = await lastValueFrom(
-          this.documentChangeHistoryService.GetDocumentChangeHistoryList({ documentId: doc.id })
-            .pipe(catchError(() => of([] as DocumentChangeHistoryData[])))
+          this.documentService.GetDocumentAuditHistory(doc.id as number, true)
+            .pipe(catchError(() => of([])))
         );
-        this.processChangeHistoryGroup(docHistory, 'Document', entries, 'documentId');
+        this.processAuditHistoryGroup(docHistory, 'Document', entries);
       }
 
       // 5. EventResourceAssignment
@@ -225,10 +217,10 @@ export class EventTimelinePanelComponent implements OnInit {
       );
       for (const assignment of assignments) {
         const assignHistory = await lastValueFrom(
-          this.eventResourceAssignmentChangeHistoryService.GetEventResourceAssignmentChangeHistoryList({ eventResourceAssignmentId: assignment.id })
-            .pipe(catchError(() => of([] as EventResourceAssignmentChangeHistoryData[])))
+          this.eventResourceAssignmentService.GetEventResourceAssignmentAuditHistory(assignment.id as number, true)
+            .pipe(catchError(() => of([])))
         );
-        this.processChangeHistoryGroup(assignHistory, 'Assignment', entries, 'eventResourceAssignmentId');
+        this.processAuditHistoryGroup(assignHistory, 'Assignment', entries);
       }
 
       // 6. RecurrenceRule
@@ -238,10 +230,10 @@ export class EventTimelinePanelComponent implements OnInit {
       );
       for (const rule of rules) {
         const ruleHistory = await lastValueFrom(
-          this.recurrenceRuleChangeHistoryService.GetRecurrenceRuleChangeHistoryList({ recurrenceRuleId: rule.id })
-            .pipe(catchError(() => of([] as RecurrenceRuleChangeHistoryData[])))
+          this.recurrenceRuleService.GetRecurrenceRuleAuditHistory(rule.id as number, true)
+            .pipe(catchError(() => of([])))
         );
-        this.processChangeHistoryGroup(ruleHistory, 'Recurrence', entries, 'recurrenceRuleId');
+        this.processAuditHistoryGroup(ruleHistory, 'Recurrence', entries);
       }
 
     } catch (err) {
@@ -271,14 +263,14 @@ export class EventTimelinePanelComponent implements OnInit {
 
 
   /**
-   * Processes a group of change history records (all for the same entity type)
-   * and adds them to the entries array.
+   * Processes a group of VersionInformation<T> audit history records
+   * (all for the same entity type) and adds them to the entries array.
+   * User names are resolved server-side via the VersionInformation.user property.
    */
-  private processChangeHistoryGroup(
+  private processAuditHistoryGroup(
     records: any[],
     entityType: string,
-    entries: TimelineEntry[],
-    _entityFk: string
+    entries: TimelineEntry[]
   ): void {
 
     if (!records || records.length === 0) return;
@@ -301,14 +293,22 @@ export class EventTimelinePanelComponent implements OnInit {
       const config = ENTITY_TYPES[entityType] || ENTITY_TYPES['Event'];
       const entityLabel = this.buildEntityLabel(entityType, currentData);
 
+      // Resolve user name from VersionInformation.user (server-resolved)
+      const user = record.user;
+      let userName = 'Unknown';
+      if (user) {
+        const parts = [user.firstName, user.lastName].filter(Boolean);
+        userName = parts.length > 0 ? parts.join(' ') : (user.userName || 'Unknown');
+      }
+
       entries.push({
         timestamp: new Date(record.timeStamp),
         entityType,
         entityTypeIcon: config.icon,
         entityTypeColor: config.color,
         action: isFirst ? 'Created' : 'Updated',
-        userName: this.resolveUserName(record.userId),
-        userId: record.userId,
+        userName,
+        userId: user?.id ?? 0,
         versionNumber: record.versionNumber || 0,
         diffs,
         rawData: currentData,
@@ -334,21 +334,6 @@ export class EventTimelinePanelComponent implements OnInit {
       case 'Recurrence': return data.frequency || 'Recurrence Rule';
       default: return entityType;
     }
-  }
-
-
-  /**
-   * Resolves a userId to a display name.
-   * Uses the current user's info if it matches, otherwise "User #X".
-   */
-  private resolveUserName(userId: bigint | number): string {
-    const currentUser = this.authService.currentUser;
-    if (currentUser && Number(currentUser.id) === Number(userId)) {
-      const parts: string[] = [];
-      if (currentUser.fullName) return currentUser.fullName;
-      return currentUser.userName || `User #${userId}`;
-    }
-    return `User #${userId}`;
   }
 
 

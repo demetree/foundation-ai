@@ -28,6 +28,7 @@ import { VolunteerStatusService } from '../../../scheduler-data-services/volunte
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
 import { IconService } from '../../../scheduler-data-services/icon.service';
 import { VolunteerProfileChangeHistoryService } from '../../../scheduler-data-services/volunteer-profile-change-history.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -129,6 +130,7 @@ export class VolunteerProfileDetailComponent implements OnInit, CanComponentDeac
   public constituents$ = this.constituentService.GetConstituentList();
   public icons$ = this.iconService.GetIconList();
   public volunteerProfileChangeHistories$ = this.volunteerProfileChangeHistoryService.GetVolunteerProfileChangeHistoryList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -139,6 +141,7 @@ export class VolunteerProfileDetailComponent implements OnInit, CanComponentDeac
     public constituentService: ConstituentService,
     public iconService: IconService,
     public volunteerProfileChangeHistoryService: VolunteerProfileChangeHistoryService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

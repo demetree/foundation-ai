@@ -29,6 +29,7 @@ import { AppealService } from '../../../scheduler-data-services/appeal.service';
 import { PledgeService } from '../../../scheduler-data-services/pledge.service';
 import { BatchService } from '../../../scheduler-data-services/batch.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -109,6 +110,7 @@ export class CampaignDetailComponent implements OnInit, CanComponentDeactivate {
   public pledges$ = this.pledgeService.GetPledgeList();
   public batches$ = this.batchService.GetBatchList();
   public gifts$ = this.giftService.GetGiftList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -120,6 +122,7 @@ export class CampaignDetailComponent implements OnInit, CanComponentDeactivate {
     public pledgeService: PledgeService,
     public batchService: BatchService,
     public giftService: GiftService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

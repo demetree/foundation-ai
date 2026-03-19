@@ -63,6 +63,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   @Input() initialStart: string | null = null;
   @Input() initialEnd: string | null = null;
   @Input() initialResourceId: number | null = null;
+  @Input() initialCalendarIds: number[] = [];
   @Input() initialIsVolunteer: boolean = false;
 
   // -------------------------------------------------------------------------
@@ -235,6 +236,11 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         this.addIndividualAssignment();
         const lastIdx = this.assignments.length - 1;
         this.assignments.at(lastIdx).patchValue({ resourceId: this.initialResourceId });
+      }
+
+      // Pre-select calendars from the calendar view the user launched from
+      if (this.initialCalendarIds.length > 0) {
+        this.selectedCalendarIds = new Set(this.initialCalendarIds);
       }
     } else if (this.event) {
       this.populateForm(this.event);

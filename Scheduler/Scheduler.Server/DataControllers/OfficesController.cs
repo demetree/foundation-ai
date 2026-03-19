@@ -1203,6 +1203,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					office.avatarData = null;
 					office.Calendars = null;
 					office.Crews = null;
+					office.Documents = null;
 					office.EventResourceAssignments = null;
 					office.Gifts = null;
 					office.OfficeChangeHistories = null;
@@ -1345,6 +1346,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.avatarData = null;
 				cloneOfExisting.Calendars = null;
 				cloneOfExisting.Crews = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.EventResourceAssignments = null;
 				cloneOfExisting.Gifts = null;
 				cloneOfExisting.OfficeChangeHistories = null;

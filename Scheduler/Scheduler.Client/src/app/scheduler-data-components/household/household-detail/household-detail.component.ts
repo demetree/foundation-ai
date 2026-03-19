@@ -27,6 +27,7 @@ import { SchedulingTargetService } from '../../../scheduler-data-services/schedu
 import { IconService } from '../../../scheduler-data-services/icon.service';
 import { HouseholdChangeHistoryService } from '../../../scheduler-data-services/household-change-history.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -119,6 +120,7 @@ export class HouseholdDetailComponent implements OnInit, CanComponentDeactivate 
   public icons$ = this.iconService.GetIconList();
   public householdChangeHistories$ = this.householdChangeHistoryService.GetHouseholdChangeHistoryList();
   public constituents$ = this.constituentService.GetConstituentList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -128,6 +130,7 @@ export class HouseholdDetailComponent implements OnInit, CanComponentDeactivate 
     public iconService: IconService,
     public householdChangeHistoryService: HouseholdChangeHistoryService,
     public constituentService: ConstituentService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

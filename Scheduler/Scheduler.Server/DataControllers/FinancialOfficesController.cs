@@ -820,6 +820,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Nullify all object properties before serializing.
 				    //
 					financialOffice.Budgets = null;
+					financialOffice.Documents = null;
 					financialOffice.FinancialCategories = null;
 					financialOffice.FinancialOfficeChangeHistories = null;
 					financialOffice.FinancialTransactions = null;
@@ -940,6 +941,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
 				cloneOfExisting.Budgets = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.FinancialCategories = null;
 				cloneOfExisting.FinancialOfficeChangeHistories = null;
 				cloneOfExisting.FinancialTransactions = null;

@@ -170,6 +170,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (householdData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ householdId: householdData?.id }" [showAddButton]="true" [preSeededData]="{ householdId: householdData?.id }" [hiddenFields]="['householdId']"></app-document-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

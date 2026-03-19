@@ -35,6 +35,7 @@ import { SchedulingTargetQualificationRequirementService } from '../../../schedu
 import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { HouseholdService } from '../../../scheduler-data-services/household.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -135,6 +136,7 @@ export class SchedulingTargetDetailComponent implements OnInit, CanComponentDeac
   public rateSheets$ = this.rateSheetService.GetRateSheetList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public households$ = this.householdService.GetHouseholdList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -152,6 +154,7 @@ export class SchedulingTargetDetailComponent implements OnInit, CanComponentDeac
     public rateSheetService: RateSheetService,
     public scheduledEventService: ScheduledEventService,
     public householdService: HouseholdService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

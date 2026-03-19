@@ -1,0 +1,154 @@
+<div class="row">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let document of filteredDocuments; trackBy: getDocumentId"
+              [ngClass]="{
+                 'row-inactive': document.active == false,
+                 'row-deleted': document.deleted == true
+                 }">
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(document, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(document, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(document, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(document, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(document, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let document of filteredDocuments; trackBy: getDocumentId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': document.active == false,
+                 'row-deleted': document.deleted == true
+                 }">
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(document, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(document, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(document, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(document, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(document, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(document, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(document, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(document, col.key)}}
+                    </a>
+
+                    <!-- date handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(document, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(document, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="btn btn-sm btn-outline-danger" (click)="handleDelete(document)" *ngIf="document.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="btn btn-sm btn-outline-warning" (click)="handleUndelete(document)" *ngIf="document.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-up"></i> UnDelete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      </cdk-virtual-scroll-viewport>
+   </div>
+</div>

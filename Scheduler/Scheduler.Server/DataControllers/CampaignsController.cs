@@ -766,6 +766,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					campaign.Appeals = null;
 					campaign.Batches = null;
 					campaign.CampaignChangeHistories = null;
+					campaign.Documents = null;
 					campaign.Gifts = null;
 					campaign.Pledges = null;
 					campaign.icon = null;
@@ -886,6 +887,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.Appeals = null;
 				cloneOfExisting.Batches = null;
 				cloneOfExisting.CampaignChangeHistories = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.Gifts = null;
 				cloneOfExisting.Pledges = null;
 				cloneOfExisting.icon = null;

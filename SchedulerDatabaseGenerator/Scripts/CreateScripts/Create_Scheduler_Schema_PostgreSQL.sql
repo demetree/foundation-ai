@@ -24,6 +24,9 @@ CREATE SCHEMA "Scheduler"
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
 -- DROP TABLE "Scheduler"."EventResourceAssignmentChangeHistory"
 -- DROP TABLE "Scheduler"."EventResourceAssignment"
+-- DROP TABLE "Scheduler"."DocumentChangeHistory"
+-- DROP TABLE "Scheduler"."Document"
+-- DROP TABLE "Scheduler"."DocumentType"
 -- DROP TABLE "Scheduler"."VolunteerGroupMemberChangeHistory"
 -- DROP TABLE "Scheduler"."VolunteerGroupMember"
 -- DROP TABLE "Scheduler"."VolunteerGroupChangeHistory"
@@ -67,9 +70,6 @@ CREATE SCHEMA "Scheduler"
 -- DROP TABLE "Scheduler"."EventCalendar"
 -- DROP TABLE "Scheduler"."ContactInteractionChangeHistory"
 -- DROP TABLE "Scheduler"."ContactInteraction"
--- DROP TABLE "Scheduler"."DocumentChangeHistory"
--- DROP TABLE "Scheduler"."Document"
--- DROP TABLE "Scheduler"."DocumentType"
 -- DROP TABLE "Scheduler"."ReceiptChangeHistory"
 -- DROP TABLE "Scheduler"."Receipt"
 -- DROP TABLE "Scheduler"."InvoiceLineItem"
@@ -198,6 +198,9 @@ CREATE SCHEMA "Scheduler"
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "EventResourceAssignment" DISABLE
+-- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "Document" DISABLE
+-- ALTER INDEX ALL ON "DocumentType" DISABLE
 -- ALTER INDEX ALL ON "VolunteerGroupMemberChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "VolunteerGroupMember" DISABLE
 -- ALTER INDEX ALL ON "VolunteerGroupChangeHistory" DISABLE
@@ -241,9 +244,6 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "EventCalendar" DISABLE
 -- ALTER INDEX ALL ON "ContactInteractionChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "ContactInteraction" DISABLE
--- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
--- ALTER INDEX ALL ON "Document" DISABLE
--- ALTER INDEX ALL ON "DocumentType" DISABLE
 -- ALTER INDEX ALL ON "ReceiptChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Receipt" DISABLE
 -- ALTER INDEX ALL ON "InvoiceLineItem" DISABLE
@@ -372,6 +372,9 @@ CREATE SCHEMA "Scheduler"
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "EventResourceAssignment" REBUILD
+-- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "Document" REBUILD
+-- ALTER INDEX ALL ON "DocumentType" REBUILD
 -- ALTER INDEX ALL ON "VolunteerGroupMemberChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "VolunteerGroupMember" REBUILD
 -- ALTER INDEX ALL ON "VolunteerGroupChangeHistory" REBUILD
@@ -415,9 +418,6 @@ CREATE SCHEMA "Scheduler"
 -- ALTER INDEX ALL ON "EventCalendar" REBUILD
 -- ALTER INDEX ALL ON "ContactInteractionChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "ContactInteraction" REBUILD
--- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
--- ALTER INDEX ALL ON "Document" REBUILD
--- ALTER INDEX ALL ON "DocumentType" REBUILD
 -- ALTER INDEX ALL ON "ReceiptChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Receipt" REBUILD
 -- ALTER INDEX ALL ON "InvoiceLineItem" REBUILD
@@ -6319,167 +6319,6 @@ CREATE INDEX "I_ReceiptChangeHistory_tenantGuid_receiptId" ON "Scheduler"."Recei
 ;
 
 
--- Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).
-CREATE TABLE "Scheduler"."DocumentType"
-(
-	"id" SERIAL PRIMARY KEY NOT NULL,
-	"name" VARCHAR(100) NOT NULL UNIQUE,
-	"description" VARCHAR(500) NOT NULL,
-	"sequence" INT NULL,		-- Sequence to use for sorting.
-	"color" VARCHAR(10) NULL,		-- Hex color for UI display.
-	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
-	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
-	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.
-
-);
--- Index on the DocumentType table's name field.
-CREATE INDEX "I_DocumentType_name" ON "Scheduler"."DocumentType" ("name")
-;
-
--- Index on the DocumentType table's active field.
-CREATE INDEX "I_DocumentType_active" ON "Scheduler"."DocumentType" ("active")
-;
-
--- Index on the DocumentType table's deleted field.
-CREATE INDEX "I_DocumentType_deleted" ON "Scheduler"."DocumentType" ("deleted")
-;
-
-INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Rental Agreement', 'Signed rental or usage agreement', 1, 'f1a1b2c3-d4e5-6789-abcd-ef0123456701' );
-
-INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Receipt', 'Purchase receipt or proof of payment', 2, 'f1a1b2c3-d4e5-6789-abcd-ef0123456702' );
-
-INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Invoice', 'Invoice issued or received', 3, 'f1a1b2c3-d4e5-6789-abcd-ef0123456703' );
-
-INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Photo', 'Photograph or image', 4, 'f1a1b2c3-d4e5-6789-abcd-ef0123456704' );
-
-INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' );
-
-
-/*
-====================================================================================================
- DOCUMENT (Attachment Storage)
- Stores file attachments (images, PDFs, scans) with metadata and binary content.
- Uses polymorphic nullable FKs to link to various entities (events, transactions, contacts, resources).
-
- DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
- This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
- Azure Blob Storage or similar, storing only a reference URL here.
-
- The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
- ====================================================================================================
-*/
-CREATE TABLE "Scheduler"."Document"
-(
-	"id" SERIAL PRIMARY KEY NOT NULL,
-	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	"documentTypeId" INT NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
-	"invoiceId" INT NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
-	"receiptId" INT NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
-	"name" VARCHAR(250) NOT NULL,		-- Display name for the document.
-	"description" VARCHAR(500) NULL,		-- Optional description of the document.
-	"fileName" VARCHAR(500) NOT NULL,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
-	"mimeType" VARCHAR(100) NOT NULL,		-- MIME type of the file (e.g., 'application/pdf', 'image/jpeg').
-	"fileSizeBytes" BIGINT NOT NULL,		-- File size in bytes for UI display.
-	"fileDataFileName" VARCHAR(250) NULL,		-- Part of the binary data field setup
-	"fileDataSize" BIGINT NULL,		-- Part of the binary data field setup
-	"fileDataData" BYTEA NULL,		-- Part of the binary data field setup
-	"fileDataMimeType" VARCHAR(100) NULL,		-- Part of the binary data field setup
-	"scheduledEventId" INT NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
-	"financialTransactionId" INT NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
-	"contactId" INT NULL,		-- Optional link to a Contact.
-	"resourceId" INT NULL,		-- Optional link to a Resource.
-	"status" VARCHAR(50) NULL,		-- Document workflow status: pending, signed, verified, etc.
-	"statusDate" TIMESTAMP NULL,		-- When the status was last changed.
-	"statusChangedBy" VARCHAR(100) NULL,		-- Who changed the status.
-	"uploadedDate" TIMESTAMP NOT NULL,		-- When the document was uploaded (UTC).
-	"uploadedBy" VARCHAR(100) NULL,		-- User who uploaded the document.
-	"notes" TEXT NULL,		-- Optional notes about the document.
-	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
-	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
-	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
-	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
-	CONSTRAINT "documentTypeId" FOREIGN KEY ("documentTypeId") REFERENCES "Scheduler"."DocumentType"("id"),		-- Foreign key to the DocumentType table.
-	CONSTRAINT "invoiceId" FOREIGN KEY ("invoiceId") REFERENCES "Scheduler"."Invoice"("id"),		-- Foreign key to the Invoice table.
-	CONSTRAINT "receiptId" FOREIGN KEY ("receiptId") REFERENCES "Scheduler"."Receipt"("id"),		-- Foreign key to the Receipt table.
-	CONSTRAINT "scheduledEventId" FOREIGN KEY ("scheduledEventId") REFERENCES "Scheduler"."ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
-	CONSTRAINT "financialTransactionId" FOREIGN KEY ("financialTransactionId") REFERENCES "Scheduler"."FinancialTransaction"("id"),		-- Foreign key to the FinancialTransaction table.
-	CONSTRAINT "contactId" FOREIGN KEY ("contactId") REFERENCES "Scheduler"."Contact"("id"),		-- Foreign key to the Contact table.
-	CONSTRAINT "resourceId" FOREIGN KEY ("resourceId") REFERENCES "Scheduler"."Resource"("id")		-- Foreign key to the Resource table.
-);
--- Index on the Document table's tenantGuid field.
-CREATE INDEX "I_Document_tenantGuid" ON "Scheduler"."Document" ("tenantGuid")
-;
-
--- Index on the Document table's tenantGuid,documentTypeId fields.
-CREATE INDEX "I_Document_tenantGuid_documentTypeId" ON "Scheduler"."Document" ("tenantGuid", "documentTypeId")
-;
-
--- Index on the Document table's tenantGuid,invoiceId fields.
-CREATE INDEX "I_Document_tenantGuid_invoiceId" ON "Scheduler"."Document" ("tenantGuid", "invoiceId")
-;
-
--- Index on the Document table's tenantGuid,receiptId fields.
-CREATE INDEX "I_Document_tenantGuid_receiptId" ON "Scheduler"."Document" ("tenantGuid", "receiptId")
-;
-
--- Index on the Document table's tenantGuid,scheduledEventId fields.
-CREATE INDEX "I_Document_tenantGuid_scheduledEventId" ON "Scheduler"."Document" ("tenantGuid", "scheduledEventId")
-;
-
--- Index on the Document table's tenantGuid,financialTransactionId fields.
-CREATE INDEX "I_Document_tenantGuid_financialTransactionId" ON "Scheduler"."Document" ("tenantGuid", "financialTransactionId")
-;
-
--- Index on the Document table's tenantGuid,contactId fields.
-CREATE INDEX "I_Document_tenantGuid_contactId" ON "Scheduler"."Document" ("tenantGuid", "contactId")
-;
-
--- Index on the Document table's tenantGuid,resourceId fields.
-CREATE INDEX "I_Document_tenantGuid_resourceId" ON "Scheduler"."Document" ("tenantGuid", "resourceId")
-;
-
--- Index on the Document table's tenantGuid,active fields.
-CREATE INDEX "I_Document_tenantGuid_active" ON "Scheduler"."Document" ("tenantGuid", "active")
-;
-
--- Index on the Document table's tenantGuid,deleted fields.
-CREATE INDEX "I_Document_tenantGuid_deleted" ON "Scheduler"."Document" ("tenantGuid", "deleted")
-;
-
-
--- The change history for records from the Document table.
-CREATE TABLE "Scheduler"."DocumentChangeHistory"
-(
-	"id" SERIAL PRIMARY KEY NOT NULL,
-	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	"documentId" INT NOT NULL,		-- Link to the Document table.
-	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
-	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
-	"userId" INT NOT NULL,
-	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
-	CONSTRAINT "documentId" FOREIGN KEY ("documentId") REFERENCES "Scheduler"."Document"("id")		-- Foreign key to the Document table.
-);
--- Index on the DocumentChangeHistory table's tenantGuid field.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "versionNumber")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "timeStamp")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_userId" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "userId")
-;
-
--- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
-CREATE INDEX "I_DocumentChangeHistory_tenantGuid_documentId" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "documentId") INCLUDE ( versionNumber, timeStamp, userId )
-;
-
-
 -- The contact interaction data
 CREATE TABLE "Scheduler"."ContactInteraction"
 (
@@ -8303,6 +8142,245 @@ CREATE INDEX "I_VolunteerGroupMemberChangeHistory_tenantGuid_userId" ON "Schedul
 
 -- Index on the VolunteerGroupMemberChangeHistory table's tenantGuid,volunteerGroupMemberId fields.
 CREATE INDEX "I_VolunteerGroupMemberChangeHistory_tenantGuid_volunteerGroupMe" ON "Scheduler"."VolunteerGroupMemberChangeHistory" ("tenantGuid", "volunteerGroupMemberId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+-- Master list of document types for classifying attachments (e.g., Rental Agreement, Receipt, Invoice, Photo).
+CREATE TABLE "Scheduler"."DocumentType"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE,
+	"description" VARCHAR(500) NOT NULL,
+	"sequence" INT NULL,		-- Sequence to use for sorting.
+	"color" VARCHAR(10) NULL,		-- Hex color for UI display.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false		-- Soft deletion flag.
+
+);
+-- Index on the DocumentType table's name field.
+CREATE INDEX "I_DocumentType_name" ON "Scheduler"."DocumentType" ("name")
+;
+
+-- Index on the DocumentType table's active field.
+CREATE INDEX "I_DocumentType_active" ON "Scheduler"."DocumentType" ("active")
+;
+
+-- Index on the DocumentType table's deleted field.
+CREATE INDEX "I_DocumentType_deleted" ON "Scheduler"."DocumentType" ("deleted")
+;
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Rental Agreement', 'Signed rental or usage agreement', 1, 'f1a1b2c3-d4e5-6789-abcd-ef0123456701' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Receipt', 'Purchase receipt or proof of payment', 2, 'f1a1b2c3-d4e5-6789-abcd-ef0123456702' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Invoice', 'Invoice issued or received', 3, 'f1a1b2c3-d4e5-6789-abcd-ef0123456703' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Photo', 'Photograph or image', 4, 'f1a1b2c3-d4e5-6789-abcd-ef0123456704' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Permit', 'Required permits (liquor license, fire permit, etc.)', 5, 'f1a1b2c3-d4e5-6789-abcd-ef0123456705' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Background Check', 'Background Check supporting documentation (police etc..)', 6, 'f1a1b2c3-d4e5-6789-abcd-ef0123456706' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Insurance Certificate', 'Liability insurance certificate for event coverage', 7, 'f1a1b2c3-d4e5-6789-abcd-ef0123456707' );
+
+INSERT INTO "Scheduler"."DocumentType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' );
+
+
+/*
+====================================================================================================
+ DOCUMENT (Attachment Storage)
+ Stores file attachments (images, PDFs, scans) with metadata and binary content.
+ Uses polymorphic nullable FKs to link to entities across the system.
+
+ DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
+ This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
+ Azure Blob Storage or similar, storing only a reference URL here.
+
+ The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
+ ====================================================================================================
+*/
+CREATE TABLE "Scheduler"."Document"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"documentTypeId" INT NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
+	"invoiceId" INT NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
+	"receiptId" INT NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
+	"name" VARCHAR(250) NOT NULL,		-- Display name for the document.
+	"description" VARCHAR(500) NULL,		-- Optional description of the document.
+	"fileName" VARCHAR(500) NOT NULL,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
+	"mimeType" VARCHAR(100) NOT NULL,		-- MIME type of the file (e.g., 'application/pdf', 'image/jpeg').
+	"fileSizeBytes" BIGINT NOT NULL,		-- File size in bytes for UI display.
+	"fileDataFileName" VARCHAR(250) NULL,		-- Part of the binary data field setup
+	"fileDataSize" BIGINT NULL,		-- Part of the binary data field setup
+	"fileDataData" BYTEA NULL,		-- Part of the binary data field setup
+	"fileDataMimeType" VARCHAR(100) NULL,		-- Part of the binary data field setup
+	"scheduledEventId" INT NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
+	"financialTransactionId" INT NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
+	"contactId" INT NULL,		-- Optional link to a Contact.
+	"resourceId" INT NULL,		-- Optional link to a Resource.
+	"clientId" INT NULL,		-- Optional link to a Client.
+	"officeId" INT NULL,		-- Optional link to an Office.
+	"crewId" INT NULL,		-- Optional link to a Crew.
+	"schedulingTargetId" INT NULL,		-- Optional link to a SchedulingTarget.
+	"paymentTransactionId" INT NULL,		-- Optional link to a PaymentTransaction.
+	"financialOfficeId" INT NULL,		-- Optional link to a FinancialOffice.
+	"tenantProfileId" INT NULL,		-- Optional link to a TenantProfile.
+	"campaignId" INT NULL,		-- Optional link to a Campaign.
+	"householdId" INT NULL,		-- Optional link to a Household.
+	"constituentId" INT NULL,		-- Optional link to a Constituent.
+	"tributeId" INT NULL,		-- Optional link to a Tribute.
+	"volunteerProfileId" INT NULL,		-- Optional link to a VolunteerProfile.
+	"status" VARCHAR(50) NULL,		-- Document workflow status: pending, signed, verified, etc.
+	"statusDate" TIMESTAMP NULL,		-- When the status was last changed.
+	"statusChangedBy" VARCHAR(100) NULL,		-- Who changed the status.
+	"uploadedDate" TIMESTAMP NOT NULL,		-- When the document was uploaded (UTC).
+	"uploadedBy" VARCHAR(100) NULL,		-- User who uploaded the document.
+	"notes" TEXT NULL,		-- Optional notes about the document.
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "documentTypeId" FOREIGN KEY ("documentTypeId") REFERENCES "Scheduler"."DocumentType"("id"),		-- Foreign key to the DocumentType table.
+	CONSTRAINT "invoiceId" FOREIGN KEY ("invoiceId") REFERENCES "Scheduler"."Invoice"("id"),		-- Foreign key to the Invoice table.
+	CONSTRAINT "receiptId" FOREIGN KEY ("receiptId") REFERENCES "Scheduler"."Receipt"("id"),		-- Foreign key to the Receipt table.
+	CONSTRAINT "scheduledEventId" FOREIGN KEY ("scheduledEventId") REFERENCES "Scheduler"."ScheduledEvent"("id"),		-- Foreign key to the ScheduledEvent table.
+	CONSTRAINT "financialTransactionId" FOREIGN KEY ("financialTransactionId") REFERENCES "Scheduler"."FinancialTransaction"("id"),		-- Foreign key to the FinancialTransaction table.
+	CONSTRAINT "contactId" FOREIGN KEY ("contactId") REFERENCES "Scheduler"."Contact"("id"),		-- Foreign key to the Contact table.
+	CONSTRAINT "resourceId" FOREIGN KEY ("resourceId") REFERENCES "Scheduler"."Resource"("id"),		-- Foreign key to the Resource table.
+	CONSTRAINT "clientId" FOREIGN KEY ("clientId") REFERENCES "Scheduler"."Client"("id"),		-- Foreign key to the Client table.
+	CONSTRAINT "officeId" FOREIGN KEY ("officeId") REFERENCES "Scheduler"."Office"("id"),		-- Foreign key to the Office table.
+	CONSTRAINT "crewId" FOREIGN KEY ("crewId") REFERENCES "Scheduler"."Crew"("id"),		-- Foreign key to the Crew table.
+	CONSTRAINT "schedulingTargetId" FOREIGN KEY ("schedulingTargetId") REFERENCES "Scheduler"."SchedulingTarget"("id"),		-- Foreign key to the SchedulingTarget table.
+	CONSTRAINT "paymentTransactionId" FOREIGN KEY ("paymentTransactionId") REFERENCES "Scheduler"."PaymentTransaction"("id"),		-- Foreign key to the PaymentTransaction table.
+	CONSTRAINT "financialOfficeId" FOREIGN KEY ("financialOfficeId") REFERENCES "Scheduler"."FinancialOffice"("id"),		-- Foreign key to the FinancialOffice table.
+	CONSTRAINT "tenantProfileId" FOREIGN KEY ("tenantProfileId") REFERENCES "Scheduler"."TenantProfile"("id"),		-- Foreign key to the TenantProfile table.
+	CONSTRAINT "campaignId" FOREIGN KEY ("campaignId") REFERENCES "Scheduler"."Campaign"("id"),		-- Foreign key to the Campaign table.
+	CONSTRAINT "householdId" FOREIGN KEY ("householdId") REFERENCES "Scheduler"."Household"("id"),		-- Foreign key to the Household table.
+	CONSTRAINT "constituentId" FOREIGN KEY ("constituentId") REFERENCES "Scheduler"."Constituent"("id"),		-- Foreign key to the Constituent table.
+	CONSTRAINT "tributeId" FOREIGN KEY ("tributeId") REFERENCES "Scheduler"."Tribute"("id"),		-- Foreign key to the Tribute table.
+	CONSTRAINT "volunteerProfileId" FOREIGN KEY ("volunteerProfileId") REFERENCES "Scheduler"."VolunteerProfile"("id")		-- Foreign key to the VolunteerProfile table.
+);
+-- Index on the Document table's tenantGuid field.
+CREATE INDEX "I_Document_tenantGuid" ON "Scheduler"."Document" ("tenantGuid")
+;
+
+-- Index on the Document table's tenantGuid,documentTypeId fields.
+CREATE INDEX "I_Document_tenantGuid_documentTypeId" ON "Scheduler"."Document" ("tenantGuid", "documentTypeId")
+;
+
+-- Index on the Document table's tenantGuid,invoiceId fields.
+CREATE INDEX "I_Document_tenantGuid_invoiceId" ON "Scheduler"."Document" ("tenantGuid", "invoiceId")
+;
+
+-- Index on the Document table's tenantGuid,receiptId fields.
+CREATE INDEX "I_Document_tenantGuid_receiptId" ON "Scheduler"."Document" ("tenantGuid", "receiptId")
+;
+
+-- Index on the Document table's tenantGuid,scheduledEventId fields.
+CREATE INDEX "I_Document_tenantGuid_scheduledEventId" ON "Scheduler"."Document" ("tenantGuid", "scheduledEventId")
+;
+
+-- Index on the Document table's tenantGuid,financialTransactionId fields.
+CREATE INDEX "I_Document_tenantGuid_financialTransactionId" ON "Scheduler"."Document" ("tenantGuid", "financialTransactionId")
+;
+
+-- Index on the Document table's tenantGuid,contactId fields.
+CREATE INDEX "I_Document_tenantGuid_contactId" ON "Scheduler"."Document" ("tenantGuid", "contactId")
+;
+
+-- Index on the Document table's tenantGuid,resourceId fields.
+CREATE INDEX "I_Document_tenantGuid_resourceId" ON "Scheduler"."Document" ("tenantGuid", "resourceId")
+;
+
+-- Index on the Document table's tenantGuid,clientId fields.
+CREATE INDEX "I_Document_tenantGuid_clientId" ON "Scheduler"."Document" ("tenantGuid", "clientId")
+;
+
+-- Index on the Document table's tenantGuid,officeId fields.
+CREATE INDEX "I_Document_tenantGuid_officeId" ON "Scheduler"."Document" ("tenantGuid", "officeId")
+;
+
+-- Index on the Document table's tenantGuid,crewId fields.
+CREATE INDEX "I_Document_tenantGuid_crewId" ON "Scheduler"."Document" ("tenantGuid", "crewId")
+;
+
+-- Index on the Document table's tenantGuid,schedulingTargetId fields.
+CREATE INDEX "I_Document_tenantGuid_schedulingTargetId" ON "Scheduler"."Document" ("tenantGuid", "schedulingTargetId")
+;
+
+-- Index on the Document table's tenantGuid,paymentTransactionId fields.
+CREATE INDEX "I_Document_tenantGuid_paymentTransactionId" ON "Scheduler"."Document" ("tenantGuid", "paymentTransactionId")
+;
+
+-- Index on the Document table's tenantGuid,financialOfficeId fields.
+CREATE INDEX "I_Document_tenantGuid_financialOfficeId" ON "Scheduler"."Document" ("tenantGuid", "financialOfficeId")
+;
+
+-- Index on the Document table's tenantGuid,tenantProfileId fields.
+CREATE INDEX "I_Document_tenantGuid_tenantProfileId" ON "Scheduler"."Document" ("tenantGuid", "tenantProfileId")
+;
+
+-- Index on the Document table's tenantGuid,campaignId fields.
+CREATE INDEX "I_Document_tenantGuid_campaignId" ON "Scheduler"."Document" ("tenantGuid", "campaignId")
+;
+
+-- Index on the Document table's tenantGuid,householdId fields.
+CREATE INDEX "I_Document_tenantGuid_householdId" ON "Scheduler"."Document" ("tenantGuid", "householdId")
+;
+
+-- Index on the Document table's tenantGuid,constituentId fields.
+CREATE INDEX "I_Document_tenantGuid_constituentId" ON "Scheduler"."Document" ("tenantGuid", "constituentId")
+;
+
+-- Index on the Document table's tenantGuid,tributeId fields.
+CREATE INDEX "I_Document_tenantGuid_tributeId" ON "Scheduler"."Document" ("tenantGuid", "tributeId")
+;
+
+-- Index on the Document table's tenantGuid,volunteerProfileId fields.
+CREATE INDEX "I_Document_tenantGuid_volunteerProfileId" ON "Scheduler"."Document" ("tenantGuid", "volunteerProfileId")
+;
+
+-- Index on the Document table's tenantGuid,active fields.
+CREATE INDEX "I_Document_tenantGuid_active" ON "Scheduler"."Document" ("tenantGuid", "active")
+;
+
+-- Index on the Document table's tenantGuid,deleted fields.
+CREATE INDEX "I_Document_tenantGuid_deleted" ON "Scheduler"."Document" ("tenantGuid", "deleted")
+;
+
+
+-- The change history for records from the Document table.
+CREATE TABLE "Scheduler"."DocumentChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"documentId" INT NOT NULL,		-- Link to the Document table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "documentId" FOREIGN KEY ("documentId") REFERENCES "Scheduler"."Document"("id")		-- Foreign key to the Document table.
+);
+-- Index on the DocumentChangeHistory table's tenantGuid field.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_userId" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
+CREATE INDEX "I_DocumentChangeHistory_tenantGuid_documentId" ON "Scheduler"."DocumentChangeHistory" ("tenantGuid", "documentId") INCLUDE ( versionNumber, timeStamp, userId )
 ;
 
 

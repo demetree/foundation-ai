@@ -333,6 +333,18 @@ namespace Foundation.Scheduler.Database
 			public Int32? financialTransactionId { get; set; }
 			public Int32? contactId { get; set; }
 			public Int32? resourceId { get; set; }
+			public Int32? clientId { get; set; }
+			public Int32? officeId { get; set; }
+			public Int32? crewId { get; set; }
+			public Int32? schedulingTargetId { get; set; }
+			public Int32? paymentTransactionId { get; set; }
+			public Int32? financialOfficeId { get; set; }
+			public Int32? tenantProfileId { get; set; }
+			public Int32? campaignId { get; set; }
+			public Int32? householdId { get; set; }
+			public Int32? constituentId { get; set; }
+			public Int32? tributeId { get; set; }
+			public Int32? volunteerProfileId { get; set; }
 			public String status { get; set; }
 			public DateTime? statusDate { get; set; }
 			public String statusChangedBy { get; set; }
@@ -355,13 +367,25 @@ namespace Foundation.Scheduler.Database
 		/// </summary>
 		public class DocumentOutputDTO : DocumentDTO
 		{
+			public Campaign.CampaignDTO campaign { get; set; }
+			public Client.ClientDTO client { get; set; }
+			public Constituent.ConstituentDTO constituent { get; set; }
 			public Contact.ContactDTO contact { get; set; }
+			public Crew.CrewDTO crew { get; set; }
 			public DocumentType.DocumentTypeDTO documentType { get; set; }
+			public FinancialOffice.FinancialOfficeDTO financialOffice { get; set; }
 			public FinancialTransaction.FinancialTransactionDTO financialTransaction { get; set; }
+			public Household.HouseholdDTO household { get; set; }
 			public Invoice.InvoiceDTO invoice { get; set; }
+			public Office.OfficeDTO office { get; set; }
+			public PaymentTransaction.PaymentTransactionDTO paymentTransaction { get; set; }
 			public Receipt.ReceiptDTO receipt { get; set; }
 			public Resource.ResourceDTO resource { get; set; }
 			public ScheduledEvent.ScheduledEventDTO scheduledEvent { get; set; }
+			public SchedulingTarget.SchedulingTargetDTO schedulingTarget { get; set; }
+			public TenantProfile.TenantProfileDTO tenantProfile { get; set; }
+			public Tribute.TributeDTO tribute { get; set; }
+			public VolunteerProfile.VolunteerProfileDTO volunteerProfile { get; set; }
 		}
 
 
@@ -393,6 +417,18 @@ namespace Foundation.Scheduler.Database
 				financialTransactionId = this.financialTransactionId,
 				contactId = this.contactId,
 				resourceId = this.resourceId,
+				clientId = this.clientId,
+				officeId = this.officeId,
+				crewId = this.crewId,
+				schedulingTargetId = this.schedulingTargetId,
+				paymentTransactionId = this.paymentTransactionId,
+				financialOfficeId = this.financialOfficeId,
+				tenantProfileId = this.tenantProfileId,
+				campaignId = this.campaignId,
+				householdId = this.householdId,
+				constituentId = this.constituentId,
+				tributeId = this.tributeId,
+				volunteerProfileId = this.volunteerProfileId,
 				status = this.status,
 				statusDate = this.statusDate,
 				statusChangedBy = this.statusChangedBy,
@@ -458,6 +494,18 @@ namespace Foundation.Scheduler.Database
 				financialTransactionId = this.financialTransactionId,
 				contactId = this.contactId,
 				resourceId = this.resourceId,
+				clientId = this.clientId,
+				officeId = this.officeId,
+				crewId = this.crewId,
+				schedulingTargetId = this.schedulingTargetId,
+				paymentTransactionId = this.paymentTransactionId,
+				financialOfficeId = this.financialOfficeId,
+				tenantProfileId = this.tenantProfileId,
+				campaignId = this.campaignId,
+				householdId = this.householdId,
+				constituentId = this.constituentId,
+				tributeId = this.tributeId,
+				volunteerProfileId = this.volunteerProfileId,
 				status = this.status,
 				statusDate = this.statusDate,
 				statusChangedBy = this.statusChangedBy,
@@ -468,13 +516,25 @@ namespace Foundation.Scheduler.Database
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
+				campaign = this.campaign?.ToDTO(),
+				client = this.client?.ToDTO(),
+				constituent = this.constituent?.ToDTO(),
 				contact = this.contact?.ToDTO(),
+				crew = this.crew?.ToDTO(),
 				documentType = this.documentType?.ToDTO(),
+				financialOffice = this.financialOffice?.ToDTO(),
 				financialTransaction = this.financialTransaction?.ToDTO(),
+				household = this.household?.ToDTO(),
 				invoice = this.invoice?.ToDTO(),
+				office = this.office?.ToDTO(),
+				paymentTransaction = this.paymentTransaction?.ToDTO(),
 				receipt = this.receipt?.ToDTO(),
 				resource = this.resource?.ToDTO(),
-				scheduledEvent = this.scheduledEvent?.ToDTO()
+				scheduledEvent = this.scheduledEvent?.ToDTO(),
+				schedulingTarget = this.schedulingTarget?.ToDTO(),
+				tenantProfile = this.tenantProfile?.ToDTO(),
+				tribute = this.tribute?.ToDTO(),
+				volunteerProfile = this.volunteerProfile?.ToDTO()
 			};
 		}
 
@@ -530,6 +590,18 @@ namespace Foundation.Scheduler.Database
 				financialTransactionId = dto.financialTransactionId,
 				contactId = dto.contactId,
 				resourceId = dto.resourceId,
+				clientId = dto.clientId,
+				officeId = dto.officeId,
+				crewId = dto.crewId,
+				schedulingTargetId = dto.schedulingTargetId,
+				paymentTransactionId = dto.paymentTransactionId,
+				financialOfficeId = dto.financialOfficeId,
+				tenantProfileId = dto.tenantProfileId,
+				campaignId = dto.campaignId,
+				householdId = dto.householdId,
+				constituentId = dto.constituentId,
+				tributeId = dto.tributeId,
+				volunteerProfileId = dto.volunteerProfileId,
 				status = dto.status,
 				statusDate = dto.statusDate,
 				statusChangedBy = dto.statusChangedBy,
@@ -572,6 +644,18 @@ namespace Foundation.Scheduler.Database
 			this.financialTransactionId = dto.financialTransactionId;
 			this.contactId = dto.contactId;
 			this.resourceId = dto.resourceId;
+			this.clientId = dto.clientId;
+			this.officeId = dto.officeId;
+			this.crewId = dto.crewId;
+			this.schedulingTargetId = dto.schedulingTargetId;
+			this.paymentTransactionId = dto.paymentTransactionId;
+			this.financialOfficeId = dto.financialOfficeId;
+			this.tenantProfileId = dto.tenantProfileId;
+			this.campaignId = dto.campaignId;
+			this.householdId = dto.householdId;
+			this.constituentId = dto.constituentId;
+			this.tributeId = dto.tributeId;
+			this.volunteerProfileId = dto.volunteerProfileId;
 			this.status = dto.status;
 			this.statusDate = dto.statusDate;
 			this.statusChangedBy = dto.statusChangedBy;
@@ -620,6 +704,18 @@ namespace Foundation.Scheduler.Database
 				financialTransactionId = this.financialTransactionId,
 				contactId = this.contactId,
 				resourceId = this.resourceId,
+				clientId = this.clientId,
+				officeId = this.officeId,
+				crewId = this.crewId,
+				schedulingTargetId = this.schedulingTargetId,
+				paymentTransactionId = this.paymentTransactionId,
+				financialOfficeId = this.financialOfficeId,
+				tenantProfileId = this.tenantProfileId,
+				campaignId = this.campaignId,
+				householdId = this.householdId,
+				constituentId = this.constituentId,
+				tributeId = this.tributeId,
+				volunteerProfileId = this.volunteerProfileId,
 				status = this.status,
 				statusDate = this.statusDate,
 				statusChangedBy = this.statusChangedBy,
@@ -699,6 +795,18 @@ namespace Foundation.Scheduler.Database
 				financialTransactionId = document.financialTransactionId,
 				contactId = document.contactId,
 				resourceId = document.resourceId,
+				clientId = document.clientId,
+				officeId = document.officeId,
+				crewId = document.crewId,
+				schedulingTargetId = document.schedulingTargetId,
+				paymentTransactionId = document.paymentTransactionId,
+				financialOfficeId = document.financialOfficeId,
+				tenantProfileId = document.tenantProfileId,
+				campaignId = document.campaignId,
+				householdId = document.householdId,
+				constituentId = document.constituentId,
+				tributeId = document.tributeId,
+				volunteerProfileId = document.volunteerProfileId,
 				status = document.status,
 				statusDate = document.statusDate,
 				statusChangedBy = document.statusChangedBy,
@@ -745,6 +853,18 @@ namespace Foundation.Scheduler.Database
 				financialTransactionId = document.financialTransactionId,
 				contactId = document.contactId,
 				resourceId = document.resourceId,
+				clientId = document.clientId,
+				officeId = document.officeId,
+				crewId = document.crewId,
+				schedulingTargetId = document.schedulingTargetId,
+				paymentTransactionId = document.paymentTransactionId,
+				financialOfficeId = document.financialOfficeId,
+				tenantProfileId = document.tenantProfileId,
+				campaignId = document.campaignId,
+				householdId = document.householdId,
+				constituentId = document.constituentId,
+				tributeId = document.tributeId,
+				volunteerProfileId = document.volunteerProfileId,
 				status = document.status,
 				statusDate = document.statusDate,
 				statusChangedBy = document.statusChangedBy,
@@ -755,13 +875,25 @@ namespace Foundation.Scheduler.Database
 				objectGuid = document.objectGuid,
 				active = document.active,
 				deleted = document.deleted,
+				campaign = Campaign.CreateMinimalAnonymous(document.campaign),
+				client = Client.CreateMinimalAnonymous(document.client),
+				constituent = Constituent.CreateMinimalAnonymous(document.constituent),
 				contact = Contact.CreateMinimalAnonymous(document.contact),
+				crew = Crew.CreateMinimalAnonymous(document.crew),
 				documentType = DocumentType.CreateMinimalAnonymous(document.documentType),
+				financialOffice = FinancialOffice.CreateMinimalAnonymous(document.financialOffice),
 				financialTransaction = FinancialTransaction.CreateMinimalAnonymous(document.financialTransaction),
+				household = Household.CreateMinimalAnonymous(document.household),
 				invoice = Invoice.CreateMinimalAnonymous(document.invoice),
+				office = Office.CreateMinimalAnonymous(document.office),
+				paymentTransaction = PaymentTransaction.CreateMinimalAnonymous(document.paymentTransaction),
 				receipt = Receipt.CreateMinimalAnonymous(document.receipt),
 				resource = Resource.CreateMinimalAnonymous(document.resource),
-				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(document.scheduledEvent)
+				scheduledEvent = ScheduledEvent.CreateMinimalAnonymous(document.scheduledEvent),
+				schedulingTarget = SchedulingTarget.CreateMinimalAnonymous(document.schedulingTarget),
+				tenantProfile = TenantProfile.CreateMinimalAnonymous(document.tenantProfile),
+				tribute = Tribute.CreateMinimalAnonymous(document.tribute),
+				volunteerProfile = VolunteerProfile.CreateMinimalAnonymous(document.volunteerProfile)
 			 };
 		}
 

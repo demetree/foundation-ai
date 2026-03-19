@@ -69,6 +69,8 @@ public partial class Constituent
 
     public virtual ICollection<ConstituentChangeHistory> ConstituentChangeHistories { get; set; } = new List<ConstituentChangeHistory>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<Gift> Gifts { get; set; } = new List<Gift>();
 
     public virtual ICollection<Pledge> Pledges { get; set; } = new List<Pledge>();

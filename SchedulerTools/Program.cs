@@ -1394,7 +1394,9 @@ namespace Foundation.Scheduler.CodeGeneration
 
                 foreach (var dtSeed in documentTypeSeedData)
                 {
-                    DocumentType docType = (from dt in context.DocumentTypes where dt.name == dtSeed.Name && dt.tenantGuid == PHMCTenantGuid select dt).FirstOrDefault();
+                    DocumentType docType = (from dt in context.DocumentTypes where dt.name == dtSeed.Name 
+                                            //&& dt.tenantGuid == PHMCTenantGuid 
+                                            select dt).FirstOrDefault();
 
                     if (docType == null)
                     {
@@ -1403,8 +1405,8 @@ namespace Foundation.Scheduler.CodeGeneration
                         docType.description = dtSeed.Description;
                         docType.color = dtSeed.Color;
                         docType.sequence = dtSeed.Sequence;
-                        docType.versionNumber = 0;
-                        docType.tenantGuid = PHMCTenantGuid;
+                        //docType.versionNumber = 0;
+                        //docType.tenantGuid = PHMCTenantGuid;
                         docType.objectGuid = Guid.NewGuid();
                         docType.active = true;
                         docType.deleted = false;

@@ -31,6 +31,18 @@ import { ScheduledEventService } from '../../../scheduler-data-services/schedule
 import { FinancialTransactionService } from '../../../scheduler-data-services/financial-transaction.service';
 import { ContactService } from '../../../scheduler-data-services/contact.service';
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
+import { ClientService } from '../../../scheduler-data-services/client.service';
+import { OfficeService } from '../../../scheduler-data-services/office.service';
+import { CrewService } from '../../../scheduler-data-services/crew.service';
+import { SchedulingTargetService } from '../../../scheduler-data-services/scheduling-target.service';
+import { PaymentTransactionService } from '../../../scheduler-data-services/payment-transaction.service';
+import { FinancialOfficeService } from '../../../scheduler-data-services/financial-office.service';
+import { TenantProfileService } from '../../../scheduler-data-services/tenant-profile.service';
+import { CampaignService } from '../../../scheduler-data-services/campaign.service';
+import { HouseholdService } from '../../../scheduler-data-services/household.service';
+import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
+import { TributeService } from '../../../scheduler-data-services/tribute.service';
+import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { AuthService } from '../../../services/auth.service';
 
 //
@@ -57,6 +69,18 @@ interface DocumentFormValues {
   financialTransactionId: number | bigint | null,       // For FK link number
   contactId: number | bigint | null,       // For FK link number
   resourceId: number | bigint | null,       // For FK link number
+  clientId: number | bigint | null,       // For FK link number
+  officeId: number | bigint | null,       // For FK link number
+  crewId: number | bigint | null,       // For FK link number
+  schedulingTargetId: number | bigint | null,       // For FK link number
+  paymentTransactionId: number | bigint | null,       // For FK link number
+  financialOfficeId: number | bigint | null,       // For FK link number
+  tenantProfileId: number | bigint | null,       // For FK link number
+  campaignId: number | bigint | null,       // For FK link number
+  householdId: number | bigint | null,       // For FK link number
+  constituentId: number | bigint | null,       // For FK link number
+  tributeId: number | bigint | null,       // For FK link number
+  volunteerProfileId: number | bigint | null,       // For FK link number
   status: string | null,
   statusDate: string | null,
   statusChangedBy: string | null,
@@ -112,6 +136,18 @@ export class DocumentAddEditComponent {
         financialTransactionId: [null],
         contactId: [null],
         resourceId: [null],
+        clientId: [null],
+        officeId: [null],
+        crewId: [null],
+        schedulingTargetId: [null],
+        paymentTransactionId: [null],
+        financialOfficeId: [null],
+        tenantProfileId: [null],
+        campaignId: [null],
+        householdId: [null],
+        constituentId: [null],
+        tributeId: [null],
+        volunteerProfileId: [null],
         status: [''],
         statusDate: [''],
         statusChangedBy: [''],
@@ -138,6 +174,18 @@ export class DocumentAddEditComponent {
   financialTransactions$ = this.financialTransactionService.GetFinancialTransactionList();
   contacts$ = this.contactService.GetContactList();
   resources$ = this.resourceService.GetResourceList();
+  clients$ = this.clientService.GetClientList();
+  offices$ = this.officeService.GetOfficeList();
+  crews$ = this.crewService.GetCrewList();
+  schedulingTargets$ = this.schedulingTargetService.GetSchedulingTargetList();
+  paymentTransactions$ = this.paymentTransactionService.GetPaymentTransactionList();
+  financialOffices$ = this.financialOfficeService.GetFinancialOfficeList();
+  tenantProfiles$ = this.tenantProfileService.GetTenantProfileList();
+  campaigns$ = this.campaignService.GetCampaignList();
+  households$ = this.householdService.GetHouseholdList();
+  constituents$ = this.constituentService.GetConstituentList();
+  tributes$ = this.tributeService.GetTributeList();
+  volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
 
   constructor(
     private modalService: NgbModal,
@@ -149,6 +197,18 @@ export class DocumentAddEditComponent {
     private financialTransactionService: FinancialTransactionService,
     private contactService: ContactService,
     private resourceService: ResourceService,
+    private clientService: ClientService,
+    private officeService: OfficeService,
+    private crewService: CrewService,
+    private schedulingTargetService: SchedulingTargetService,
+    private paymentTransactionService: PaymentTransactionService,
+    private financialOfficeService: FinancialOfficeService,
+    private tenantProfileService: TenantProfileService,
+    private campaignService: CampaignService,
+    private householdService: HouseholdService,
+    private constituentService: ConstituentService,
+    private tributeService: TributeService,
+    private volunteerProfileService: VolunteerProfileService,
     private authService: AuthService,
     private alertService: AlertService,
     private router: Router,
@@ -284,6 +344,18 @@ export class DocumentAddEditComponent {
         financialTransactionId: formValue.financialTransactionId ? Number(formValue.financialTransactionId) : null,
         contactId: formValue.contactId ? Number(formValue.contactId) : null,
         resourceId: formValue.resourceId ? Number(formValue.resourceId) : null,
+        clientId: formValue.clientId ? Number(formValue.clientId) : null,
+        officeId: formValue.officeId ? Number(formValue.officeId) : null,
+        crewId: formValue.crewId ? Number(formValue.crewId) : null,
+        schedulingTargetId: formValue.schedulingTargetId ? Number(formValue.schedulingTargetId) : null,
+        paymentTransactionId: formValue.paymentTransactionId ? Number(formValue.paymentTransactionId) : null,
+        financialOfficeId: formValue.financialOfficeId ? Number(formValue.financialOfficeId) : null,
+        tenantProfileId: formValue.tenantProfileId ? Number(formValue.tenantProfileId) : null,
+        campaignId: formValue.campaignId ? Number(formValue.campaignId) : null,
+        householdId: formValue.householdId ? Number(formValue.householdId) : null,
+        constituentId: formValue.constituentId ? Number(formValue.constituentId) : null,
+        tributeId: formValue.tributeId ? Number(formValue.tributeId) : null,
+        volunteerProfileId: formValue.volunteerProfileId ? Number(formValue.volunteerProfileId) : null,
         status: formValue.status?.trim() || null,
         statusDate: formValue.statusDate ? dateTimeLocalToIsoUtc(formValue.statusDate.trim()) : null,
         statusChangedBy: formValue.statusChangedBy?.trim() || null,
@@ -435,6 +507,18 @@ export class DocumentAddEditComponent {
         financialTransactionId: null,
         contactId: null,
         resourceId: null,
+        clientId: null,
+        officeId: null,
+        crewId: null,
+        schedulingTargetId: null,
+        paymentTransactionId: null,
+        financialOfficeId: null,
+        tenantProfileId: null,
+        campaignId: null,
+        householdId: null,
+        constituentId: null,
+        tributeId: null,
+        volunteerProfileId: null,
         status: '',
         statusDate: '',
         statusChangedBy: '',
@@ -469,6 +553,18 @@ export class DocumentAddEditComponent {
         financialTransactionId: documentData.financialTransactionId,
         contactId: documentData.contactId,
         resourceId: documentData.resourceId,
+        clientId: documentData.clientId,
+        officeId: documentData.officeId,
+        crewId: documentData.crewId,
+        schedulingTargetId: documentData.schedulingTargetId,
+        paymentTransactionId: documentData.paymentTransactionId,
+        financialOfficeId: documentData.financialOfficeId,
+        tenantProfileId: documentData.tenantProfileId,
+        campaignId: documentData.campaignId,
+        householdId: documentData.householdId,
+        constituentId: documentData.constituentId,
+        tributeId: documentData.tributeId,
+        volunteerProfileId: documentData.volunteerProfileId,
         status: documentData.status ?? '',
         statusDate: isoUtcStringToDateTimeLocal(documentData.statusDate) ?? '',
         statusChangedBy: documentData.statusChangedBy ?? '',

@@ -277,20 +277,6 @@
                             </div>
                             </ng-template>
                         </li>
-                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
-                            <button ngbNavLink>Documents
-                                <span class="badge bg-primary ms-2">
-                                    {{ (resourceData?.DocumentsCount$ | async) ?? '-' }}
-                                </span>
-                            </button>
-                            <ng-template ngbNavContent>
-                            <div class="d-flex flex-column gap-3 p-0">
-                                <div class="flex-grow-1">
-                                    <app-document-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-document-table>
-                                </div>
-                            </div>
-                            </ng-template>
-                        </li>
                       <li ngbNavItem *ngIf="notificationSubscriptionService.userIsSchedulerNotificationSubscriptionReader()">
                             <button ngbNavLink>Notification Subscriptions
                                 <span class="badge bg-primary ms-2">
@@ -329,6 +315,20 @@
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
                                     <app-volunteer-group-member-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-volunteer-group-member-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentService.userIsSchedulerDocumentReader()">
+                            <button ngbNavLink>Documents
+                                <span class="badge bg-primary ms-2">
+                                    {{ (resourceData?.DocumentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-document-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -69,6 +69,8 @@ public partial class Office
 
     public virtual ICollection<Crew> Crews { get; set; } = new List<Crew>();
 
+    public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+
     public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
 
     public virtual ICollection<Gift> Gifts { get; set; } = new List<Gift>();

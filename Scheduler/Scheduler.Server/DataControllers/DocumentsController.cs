@@ -86,6 +86,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? financialTransactionId = null,
 			int? contactId = null,
 			int? resourceId = null,
+			int? clientId = null,
+			int? officeId = null,
+			int? crewId = null,
+			int? schedulingTargetId = null,
+			int? paymentTransactionId = null,
+			int? financialOfficeId = null,
+			int? tenantProfileId = null,
+			int? campaignId = null,
+			int? householdId = null,
+			int? constituentId = null,
+			int? tributeId = null,
+			int? volunteerProfileId = null,
 			string status = null,
 			DateTime? statusDate = null,
 			string statusChangedBy = null,
@@ -219,6 +231,54 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(d => d.resourceId == resourceId.Value);
 			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(d => d.clientId == clientId.Value);
+			}
+			if (officeId.HasValue == true)
+			{
+				query = query.Where(d => d.officeId == officeId.Value);
+			}
+			if (crewId.HasValue == true)
+			{
+				query = query.Where(d => d.crewId == crewId.Value);
+			}
+			if (schedulingTargetId.HasValue == true)
+			{
+				query = query.Where(d => d.schedulingTargetId == schedulingTargetId.Value);
+			}
+			if (paymentTransactionId.HasValue == true)
+			{
+				query = query.Where(d => d.paymentTransactionId == paymentTransactionId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(d => d.financialOfficeId == financialOfficeId.Value);
+			}
+			if (tenantProfileId.HasValue == true)
+			{
+				query = query.Where(d => d.tenantProfileId == tenantProfileId.Value);
+			}
+			if (campaignId.HasValue == true)
+			{
+				query = query.Where(d => d.campaignId == campaignId.Value);
+			}
+			if (householdId.HasValue == true)
+			{
+				query = query.Where(d => d.householdId == householdId.Value);
+			}
+			if (constituentId.HasValue == true)
+			{
+				query = query.Where(d => d.constituentId == constituentId.Value);
+			}
+			if (tributeId.HasValue == true)
+			{
+				query = query.Where(d => d.tributeId == tributeId.Value);
+			}
+			if (volunteerProfileId.HasValue == true)
+			{
+				query = query.Where(d => d.volunteerProfileId == volunteerProfileId.Value);
+			}
 			if (string.IsNullOrEmpty(status) == false)
 			{
 				query = query.Where(d => d.status == status);
@@ -297,6 +357,31 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.statusChangedBy.Contains(anyStringContains)
 			       || x.uploadedBy.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || (includeRelations == true && x.campaign.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.campaign.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.campaign.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.campaign.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine1.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.addressLine2.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.city.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.postalCode.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.client.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.constituentNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.constituent.avatarMimeType.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.firstName.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.middleName.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.lastName.Contains(anyStringContains))
@@ -313,9 +398,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.contact.avatarFileName.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.avatarMimeType.Contains(anyStringContains))
 			       || (includeRelations == true && x.contact.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.crew.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.crew.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.crew.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.crew.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.crew.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.crew.avatarMimeType.Contains(anyStringContains))
 			       || (includeRelations == true && x.documentType.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.documentType.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.documentType.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.code.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.contactName.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.contactEmail.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.exportFormat.Contains(anyStringContains))
+			       || (includeRelations == true && x.financialOffice.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialTransaction.contactRole.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialTransaction.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialTransaction.journalEntryType.Contains(anyStringContains))
@@ -323,8 +421,39 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.financialTransaction.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialTransaction.externalId.Contains(anyStringContains))
 			       || (includeRelations == true && x.financialTransaction.externalSystemName.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.formalSalutation.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.informalSalutation.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.addressee.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.household.avatarMimeType.Contains(anyStringContains))
 			       || (includeRelations == true && x.invoice.invoiceNumber.Contains(anyStringContains))
 			       || (includeRelations == true && x.invoice.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.addressLine1.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.addressLine2.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.city.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.postalCode.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.phone.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.office.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.status.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.providerTransactionId.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.providerResponse.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.payerName.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.payerEmail.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.payerPhone.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.receiptNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.paymentTransaction.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.receipt.receiptNumber.Contains(anyStringContains))
 			       || (includeRelations == true && x.receipt.paymentMethod.Contains(anyStringContains))
 			       || (includeRelations == true && x.receipt.description.Contains(anyStringContains))
@@ -347,18 +476,64 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.scheduledEvent.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.externalId.Contains(anyStringContains))
 			       || (includeRelations == true && x.scheduledEvent.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.notes.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.externalId.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.attributes.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.schedulingTarget.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.companyLogoFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.companyLogoMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.addressLine1.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.addressLine2.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.addressLine3.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.city.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.postalCode.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.phoneNumber.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.email.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.website.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.primaryColor.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.secondaryColor.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.invoiceNumberMask.Contains(anyStringContains))
+			       || (includeRelations == true && x.tenantProfile.receiptNumberMask.Contains(anyStringContains))
+			       || (includeRelations == true && x.tribute.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.tribute.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.tribute.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.tribute.avatarFileName.Contains(anyStringContains))
+			       || (includeRelations == true && x.tribute.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerProfile.availabilityPreferences.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerProfile.interestsAndSkillsNotes.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerProfile.emergencyContactNotes.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerProfile.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.volunteerProfile.attributes.Contains(anyStringContains))
 			   );
 			}
 
 			if (includeRelations == true)
 			{
+				query = query.Include(x => x.campaign);
+				query = query.Include(x => x.client);
+				query = query.Include(x => x.constituent);
 				query = query.Include(x => x.contact);
+				query = query.Include(x => x.crew);
 				query = query.Include(x => x.documentType);
+				query = query.Include(x => x.financialOffice);
 				query = query.Include(x => x.financialTransaction);
+				query = query.Include(x => x.household);
 				query = query.Include(x => x.invoice);
+				query = query.Include(x => x.office);
+				query = query.Include(x => x.paymentTransaction);
 				query = query.Include(x => x.receipt);
 				query = query.Include(x => x.resource);
 				query = query.Include(x => x.scheduledEvent);
+				query = query.Include(x => x.schedulingTarget);
+				query = query.Include(x => x.tenantProfile);
+				query = query.Include(x => x.tribute);
+				query = query.Include(x => x.volunteerProfile);
 				query = query.AsSplitQuery();
 			}
 
@@ -442,6 +617,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? financialTransactionId = null,
 			int? contactId = null,
 			int? resourceId = null,
+			int? clientId = null,
+			int? officeId = null,
+			int? crewId = null,
+			int? schedulingTargetId = null,
+			int? paymentTransactionId = null,
+			int? financialOfficeId = null,
+			int? tenantProfileId = null,
+			int? campaignId = null,
+			int? householdId = null,
+			int? constituentId = null,
+			int? tributeId = null,
+			int? volunteerProfileId = null,
 			string status = null,
 			DateTime? statusDate = null,
 			string statusChangedBy = null,
@@ -555,6 +742,54 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(d => d.resourceId == resourceId.Value);
 			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(d => d.clientId == clientId.Value);
+			}
+			if (officeId.HasValue == true)
+			{
+				query = query.Where(d => d.officeId == officeId.Value);
+			}
+			if (crewId.HasValue == true)
+			{
+				query = query.Where(d => d.crewId == crewId.Value);
+			}
+			if (schedulingTargetId.HasValue == true)
+			{
+				query = query.Where(d => d.schedulingTargetId == schedulingTargetId.Value);
+			}
+			if (paymentTransactionId.HasValue == true)
+			{
+				query = query.Where(d => d.paymentTransactionId == paymentTransactionId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(d => d.financialOfficeId == financialOfficeId.Value);
+			}
+			if (tenantProfileId.HasValue == true)
+			{
+				query = query.Where(d => d.tenantProfileId == tenantProfileId.Value);
+			}
+			if (campaignId.HasValue == true)
+			{
+				query = query.Where(d => d.campaignId == campaignId.Value);
+			}
+			if (householdId.HasValue == true)
+			{
+				query = query.Where(d => d.householdId == householdId.Value);
+			}
+			if (constituentId.HasValue == true)
+			{
+				query = query.Where(d => d.constituentId == constituentId.Value);
+			}
+			if (tributeId.HasValue == true)
+			{
+				query = query.Where(d => d.tributeId == tributeId.Value);
+			}
+			if (volunteerProfileId.HasValue == true)
+			{
+				query = query.Where(d => d.volunteerProfileId == volunteerProfileId.Value);
+			}
 			if (status != null)
 			{
 				query = query.Where(d => d.status == status);
@@ -630,6 +865,31 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.statusChangedBy.Contains(anyStringContains)
 			       || x.uploadedBy.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.campaign.name.Contains(anyStringContains)
+			       || x.campaign.description.Contains(anyStringContains)
+			       || x.campaign.notes.Contains(anyStringContains)
+			       || x.campaign.color.Contains(anyStringContains)
+			       || x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.constituent.constituentNumber.Contains(anyStringContains)
+			       || x.constituent.externalId.Contains(anyStringContains)
+			       || x.constituent.notes.Contains(anyStringContains)
+			       || x.constituent.attributes.Contains(anyStringContains)
+			       || x.constituent.color.Contains(anyStringContains)
+			       || x.constituent.avatarFileName.Contains(anyStringContains)
+			       || x.constituent.avatarMimeType.Contains(anyStringContains)
 			       || x.contact.firstName.Contains(anyStringContains)
 			       || x.contact.middleName.Contains(anyStringContains)
 			       || x.contact.lastName.Contains(anyStringContains)
@@ -646,9 +906,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.contact.avatarFileName.Contains(anyStringContains)
 			       || x.contact.avatarMimeType.Contains(anyStringContains)
 			       || x.contact.externalId.Contains(anyStringContains)
+			       || x.crew.name.Contains(anyStringContains)
+			       || x.crew.description.Contains(anyStringContains)
+			       || x.crew.notes.Contains(anyStringContains)
+			       || x.crew.color.Contains(anyStringContains)
+			       || x.crew.avatarFileName.Contains(anyStringContains)
+			       || x.crew.avatarMimeType.Contains(anyStringContains)
 			       || x.documentType.name.Contains(anyStringContains)
 			       || x.documentType.description.Contains(anyStringContains)
 			       || x.documentType.color.Contains(anyStringContains)
+			       || x.financialOffice.name.Contains(anyStringContains)
+			       || x.financialOffice.description.Contains(anyStringContains)
+			       || x.financialOffice.code.Contains(anyStringContains)
+			       || x.financialOffice.contactName.Contains(anyStringContains)
+			       || x.financialOffice.contactEmail.Contains(anyStringContains)
+			       || x.financialOffice.exportFormat.Contains(anyStringContains)
+			       || x.financialOffice.color.Contains(anyStringContains)
 			       || x.financialTransaction.contactRole.Contains(anyStringContains)
 			       || x.financialTransaction.description.Contains(anyStringContains)
 			       || x.financialTransaction.journalEntryType.Contains(anyStringContains)
@@ -656,8 +929,39 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialTransaction.notes.Contains(anyStringContains)
 			       || x.financialTransaction.externalId.Contains(anyStringContains)
 			       || x.financialTransaction.externalSystemName.Contains(anyStringContains)
+			       || x.household.name.Contains(anyStringContains)
+			       || x.household.description.Contains(anyStringContains)
+			       || x.household.formalSalutation.Contains(anyStringContains)
+			       || x.household.informalSalutation.Contains(anyStringContains)
+			       || x.household.addressee.Contains(anyStringContains)
+			       || x.household.notes.Contains(anyStringContains)
+			       || x.household.color.Contains(anyStringContains)
+			       || x.household.avatarFileName.Contains(anyStringContains)
+			       || x.household.avatarMimeType.Contains(anyStringContains)
 			       || x.invoice.invoiceNumber.Contains(anyStringContains)
 			       || x.invoice.notes.Contains(anyStringContains)
+			       || x.office.name.Contains(anyStringContains)
+			       || x.office.description.Contains(anyStringContains)
+			       || x.office.addressLine1.Contains(anyStringContains)
+			       || x.office.addressLine2.Contains(anyStringContains)
+			       || x.office.city.Contains(anyStringContains)
+			       || x.office.postalCode.Contains(anyStringContains)
+			       || x.office.phone.Contains(anyStringContains)
+			       || x.office.email.Contains(anyStringContains)
+			       || x.office.notes.Contains(anyStringContains)
+			       || x.office.externalId.Contains(anyStringContains)
+			       || x.office.color.Contains(anyStringContains)
+			       || x.office.attributes.Contains(anyStringContains)
+			       || x.office.avatarFileName.Contains(anyStringContains)
+			       || x.office.avatarMimeType.Contains(anyStringContains)
+			       || x.paymentTransaction.status.Contains(anyStringContains)
+			       || x.paymentTransaction.providerTransactionId.Contains(anyStringContains)
+			       || x.paymentTransaction.providerResponse.Contains(anyStringContains)
+			       || x.paymentTransaction.payerName.Contains(anyStringContains)
+			       || x.paymentTransaction.payerEmail.Contains(anyStringContains)
+			       || x.paymentTransaction.payerPhone.Contains(anyStringContains)
+			       || x.paymentTransaction.receiptNumber.Contains(anyStringContains)
+			       || x.paymentTransaction.notes.Contains(anyStringContains)
 			       || x.receipt.receiptNumber.Contains(anyStringContains)
 			       || x.receipt.paymentMethod.Contains(anyStringContains)
 			       || x.receipt.description.Contains(anyStringContains)
@@ -680,6 +984,40 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.schedulingTarget.name.Contains(anyStringContains)
+			       || x.schedulingTarget.description.Contains(anyStringContains)
+			       || x.schedulingTarget.notes.Contains(anyStringContains)
+			       || x.schedulingTarget.externalId.Contains(anyStringContains)
+			       || x.schedulingTarget.color.Contains(anyStringContains)
+			       || x.schedulingTarget.attributes.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
+			       || x.tenantProfile.name.Contains(anyStringContains)
+			       || x.tenantProfile.description.Contains(anyStringContains)
+			       || x.tenantProfile.companyLogoFileName.Contains(anyStringContains)
+			       || x.tenantProfile.companyLogoMimeType.Contains(anyStringContains)
+			       || x.tenantProfile.addressLine1.Contains(anyStringContains)
+			       || x.tenantProfile.addressLine2.Contains(anyStringContains)
+			       || x.tenantProfile.addressLine3.Contains(anyStringContains)
+			       || x.tenantProfile.city.Contains(anyStringContains)
+			       || x.tenantProfile.postalCode.Contains(anyStringContains)
+			       || x.tenantProfile.phoneNumber.Contains(anyStringContains)
+			       || x.tenantProfile.email.Contains(anyStringContains)
+			       || x.tenantProfile.website.Contains(anyStringContains)
+			       || x.tenantProfile.primaryColor.Contains(anyStringContains)
+			       || x.tenantProfile.secondaryColor.Contains(anyStringContains)
+			       || x.tenantProfile.invoiceNumberMask.Contains(anyStringContains)
+			       || x.tenantProfile.receiptNumberMask.Contains(anyStringContains)
+			       || x.tribute.name.Contains(anyStringContains)
+			       || x.tribute.description.Contains(anyStringContains)
+			       || x.tribute.color.Contains(anyStringContains)
+			       || x.tribute.avatarFileName.Contains(anyStringContains)
+			       || x.tribute.avatarMimeType.Contains(anyStringContains)
+			       || x.volunteerProfile.availabilityPreferences.Contains(anyStringContains)
+			       || x.volunteerProfile.interestsAndSkillsNotes.Contains(anyStringContains)
+			       || x.volunteerProfile.emergencyContactNotes.Contains(anyStringContains)
+			       || x.volunteerProfile.color.Contains(anyStringContains)
+			       || x.volunteerProfile.attributes.Contains(anyStringContains)
 			   );
 			}
 
@@ -743,13 +1081,25 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(x => x.tenantGuid == userTenantGuid);
 				if (includeRelations == true)
 				{
+					query = query.Include(x => x.campaign);
+					query = query.Include(x => x.client);
+					query = query.Include(x => x.constituent);
 					query = query.Include(x => x.contact);
+					query = query.Include(x => x.crew);
 					query = query.Include(x => x.documentType);
+					query = query.Include(x => x.financialOffice);
 					query = query.Include(x => x.financialTransaction);
+					query = query.Include(x => x.household);
 					query = query.Include(x => x.invoice);
+					query = query.Include(x => x.office);
+					query = query.Include(x => x.paymentTransaction);
 					query = query.Include(x => x.receipt);
 					query = query.Include(x => x.resource);
 					query = query.Include(x => x.scheduledEvent);
+					query = query.Include(x => x.schedulingTarget);
+					query = query.Include(x => x.tenantProfile);
+					query = query.Include(x => x.tribute);
+					query = query.Include(x => x.volunteerProfile);
 					query = query.AsSplitQuery();
 				}
 
@@ -1262,13 +1612,25 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 					document.fileDataData = null;
 					document.DocumentChangeHistories = null;
+					document.campaign = null;
+					document.client = null;
+					document.constituent = null;
 					document.contact = null;
+					document.crew = null;
 					document.documentType = null;
+					document.financialOffice = null;
 					document.financialTransaction = null;
+					document.household = null;
 					document.invoice = null;
+					document.office = null;
+					document.paymentTransaction = null;
 					document.receipt = null;
 					document.resource = null;
 					document.scheduledEvent = null;
+					document.schedulingTarget = null;
+					document.tenantProfile = null;
+					document.tribute = null;
+					document.volunteerProfile = null;
 
 
 				    DocumentChangeHistory documentChangeHistory = new DocumentChangeHistory();
@@ -1396,13 +1758,25 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				cloneOfExisting.fileDataData = null;
 				cloneOfExisting.DocumentChangeHistories = null;
+				cloneOfExisting.campaign = null;
+				cloneOfExisting.client = null;
+				cloneOfExisting.constituent = null;
 				cloneOfExisting.contact = null;
+				cloneOfExisting.crew = null;
 				cloneOfExisting.documentType = null;
+				cloneOfExisting.financialOffice = null;
 				cloneOfExisting.financialTransaction = null;
+				cloneOfExisting.household = null;
 				cloneOfExisting.invoice = null;
+				cloneOfExisting.office = null;
+				cloneOfExisting.paymentTransaction = null;
 				cloneOfExisting.receipt = null;
 				cloneOfExisting.resource = null;
 				cloneOfExisting.scheduledEvent = null;
+				cloneOfExisting.schedulingTarget = null;
+				cloneOfExisting.tenantProfile = null;
+				cloneOfExisting.tribute = null;
+				cloneOfExisting.volunteerProfile = null;
 
 				if (versionNumber >= document.versionNumber)
 				{
@@ -1447,6 +1821,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    document.financialTransactionId = oldDocument.financialTransactionId;
 				    document.contactId = oldDocument.contactId;
 				    document.resourceId = oldDocument.resourceId;
+				    document.clientId = oldDocument.clientId;
+				    document.officeId = oldDocument.officeId;
+				    document.crewId = oldDocument.crewId;
+				    document.schedulingTargetId = oldDocument.schedulingTargetId;
+				    document.paymentTransactionId = oldDocument.paymentTransactionId;
+				    document.financialOfficeId = oldDocument.financialOfficeId;
+				    document.tenantProfileId = oldDocument.tenantProfileId;
+				    document.campaignId = oldDocument.campaignId;
+				    document.householdId = oldDocument.householdId;
+				    document.constituentId = oldDocument.constituentId;
+				    document.tributeId = oldDocument.tributeId;
+				    document.volunteerProfileId = oldDocument.volunteerProfileId;
 				    document.status = oldDocument.status;
 				    document.statusDate = oldDocument.statusDate;
 				    document.statusChangedBy = oldDocument.statusChangedBy;
@@ -1937,6 +2323,18 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? financialTransactionId = null,
 			int? contactId = null,
 			int? resourceId = null,
+			int? clientId = null,
+			int? officeId = null,
+			int? crewId = null,
+			int? schedulingTargetId = null,
+			int? paymentTransactionId = null,
+			int? financialOfficeId = null,
+			int? tenantProfileId = null,
+			int? campaignId = null,
+			int? householdId = null,
+			int? constituentId = null,
+			int? tributeId = null,
+			int? volunteerProfileId = null,
 			string status = null,
 			DateTime? statusDate = null,
 			string statusChangedBy = null,
@@ -2069,6 +2467,54 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(d => d.resourceId == resourceId.Value);
 			}
+			if (clientId.HasValue == true)
+			{
+				query = query.Where(d => d.clientId == clientId.Value);
+			}
+			if (officeId.HasValue == true)
+			{
+				query = query.Where(d => d.officeId == officeId.Value);
+			}
+			if (crewId.HasValue == true)
+			{
+				query = query.Where(d => d.crewId == crewId.Value);
+			}
+			if (schedulingTargetId.HasValue == true)
+			{
+				query = query.Where(d => d.schedulingTargetId == schedulingTargetId.Value);
+			}
+			if (paymentTransactionId.HasValue == true)
+			{
+				query = query.Where(d => d.paymentTransactionId == paymentTransactionId.Value);
+			}
+			if (financialOfficeId.HasValue == true)
+			{
+				query = query.Where(d => d.financialOfficeId == financialOfficeId.Value);
+			}
+			if (tenantProfileId.HasValue == true)
+			{
+				query = query.Where(d => d.tenantProfileId == tenantProfileId.Value);
+			}
+			if (campaignId.HasValue == true)
+			{
+				query = query.Where(d => d.campaignId == campaignId.Value);
+			}
+			if (householdId.HasValue == true)
+			{
+				query = query.Where(d => d.householdId == householdId.Value);
+			}
+			if (constituentId.HasValue == true)
+			{
+				query = query.Where(d => d.constituentId == constituentId.Value);
+			}
+			if (tributeId.HasValue == true)
+			{
+				query = query.Where(d => d.tributeId == tributeId.Value);
+			}
+			if (volunteerProfileId.HasValue == true)
+			{
+				query = query.Where(d => d.volunteerProfileId == volunteerProfileId.Value);
+			}
 			if (string.IsNullOrEmpty(status) == false)
 			{
 				query = query.Where(d => d.status == status);
@@ -2145,6 +2591,31 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.statusChangedBy.Contains(anyStringContains)
 			       || x.uploadedBy.Contains(anyStringContains)
 			       || x.notes.Contains(anyStringContains)
+			       || x.campaign.name.Contains(anyStringContains)
+			       || x.campaign.description.Contains(anyStringContains)
+			       || x.campaign.notes.Contains(anyStringContains)
+			       || x.campaign.color.Contains(anyStringContains)
+			       || x.client.name.Contains(anyStringContains)
+			       || x.client.description.Contains(anyStringContains)
+			       || x.client.addressLine1.Contains(anyStringContains)
+			       || x.client.addressLine2.Contains(anyStringContains)
+			       || x.client.city.Contains(anyStringContains)
+			       || x.client.postalCode.Contains(anyStringContains)
+			       || x.client.phone.Contains(anyStringContains)
+			       || x.client.email.Contains(anyStringContains)
+			       || x.client.notes.Contains(anyStringContains)
+			       || x.client.externalId.Contains(anyStringContains)
+			       || x.client.color.Contains(anyStringContains)
+			       || x.client.attributes.Contains(anyStringContains)
+			       || x.client.avatarFileName.Contains(anyStringContains)
+			       || x.client.avatarMimeType.Contains(anyStringContains)
+			       || x.constituent.constituentNumber.Contains(anyStringContains)
+			       || x.constituent.externalId.Contains(anyStringContains)
+			       || x.constituent.notes.Contains(anyStringContains)
+			       || x.constituent.attributes.Contains(anyStringContains)
+			       || x.constituent.color.Contains(anyStringContains)
+			       || x.constituent.avatarFileName.Contains(anyStringContains)
+			       || x.constituent.avatarMimeType.Contains(anyStringContains)
 			       || x.contact.firstName.Contains(anyStringContains)
 			       || x.contact.middleName.Contains(anyStringContains)
 			       || x.contact.lastName.Contains(anyStringContains)
@@ -2161,9 +2632,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.contact.avatarFileName.Contains(anyStringContains)
 			       || x.contact.avatarMimeType.Contains(anyStringContains)
 			       || x.contact.externalId.Contains(anyStringContains)
+			       || x.crew.name.Contains(anyStringContains)
+			       || x.crew.description.Contains(anyStringContains)
+			       || x.crew.notes.Contains(anyStringContains)
+			       || x.crew.color.Contains(anyStringContains)
+			       || x.crew.avatarFileName.Contains(anyStringContains)
+			       || x.crew.avatarMimeType.Contains(anyStringContains)
 			       || x.documentType.name.Contains(anyStringContains)
 			       || x.documentType.description.Contains(anyStringContains)
 			       || x.documentType.color.Contains(anyStringContains)
+			       || x.financialOffice.name.Contains(anyStringContains)
+			       || x.financialOffice.description.Contains(anyStringContains)
+			       || x.financialOffice.code.Contains(anyStringContains)
+			       || x.financialOffice.contactName.Contains(anyStringContains)
+			       || x.financialOffice.contactEmail.Contains(anyStringContains)
+			       || x.financialOffice.exportFormat.Contains(anyStringContains)
+			       || x.financialOffice.color.Contains(anyStringContains)
 			       || x.financialTransaction.contactRole.Contains(anyStringContains)
 			       || x.financialTransaction.description.Contains(anyStringContains)
 			       || x.financialTransaction.journalEntryType.Contains(anyStringContains)
@@ -2171,8 +2655,39 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.financialTransaction.notes.Contains(anyStringContains)
 			       || x.financialTransaction.externalId.Contains(anyStringContains)
 			       || x.financialTransaction.externalSystemName.Contains(anyStringContains)
+			       || x.household.name.Contains(anyStringContains)
+			       || x.household.description.Contains(anyStringContains)
+			       || x.household.formalSalutation.Contains(anyStringContains)
+			       || x.household.informalSalutation.Contains(anyStringContains)
+			       || x.household.addressee.Contains(anyStringContains)
+			       || x.household.notes.Contains(anyStringContains)
+			       || x.household.color.Contains(anyStringContains)
+			       || x.household.avatarFileName.Contains(anyStringContains)
+			       || x.household.avatarMimeType.Contains(anyStringContains)
 			       || x.invoice.invoiceNumber.Contains(anyStringContains)
 			       || x.invoice.notes.Contains(anyStringContains)
+			       || x.office.name.Contains(anyStringContains)
+			       || x.office.description.Contains(anyStringContains)
+			       || x.office.addressLine1.Contains(anyStringContains)
+			       || x.office.addressLine2.Contains(anyStringContains)
+			       || x.office.city.Contains(anyStringContains)
+			       || x.office.postalCode.Contains(anyStringContains)
+			       || x.office.phone.Contains(anyStringContains)
+			       || x.office.email.Contains(anyStringContains)
+			       || x.office.notes.Contains(anyStringContains)
+			       || x.office.externalId.Contains(anyStringContains)
+			       || x.office.color.Contains(anyStringContains)
+			       || x.office.attributes.Contains(anyStringContains)
+			       || x.office.avatarFileName.Contains(anyStringContains)
+			       || x.office.avatarMimeType.Contains(anyStringContains)
+			       || x.paymentTransaction.status.Contains(anyStringContains)
+			       || x.paymentTransaction.providerTransactionId.Contains(anyStringContains)
+			       || x.paymentTransaction.providerResponse.Contains(anyStringContains)
+			       || x.paymentTransaction.payerName.Contains(anyStringContains)
+			       || x.paymentTransaction.payerEmail.Contains(anyStringContains)
+			       || x.paymentTransaction.payerPhone.Contains(anyStringContains)
+			       || x.paymentTransaction.receiptNumber.Contains(anyStringContains)
+			       || x.paymentTransaction.notes.Contains(anyStringContains)
 			       || x.receipt.receiptNumber.Contains(anyStringContains)
 			       || x.receipt.paymentMethod.Contains(anyStringContains)
 			       || x.receipt.description.Contains(anyStringContains)
@@ -2195,6 +2710,40 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.scheduledEvent.color.Contains(anyStringContains)
 			       || x.scheduledEvent.externalId.Contains(anyStringContains)
 			       || x.scheduledEvent.attributes.Contains(anyStringContains)
+			       || x.schedulingTarget.name.Contains(anyStringContains)
+			       || x.schedulingTarget.description.Contains(anyStringContains)
+			       || x.schedulingTarget.notes.Contains(anyStringContains)
+			       || x.schedulingTarget.externalId.Contains(anyStringContains)
+			       || x.schedulingTarget.color.Contains(anyStringContains)
+			       || x.schedulingTarget.attributes.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarFileName.Contains(anyStringContains)
+			       || x.schedulingTarget.avatarMimeType.Contains(anyStringContains)
+			       || x.tenantProfile.name.Contains(anyStringContains)
+			       || x.tenantProfile.description.Contains(anyStringContains)
+			       || x.tenantProfile.companyLogoFileName.Contains(anyStringContains)
+			       || x.tenantProfile.companyLogoMimeType.Contains(anyStringContains)
+			       || x.tenantProfile.addressLine1.Contains(anyStringContains)
+			       || x.tenantProfile.addressLine2.Contains(anyStringContains)
+			       || x.tenantProfile.addressLine3.Contains(anyStringContains)
+			       || x.tenantProfile.city.Contains(anyStringContains)
+			       || x.tenantProfile.postalCode.Contains(anyStringContains)
+			       || x.tenantProfile.phoneNumber.Contains(anyStringContains)
+			       || x.tenantProfile.email.Contains(anyStringContains)
+			       || x.tenantProfile.website.Contains(anyStringContains)
+			       || x.tenantProfile.primaryColor.Contains(anyStringContains)
+			       || x.tenantProfile.secondaryColor.Contains(anyStringContains)
+			       || x.tenantProfile.invoiceNumberMask.Contains(anyStringContains)
+			       || x.tenantProfile.receiptNumberMask.Contains(anyStringContains)
+			       || x.tribute.name.Contains(anyStringContains)
+			       || x.tribute.description.Contains(anyStringContains)
+			       || x.tribute.color.Contains(anyStringContains)
+			       || x.tribute.avatarFileName.Contains(anyStringContains)
+			       || x.tribute.avatarMimeType.Contains(anyStringContains)
+			       || x.volunteerProfile.availabilityPreferences.Contains(anyStringContains)
+			       || x.volunteerProfile.interestsAndSkillsNotes.Contains(anyStringContains)
+			       || x.volunteerProfile.emergencyContactNotes.Contains(anyStringContains)
+			       || x.volunteerProfile.color.Contains(anyStringContains)
+			       || x.volunteerProfile.attributes.Contains(anyStringContains)
 			   );
 			}
 

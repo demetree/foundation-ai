@@ -22,6 +22,7 @@ import { AppealService, AppealData } from './appeal.service';
 import { PledgeService, PledgeData } from './pledge.service';
 import { BatchService, BatchData } from './batch.service';
 import { GiftService, GiftData } from './gift.service';
+import { DocumentService, DocumentData } from './document.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -176,6 +177,11 @@ export class CampaignData {
     private _giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
 
                 
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
+
+                
 
 
     //
@@ -316,6 +322,31 @@ export class CampaignData {
 
 
 
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({campaignId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -378,6 +409,11 @@ export class CampaignData {
      this._giftsPromise = null;
      this._giftsSubject.next(null);
      this._giftsCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -713,6 +749,71 @@ export class CampaignData {
     }
 
 
+    /**
+     *
+     * Gets the Documents for this Campaign.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.campaign.Documents.then(campaigns => { ... })
+     *   or
+     *   await this.campaign.campaigns
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            CampaignService.Instance.GetDocumentsForCampaign(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
+    }
+
+
 
 
     //
@@ -796,6 +897,7 @@ export class CampaignService extends SecureEndpointBase {
         private pledgeService: PledgeService,
         private batchService: BatchService,
         private giftService: GiftService,
+        private documentService: DocumentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1312,6 +1414,16 @@ export class CampaignService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentsForCampaign(campaignId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
+            campaignId: campaignId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full CampaignData instance.
@@ -1366,6 +1478,10 @@ export class CampaignService extends SecureEndpointBase {
     (revived as any)._gifts = null;
     (revived as any)._giftsPromise = null;
     (revived as any)._giftsSubject = new BehaviorSubject<GiftData[] | null>(null);
+
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
 
     //
@@ -1437,6 +1553,18 @@ export class CampaignService extends SecureEndpointBase {
       );
 
     (revived as any)._giftsCount$ = null;
+
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
 
 
 

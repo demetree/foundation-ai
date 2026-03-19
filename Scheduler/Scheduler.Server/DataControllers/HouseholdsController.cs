@@ -1038,6 +1038,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 					household.avatarData = null;
 					household.Constituents = null;
+					household.Documents = null;
 					household.HouseholdChangeHistories = null;
 					household.icon = null;
 					household.schedulingTarget = null;
@@ -1168,6 +1169,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				cloneOfExisting.avatarData = null;
 				cloneOfExisting.Constituents = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.HouseholdChangeHistories = null;
 				cloneOfExisting.icon = null;
 				cloneOfExisting.schedulingTarget = null;

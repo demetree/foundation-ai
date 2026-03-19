@@ -31,6 +31,7 @@ import { FinancialTransactionService, FinancialTransactionData } from './financi
 import { InvoiceService, InvoiceData } from './invoice.service';
 import { ReceiptService, ReceiptData } from './receipt.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
+import { DocumentService, DocumentData } from './document.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -256,6 +257,11 @@ export class ClientData {
     private _constituents: ConstituentData[] | null = null;
     private _constituentsPromise: Promise<ConstituentData[]> | null  = null;
     private _constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
+
+                
+    private _documents: DocumentData[] | null = null;
+    private _documentsPromise: Promise<DocumentData[]> | null  = null;
+    private _documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
                 
 
@@ -499,6 +505,31 @@ export class ClientData {
 
 
 
+    public Documents$ = this._documentsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documents === null && this._documentsPromise === null) {
+            this.loadDocuments(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentsCount$: Observable<bigint | number> | null = null;
+    public get DocumentsCount$(): Observable<bigint | number> {
+        if (this._documentsCount$ === null) {
+            this._documentsCount$ = DocumentService.Instance.GetDocumentsRowCount({clientId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentsCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -581,6 +612,11 @@ export class ClientData {
      this._constituentsPromise = null;
      this._constituentsSubject.next(null);
      this._constituentsCount$ = null;
+
+     this._documents = null;
+     this._documentsPromise = null;
+     this._documentsSubject.next(null);
+     this._documentsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -1176,6 +1212,71 @@ export class ClientData {
     }
 
 
+    /**
+     *
+     * Gets the Documents for this Client.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.client.Documents.then(clients => { ... })
+     *   or
+     *   await this.client.clients
+     *
+    */
+    public get Documents(): Promise<DocumentData[]> {
+        if (this._documents !== null) {
+            return Promise.resolve(this._documents);
+        }
+
+        if (this._documentsPromise !== null) {
+            return this._documentsPromise;
+        }
+
+        // Start the load
+        this.loadDocuments();
+
+        return this._documentsPromise!;
+    }
+
+
+
+    private loadDocuments(): void {
+
+        this._documentsPromise = lastValueFrom(
+            ClientService.Instance.GetDocumentsForClient(this.id)
+        )
+        .then(Documents => {
+            this._documents = Documents ?? [];
+            this._documentsSubject.next(this._documents);
+            return this._documents;
+         })
+        .catch(err => {
+            this._documents = [];
+            this._documentsSubject.next(this._documents);
+            throw err;
+        })
+        .finally(() => {
+            this._documentsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached Document. Call after mutations to force refresh.
+     */
+    public ClearDocumentsCache(): void {
+        this._documents = null;
+        this._documentsPromise = null;
+        this._documentsSubject.next(this._documents);      // Emit to observable
+    }
+
+    public get HasDocuments(): Promise<boolean> {
+        return this.Documents.then(documents => documents.length > 0);
+    }
+
+
 
 
     //
@@ -1263,6 +1364,7 @@ export class ClientService extends SecureEndpointBase {
         private invoiceService: InvoiceService,
         private receiptService: ReceiptService,
         private constituentService: ConstituentService,
+        private documentService: DocumentService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1835,6 +1937,16 @@ export class ClientService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentsForClient(clientId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentData[]> {
+        return this.documentService.GetDocumentList({
+            clientId: clientId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full ClientData instance.
@@ -1905,6 +2017,10 @@ export class ClientService extends SecureEndpointBase {
     (revived as any)._constituents = null;
     (revived as any)._constituentsPromise = null;
     (revived as any)._constituentsSubject = new BehaviorSubject<ConstituentData[] | null>(null);
+
+    (revived as any)._documents = null;
+    (revived as any)._documentsPromise = null;
+    (revived as any)._documentsSubject = new BehaviorSubject<DocumentData[] | null>(null);
 
 
     //
@@ -2024,6 +2140,18 @@ export class ClientService extends SecureEndpointBase {
       );
 
     (revived as any)._constituentsCount$ = null;
+
+
+    (revived as any).Documents$ = (revived as any)._documentsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documents === null && (revived as any)._documentsPromise === null) {
+                (revived as any).loadDocuments();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentsCount$ = null;
 
 
 

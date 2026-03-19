@@ -1059,6 +1059,11 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     modalRef.componentInstance.initialStart = startStr;
     modalRef.componentInstance.initialEnd = endStr;
 
+    // Pre-select calendars the user is currently viewing in the sidebar filter
+    if (this.selectedCalendarIds.size > 0) {
+      modalRef.componentInstance.initialCalendarIds = Array.from(this.selectedCalendarIds);
+    }
+
     modalRef.result.then(
       (result) => {
         if (result === true) {

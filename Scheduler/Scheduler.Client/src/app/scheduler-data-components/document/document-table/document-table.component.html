@@ -91,6 +91,54 @@
                 Resource
                 <span *ngIf="sortColumn === 'resource.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('client.name')">
+                Client
+                <span *ngIf="sortColumn === 'client.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('office.name')">
+                Office
+                <span *ngIf="sortColumn === 'office.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('crew.name')">
+                Crew
+                <span *ngIf="sortColumn === 'crew.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('schedulingTarget.name')">
+                Scheduling  Target
+                <span *ngIf="sortColumn === 'schedulingTarget.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('paymentTransaction.name')">
+                Payment  Transaction
+                <span *ngIf="sortColumn === 'paymentTransaction.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('financialOffice.name')">
+                Financial  Office
+                <span *ngIf="sortColumn === 'financialOffice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('tenantProfile.name')">
+                Tenant  Profile
+                <span *ngIf="sortColumn === 'tenantProfile.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('campaign.name')">
+                Campaign
+                <span *ngIf="sortColumn === 'campaign.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('household.name')">
+                Household
+                <span *ngIf="sortColumn === 'household.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('constituent.name')">
+                Constituent
+                <span *ngIf="sortColumn === 'constituent.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('tribute.name')">
+                Tribute
+                <span *ngIf="sortColumn === 'tribute.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('volunteerProfile.name')">
+                Volunteer  Profile
+                <span *ngIf="sortColumn === 'volunteerProfile.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('status')">
                 Status
                 <span *ngIf="sortColumn === 'status'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -216,6 +264,18 @@ End of commented block for alternate definition option -->
             <td class="text-truncate"><a [routerLink]="['/financialtransaction', document.financialTransactionId]" class="btn btn-link text-left" ngbTooltip="Open Financial Transaction details">{{document.financialTransaction?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/contact', document.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{document.contact?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/resource', document.resourceId]" class="btn btn-link text-left" ngbTooltip="Open Resource details">{{document.resource?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/client', document.clientId]" class="btn btn-link text-left" ngbTooltip="Open Client details">{{document.client?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/office', document.officeId]" class="btn btn-link text-left" ngbTooltip="Open Office details">{{document.office?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/crew', document.crewId]" class="btn btn-link text-left" ngbTooltip="Open Crew details">{{document.crew?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/schedulingtarget', document.schedulingTargetId]" class="btn btn-link text-left" ngbTooltip="Open Scheduling Target details">{{document.schedulingTarget?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/paymenttransaction', document.paymentTransactionId]" class="btn btn-link text-left" ngbTooltip="Open Payment Transaction details">{{document.paymentTransaction?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/financialoffice', document.financialOfficeId]" class="btn btn-link text-left" ngbTooltip="Open Financial Office details">{{document.financialOffice?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/tenantprofile', document.tenantProfileId]" class="btn btn-link text-left" ngbTooltip="Open Tenant Profile details">{{document.tenantProfile?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/campaign', document.campaignId]" class="btn btn-link text-left" ngbTooltip="Open Campaign details">{{document.campaign?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/household', document.householdId]" class="btn btn-link text-left" ngbTooltip="Open Household details">{{document.household?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/constituent', document.constituentId]" class="btn btn-link text-left" ngbTooltip="Open Constituent details">{{document.constituent?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/tribute', document.tributeId]" class="btn btn-link text-left" ngbTooltip="Open Tribute details">{{document.tribute?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/volunteerprofile', document.volunteerProfileId]" class="btn btn-link text-left" ngbTooltip="Open Volunteer Profile details">{{document.volunteerProfile?.name}}</a></td>
             <td class="text-truncate">{{document.status}}</td>
             <td class="text-truncate">{{document.statusDate | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
             <td class="text-truncate">{{document.statusChangedBy}}</td>
@@ -432,6 +492,54 @@ End of commented block for alternate definition option -->
             <p class="document-info" *ngIf="document.resourceId != null">
               <strong>Resource: </strong>
               <a [routerLink]="['/resource', document.resourceId]" class="text-left p-0 m-0" ngbTooltip="Open Resource details">{{document.resource?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.clientId != null">
+              <strong>Client: </strong>
+              <a [routerLink]="['/client', document.clientId]" class="text-left p-0 m-0" ngbTooltip="Open Client details">{{document.client?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.officeId != null">
+              <strong>Office: </strong>
+              <a [routerLink]="['/office', document.officeId]" class="text-left p-0 m-0" ngbTooltip="Open Office details">{{document.office?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.crewId != null">
+              <strong>Crew: </strong>
+              <a [routerLink]="['/crew', document.crewId]" class="text-left p-0 m-0" ngbTooltip="Open Crew details">{{document.crew?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.schedulingTargetId != null">
+              <strong>Scheduling Target: </strong>
+              <a [routerLink]="['/schedulingtarget', document.schedulingTargetId]" class="text-left p-0 m-0" ngbTooltip="Open Scheduling Target details">{{document.schedulingTarget?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.paymentTransactionId != null">
+              <strong>Payment Transaction: </strong>
+              <a [routerLink]="['/paymenttransaction', document.paymentTransactionId]" class="text-left p-0 m-0" ngbTooltip="Open Payment Transaction details">{{document.paymentTransaction?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.financialOfficeId != null">
+              <strong>Financial Office: </strong>
+              <a [routerLink]="['/financialoffice', document.financialOfficeId]" class="text-left p-0 m-0" ngbTooltip="Open Financial Office details">{{document.financialOffice?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.tenantProfileId != null">
+              <strong>Tenant Profile: </strong>
+              <a [routerLink]="['/tenantprofile', document.tenantProfileId]" class="text-left p-0 m-0" ngbTooltip="Open Tenant Profile details">{{document.tenantProfile?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.campaignId != null">
+              <strong>Campaign: </strong>
+              <a [routerLink]="['/campaign', document.campaignId]" class="text-left p-0 m-0" ngbTooltip="Open Campaign details">{{document.campaign?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.householdId != null">
+              <strong>Household: </strong>
+              <a [routerLink]="['/household', document.householdId]" class="text-left p-0 m-0" ngbTooltip="Open Household details">{{document.household?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.constituentId != null">
+              <strong>Constituent: </strong>
+              <a [routerLink]="['/constituent', document.constituentId]" class="text-left p-0 m-0" ngbTooltip="Open Constituent details">{{document.constituent?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.tributeId != null">
+              <strong>Tribute: </strong>
+              <a [routerLink]="['/tribute', document.tributeId]" class="text-left p-0 m-0" ngbTooltip="Open Tribute details">{{document.tribute?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.volunteerProfileId != null">
+              <strong>Volunteer Profile: </strong>
+              <a [routerLink]="['/volunteerprofile', document.volunteerProfileId]" class="text-left p-0 m-0" ngbTooltip="Open Volunteer Profile details">{{document.volunteerProfile?.name}}</a>
             </p>
             <p class="document-info" *ngIf="document.status != null">
               <strong>Status: </strong>

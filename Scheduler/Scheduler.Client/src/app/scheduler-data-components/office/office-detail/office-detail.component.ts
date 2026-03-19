@@ -38,6 +38,7 @@ import { CrewService } from '../../../scheduler-data-services/crew.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { GiftService } from '../../../scheduler-data-services/gift.service';
 import { VolunteerGroupService } from '../../../scheduler-data-services/volunteer-group.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
@@ -158,6 +159,7 @@ export class OfficeDetailComponent implements OnInit, CanComponentDeactivate {
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public gifts$ = this.giftService.GetGiftList();
   public volunteerGroups$ = this.volunteerGroupService.GetVolunteerGroupList();
+  public documents$ = this.documentService.GetDocumentList();
   public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
 
   private destroy$ = new Subject<void>();
@@ -179,6 +181,7 @@ export class OfficeDetailComponent implements OnInit, CanComponentDeactivate {
     public scheduledEventService: ScheduledEventService,
     public giftService: GiftService,
     public volunteerGroupService: VolunteerGroupService,
+    public documentService: DocumentService,
     public eventResourceAssignmentService: EventResourceAssignmentService,
     private authService: AuthService,
     private route: ActivatedRoute,

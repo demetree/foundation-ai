@@ -38,6 +38,7 @@ import { FinancialTransactionService } from '../../../scheduler-data-services/fi
 import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
 import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -159,6 +160,7 @@ export class ClientDetailComponent implements OnInit, CanComponentDeactivate {
   public invoices$ = this.invoiceService.GetInvoiceList();
   public receipts$ = this.receiptService.GetReceiptList();
   public constituents$ = this.constituentService.GetConstituentList();
+  public documents$ = this.documentService.GetDocumentList();
 
   private destroy$ = new Subject<void>();
 
@@ -179,6 +181,7 @@ export class ClientDetailComponent implements OnInit, CanComponentDeactivate {
     public invoiceService: InvoiceService,
     public receiptService: ReceiptService,
     public constituentService: ConstituentService,
+    public documentService: DocumentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

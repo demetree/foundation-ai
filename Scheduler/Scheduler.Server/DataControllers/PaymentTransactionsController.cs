@@ -1017,6 +1017,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 				    // Nullify all object properties before serializing.
 				    //
+					paymentTransaction.Documents = null;
 					paymentTransaction.PaymentTransactionChangeHistories = null;
 					paymentTransaction.Receipts = null;
 					paymentTransaction.currency = null;
@@ -1139,6 +1140,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				// Remove any object fields from the clone object so that it can serialize effectively
 				//
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.PaymentTransactionChangeHistories = null;
 				cloneOfExisting.Receipts = null;
 				cloneOfExisting.currency = null;

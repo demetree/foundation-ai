@@ -43,6 +43,30 @@ public partial class Document
 
     public int? resourceId { get; set; }
 
+    public int? clientId { get; set; }
+
+    public int? officeId { get; set; }
+
+    public int? crewId { get; set; }
+
+    public int? schedulingTargetId { get; set; }
+
+    public int? paymentTransactionId { get; set; }
+
+    public int? financialOfficeId { get; set; }
+
+    public int? tenantProfileId { get; set; }
+
+    public int? campaignId { get; set; }
+
+    public int? householdId { get; set; }
+
+    public int? constituentId { get; set; }
+
+    public int? tributeId { get; set; }
+
+    public int? volunteerProfileId { get; set; }
+
     public string status { get; set; }
 
     public DateTime? statusDate { get; set; }
@@ -65,17 +89,41 @@ public partial class Document
 
     public virtual ICollection<DocumentChangeHistory> DocumentChangeHistories { get; set; } = new List<DocumentChangeHistory>();
 
+    public virtual Campaign campaign { get; set; }
+
+    public virtual Client client { get; set; }
+
+    public virtual Constituent constituent { get; set; }
+
     public virtual Contact contact { get; set; }
+
+    public virtual Crew crew { get; set; }
 
     public virtual DocumentType documentType { get; set; }
 
+    public virtual FinancialOffice financialOffice { get; set; }
+
     public virtual FinancialTransaction financialTransaction { get; set; }
 
+    public virtual Household household { get; set; }
+
     public virtual Invoice invoice { get; set; }
+
+    public virtual Office office { get; set; }
+
+    public virtual PaymentTransaction paymentTransaction { get; set; }
 
     public virtual Receipt receipt { get; set; }
 
     public virtual Resource resource { get; set; }
 
     public virtual ScheduledEvent scheduledEvent { get; set; }
+
+    public virtual SchedulingTarget schedulingTarget { get; set; }
+
+    public virtual TenantProfile tenantProfile { get; set; }
+
+    public virtual Tribute tribute { get; set; }
+
+    public virtual VolunteerProfile volunteerProfile { get; set; }
 }

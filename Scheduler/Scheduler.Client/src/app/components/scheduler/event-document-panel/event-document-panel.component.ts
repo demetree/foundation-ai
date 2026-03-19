@@ -1,7 +1,8 @@
 /**
  * EventDocumentPanelComponent
  *
- * AI-Developed — Reusable document management panel for scheduled events.
+ * AI-Developed — Reusable document management panel for any entity that has
+ * a foreign key on the Document table (ScheduledEvent, Contact, Resource, etc.).
  *
  * Features:
  *   - Drag-and-drop file upload with file picker fallback
@@ -9,7 +10,7 @@
  *   - Document type categorization via DocumentType lookup
  *   - Status workflow: Uploaded → Reviewed → Filed
  *   - Download, delete, notes
- *   - Works with any ScheduledEventData via input binding
+ *   - Generic owner binding via ownerField / ownerId inputs
  */
 
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
@@ -17,7 +18,6 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { lastValueFrom } from 'rxjs';
 import { DocumentService, DocumentData, DocumentSubmitData } from '../../../scheduler-data-services/document.service';
 import { DocumentTypeService, DocumentTypeData } from '../../../scheduler-data-services/document-type.service';
-import { ScheduledEventData } from '../../../scheduler-data-services/scheduled-event.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 
@@ -36,9 +36,14 @@ interface PendingUpload {
 export class EventDocumentPanelComponent implements OnInit {
 
   // -----------------------------------------------------------------------
-  // Inputs
+  // Inputs — generic owner binding
+  //
+  // ownerField: the FK column name on the Document table
+  //             (e.g. 'scheduledEventId', 'contactId', 'resourceId')
+  // ownerId:    the id value of the owning entity
   // -----------------------------------------------------------------------
-  @Input() event!: ScheduledEventData;
+  @Input() ownerField: string = 'scheduledEventId';
+  @Input() ownerId!: number | bigint;
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
@@ -94,14 +99,20 @@ export class EventDocumentPanelComponent implements OnInit {
     }
 
     try {
-      // Load documents for this event
+      //
+      // Build a dynamic query using the ownerField to filter documents
+      // belonging to the specific entity (event, contact, resource, etc.)
+      //
+      const query: any = {
+        active: true,
+        deleted: false,
+        includeRelations: true
+      };
+
+      query[this.ownerField] = this.ownerId;
+
       this.documents = await lastValueFrom(
-        this.documentService.GetDocumentList({
-          scheduledEventId: this.event.id,
-          active: true,
-          deleted: false,
-          includeRelations: true
-        })
+        this.documentService.GetDocumentList(query)
       );
     } catch (err) {
       console.error('Failed to load documents', err);
@@ -250,7 +261,12 @@ export class EventDocumentPanelComponent implements OnInit {
       submit.fileDataData = this.pendingUpload.base64;
       submit.fileDataMimeType = this.pendingUpload.file.type || 'application/octet-stream';
       submit.documentTypeId = this.pendingUpload.documentTypeId as number;
-      submit.scheduledEventId = this.event.id as number;
+
+      //
+      // Set the owning entity FK dynamically based on the ownerField input
+      //
+      (submit as any)[this.ownerField] = this.ownerId as number;
+
       submit.status = 'Uploaded';
       submit.statusDate = new Date().toISOString();
       submit.uploadedDate = new Date().toISOString();
@@ -272,7 +288,6 @@ export class EventDocumentPanelComponent implements OnInit {
 
       // Clear caches and reload
       this.documentService.ClearAllCaches();
-      this.event.ClearDocumentsCache();
       await this.loadData();
 
     } catch (err) {
@@ -397,7 +412,6 @@ export class EventDocumentPanelComponent implements OnInit {
 
       // Reload
       this.documentService.ClearAllCaches();
-      this.event.ClearDocumentsCache();
       await this.loadData();
 
     } catch (err) {

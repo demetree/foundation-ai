@@ -11,6 +11,7 @@ import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.se
 import { ResourceAvailabilityService } from '../../../scheduler-data-services/resource-availability.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, combineLatest, shareReplay } from 'rxjs';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
@@ -38,6 +39,7 @@ export class ResourceCustomDetailComponent implements OnInit {
   public officeCount$ = this.schedulerHelperService.ActiveOfficeCount$;
 
   public ResourceAssignmentCount$: Observable<bigint | number> | null = null;
+  public DocumentCount$: Observable<bigint | number> | null = null;
 
   public error: string | null = null;
   public activeTab = 'overview';
@@ -62,6 +64,7 @@ export class ResourceCustomDetailComponent implements OnInit {
     private resourceAvailabilityService: ResourceAvailabilityService,
     private scheduledEventService: ScheduledEventService,
     private eventResourceAssignmentService: EventResourceAssignmentService,
+    private documentService: DocumentService,
     private schedulerHelperService: SchedulerHelperService,
     private authService: AuthService,
     private route: ActivatedRoute,
@@ -352,6 +355,12 @@ export class ResourceCustomDetailComponent implements OnInit {
     });
 
     // Combine both counts and sum them
+    this.DocumentCount$ = this.documentService.GetDocumentsRowCount({
+      resourceId: resourceId,
+      active: true,
+      deleted: false
+    });
+
     this.ResourceAssignmentCount$ = combineLatest([
       directAssignments$,
       leadEvents$

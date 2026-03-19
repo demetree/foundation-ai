@@ -1194,6 +1194,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 					constituent.avatarData = null;
 					constituent.ConstituentChangeHistories = null;
+					constituent.Documents = null;
 					constituent.Gifts = null;
 					constituent.Pledges = null;
 					constituent.SoftCredits = null;
@@ -1331,6 +1332,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				cloneOfExisting.avatarData = null;
 				cloneOfExisting.ConstituentChangeHistories = null;
+				cloneOfExisting.Documents = null;
 				cloneOfExisting.Gifts = null;
 				cloneOfExisting.Pledges = null;
 				cloneOfExisting.SoftCredits = null;
