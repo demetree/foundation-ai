@@ -25,6 +25,7 @@ using Scheduler.Server.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -394,6 +395,168 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error downloading document {DocumentId}.", documentId);
                 return StatusCode(500, "Error downloading document.");
+            }
+        }
+
+
+        /// <summary>
+        /// Downloads an entire folder (and subfolders) as a zip archive.
+        /// Streams directly to the response body — only one document blob
+        /// is in memory at a time.
+        /// </summary>
+        [Route("api/FileManager/Folders/{folderId}/Download")]
+        [HttpGet]
+        public async Task<IActionResult> DownloadFolderAsZip(int folderId)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                DocumentFolder folder = await _fileStorage.GetFolderByIdAsync(folderId, tenantGuid);
+                if (folder == null)
+                {
+                    return NotFound("Folder not found.");
+                }
+
+                List<DocumentFolder> allFolders = await _fileStorage.GetFoldersAsync(tenantGuid);
+
+                // Collect document metadata + relative paths (no blobs yet)
+                var docRefs = new List<(int docId, string fileName, string relativePath)>();
+                await CollectDocumentRefsRecursively(folderId, "", allFolders, tenantGuid, docRefs);
+
+                if (docRefs.Count == 0)
+                {
+                    return NotFound("Folder contains no files.");
+                }
+
+                // Set response headers before streaming
+                Response.ContentType = "application/zip";
+                Response.Headers["Content-Disposition"] = $"attachment; filename=\"{folder.name}.zip\"";
+
+                // Stream the zip directly to the response body
+                using (var archive = new ZipArchive(Response.Body, ZipArchiveMode.Create, leaveOpen: true))
+                {
+                    foreach (var (docId, fileName, relativePath) in docRefs)
+                    {
+                        // Fetch one blob at a time
+                        Document doc = await _fileStorage.GetDocumentByIdAsync(docId, tenantGuid);
+                        if (doc?.fileDataData == null || doc.fileDataData.Length == 0) continue;
+
+                        string entryPath = string.IsNullOrEmpty(relativePath)
+                            ? fileName
+                            : $"{relativePath}/{fileName}";
+
+                        var entry = archive.CreateEntry(entryPath, CompressionLevel.Optimal);
+                        using var entryStream = entry.Open();
+                        await entryStream.WriteAsync(doc.fileDataData);
+                    }
+                }
+
+                return new EmptyResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading folder {FolderId} as zip.", folderId);
+                return StatusCode(500, "Error creating zip archive.");
+            }
+        }
+
+
+        /// <summary>
+        /// Downloads multiple documents as a zip archive.
+        /// Streams directly to the response body.
+        /// </summary>
+        [Route("api/FileManager/Documents/DownloadZip")]
+        [HttpPost]
+        public async Task<IActionResult> DownloadDocumentsAsZip([FromBody] List<int> documentIds)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            if (documentIds == null || documentIds.Count == 0)
+            {
+                return BadRequest("No document IDs provided.");
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                // Set response headers before streaming
+                Response.ContentType = "application/zip";
+                Response.Headers["Content-Disposition"] = "attachment; filename=\"Documents.zip\"";
+
+                using (var archive = new ZipArchive(Response.Body, ZipArchiveMode.Create, leaveOpen: true))
+                {
+                    var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                    foreach (int docId in documentIds)
+                    {
+                        Document document = await _fileStorage.GetDocumentByIdAsync(docId, tenantGuid);
+                        if (document?.fileDataData == null || document.fileDataData.Length == 0) continue;
+
+                        // Deduplicate file names
+                        string name = document.fileName;
+                        if (usedNames.Contains(name))
+                        {
+                            string baseName = Path.GetFileNameWithoutExtension(name);
+                            string ext = Path.GetExtension(name);
+                            int count = 2;
+                            while (usedNames.Contains($"{baseName} ({count}){ext}")) count++;
+                            name = $"{baseName} ({count}){ext}";
+                        }
+                        usedNames.Add(name);
+
+                        var entry = archive.CreateEntry(name, CompressionLevel.Optimal);
+                        using var entryStream = entry.Open();
+                        await entryStream.WriteAsync(document.fileDataData);
+                    }
+                }
+
+                return new EmptyResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading documents as zip.");
+                return StatusCode(500, "Error creating zip archive.");
+            }
+        }
+
+
+        /// <summary>
+        /// Recursively collects document metadata (id, fileName, relative path)
+        /// without loading blob data — blobs are fetched one-at-a-time during zip streaming.
+        /// </summary>
+        private async Task CollectDocumentRefsRecursively(
+            int folderId,
+            string currentPath,
+            List<DocumentFolder> allFolders,
+            Guid tenantGuid,
+            List<(int docId, string fileName, string relativePath)> results)
+        {
+            List<Document> metaDocs = await _fileStorage.GetDocumentsInFolderAsync(folderId, tenantGuid);
+            foreach (var meta in metaDocs.Where(d => !d.deleted))
+            {
+                results.Add((meta.id, meta.fileName, currentPath));
+            }
+
+            // Recurse into subfolders
+            var children = allFolders.Where(f => f.parentDocumentFolderId == folderId && !f.deleted).ToList();
+            foreach (var child in children)
+            {
+                string childPath = string.IsNullOrEmpty(currentPath)
+                    ? child.name
+                    : $"{currentPath}/{child.name}";
+                await CollectDocumentRefsRecursively(child.id, childPath, allFolders, tenantGuid, results);
             }
         }
 

@@ -737,6 +737,48 @@ export class FileManagerComponent implements OnInit {
         });
     }
 
+    downloadFolderZip(folder: FolderDTO): void {
+        this.showFolderContext = false;
+        this.alertService.showMessage('Preparing', `Zipping "${folder.name}"…`, MessageSeverity.info);
+
+        this.fileManagerService.downloadFolderAsZip(folder.id).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${folder.name}.zip`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+                console.error('Folder zip download failed', err);
+                this.alertService.showMessage('Error', 'Could not download folder as zip.', MessageSeverity.error);
+            }
+        });
+    }
+
+    downloadSelectedAsZip(): void {
+        const ids = [...this.selectedDocIds];
+        if (ids.length === 0) return;
+
+        this.alertService.showMessage('Preparing', `Zipping ${ids.length} file(s)…`, MessageSeverity.info);
+
+        this.fileManagerService.downloadDocumentsAsZip(ids).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Documents.zip';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: (err) => {
+                console.error('Bulk zip download failed', err);
+                this.alertService.showMessage('Error', 'Could not download files as zip.', MessageSeverity.error);
+            }
+        });
+    }
+
 
     // ─── Context Menus ───────────────────────────────────────────────
 

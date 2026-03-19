@@ -201,6 +201,9 @@
               </button>
             </div>
           </div>
+          <button class="btn btn-sm btn-outline-secondary" (click)="downloadSelectedAsZip()">
+            <i class="fa-solid fa-file-zipper me-1"></i> Download Zip
+          </button>
           <button class="btn btn-sm btn-outline-secondary" (click)="clearSelection()">
             <i class="fa-solid fa-xmark me-1"></i> Clear
           </button>
@@ -460,6 +463,7 @@
        (mouseleave)="showFolderContext = false">
     <ul>
       <li (click)="showNewFolderDialog(contextFolder ?? undefined)"><i class="fa-solid fa-folder-plus me-2"></i> New Subfolder</li>
+      <li *ngIf="contextFolder" (click)="downloadFolderZip(contextFolder)"><i class="fa-solid fa-file-zipper me-2"></i> Download Zip</li>
       <li *ngIf="contextFolder" (click)="renameFolder(contextFolder)"><i class="fa-solid fa-pen me-2"></i> Rename</li>
       <li *ngIf="contextFolder" (click)="deleteFolderAction(contextFolder)"><i class="fa-solid fa-trash me-2"></i> Delete</li>
     </ul>

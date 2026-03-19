@@ -248,6 +248,24 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
+    downloadFolderAsZip(folderId: number): Observable<Blob> {
+        return this.http.get(`${this.base}/Folders/${folderId}/Download`, {
+            headers: this.authHeaders(),
+            responseType: 'blob'
+        }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.downloadFolderAsZip(folderId)))
+        );
+    }
+
+    downloadDocumentsAsZip(documentIds: number[]): Observable<Blob> {
+        return (this.http.post(`${this.base}/Documents/DownloadZip`, documentIds, {
+            headers: this.jsonHeaders(),
+            responseType: 'blob'
+        } as any) as unknown as Observable<Blob>).pipe(
+            catchError((error: any) => this.handleError(error, () => this.downloadDocumentsAsZip(documentIds)))
+        );
+    }
+
     updateDocumentMetadata(document: Partial<DocumentDTO>): Observable<DocumentDTO> {
         return this.http.put<DocumentDTO>(`${this.base}/Documents`, document, { headers: this.jsonHeaders() }).pipe(
             catchError((error: any) => this.handleError(error, () => this.updateDocumentMetadata(document)))
