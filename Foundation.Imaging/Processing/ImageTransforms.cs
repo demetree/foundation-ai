@@ -80,8 +80,16 @@ namespace Foundation.Imaging.Processing
             }
             else
             {
-                for (int i = 0; i < dst.Length; i++)
-                    dst[i] = src[dst.Length - 1 - i];
+                int n = w * h;
+                for (int i = 0; i < n; i++)
+                {
+                    int si = i * 4;
+                    int di = (n - 1 - i) * 4;
+                    dst[di]     = src[si];
+                    dst[di + 1] = src[si + 1];
+                    dst[di + 2] = src[si + 2];
+                    dst[di + 3] = src[si + 3];
+                }
             }
             return dst;
         }
@@ -117,8 +125,15 @@ namespace Foundation.Imaging.Processing
             }
             else
             {
-                for (int i = 0; i < dst.Length; i++)
-                    dst[i] = src[dst.Length - 1 - i];
+                int n = w * h;
+                for (int i = 0; i < n; i++)
+                {
+                    int si = i * 3;
+                    int di = (n - 1 - i) * 3;
+                    dst[di]     = src[si];
+                    dst[di + 1] = src[si + 1];
+                    dst[di + 2] = src[si + 2];
+                }
             }
             return dst;
         }

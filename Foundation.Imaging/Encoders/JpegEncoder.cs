@@ -1,9 +1,17 @@
 using System;
 using System.IO;
-using System.IO.Compression;
 
 namespace Foundation.Imaging.Encoders
 {
+    /// <summary>
+    /// Baseline JPEG encoder for RGB pixel data.
+    ///
+    /// Implements sequential DCT-based JPEG (SOI, APP0/JFIF, DQT, SOF0,
+    /// DHT, SOS with Huffman entropy coding, EOI).  No chroma subsampling
+    /// (4:4:4).
+    ///
+    /// No external dependencies.
+    /// </summary>
     public static class JpegEncoder
     {
         public static byte[] Encode(byte[] rgbPixels, int width, int height, int quality = 85)
@@ -14,18 +22,32 @@ namespace Foundation.Imaging.Encoders
             int[] qtLum = BuildQuantizationTable(JpegConstants.QuantLum, quality);
             int[] qtChr = BuildQuantizationTable(JpegConstants.QuantChr, quality);
 
-            var writer = new BitWriter();
+            // Build Huffman code tables from the standard bit/val arrays
+            var dcLumCodes = BuildHuffmanTable(JpegConstants.DcLumBits, JpegConstants.DcLumVal);
+            var dcChrCodes = BuildHuffmanTable(JpegConstants.DcChrBits, JpegConstants.DcChrVal);
+            var acLumCodes = BuildHuffmanTable(JpegConstants.AcLumBits, JpegConstants.AcLumVal);
+            var acChrCodes = BuildHuffmanTable(JpegConstants.AcChrBits, JpegConstants.AcChrVal);
 
-            WriteSOI(writer);
-            WriteAPP0(writer);
-            WriteDQT(writer, qtLum, qtChr);
-            WriteSOF0(writer, width, height);
-            WriteDHT(writer);
-            WriteSOS(writer, rgbPixels, width, height, qtLum, qtChr, writer);
-            WriteEOI(writer);
+            // Write markers into the header stream
+            using var output = new MemoryStream();
 
-            return writer.ToArray();
+            WriteSOI(output);
+            WriteAPP0(output);
+            WriteDQT(output, 0, qtLum);
+            WriteDQT(output, 1, qtChr);
+            WriteSOF0(output, width, height);
+            WriteDHT(output, 0x00, JpegConstants.DcLumBits, JpegConstants.DcLumVal);
+            WriteDHT(output, 0x10, JpegConstants.AcLumBits, JpegConstants.AcLumVal);
+            WriteDHT(output, 0x01, JpegConstants.DcChrBits, JpegConstants.DcChrVal);
+            WriteDHT(output, 0x11, JpegConstants.AcChrBits, JpegConstants.AcChrVal);
+            WriteSOS(output, rgbPixels, width, height, qtLum, qtChr,
+                     dcLumCodes, acLumCodes, dcChrCodes, acChrCodes);
+            WriteEOI(output);
+
+            return output.ToArray();
         }
+
+        // ─── Quantization table ─────────────────────────────────────
 
         private static int[] BuildQuantizationTable(int[] baseTable, int quality)
         {
@@ -39,97 +61,134 @@ namespace Foundation.Imaging.Encoders
             return table;
         }
 
-        private static void WriteSOI(BitWriter w) => w.WriteU16(0xFFD8);
+        // ─── Huffman code table builder ─────────────────────────────
 
-        private static void WriteEOI(BitWriter w) => w.WriteU16(0xFFD9);
-
-        private static void WriteAPP0(BitWriter w)
+        /// <summary>
+        /// Build a lookup from symbol → (code, length) from the JPEG
+        /// standard bits/vals arrays.
+        /// </summary>
+        private static (int code, int length)[] BuildHuffmanTable(byte[] bits, byte[] vals)
         {
-            int len = 16;
-            w.WriteU16(0xFFE0);
-            w.WriteU16((ushort)len);
-            w.WriteBytes(System.Text.Encoding.ASCII.GetBytes("JFIF"));
-            w.WriteByte(0);
-            w.WriteByte(1);
-            w.WriteByte(1);
-            w.WriteByte(0);
-            w.WriteByte(1);
-            w.WriteByte(1);
-            w.WriteByte(1);
-            w.WriteByte(0);
-        }
+            // Maximum symbol value in JPEG is 0xFF (AC run/size byte)
+            var table = new (int code, int length)[256];
+            for (int i = 0; i < 256; i++)
+                table[i] = (0, 0);
 
-        private static void WriteDQT(BitWriter w, int[] qtLum, int[] qtChr)
-        {
-            for (int tq = 0; tq < 2; tq++)
+            int code = 0;
+            int vi = 0;
+            for (int len = 1; len <= 16; len++)
             {
-                int[] qt = tq == 0 ? qtLum : qtChr;
-                w.WriteU16(0xFFDB);
-                w.WriteU16((ushort)(67 + tq * 2));
-                w.WriteByte((byte)(tq << 4));
-                for (int i = 0; i < 64; i++)
-                    w.WriteByte((byte)qt[JpegConstants.Zigzag[i]]);
+                for (int j = 0; j < bits[len - 1]; j++)
+                {
+                    byte symbol = vals[vi++];
+                    table[symbol] = (code, len);
+                    code++;
+                }
+                code <<= 1;
             }
+            return table;
         }
 
-        private static void WriteSOF0(BitWriter w, int width, int height)
+        // ─── Marker writers ─────────────────────────────────────────
+
+        private static void WriteSOI(Stream s)
         {
-            w.WriteU16(0xFFC0);
-            w.WriteU16(17);
-            w.WriteByte(8);
-            w.WriteU16((ushort)height);
-            w.WriteU16((ushort)width);
-            w.WriteByte(3);
-            w.WriteByte(1);
-            w.WriteByte(0x22);
-            w.WriteByte(0);
-            w.WriteByte(2);
-            w.WriteByte(0x11);
-            w.WriteByte(1);
-            w.WriteByte(3);
-            w.WriteByte(0x11);
-            w.WriteByte(1);
-            w.WriteByte(4);
-            w.WriteByte(0x11);
-            w.WriteByte(1);
-            w.WriteByte(5);
-            w.WriteByte(0x11);
-            w.WriteByte(1);
+            s.WriteByte(0xFF); s.WriteByte(0xD8);
         }
 
-        private static void WriteDHT(BitWriter w)
+        private static void WriteEOI(Stream s)
         {
-            WriteDHTSegment(w, 0xFFC4, 0, JpegConstants.DcLumBits, JpegConstants.DcLumVal);
-            WriteDHTSegment(w, 0xFFC4, 1, JpegConstants.DcChrBits, JpegConstants.DcChrVal);
-            WriteDHTSegment(w, 0xFFC4, 0x10, JpegConstants.AcLumBits, JpegConstants.AcLumVal);
-            WriteDHTSegment(w, 0xFFC4, 0x11, JpegConstants.AcChrBits, JpegConstants.AcChrVal);
+            s.WriteByte(0xFF); s.WriteByte(0xD9);
         }
 
-        private static void WriteDHTSegment(BitWriter w, ushort marker, byte tableId,
-            byte[] bits, byte[] vals)
+        private static void WriteAPP0(Stream s)
+        {
+            WriteMarker(s, 0xFFE0);
+            WriteU16(s, 16);          // length
+            s.Write(System.Text.Encoding.ASCII.GetBytes("JFIF"), 0, 4);
+            s.WriteByte(0);           // null terminator
+            s.WriteByte(1);           // major version
+            s.WriteByte(1);           // minor version
+            s.WriteByte(0);           // units = no units
+            WriteU16(s, 1);           // X density
+            WriteU16(s, 1);           // Y density
+            s.WriteByte(0);           // thumbnail width
+            s.WriteByte(0);           // thumbnail height
+        }
+
+        private static void WriteDQT(Stream s, int tableId, int[] qt)
+        {
+            WriteMarker(s, 0xFFDB);
+            WriteU16(s, 67);          // length: 2 + 1 + 64 = 67
+            s.WriteByte((byte)tableId);
+            for (int i = 0; i < 64; i++)
+                s.WriteByte((byte)qt[JpegConstants.Zigzag[i]]);
+        }
+
+        private static void WriteSOF0(Stream s, int width, int height)
+        {
+            WriteMarker(s, 0xFFC0);
+            // Length = 2(len) + 1(prec) + 2(h) + 2(w) + 1(nComp) + 3*3 = 17
+            WriteU16(s, 17);
+
+            s.WriteByte(8);           // precision: 8 bits
+            WriteU16(s, (ushort)height);
+            WriteU16(s, (ushort)width);
+            s.WriteByte(3);           // 3 components
+
+            // Component 1: Y, sampling 1×1, quant table 0
+            s.WriteByte(1);           // component id
+            s.WriteByte(0x11);        // sampling factors: H=1, V=1
+            s.WriteByte(0);           // quant table id
+
+            // Component 2: Cb, sampling 1×1, quant table 1
+            s.WriteByte(2);
+            s.WriteByte(0x11);
+            s.WriteByte(1);
+
+            // Component 3: Cr, sampling 1×1, quant table 1
+            s.WriteByte(3);
+            s.WriteByte(0x11);
+            s.WriteByte(1);
+        }
+
+        private static void WriteDHT(Stream s, byte tableId, byte[] bits, byte[] vals)
         {
             int total = 0;
-            for (int i = 1; i <= 16; i++) total += bits[i - 1];
+            for (int i = 0; i < 16; i++) total += bits[i];
 
-            int len = 19 + total;
-            for (int i = 0; i < total; i++) len++;
-
-            w.WriteU16(marker);
-            w.WriteU16((ushort)len);
-            w.WriteByte(tableId);
-            for (int i = 0; i < 16; i++) w.WriteByte(bits[i]);
-            for (int i = 0; i < total; i++) w.WriteByte(vals[i]);
+            int length = 2 + 1 + 16 + total;  // length field + tableId + 16 bits counts + values
+            WriteMarker(s, 0xFFC4);
+            WriteU16(s, (ushort)length);
+            s.WriteByte(tableId);
+            for (int i = 0; i < 16; i++) s.WriteByte(bits[i]);
+            for (int i = 0; i < total; i++) s.WriteByte(vals[i]);
         }
 
-        private static void WriteSOS(BitWriter w, byte[] rgb, int imgW, int imgH,
-            int[] qtLum, int[] qtChr, BitWriter data)
+        private static void WriteSOS(Stream s, byte[] rgb, int imgW, int imgH,
+            int[] qtLum, int[] qtChr,
+            (int code, int length)[] dcLumCodes, (int code, int length)[] acLumCodes,
+            (int code, int length)[] dcChrCodes, (int code, int length)[] acChrCodes)
         {
+            // Write SOS marker header
+            WriteMarker(s, 0xFFDA);
+            WriteU16(s, 12);          // length: 2 + 1 + 3*(1+1) + 3 = 12
+            s.WriteByte(3);           // 3 components
+
+            s.WriteByte(1); s.WriteByte(0x00);  // Y:  DC table 0, AC table 0
+            s.WriteByte(2); s.WriteByte(0x11);  // Cb: DC table 1, AC table 1
+            s.WriteByte(3); s.WriteByte(0x11);  // Cr: DC table 1, AC table 1
+
+            s.WriteByte(0);   // Ss (start of spectral selection)
+            s.WriteByte(63);  // Se (end of spectral selection)
+            s.WriteByte(0);   // Ah/Al
+
+            // Encode scan data
+            var bitWriter = new JpegBitWriter(s);
+
             int blocksY = (imgH + 7) / 8;
             int blocksX = (imgW + 7) / 8;
-            int blocks = blocksX * blocksY;
-
             int stride = imgW * 3;
-            int maxBlocks = Math.Max(blocksX, blocksY);
 
             var yBlock = new float[64];
             var cbBlock = new float[64];
@@ -146,33 +205,22 @@ namespace Foundation.Imaging.Encoders
 
                     ForwardDct(yBlock, dctBlock);
                     int[] qBlock = Quantize(dctBlock, qtLum);
-                    lastDCY = EncodeBlock(data, qBlock, 0, lastDCY,
-                        JpegConstants.DcLumBits, JpegConstants.DcLumVal,
-                        JpegConstants.AcLumBits, JpegConstants.AcLumVal);
+                    lastDCY = EncodeBlock(bitWriter, qBlock, lastDCY, dcLumCodes, acLumCodes);
 
                     ForwardDct(cbBlock, dctBlock);
                     qBlock = Quantize(dctBlock, qtChr);
-                    lastDCCb = EncodeBlock(data, qBlock, 1, lastDCCb,
-                        JpegConstants.DcChrBits, JpegConstants.DcChrVal,
-                        JpegConstants.AcChrBits, JpegConstants.AcChrVal);
+                    lastDCCb = EncodeBlock(bitWriter, qBlock, lastDCCb, dcChrCodes, acChrCodes);
 
                     ForwardDct(crBlock, dctBlock);
                     qBlock = Quantize(dctBlock, qtChr);
-                    lastDCCr = EncodeBlock(data, qBlock, 1, lastDCCr,
-                        JpegConstants.DcChrBits, JpegConstants.DcChrVal,
-                        JpegConstants.AcChrBits, JpegConstants.AcChrVal);
+                    lastDCCr = EncodeBlock(bitWriter, qBlock, lastDCCr, dcChrCodes, acChrCodes);
                 }
             }
 
-            w.WriteU16(0xFFDA);
-            w.WriteU16((ushort)(12 + 3 * 2));
-            w.WriteByte(3);
-            w.WriteByte(1); w.WriteByte(0x00);
-            w.WriteByte(2); w.WriteByte(0x11);
-            w.WriteByte(3); w.WriteByte(0x11);
-            w.WriteByte(0);
-            w.WriteBytes(data.ToArray());
+            bitWriter.Flush();
         }
+
+        // ─── Block collection (RGB → YCbCr) ────────────────────────
 
         private static void CollectBlock(byte[] rgb, int imgW, int imgH,
             int bx, int by, int stride,
@@ -184,188 +232,222 @@ namespace Foundation.Imaging.Encoders
             {
                 int py = Math.Min(startY + row, imgH - 1);
                 int srcRow = py * stride;
-                int pSrcRow = Math.Max(0, py) * stride;
 
                 for (int col = 0; col < 8; col++)
                 {
                     int px = Math.Min(startX + col, imgW - 1);
-                    int si = pSrcRow + px * 3;
+                    int si = srcRow + px * 3;
 
                     float r = rgb[si];
                     float g = rgb[si + 1];
                     float b = rgb[si + 2];
 
-                    yBlock[row * 8 + col]  =  0.299f * r + 0.587f * g + 0.114f * b - 128f;
-                    cbBlock[row * 8 + col] = -0.168736f * r - 0.331264f * g + 0.5f * b;
-                    crBlock[row * 8 + col] =  0.5f * r - 0.418688f * g - 0.081312f * b;
+                    int idx = row * 8 + col;
+                    yBlock[idx]  =  0.299f * r + 0.587f * g + 0.114f * b - 128f;
+                    cbBlock[idx] = -0.168736f * r - 0.331264f * g + 0.5f * b;
+                    crBlock[idx] =  0.5f * r - 0.418688f * g - 0.081312f * b;
                 }
             }
         }
 
+        // ─── Forward DCT (AAN-style, separable) ────────────────────
+
         private static void ForwardDct(float[] input, float[] output)
         {
+            // Separable 2D DCT: row-transform then column-transform
             float[] tmp = new float[64];
 
-            for (int u = 0; u < 8; u++)
+            // Row transform
+            for (int row = 0; row < 8; row++)
+            {
+                int off = row * 8;
+                for (int u = 0; u < 8; u++)
+                {
+                    float sum = 0f;
+                    for (int x = 0; x < 8; x++)
+                        sum += input[off + x] * CosTable.Cos[(x << 3) | u];
+                    float cu = (u == 0) ? 0.70710678f : 1f;
+                    tmp[off + u] = sum * cu * 0.5f;
+                }
+            }
+
+            // Column transform
+            for (int col = 0; col < 8; col++)
             {
                 for (int v = 0; v < 8; v++)
                 {
                     float sum = 0f;
-                    for (int x = 0; x < 8; x++)
-                    {
-                        float rx = input[x * 8 + u];
-                        for (int y = 0; y < 8; y++)
-                            sum += rx * input[y * 8 + x] * CosTable.Cos[(x << 3) | u] * CosTable.Cos[(y << 3) | v];
-                    }
-                    tmp[v * 8 + u] = sum * 0.25f;
+                    for (int y = 0; y < 8; y++)
+                        sum += tmp[y * 8 + col] * CosTable.Cos[(y << 3) | v];
+                    float cv = (v == 0) ? 0.70710678f : 1f;
+                    output[v * 8 + col] = sum * cv * 0.5f;
                 }
             }
-
-            for (int i = 0; i < 64; i++)
-            {
-                float cu = (i & 7) == 0 ? 0.70710678f : 1f;
-                float cv = (i >= 56) ? 0.70710678f : 1f;
-                output[i] = cu * cv * tmp[i];
-            }
         }
+
+        // ─── Quantization ───────────────────────────────────────────
 
         private static int[] Quantize(float[] dct, int[] qt)
         {
             var result = new int[64];
             for (int i = 0; i < 64; i++)
             {
+                int zi = JpegConstants.Zigzag[i];
                 float v = dct[i] / qt[i];
-                result[JpegConstants.Zigzag[i]] = v > 0 ? (int)Math.Floor(v + 0.5f) : (int)Math.Ceiling(v - 0.5f);
+                result[zi] = v > 0 ? (int)Math.Floor(v + 0.5f) : (int)Math.Ceiling(v - 0.5f);
             }
             return result;
         }
 
-        private static int EncodeBlock(BitWriter w, int[] block, int tableType,
-            int lastDC,
-            byte[] dcBits, byte[] dcVals,
-            byte[] acBits, byte[] acVals)
-        {
-            int dc = block[0] - lastDC;
-            int dcSize = BitSize(dc);
-            EncodeHuffman(w, dcSize, dcBits, dcVals);
-            if (dcSize > 0) w.WriteBits(dc, dcSize);
+        // ─── Huffman encode one 8×8 block ───────────────────────────
 
-            int nz = 0;
+        private static int EncodeBlock(JpegBitWriter w, int[] block, int lastDC,
+            (int code, int length)[] dcCodes, (int code, int length)[] acCodes)
+        {
+            // DC coefficient (differential)
+            int dc = block[0] - lastDC;
+            int dcCat = BitCategory(dc);
+            var (dcCode, dcLen) = dcCodes[dcCat];
+            w.WriteBits(dcCode, dcLen);
+            if (dcCat > 0) w.WriteBits(MakeSignedBits(dc, dcCat), dcCat);
+
+            // AC coefficients (zigzag order, block[] is already zigzagged)
+            int lastNonZero = 0;
             for (int i = 63; i > 0; i--)
             {
-                if (block[JpegConstants.Zigzag[i]] != 0) { nz = i; break; }
+                if (block[i] != 0) { lastNonZero = i; break; }
             }
 
             int pos = 1;
-            while (pos <= nz)
+            while (pos <= lastNonZero)
             {
-                int zeroCount = 0;
-                while (pos <= nz && block[JpegConstants.Zigzag[pos]] == 0)
+                int zeroRun = 0;
+                while (pos <= lastNonZero && block[pos] == 0)
                 {
-                    zeroCount++;
+                    zeroRun++;
                     pos++;
                 }
-                if (pos > nz) break;
+                if (pos > lastNonZero) break;
 
-                int val = block[JpegConstants.Zigzag[pos]];
-                int valSize = BitSize(val);
-
-                while (zeroCount >= 16)
+                while (zeroRun >= 16)
                 {
-                    EncodeHuffman(w, 0xF0, acBits, acVals);
-                    zeroCount -= 16;
+                    var (zrlCode, zrlLen) = acCodes[0xF0];
+                    w.WriteBits(zrlCode, zrlLen);
+                    zeroRun -= 16;
                 }
 
-                EncodeHuffman(w, (zeroCount << 4) | valSize, acBits, acVals);
-                w.WriteBits(val, valSize);
+                int val = block[pos];
+                int acCat = BitCategory(val);
+                int symbol = (zeroRun << 4) | acCat;
+                var (acCode, acLen) = acCodes[symbol];
+                w.WriteBits(acCode, acLen);
+                w.WriteBits(MakeSignedBits(val, acCat), acCat);
                 pos++;
             }
 
-            if (nz < 63)
-                EncodeHuffman(w, 0, acBits, acVals);
+            // EOB if we ended before position 63
+            if (lastNonZero < 63)
+            {
+                var (eobCode, eobLen) = acCodes[0x00];
+                w.WriteBits(eobCode, eobLen);
+            }
 
             return block[0];
         }
 
-        private static int BitSize(int value)
+        /// <summary>
+        /// Returns the number of bits needed to represent |value| (JPEG category).
+        /// </summary>
+        private static int BitCategory(int value)
         {
             if (value == 0) return 0;
-            if (value < 0) value = ~value;
-            int bits = 1;
-            while ((value >>= 1) != 0) bits++;
+            if (value < 0) value = -value;
+            int bits = 0;
+            while (value > 0)
+            {
+                bits++;
+                value >>= 1;
+            }
             return bits;
         }
 
-        private static void EncodeHuffman(BitWriter w, int code,
-            byte[] bits, byte[] vals)
+        /// <summary>
+        /// Encode a signed value for JPEG: positive values are emitted directly,
+        /// negative values are ones'-complement (value - 1).
+        /// </summary>
+        private static int MakeSignedBits(int value, int category)
         {
-            int count = bits[0];
-            int i = 0;
-            while (count <= code)
-            {
-                i++;
-                count += bits[i];
-            }
-            w.WriteBits(vals[i], bits[i]);
+            if (value < 0)
+                return value + (1 << category) - 1;
+            return value;
+        }
+
+        // ─── Helpers ────────────────────────────────────────────────
+
+        private static void WriteMarker(Stream s, int marker)
+        {
+            s.WriteByte((byte)(marker >> 8));
+            s.WriteByte((byte)marker);
+        }
+
+        private static void WriteU16(Stream s, int value)
+        {
+            s.WriteByte((byte)(value >> 8));
+            s.WriteByte((byte)value);
+        }
+
+        private static void WriteU16(Stream s, ushort value)
+        {
+            s.WriteByte((byte)(value >> 8));
+            s.WriteByte((byte)value);
         }
     }
 
-    internal class BitWriter
+    // ─── Bit-stream writer for JPEG entropy coding ──────────────
+
+    internal class JpegBitWriter
     {
-        private readonly MemoryStream _ms = new MemoryStream();
+        private readonly Stream _stream;
         private int _buffer;
         private int _bitsInBuffer;
 
-        public void WriteByte(byte b) => _ms.WriteByte(b);
+        public JpegBitWriter(Stream stream)
+        {
+            _stream = stream;
+        }
 
         public void WriteBits(int value, int count)
         {
-            while (count > 0)
+            for (int i = count - 1; i >= 0; i--)
             {
-                int take = Math.Min(count, 8 - _bitsInBuffer);
-                _buffer = (_buffer << take) | ((value >> (count - take)) & ((1 << take) - 1));
-                _bitsInBuffer += take;
-                count -= take;
+                _buffer = (_buffer << 1) | ((value >> i) & 1);
+                _bitsInBuffer++;
                 if (_bitsInBuffer == 8)
                 {
-                    _ms.WriteByte((byte)_buffer);
+                    _stream.WriteByte((byte)_buffer);
                     if (_buffer == 0xFF)
-                        _ms.WriteByte(0);
+                        _stream.WriteByte(0x00);  // byte-stuff
                     _buffer = 0;
                     _bitsInBuffer = 0;
                 }
             }
         }
 
-        public void WriteU16(ushort v)
-        {
-            _ms.WriteByte((byte)(v >> 8));
-            _ms.WriteByte((byte)v);
-        }
-
-        public void WriteBytes(byte[] data)
-        {
-            for (int i = 0; i < data.Length; i++)
-            {
-                _ms.WriteByte(data[i]);
-                if (data[i] == 0xFF)
-                    _ms.WriteByte(0);
-            }
-        }
-
-        public byte[] ToArray()
+        public void Flush()
         {
             if (_bitsInBuffer > 0)
             {
-                int pad = 8 - _bitsInBuffer;
-                _buffer <<= pad;
-                _ms.WriteByte((byte)_buffer);
+                _buffer <<= (8 - _bitsInBuffer);
+                _stream.WriteByte((byte)_buffer);
                 if (_buffer == 0xFF)
-                    _ms.WriteByte(0);
+                    _stream.WriteByte(0x00);
+                _buffer = 0;
+                _bitsInBuffer = 0;
             }
-            return _ms.ToArray();
         }
     }
+
+    // ─── Cosine lookup table ────────────────────────────────────
 
     internal static class CosTable
     {
@@ -380,6 +462,8 @@ namespace Foundation.Imaging.Encoders
             return t;
         }
     }
+
+    // ─── JPEG constants ─────────────────────────────────────────
 
     internal static class JpegConstants
     {
@@ -416,11 +500,12 @@ namespace Foundation.Imaging.Encoders
             99, 99, 99, 99, 99, 99, 99, 99,
         };
 
+        // Standard Huffman tables (JPEG Annex K)
         public static readonly byte[] DcLumBits = { 0, 1, 5, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0 };
-        public static readonly byte[] DcLumVal  = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11 };
+        public static readonly byte[] DcLumVal  = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
         public static readonly byte[] DcChrBits = { 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0 };
-        public static readonly byte[] DcChrVal  = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11 };
+        public static readonly byte[] DcChrVal  = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
         public static readonly byte[] AcLumBits = { 0, 2, 1, 3, 3, 2, 4, 3, 5, 5, 4, 4, 0, 0, 1, 125 };
         public static readonly byte[] AcLumVal  = {
@@ -437,7 +522,7 @@ namespace Foundation.Imaging.Encoders
             0xF9,0xFA,
         };
 
-        public static readonly byte[] AcChrBits = { 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 0, 1, 125 };
+        public static readonly byte[] AcChrBits = { 0, 2, 1, 2, 4, 4, 3, 4, 7, 5, 4, 4, 0, 1, 2, 119 };
         public static readonly byte[] AcChrVal = {
             0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,
             0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,0xA1,0xB1,0xC1,0x09,0x23,0x33,0x52,0xF0,
