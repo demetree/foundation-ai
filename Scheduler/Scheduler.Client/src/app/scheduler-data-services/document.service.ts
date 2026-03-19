@@ -17,6 +17,7 @@ import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
 import { DocumentTypeData } from './document-type.service';
+import { DocumentFolderData } from './document-folder.service';
 import { InvoiceData } from './invoice.service';
 import { ReceiptData } from './receipt.service';
 import { ScheduledEventData } from './scheduled-event.service';
@@ -36,6 +37,7 @@ import { ConstituentData } from './constituent.service';
 import { TributeData } from './tribute.service';
 import { VolunteerProfileData } from './volunteer-profile.service';
 import { DocumentChangeHistoryService, DocumentChangeHistoryData } from './document-change-history.service';
+import { DocumentDocumentTagService, DocumentDocumentTagData } from './document-document-tag.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -48,8 +50,7 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
 export class DocumentQueryParameters {
     documentTypeId: bigint | number | null | undefined = null;
-    invoiceId: bigint | number | null | undefined = null;
-    receiptId: bigint | number | null | undefined = null;
+    documentFolderId: bigint | number | null | undefined = null;
     name: string | null | undefined = null;
     description: string | null | undefined = null;
     fileName: string | null | undefined = null;
@@ -58,6 +59,8 @@ export class DocumentQueryParameters {
     fileDataFileName: string | null | undefined = null;
     fileDataSize: bigint | number | null | undefined = null;
     fileDataMimeType: string | null | undefined = null;
+    invoiceId: bigint | number | null | undefined = null;
+    receiptId: bigint | number | null | undefined = null;
     scheduledEventId: bigint | number | null | undefined = null;
     financialTransactionId: bigint | number | null | undefined = null;
     contactId: bigint | number | null | undefined = null;
@@ -96,9 +99,8 @@ export class DocumentQueryParameters {
 //
 export class DocumentSubmitData {
     id!: bigint | number;
-    documentTypeId!: bigint | number;
-    invoiceId: bigint | number | null = null;
-    receiptId: bigint | number | null = null;
+    documentTypeId: bigint | number | null = null;
+    documentFolderId: bigint | number | null = null;
     name!: string;
     description: string | null = null;
     fileName!: string;
@@ -108,6 +110,8 @@ export class DocumentSubmitData {
     fileDataSize: bigint | number | null = null;
     fileDataData: string | null = null;
     fileDataMimeType: string | null = null;
+    invoiceId: bigint | number | null = null;
+    receiptId: bigint | number | null = null;
     scheduledEventId: bigint | number | null = null;
     financialTransactionId: bigint | number | null = null;
     contactId: bigint | number | null = null;
@@ -201,8 +205,7 @@ export class DocumentBasicListData {
 export class DocumentData {
     id!: bigint | number;
     documentTypeId!: bigint | number;
-    invoiceId!: bigint | number;
-    receiptId!: bigint | number;
+    documentFolderId!: bigint | number;
     name!: string;
     description!: string | null;
     fileName!: string;
@@ -212,6 +215,8 @@ export class DocumentData {
     fileDataSize!: bigint | number;
     fileDataData!: string | null;
     fileDataMimeType!: string | null;
+    invoiceId!: bigint | number;
+    receiptId!: bigint | number;
     scheduledEventId!: bigint | number;
     financialTransactionId!: bigint | number;
     contactId!: bigint | number;
@@ -243,6 +248,7 @@ export class DocumentData {
     constituent: ConstituentData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     contact: ContactData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     crew: CrewData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
+    documentFolder: DocumentFolderData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     documentType: DocumentTypeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     financialOffice: FinancialOfficeData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
     financialTransaction: FinancialTransactionData | null | undefined = null;          // Navigation property (populated when includeRelations=true)
@@ -264,6 +270,11 @@ export class DocumentData {
     private _documentChangeHistories: DocumentChangeHistoryData[] | null = null;
     private _documentChangeHistoriesPromise: Promise<DocumentChangeHistoryData[]> | null  = null;
     private _documentChangeHistoriesSubject = new BehaviorSubject<DocumentChangeHistoryData[] | null>(null);
+
+                
+    private _documentDocumentTags: DocumentDocumentTagData[] | null = null;
+    private _documentDocumentTagsPromise: Promise<DocumentDocumentTagData[]> | null  = null;
+    private _documentDocumentTagsSubject = new BehaviorSubject<DocumentDocumentTagData[] | null>(null);
 
                 
 
@@ -303,6 +314,31 @@ export class DocumentData {
             });
         }
         return this._documentChangeHistoriesCount$;
+    }
+
+
+
+    public DocumentDocumentTags$ = this._documentDocumentTagsSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documentDocumentTags === null && this._documentDocumentTagsPromise === null) {
+            this.loadDocumentDocumentTags(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentDocumentTagsCount$: Observable<bigint | number> | null = null;
+    public get DocumentDocumentTagsCount$(): Observable<bigint | number> {
+        if (this._documentDocumentTagsCount$ === null) {
+            this._documentDocumentTagsCount$ = DocumentDocumentTagService.Instance.GetDocumentDocumentTagsRowCount({documentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentDocumentTagsCount$;
     }
 
 
@@ -349,6 +385,11 @@ export class DocumentData {
      this._documentChangeHistoriesPromise = null;
      this._documentChangeHistoriesSubject.next(null);
      this._documentChangeHistoriesCount$ = null;
+
+     this._documentDocumentTags = null;
+     this._documentDocumentTagsPromise = null;
+     this._documentDocumentTagsSubject.next(null);
+     this._documentDocumentTagsCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -421,6 +462,71 @@ export class DocumentData {
 
     public get HasDocumentChangeHistories(): Promise<boolean> {
         return this.DocumentChangeHistories.then(documentChangeHistories => documentChangeHistories.length > 0);
+    }
+
+
+    /**
+     *
+     * Gets the DocumentDocumentTags for this Document.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.document.DocumentDocumentTags.then(documents => { ... })
+     *   or
+     *   await this.document.documents
+     *
+    */
+    public get DocumentDocumentTags(): Promise<DocumentDocumentTagData[]> {
+        if (this._documentDocumentTags !== null) {
+            return Promise.resolve(this._documentDocumentTags);
+        }
+
+        if (this._documentDocumentTagsPromise !== null) {
+            return this._documentDocumentTagsPromise;
+        }
+
+        // Start the load
+        this.loadDocumentDocumentTags();
+
+        return this._documentDocumentTagsPromise!;
+    }
+
+
+
+    private loadDocumentDocumentTags(): void {
+
+        this._documentDocumentTagsPromise = lastValueFrom(
+            DocumentService.Instance.GetDocumentDocumentTagsForDocument(this.id)
+        )
+        .then(DocumentDocumentTags => {
+            this._documentDocumentTags = DocumentDocumentTags ?? [];
+            this._documentDocumentTagsSubject.next(this._documentDocumentTags);
+            return this._documentDocumentTags;
+         })
+        .catch(err => {
+            this._documentDocumentTags = [];
+            this._documentDocumentTagsSubject.next(this._documentDocumentTags);
+            throw err;
+        })
+        .finally(() => {
+            this._documentDocumentTagsPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached DocumentDocumentTag. Call after mutations to force refresh.
+     */
+    public ClearDocumentDocumentTagsCache(): void {
+        this._documentDocumentTags = null;
+        this._documentDocumentTagsPromise = null;
+        this._documentDocumentTagsSubject.next(this._documentDocumentTags);      // Emit to observable
+    }
+
+    public get HasDocumentDocumentTags(): Promise<boolean> {
+        return this.DocumentDocumentTags.then(documentDocumentTags => documentDocumentTags.length > 0);
     }
 
 
@@ -503,6 +609,7 @@ export class DocumentService extends SecureEndpointBase {
         alertService: AlertService,
         private utilityService: UtilityService,
         private documentChangeHistoryService: DocumentChangeHistoryService,
+        private documentDocumentTagService: DocumentDocumentTagService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -561,8 +668,7 @@ export class DocumentService extends SecureEndpointBase {
 
         output.id = data.id;
         output.documentTypeId = data.documentTypeId;
-        output.invoiceId = data.invoiceId;
-        output.receiptId = data.receiptId;
+        output.documentFolderId = data.documentFolderId;
         output.name = data.name;
         output.description = data.description;
         output.fileName = data.fileName;
@@ -572,6 +678,8 @@ export class DocumentService extends SecureEndpointBase {
         output.fileDataSize = data.fileDataSize;
         output.fileDataData = data.fileDataData;
         output.fileDataMimeType = data.fileDataMimeType;
+        output.invoiceId = data.invoiceId;
+        output.receiptId = data.receiptId;
         output.scheduledEventId = data.scheduledEventId;
         output.financialTransactionId = data.financialTransactionId;
         output.contactId = data.contactId;
@@ -1005,6 +1113,16 @@ export class DocumentService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentDocumentTagsForDocument(documentId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentDocumentTagData[]> {
+        return this.documentDocumentTagService.GetDocumentDocumentTagList({
+            documentId: documentId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full DocumentData instance.
@@ -1044,6 +1162,10 @@ export class DocumentService extends SecureEndpointBase {
     (revived as any)._documentChangeHistoriesPromise = null;
     (revived as any)._documentChangeHistoriesSubject = new BehaviorSubject<DocumentChangeHistoryData[] | null>(null);
 
+    (revived as any)._documentDocumentTags = null;
+    (revived as any)._documentDocumentTagsPromise = null;
+    (revived as any)._documentDocumentTagsSubject = new BehaviorSubject<DocumentDocumentTagData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1066,6 +1188,18 @@ export class DocumentService extends SecureEndpointBase {
       );
 
     (revived as any)._documentChangeHistoriesCount$ = null;
+
+
+    (revived as any).DocumentDocumentTags$ = (revived as any)._documentDocumentTagsSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documentDocumentTags === null && (revived as any)._documentDocumentTagsPromise === null) {
+                (revived as any).loadDocumentDocumentTags();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentDocumentTagsCount$ = null;
 
 
 

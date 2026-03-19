@@ -12,8 +12,14 @@ USE `Scheduler`;
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
 -- DROP TABLE `EventResourceAssignmentChangeHistory`
 -- DROP TABLE `EventResourceAssignment`
+-- DROP TABLE `DocumentDocumentTagChangeHistory`
+-- DROP TABLE `DocumentDocumentTag`
 -- DROP TABLE `DocumentChangeHistory`
 -- DROP TABLE `Document`
+-- DROP TABLE `DocumentTagChangeHistory`
+-- DROP TABLE `DocumentTag`
+-- DROP TABLE `DocumentFolderChangeHistory`
+-- DROP TABLE `DocumentFolder`
 -- DROP TABLE `DocumentType`
 -- DROP TABLE `VolunteerGroupMemberChangeHistory`
 -- DROP TABLE `VolunteerGroupMember`
@@ -186,8 +192,14 @@ USE `Scheduler`;
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `EventResourceAssignment` DISABLE
+-- ALTER INDEX ALL ON `DocumentDocumentTagChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `DocumentDocumentTag` DISABLE
 -- ALTER INDEX ALL ON `DocumentChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `Document` DISABLE
+-- ALTER INDEX ALL ON `DocumentTagChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `DocumentTag` DISABLE
+-- ALTER INDEX ALL ON `DocumentFolderChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `DocumentFolder` DISABLE
 -- ALTER INDEX ALL ON `DocumentType` DISABLE
 -- ALTER INDEX ALL ON `VolunteerGroupMemberChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `VolunteerGroupMember` DISABLE
@@ -360,8 +372,14 @@ USE `Scheduler`;
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `EventResourceAssignment` REBUILD
+-- ALTER INDEX ALL ON `DocumentDocumentTagChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `DocumentDocumentTag` REBUILD
 -- ALTER INDEX ALL ON `DocumentChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `Document` REBUILD
+-- ALTER INDEX ALL ON `DocumentTagChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `DocumentTag` REBUILD
+-- ALTER INDEX ALL ON `DocumentFolderChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `DocumentFolder` REBUILD
 -- ALTER INDEX ALL ON `DocumentType` REBUILD
 -- ALTER INDEX ALL ON `VolunteerGroupMemberChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `VolunteerGroupMember` REBUILD
@@ -7086,9 +7104,149 @@ INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) V
 
 INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Background Check', 'Background Check supporting documentation (police etc..)', 6, 'f1a1b2c3-d4e5-6789-abcd-ef0123456706' );
 
-INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Insurance Certificate', 'Liability insurance certificate for event coverage', 7, 'f1a1b2c3-d4e5-6789-abcd-ef0123456707' );
+INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'License', 'License that certifies a resource for a function (driving etc..)', 7, 'f1a1b2c3-d4e5-6789-abcd-ef0123456707' );
+
+INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Insurance Certificate', 'Liability insurance certificate for event coverage', 8, 'f1a1b2c3-d4e5-6789-abcd-ef0123456708' );
+
+INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Meeting Minutes', 'The notes from a meeting', 9, 'f1a1b2c3-d4e5-6789-abcd-ef0123456709' );
 
 INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' );
+
+
+/*
+====================================================================================================
+ DOCUMENT FOLDER (File Manager Hierarchy)
+ Provides a hierarchical folder structure for organizing documents in an Explorer-like
+ file management interface.  Self-referencing via parentDocumentFolderId enables unlimited
+ nesting.  Documents link to folders via Document.documentFolderId (nullable — documents
+ without a folder are considered root-level / unfiled).
+
+ A unique constraint on (tenantGuid, parentDocumentFolderId, name) prevents duplicate
+ folder names at the same hierarchy level within a tenant.
+ ====================================================================================================
+*/
+CREATE TABLE `DocumentFolder`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(250) NOT NULL,		-- Folder display name.
+	`description` VARCHAR(500) NULL,		-- Optional folder description.
+	`parentDocumentFolderId` INT NULL,		-- Self-referencing FK for folder hierarchy. NULL = root-level folder.
+	`iconId` INT NULL,		-- Optional custom folder icon for UI display.
+	`color` VARCHAR(10) NULL,		-- Optional folder color for UI display.
+	`sequence` INT NOT NULL DEFAULT 0,		-- Display order among sibling folders.
+	`notes` TEXT NULL,		-- Optional notes about the folder.
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY (`parentDocumentFolderId`) REFERENCES `DocumentFolder`(`id`),		-- Foreign key to the DocumentFolder table.
+	FOREIGN KEY (`iconId`) REFERENCES `Icon`(`id`),		-- Foreign key to the Icon table.
+	UNIQUE `UC_DocumentFolder_tenantGuid_parentDocumentFolderId_name_Unique`( `tenantGuid`, `parentDocumentFolderId`, `name` ) 		-- Uniqueness enforced on the DocumentFolder table's tenantGuid and parentDocumentFolderId and name fields.
+);
+-- Index on the DocumentFolder table's tenantGuid field.
+CREATE INDEX `I_DocumentFolder_tenantGuid` ON `DocumentFolder` (`tenantGuid`);
+
+-- Index on the DocumentFolder table's tenantGuid,parentDocumentFolderId fields.
+CREATE INDEX `I_DocumentFolder_tenantGuid_parentDocumentFolderId` ON `DocumentFolder` (`tenantGuid`, `parentDocumentFolderId`);
+
+-- Index on the DocumentFolder table's tenantGuid,iconId fields.
+CREATE INDEX `I_DocumentFolder_tenantGuid_iconId` ON `DocumentFolder` (`tenantGuid`, `iconId`);
+
+-- Index on the DocumentFolder table's tenantGuid,active fields.
+CREATE INDEX `I_DocumentFolder_tenantGuid_active` ON `DocumentFolder` (`tenantGuid`, `active`);
+
+-- Index on the DocumentFolder table's tenantGuid,deleted fields.
+CREATE INDEX `I_DocumentFolder_tenantGuid_deleted` ON `DocumentFolder` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the DocumentFolder table.
+CREATE TABLE `DocumentFolderChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`documentFolderId` INT NOT NULL,		-- Link to the DocumentFolder table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`documentFolderId`) REFERENCES `DocumentFolder`(`id`)		-- Foreign key to the DocumentFolder table.
+);
+-- Index on the DocumentFolderChangeHistory table's tenantGuid field.
+CREATE INDEX `I_DocumentFolderChangeHistory_tenantGuid` ON `DocumentFolderChangeHistory` (`tenantGuid`);
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_DocumentFolderChangeHistory_tenantGuid_versionNumber` ON `DocumentFolderChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_DocumentFolderChangeHistory_tenantGuid_timeStamp` ON `DocumentFolderChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_DocumentFolderChangeHistory_tenantGuid_userId` ON `DocumentFolderChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,documentFolderId fields.
+CREATE INDEX `I_DocumentFolderChangeHistory_tenantGuid_documentFolderId` ON `DocumentFolderChangeHistory` (`tenantGuid`, `documentFolderId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+====================================================================================================
+ DOCUMENT TAG (Flexible Tagging)
+ Lightweight tagging system for documents.  Tags complement DocumentType classification
+ and folder organization by allowing multiple user-defined labels on each document
+ (e.g., 'urgent', '2026 budget', 'board meeting', 'needs review').
+
+ Tags are tenant-scoped and linked to documents via the DocumentDocumentTag junction table.
+ ====================================================================================================
+*/
+CREATE TABLE `DocumentTag`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`name` VARCHAR(100) NOT NULL,
+	`description` VARCHAR(500) NULL,
+	`color` VARCHAR(10) NULL,		-- Tag badge color for UI display.
+	`sequence` INT NULL,		-- Sequence to use for sorting.
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_DocumentTag_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the DocumentTag table's tenantGuid and name fields.
+);
+-- Index on the DocumentTag table's tenantGuid field.
+CREATE INDEX `I_DocumentTag_tenantGuid` ON `DocumentTag` (`tenantGuid`);
+
+-- Index on the DocumentTag table's tenantGuid,name fields.
+CREATE INDEX `I_DocumentTag_tenantGuid_name` ON `DocumentTag` (`tenantGuid`, `name`);
+
+-- Index on the DocumentTag table's tenantGuid,active fields.
+CREATE INDEX `I_DocumentTag_tenantGuid_active` ON `DocumentTag` (`tenantGuid`, `active`);
+
+-- Index on the DocumentTag table's tenantGuid,deleted fields.
+CREATE INDEX `I_DocumentTag_tenantGuid_deleted` ON `DocumentTag` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the DocumentTag table.
+CREATE TABLE `DocumentTagChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`documentTagId` INT NOT NULL,		-- Link to the DocumentTag table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`documentTagId`) REFERENCES `DocumentTag`(`id`)		-- Foreign key to the DocumentTag table.
+);
+-- Index on the DocumentTagChangeHistory table's tenantGuid field.
+CREATE INDEX `I_DocumentTagChangeHistory_tenantGuid` ON `DocumentTagChangeHistory` (`tenantGuid`);
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_DocumentTagChangeHistory_tenantGuid_versionNumber` ON `DocumentTagChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_DocumentTagChangeHistory_tenantGuid_timeStamp` ON `DocumentTagChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_DocumentTagChangeHistory_tenantGuid_userId` ON `DocumentTagChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,documentTagId fields.
+CREATE INDEX `I_DocumentTagChangeHistory_tenantGuid_documentTagId` ON `DocumentTagChangeHistory` (`tenantGuid`, `documentTagId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 /*
@@ -7096,10 +7254,11 @@ INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) V
  DOCUMENT (Attachment Storage)
  Stores file attachments (images, PDFs, scans) with metadata and binary content.
  Uses polymorphic nullable FKs to link to entities across the system.
+ Documents can optionally be organized into folders via documentFolderId.
 
  DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
- This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
- Azure Blob Storage or similar, storing only a reference URL here.
+ This is pragmatic for small-to-medium volumes.  The server-side IFileStorageService abstraction
+ allows future migration to Azure Blob Storage or similar without changing the API surface.
 
  The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
  ====================================================================================================
@@ -7107,9 +7266,8 @@ INSERT INTO `DocumentType` ( `name`, `description`, `sequence`, `objectGuid` ) V
 CREATE TABLE `Document`(
 	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
 	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	`documentTypeId` INT NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
-	`invoiceId` INT NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
-	`receiptId` INT NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
+	`documentTypeId` INT NULL,		-- Optional type classification (Rental Agreement, Receipt, Photo, etc.). Nullable because general-purpose files in the file manager may not need a type.
+	`documentFolderId` INT NULL,		-- Optional folder placement. NULL = root level / unfiled document.
 	`name` VARCHAR(250) NOT NULL,		-- Display name for the document.
 	`description` VARCHAR(500) NULL,		-- Optional description of the document.
 	`fileName` VARCHAR(500) NOT NULL,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
@@ -7119,6 +7277,8 @@ CREATE TABLE `Document`(
 	`fileDataSize` BIGINT NULL,		-- Part of the binary data field setup
 	`fileDataData` BLOB NULL,		-- Part of the binary data field setup
 	`fileDataMimeType` VARCHAR(100) NULL,		-- Part of the binary data field setup
+	`invoiceId` INT NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
+	`receiptId` INT NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
 	`scheduledEventId` INT NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
 	`financialTransactionId` INT NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
 	`contactId` INT NULL,		-- Optional link to a Contact.
@@ -7146,6 +7306,7 @@ CREATE TABLE `Document`(
 	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY (`documentTypeId`) REFERENCES `DocumentType`(`id`),		-- Foreign key to the DocumentType table.
+	FOREIGN KEY (`documentFolderId`) REFERENCES `DocumentFolder`(`id`),		-- Foreign key to the DocumentFolder table.
 	FOREIGN KEY (`invoiceId`) REFERENCES `Invoice`(`id`),		-- Foreign key to the Invoice table.
 	FOREIGN KEY (`receiptId`) REFERENCES `Receipt`(`id`),		-- Foreign key to the Receipt table.
 	FOREIGN KEY (`scheduledEventId`) REFERENCES `ScheduledEvent`(`id`),		-- Foreign key to the ScheduledEvent table.
@@ -7170,6 +7331,9 @@ CREATE INDEX `I_Document_tenantGuid` ON `Document` (`tenantGuid`);
 
 -- Index on the Document table's tenantGuid,documentTypeId fields.
 CREATE INDEX `I_Document_tenantGuid_documentTypeId` ON `Document` (`tenantGuid`, `documentTypeId`);
+
+-- Index on the Document table's tenantGuid,documentFolderId fields.
+CREATE INDEX `I_Document_tenantGuid_documentFolderId` ON `Document` (`tenantGuid`, `documentFolderId`);
 
 -- Index on the Document table's tenantGuid,invoiceId fields.
 CREATE INDEX `I_Document_tenantGuid_invoiceId` ON `Document` (`tenantGuid`, `invoiceId`);
@@ -7257,6 +7421,63 @@ CREATE INDEX `I_DocumentChangeHistory_tenantGuid_userId` ON `DocumentChangeHisto
 
 -- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
 CREATE INDEX `I_DocumentChangeHistory_tenantGuid_documentId` ON `DocumentChangeHistory` (`tenantGuid`, `documentId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+-- Junction table linking Documents to DocumentTags. Enables many-to-many tagging of documents.
+CREATE TABLE `DocumentDocumentTag`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	`documentId` INT NOT NULL,		-- The document being tagged.
+	`documentTagId` INT NOT NULL,		-- The tag applied to the document.
+	FOREIGN KEY (`documentId`) REFERENCES `Document`(`id`),		-- Foreign key to the Document table.
+	FOREIGN KEY (`documentTagId`) REFERENCES `DocumentTag`(`id`),		-- Foreign key to the DocumentTag table.
+	UNIQUE `UC_DocumentDocumentTag_tenantGuid_documentId_documentTagId_Unique`( `tenantGuid`, `documentId`, `documentTagId` ) 		-- Uniqueness enforced on the DocumentDocumentTag table's tenantGuid and documentId and documentTagId fields.
+);
+-- Index on the DocumentDocumentTag table's tenantGuid field.
+CREATE INDEX `I_DocumentDocumentTag_tenantGuid` ON `DocumentDocumentTag` (`tenantGuid`);
+
+-- Index on the DocumentDocumentTag table's tenantGuid,active fields.
+CREATE INDEX `I_DocumentDocumentTag_tenantGuid_active` ON `DocumentDocumentTag` (`tenantGuid`, `active`);
+
+-- Index on the DocumentDocumentTag table's tenantGuid,deleted fields.
+CREATE INDEX `I_DocumentDocumentTag_tenantGuid_deleted` ON `DocumentDocumentTag` (`tenantGuid`, `deleted`);
+
+-- Index on the DocumentDocumentTag table's tenantGuid,documentId fields.
+CREATE INDEX `I_DocumentDocumentTag_tenantGuid_documentId` ON `DocumentDocumentTag` (`tenantGuid`, `documentId`);
+
+-- Index on the DocumentDocumentTag table's tenantGuid,documentTagId fields.
+CREATE INDEX `I_DocumentDocumentTag_tenantGuid_documentTagId` ON `DocumentDocumentTag` (`tenantGuid`, `documentTagId`);
+
+
+-- The change history for records from the DocumentDocumentTag table.
+CREATE TABLE `DocumentDocumentTagChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`documentDocumentTagId` INT NOT NULL,		-- Link to the DocumentDocumentTag table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`documentDocumentTagId`) REFERENCES `DocumentDocumentTag`(`id`)		-- Foreign key to the DocumentDocumentTag table.
+);
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid field.
+CREATE INDEX `I_DocumentDocumentTagChangeHistory_tenantGuid` ON `DocumentDocumentTagChangeHistory` (`tenantGuid`);
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_DocumentDocumentTagChangeHistory_tenantGuid_versionNumber` ON `DocumentDocumentTagChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_DocumentDocumentTagChangeHistory_tenantGuid_timeStamp` ON `DocumentDocumentTagChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_DocumentDocumentTagChangeHistory_tenantGuid_userId` ON `DocumentDocumentTagChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,documentDocumentTagId fields.
+CREATE INDEX `I_DocumentDocumentTagChangeHistory_tenantGuid_documentDocumentTa` ON `DocumentDocumentTagChangeHistory` (`tenantGuid`, `documentDocumentTagId`, `versionNumber`, `timeStamp`, `userId`);
 
 
 -- Links resources, crews, or volunteer groups o events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration.  only one of crewId, volunteerGroupId, resourceId should be populated per row (business rule in app layer).

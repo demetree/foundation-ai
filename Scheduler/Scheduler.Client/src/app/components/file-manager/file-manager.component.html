@@ -1,0 +1,397 @@
+<!--
+  file-manager.component.html
+
+  AI-Developed — This file was significantly developed with AI assistance.
+
+  Explorer-like file manager with folder tree, document grid, search bar,
+  upload (drag-and-drop), context menus, and breadcrumbs.
+-->
+
+<div class="file-manager-container" id="file-manager-container">
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       TOOLBAR
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="fm-toolbar">
+    <div class="fm-toolbar-left">
+      <h5 class="fm-title mb-0">
+        <i class="fa-solid fa-folder-tree me-2"></i> File Manager
+      </h5>
+    </div>
+
+    <div class="fm-toolbar-center">
+      <!-- Breadcrumbs -->
+      <nav class="fm-breadcrumbs" aria-label="Folder navigation">
+        <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId">
+          <i class="fa-solid fa-house-chimney"></i>
+          <span class="ms-1">Root</span>
+        </a>
+        <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+          <i class="fa-solid fa-chevron-right fm-crumb-sep"></i>
+          <a (click)="navigateToFolder(crumb.id)" class="fm-crumb" [class.active]="last">
+            {{ crumb.name }}
+          </a>
+        </ng-container>
+      </nav>
+    </div>
+
+    <div class="fm-toolbar-right">
+      <!-- Search -->
+      <div class="fm-search-wrapper">
+        <i class="fa-solid fa-magnifying-glass fm-search-icon"></i>
+        <input type="text" class="fm-search-input" placeholder="Search files…"
+               [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+               (input)="onSearchInputChange()" id="fm-search-input" />
+        <button *ngIf="searchQuery" class="fm-search-clear" (click)="clearSearch()" title="Clear search">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       MAIN SPLIT PANEL
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="fm-main">
+
+    <!-- ─── LEFT: Folder Tree ──────────────────────────────────── -->
+    <div class="fm-sidebar" [class.collapsed]="sidebarCollapsed">
+      <div class="fm-sidebar-header">
+        <span *ngIf="!sidebarCollapsed" class="fm-sidebar-title">Folders</span>
+        <button class="fm-sidebar-toggle" (click)="sidebarCollapsed = !sidebarCollapsed"
+                [title]="sidebarCollapsed ? 'Show folders' : 'Hide folders'">
+          <i class="fa-solid" [ngClass]="sidebarCollapsed ? 'fa-angle-right' : 'fa-angle-left'"></i>
+        </button>
+      </div>
+
+      <div class="fm-folder-tree" *ngIf="!sidebarCollapsed">
+        <!-- Root -->
+        <div class="fm-folder-node" [class.active]="!currentFolderId && !isSearching"
+             (click)="navigateToFolder(null)"
+             (contextmenu)="onFolderContextMenu($event, null)">
+          <i class="fa-solid fa-house-chimney fm-folder-icon"></i>
+          <span class="fm-folder-name">Root</span>
+        </div>
+
+        <!-- Recursive folder tree -->
+        <ng-container *ngFor="let folder of folderTree">
+          <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: folder }"></ng-container>
+        </ng-container>
+      </div>
+
+      <!-- New Folder button -->
+      <div class="fm-sidebar-footer" *ngIf="!sidebarCollapsed">
+        <button class="btn btn-sm btn-outline-primary w-100" (click)="showNewFolderDialog()">
+          <i class="fa-solid fa-folder-plus me-1"></i> New Folder
+        </button>
+      </div>
+    </div>
+
+
+    <!-- ─── RIGHT: File Grid / Content ─────────────────────────── -->
+    <div class="fm-content"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event)"
+         [class.drag-active]="isDragOver">
+
+      <!-- Action bar -->
+      <div class="fm-action-bar">
+        <button class="btn btn-sm btn-primary" (click)="triggerUpload()">
+          <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload
+        </button>
+        <button class="btn btn-sm btn-outline-secondary ms-2" (click)="showNewFolderDialog()">
+          <i class="fa-solid fa-folder-plus me-1"></i> New Folder
+        </button>
+        <button class="btn btn-sm btn-outline-secondary ms-2" (click)="refreshCurrentView()">
+          <i class="fa-solid fa-arrows-rotate me-1"></i> Refresh
+        </button>
+
+        <div class="ms-auto d-flex align-items-center">
+          <span class="text-muted small me-3" *ngIf="!isSearching">
+            {{ documents.length }} file{{ documents.length !== 1 ? 's' : '' }}
+            <span *ngIf="childFolders.length > 0">, {{ childFolders.length }} folder{{ childFolders.length !== 1 ? 's' : '' }}</span>
+          </span>
+          <span class="text-muted small me-3" *ngIf="isSearching">
+            {{ documents.length }} result{{ documents.length !== 1 ? 's' : '' }}
+          </span>
+
+          <!-- View toggle -->
+          <div class="btn-group btn-group-sm">
+            <button class="btn" [class.btn-secondary]="viewMode === 'grid'" [class.btn-outline-secondary]="viewMode !== 'grid'"
+                    (click)="viewMode = 'grid'" title="Grid view">
+              <i class="fa-solid fa-grip"></i>
+            </button>
+            <button class="btn" [class.btn-secondary]="viewMode === 'list'" [class.btn-outline-secondary]="viewMode !== 'list'"
+                    (click)="viewMode = 'list'" title="List view">
+              <i class="fa-solid fa-list"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drop zone overlay -->
+      <div class="fm-drop-overlay" *ngIf="isDragOver">
+        <div class="fm-drop-overlay-inner">
+          <i class="fa-solid fa-cloud-arrow-up fa-3x mb-2"></i>
+          <p class="mb-0">Drop files here to upload</p>
+        </div>
+      </div>
+
+      <!-- Loading spinner -->
+      <div class="fm-loading" *ngIf="isLoading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <!-- Search mode indicator -->
+      <div class="fm-search-indicator" *ngIf="isSearching">
+        <i class="fa-solid fa-magnifying-glass me-2"></i>
+        Search results for "<strong>{{ searchQuery }}</strong>"
+        <button class="btn btn-sm btn-link ms-2" (click)="clearSearch()">Clear</button>
+      </div>
+
+      <!-- ─── Sub-folders shown as cards (when not searching) -->
+      <div class="fm-subfolder-row" *ngIf="!isSearching && childFolders.length > 0 && !isLoading">
+        <div class="fm-subfolder-card" *ngFor="let folder of childFolders"
+             (click)="navigateToFolder(folder.id)"
+             (contextmenu)="onFolderContextMenu($event, folder)">
+          <i class="fa-solid fa-folder fm-subfolder-icon" [style.color]="folder.color || '#f0ad4e'"></i>
+          <span class="fm-subfolder-name">{{ folder.name }}</span>
+        </div>
+      </div>
+
+      <!-- ─── Grid View ─────────────────────────────────────── -->
+      <div class="fm-file-grid" *ngIf="viewMode === 'grid' && !isLoading">
+        <div class="fm-file-card" *ngFor="let doc of documents"
+             (click)="selectDocument(doc)"
+             (dblclick)="downloadFile(doc)"
+             (contextmenu)="onDocContextMenu($event, doc)"
+             [class.selected]="selectedDocument?.id === doc.id">
+
+          <div class="fm-file-card-icon">
+            <i class="fa-solid" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
+               [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
+          </div>
+          <div class="fm-file-card-name" [title]="doc.fileName">{{ doc.fileName }}</div>
+          <div class="fm-file-card-meta">{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }}</div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="fm-empty" *ngIf="documents.length === 0 && childFolders.length === 0">
+          <i class="fa-solid fa-folder-open fa-3x mb-3 text-muted"></i>
+          <p class="text-muted">This folder is empty</p>
+          <p class="text-muted small">Drag and drop files here, or click Upload</p>
+        </div>
+      </div>
+
+      <!-- ─── List View ─────────────────────────────────────── -->
+      <div class="fm-file-list" *ngIf="viewMode === 'list' && !isLoading">
+        <table class="table table-sm table-hover mb-0">
+          <thead>
+            <tr>
+              <th style="width: 40px;"></th>
+              <th>Name</th>
+              <th style="width: 100px;">Size</th>
+              <th style="width: 160px;">Uploaded</th>
+              <th style="width: 120px;">Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let doc of documents"
+                (click)="selectDocument(doc)"
+                (dblclick)="downloadFile(doc)"
+                (contextmenu)="onDocContextMenu($event, doc)"
+                [class.table-active]="selectedDocument?.id === doc.id"
+                class="fm-file-row">
+              <td class="text-center">
+                <i class="fa-solid" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
+                   [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
+              </td>
+              <td>{{ doc.fileName }}</td>
+              <td class="text-muted">{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }}</td>
+              <td class="text-muted">{{ doc.uploadedDate | date:'short' }}</td>
+              <td class="text-muted text-truncate" style="max-width: 120px;" [title]="doc.mimeType">
+                {{ doc.mimeType | slice:0:20 }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty state for list view -->
+        <div class="fm-empty" *ngIf="documents.length === 0 && childFolders.length === 0">
+          <i class="fa-solid fa-folder-open fa-3x mb-3 text-muted"></i>
+          <p class="text-muted">This folder is empty</p>
+          <p class="text-muted small">Drag and drop files here, or click Upload</p>
+        </div>
+      </div>
+
+    </div>
+    <!-- end fm-content -->
+
+
+    <!-- ─── RIGHT DETAIL PANEL (shown when a file is selected) ─── -->
+    <div class="fm-detail-panel" *ngIf="selectedDocument" [@slidePanel]>
+      <div class="fm-detail-header">
+        <h6 class="mb-0 text-truncate" [title]="selectedDocument.fileName">{{ selectedDocument.fileName }}</h6>
+        <button class="btn-close btn-close-white btn-sm ms-2" (click)="selectedDocument = null"></button>
+      </div>
+
+      <div class="fm-detail-body">
+        <!-- Preview area -->
+        <div class="fm-detail-preview">
+          <i class="fa-solid fa-4x" [ngClass]="fileManagerService.getFileIcon(selectedDocument.mimeType)"
+             [style.color]="fileManagerService.getFileColor(selectedDocument.mimeType)"></i>
+        </div>
+
+        <!-- Properties -->
+        <div class="fm-detail-props">
+          <div class="fm-prop-row">
+            <span class="fm-prop-label">Name</span>
+            <span class="fm-prop-value">{{ selectedDocument.name }}</span>
+          </div>
+          <div class="fm-prop-row">
+            <span class="fm-prop-label">File Name</span>
+            <span class="fm-prop-value">{{ selectedDocument.fileName }}</span>
+          </div>
+          <div class="fm-prop-row">
+            <span class="fm-prop-label">Size</span>
+            <span class="fm-prop-value">{{ fileManagerService.formatFileSize(selectedDocument.fileSizeBytes) }}</span>
+          </div>
+          <div class="fm-prop-row">
+            <span class="fm-prop-label">Type</span>
+            <span class="fm-prop-value">{{ selectedDocument.mimeType }}</span>
+          </div>
+          <div class="fm-prop-row">
+            <span class="fm-prop-label">Uploaded</span>
+            <span class="fm-prop-value">{{ selectedDocument.uploadedDate | date:'medium' }}</span>
+          </div>
+          <div class="fm-prop-row" *ngIf="selectedDocument.uploadedBy">
+            <span class="fm-prop-label">By</span>
+            <span class="fm-prop-value">{{ selectedDocument.uploadedBy }}</span>
+          </div>
+          <div class="fm-prop-row" *ngIf="selectedDocument.description">
+            <span class="fm-prop-label">Description</span>
+            <span class="fm-prop-value">{{ selectedDocument.description }}</span>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="fm-detail-actions">
+          <button class="btn btn-sm btn-primary w-100 mb-2" (click)="downloadFile(selectedDocument)">
+            <i class="fa-solid fa-download me-1"></i> Download
+          </button>
+          <button class="btn btn-sm btn-outline-danger w-100" (click)="deleteFile(selectedDocument)">
+            <i class="fa-solid fa-trash me-1"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- end fm-main -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       CONTEXT MENUS (rendered off-canvas, positioned via JS)
+       ═══════════════════════════════════════════════════════════════════ -->
+
+  <!-- Document context menu -->
+  <div class="fm-context-menu" *ngIf="showDocContext" [style.left.px]="contextX" [style.top.px]="contextY"
+       (mouseleave)="showDocContext = false">
+    <ul>
+      <li (click)="downloadFile(contextDocument!)"><i class="fa-solid fa-download me-2"></i> Download</li>
+      <li (click)="renameDocument(contextDocument!)"><i class="fa-solid fa-pen me-2"></i> Rename</li>
+      <li (click)="deleteFile(contextDocument!)"><i class="fa-solid fa-trash me-2"></i> Delete</li>
+    </ul>
+  </div>
+
+  <!-- Folder context menu -->
+  <div class="fm-context-menu" *ngIf="showFolderContext" [style.left.px]="contextX" [style.top.px]="contextY"
+       (mouseleave)="showFolderContext = false">
+    <ul>
+      <li (click)="showNewFolderDialog(contextFolder ?? undefined)"><i class="fa-solid fa-folder-plus me-2"></i> New Subfolder</li>
+      <li *ngIf="contextFolder" (click)="renameFolder(contextFolder)"><i class="fa-solid fa-pen me-2"></i> Rename</li>
+      <li *ngIf="contextFolder" (click)="deleteFolderAction(contextFolder)"><i class="fa-solid fa-trash me-2"></i> Delete</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       NEW FOLDER DIALOG (simple modal)
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="fm-modal-backdrop" *ngIf="showNewFolderModal" (click)="showNewFolderModal = false"></div>
+  <div class="fm-modal" *ngIf="showNewFolderModal">
+    <div class="fm-modal-header">
+      <h6 class="mb-0">{{ editingFolder ? 'Rename Folder' : 'New Folder' }}</h6>
+      <button class="btn-close btn-close-white btn-sm" (click)="showNewFolderModal = false"></button>
+    </div>
+    <div class="fm-modal-body">
+      <input type="text" class="form-control" placeholder="Folder name" [(ngModel)]="newFolderName"
+             (keyup.enter)="confirmNewFolder()" autofocus id="fm-new-folder-input" />
+    </div>
+    <div class="fm-modal-footer">
+      <button class="btn btn-sm btn-secondary me-2" (click)="showNewFolderModal = false">Cancel</button>
+      <button class="btn btn-sm btn-primary" (click)="confirmNewFolder()" [disabled]="!newFolderName.trim()">
+        {{ editingFolder ? 'Save' : 'Create' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       RENAME DOCUMENT DIALOG
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="fm-modal-backdrop" *ngIf="showRenameDocModal" (click)="showRenameDocModal = false"></div>
+  <div class="fm-modal" *ngIf="showRenameDocModal">
+    <div class="fm-modal-header">
+      <h6 class="mb-0">Rename Document</h6>
+      <button class="btn-close btn-close-white btn-sm" (click)="showRenameDocModal = false"></button>
+    </div>
+    <div class="fm-modal-body">
+      <input type="text" class="form-control" placeholder="Document name" [(ngModel)]="renameDocName"
+             (keyup.enter)="confirmRenameDoc()" autofocus id="fm-rename-doc-input" />
+    </div>
+    <div class="fm-modal-footer">
+      <button class="btn btn-sm btn-secondary me-2" (click)="showRenameDocModal = false">Cancel</button>
+      <button class="btn btn-sm btn-primary" (click)="confirmRenameDoc()" [disabled]="!renameDocName.trim()">
+        Save
+      </button>
+    </div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" #fileUploadInput multiple (change)="onFilesSelected($event)" style="display: none;" />
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     RECURSIVE FOLDER TREE TEMPLATE
+     ═══════════════════════════════════════════════════════════════════ -->
+<ng-template #folderNodeTpl let-folder>
+  <div class="fm-folder-node"
+       [class.active]="currentFolderId === folder.id"
+       [style.paddingLeft.px]="16 + (folder.level || 0) * 16"
+       (click)="navigateToFolder(folder.id)"
+       (contextmenu)="onFolderContextMenu($event, folder)">
+
+    <!-- Expand arrow (only if has children) -->
+    <i *ngIf="folder.children && folder.children.length > 0"
+       class="fa-solid fm-tree-arrow"
+       [ngClass]="folder.expanded ? 'fa-caret-down' : 'fa-caret-right'"
+       (click)="toggleFolderExpand($event, folder)"></i>
+    <span *ngIf="!folder.children || folder.children.length === 0" class="fm-tree-arrow-spacer"></span>
+
+    <i class="fa-solid fm-folder-icon" [ngClass]="folder.expanded && folder.children?.length ? 'fa-folder-open' : 'fa-folder'"
+       [style.color]="folder.color || '#f0ad4e'"></i>
+    <span class="fm-folder-name">{{ folder.name }}</span>
+  </div>
+
+  <!-- Recursively render children when expanded -->
+  <ng-container *ngIf="folder.expanded && folder.children">
+    <ng-container *ngFor="let child of folder.children">
+      <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: child }"></ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>

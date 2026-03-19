@@ -42,6 +42,7 @@ import { ConstituentService, ConstituentData } from './constituent.service';
 import { TributeService, TributeData } from './tribute.service';
 import { VolunteerProfileService, VolunteerProfileData } from './volunteer-profile.service';
 import { VolunteerGroupService, VolunteerGroupData } from './volunteer-group.service';
+import { DocumentFolderService, DocumentFolderData } from './document-folder.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -261,6 +262,11 @@ export class IconData {
     private _volunteerGroups: VolunteerGroupData[] | null = null;
     private _volunteerGroupsPromise: Promise<VolunteerGroupData[]> | null  = null;
     private _volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
+
+                
+    private _documentFolders: DocumentFolderData[] | null = null;
+    private _documentFoldersPromise: Promise<DocumentFolderData[]> | null  = null;
+    private _documentFoldersSubject = new BehaviorSubject<DocumentFolderData[] | null>(null);
 
                 
 
@@ -920,6 +926,31 @@ export class IconData {
 
 
 
+    public DocumentFolders$ = this._documentFoldersSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documentFolders === null && this._documentFoldersPromise === null) {
+            this.loadDocumentFolders(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentFoldersCount$: Observable<bigint | number> | null = null;
+    public get DocumentFoldersCount$(): Observable<bigint | number> {
+        if (this._documentFoldersCount$ === null) {
+            this._documentFoldersCount$ = DocumentFolderService.Instance.GetDocumentFoldersRowCount({iconId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentFoldersCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -1087,6 +1118,11 @@ export class IconData {
      this._volunteerGroupsPromise = null;
      this._volunteerGroupsSubject.next(null);
      this._volunteerGroupsCount$ = null;
+
+     this._documentFolders = null;
+     this._documentFoldersPromise = null;
+     this._documentFoldersSubject.next(null);
+     this._documentFoldersCount$ = null;
 
   }
 
@@ -2784,6 +2820,71 @@ export class IconData {
     }
 
 
+    /**
+     *
+     * Gets the DocumentFolders for this Icon.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.icon.DocumentFolders.then(icons => { ... })
+     *   or
+     *   await this.icon.icons
+     *
+    */
+    public get DocumentFolders(): Promise<DocumentFolderData[]> {
+        if (this._documentFolders !== null) {
+            return Promise.resolve(this._documentFolders);
+        }
+
+        if (this._documentFoldersPromise !== null) {
+            return this._documentFoldersPromise;
+        }
+
+        // Start the load
+        this.loadDocumentFolders();
+
+        return this._documentFoldersPromise!;
+    }
+
+
+
+    private loadDocumentFolders(): void {
+
+        this._documentFoldersPromise = lastValueFrom(
+            IconService.Instance.GetDocumentFoldersForIcon(this.id)
+        )
+        .then(DocumentFolders => {
+            this._documentFolders = DocumentFolders ?? [];
+            this._documentFoldersSubject.next(this._documentFolders);
+            return this._documentFolders;
+         })
+        .catch(err => {
+            this._documentFolders = [];
+            this._documentFoldersSubject.next(this._documentFolders);
+            throw err;
+        })
+        .finally(() => {
+            this._documentFoldersPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached DocumentFolder. Call after mutations to force refresh.
+     */
+    public ClearDocumentFoldersCache(): void {
+        this._documentFolders = null;
+        this._documentFoldersPromise = null;
+        this._documentFoldersSubject.next(this._documentFolders);      // Emit to observable
+    }
+
+    public get HasDocumentFolders(): Promise<boolean> {
+        return this.DocumentFolders.then(documentFolders => documentFolders.length > 0);
+    }
+
+
 
 
     /**
@@ -2845,6 +2946,7 @@ export class IconService extends SecureEndpointBase {
         private tributeService: TributeService,
         private volunteerProfileService: VolunteerProfileService,
         private volunteerGroupService: VolunteerGroupService,
+        private documentFolderService: DocumentFolderService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -3463,6 +3565,16 @@ export class IconService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentFoldersForIcon(iconId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentFolderData[]> {
+        return this.documentFolderService.GetDocumentFolderList({
+            iconId: iconId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full IconData instance.
@@ -3601,6 +3713,10 @@ export class IconService extends SecureEndpointBase {
     (revived as any)._volunteerGroups = null;
     (revived as any)._volunteerGroupsPromise = null;
     (revived as any)._volunteerGroupsSubject = new BehaviorSubject<VolunteerGroupData[] | null>(null);
+
+    (revived as any)._documentFolders = null;
+    (revived as any)._documentFoldersPromise = null;
+    (revived as any)._documentFoldersSubject = new BehaviorSubject<DocumentFolderData[] | null>(null);
 
 
     //
@@ -3924,6 +4040,18 @@ export class IconService extends SecureEndpointBase {
       );
 
     (revived as any)._volunteerGroupsCount$ = null;
+
+
+    (revived as any).DocumentFolders$ = (revived as any)._documentFoldersSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documentFolders === null && (revived as any)._documentFoldersPromise === null) {
+                (revived as any).loadDocumentFolders();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentFoldersCount$ = null;
 
 
 

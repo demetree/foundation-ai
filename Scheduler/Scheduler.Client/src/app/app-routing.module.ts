@@ -57,6 +57,7 @@ import { ContactCustomListingComponent } from './components/contact-custom/conta
 import { ContactCustomDetailComponent } from './components/contact-custom/contact-custom-detail/contact-custom-detail.component';
 
 import { DocumentCustomListingComponent } from './components/document-custom/document-custom-listing/document-custom-listing.component';
+import { FileManagerComponent } from './components/file-manager/file-manager.component';
 
 
 //
@@ -237,6 +238,18 @@ import { DocumentListingComponent } from './scheduler-data-components/document/d
 import { DocumentDetailComponent } from './scheduler-data-components/document/document-detail/document-detail.component';
 import { DocumentChangeHistoryListingComponent } from './scheduler-data-components/document-change-history/document-change-history-listing/document-change-history-listing.component';
 import { DocumentChangeHistoryDetailComponent } from './scheduler-data-components/document-change-history/document-change-history-detail/document-change-history-detail.component';
+import { DocumentDocumentTagListingComponent } from './scheduler-data-components/document-document-tag/document-document-tag-listing/document-document-tag-listing.component';
+import { DocumentDocumentTagDetailComponent } from './scheduler-data-components/document-document-tag/document-document-tag-detail/document-document-tag-detail.component';
+import { DocumentDocumentTagChangeHistoryListingComponent } from './scheduler-data-components/document-document-tag-change-history/document-document-tag-change-history-listing/document-document-tag-change-history-listing.component';
+import { DocumentDocumentTagChangeHistoryDetailComponent } from './scheduler-data-components/document-document-tag-change-history/document-document-tag-change-history-detail/document-document-tag-change-history-detail.component';
+import { DocumentFolderListingComponent } from './scheduler-data-components/document-folder/document-folder-listing/document-folder-listing.component';
+import { DocumentFolderDetailComponent } from './scheduler-data-components/document-folder/document-folder-detail/document-folder-detail.component';
+import { DocumentFolderChangeHistoryListingComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-listing/document-folder-change-history-listing.component';
+import { DocumentFolderChangeHistoryDetailComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-detail/document-folder-change-history-detail.component';
+import { DocumentTagListingComponent } from './scheduler-data-components/document-tag/document-tag-listing/document-tag-listing.component';
+import { DocumentTagDetailComponent } from './scheduler-data-components/document-tag/document-tag-detail/document-tag-detail.component';
+import { DocumentTagChangeHistoryListingComponent } from './scheduler-data-components/document-tag-change-history/document-tag-change-history-listing/document-tag-change-history-listing.component';
+import { DocumentTagChangeHistoryDetailComponent } from './scheduler-data-components/document-tag-change-history/document-tag-change-history-detail/document-tag-change-history-detail.component';
 import { DocumentTypeListingComponent } from './scheduler-data-components/document-type/document-type-listing/document-type-listing.component';
 import { DocumentTypeDetailComponent } from './scheduler-data-components/document-type/document-type-detail/document-type-detail.component';
 import { EventCalendarListingComponent } from './scheduler-data-components/event-calendar/event-calendar-listing/event-calendar-listing.component';
@@ -619,6 +632,7 @@ const routes: Routes = [
   // Document custom routes
   //
   { path: 'documents', component: DocumentCustomListingComponent, canActivate: [AuthGuard], title: 'Documents' },
+  { path: 'filemanager', component: FileManagerComponent, canActivate: [AuthGuard], title: 'File Manager' },
 
 
   { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
@@ -894,6 +908,36 @@ const routes: Routes = [
   {path: 'documentchangehistories/:documentChangeHistoryId', component: DocumentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Change History' },
   {path: 'documentchangehistory/:documentChangeHistoryId', component: DocumentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Change History' },
   {path: 'documentchangehistory',  redirectTo: 'documentchangehistories'},
+  {path: 'documentdocumenttags', component: DocumentDocumentTagListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Document Tags' },
+  {path: 'documentdocumenttags/new', component: DocumentDocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Document Tag' },
+  {path: 'documentdocumenttags/:documentDocumentTagId', component: DocumentDocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Document Tag' },
+  {path: 'documentdocumenttag/:documentDocumentTagId', component: DocumentDocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Document Tag' },
+  {path: 'documentdocumenttag',  redirectTo: 'documentdocumenttags'},
+  {path: 'documentdocumenttagchangehistories', component: DocumentDocumentTagChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Document Tag Change Histories' },
+  {path: 'documentdocumenttagchangehistories/new', component: DocumentDocumentTagChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Document Tag Change History' },
+  {path: 'documentdocumenttagchangehistories/:documentDocumentTagChangeHistoryId', component: DocumentDocumentTagChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Document Tag Change History' },
+  {path: 'documentdocumenttagchangehistory/:documentDocumentTagChangeHistoryId', component: DocumentDocumentTagChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Document Tag Change History' },
+  {path: 'documentdocumenttagchangehistory',  redirectTo: 'documentdocumenttagchangehistories'},
+  {path: 'documentfolders', component: DocumentFolderListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Folders' },
+  {path: 'documentfolders/new', component: DocumentFolderDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Folder' },
+  {path: 'documentfolders/:documentFolderId', component: DocumentFolderDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Folder' },
+  {path: 'documentfolder/:documentFolderId', component: DocumentFolderDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Folder' },
+  {path: 'documentfolder',  redirectTo: 'documentfolders'},
+  {path: 'documentfolderchangehistories', component: DocumentFolderChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Folder Change Histories' },
+  {path: 'documentfolderchangehistories/new', component: DocumentFolderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Folder Change History' },
+  {path: 'documentfolderchangehistories/:documentFolderChangeHistoryId', component: DocumentFolderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Folder Change History' },
+  {path: 'documentfolderchangehistory/:documentFolderChangeHistoryId', component: DocumentFolderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Folder Change History' },
+  {path: 'documentfolderchangehistory',  redirectTo: 'documentfolderchangehistories'},
+  {path: 'documenttags', component: DocumentTagListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Tags' },
+  {path: 'documenttags/new', component: DocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Tag' },
+  {path: 'documenttags/:documentTagId', component: DocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Tag' },
+  {path: 'documenttag/:documentTagId', component: DocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Tag' },
+  {path: 'documenttag',  redirectTo: 'documenttags'},
+  {path: 'documenttagchangehistories', component: DocumentTagChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Tag Change Histories' },
+  {path: 'documenttagchangehistories/new', component: DocumentTagChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Tag Change History' },
+  {path: 'documenttagchangehistories/:documentTagChangeHistoryId', component: DocumentTagChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Tag Change History' },
+  {path: 'documenttagchangehistory/:documentTagChangeHistoryId', component: DocumentTagChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Tag Change History' },
+  {path: 'documenttagchangehistory',  redirectTo: 'documenttagchangehistories'},
   {path: 'documenttypes', component: DocumentTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Types' },
   {path: 'documenttypes/new', component: DocumentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Type' },
   {path: 'documenttypes/:documentTypeId', component: DocumentTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Type' },

@@ -1,0 +1,73 @@
+<div class="add-document-document-tag-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-document-document-tag-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Document Document Tag Change History" 
+        *ngIf="userIsSchedulerDocumentDocumentTagChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #documentDocumentTagChangeHistoryModal let-modal>
+   <div class="modal-header document-document-tag-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="documentDocumentTagChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Document Document Tag Change History' : 'Add Document Document Tag Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body document-document-tag-change-history-modal-body">
+      <form [formGroup]="documentDocumentTagChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('documentDocumentTagId')">
+                <label for="DocumentDocumentTagChangeHistory-documentDocumentTagId" id="label-DocumentDocumentTagChangeHistory-documentDocumentTagId"><span class="text-danger">*</span>Document Document Tag</label>
+                <select id="DocumentDocumentTagChangeHistory-documentDocumentTagId" formControlName="documentDocumentTagId" class="form-select document-document-tag-change-history-select" [disabled]="!userIsSchedulerDocumentDocumentTagChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Document Document Tag</option>
+                    <option *ngFor="let documentDocumentTag of documentDocumentTags$ | async" [ngValue]="documentDocumentTag.id">{{documentDocumentTag.id}}</option>
+                </select>
+                <div *ngIf="documentDocumentTagChangeHistoryForm.get('documentDocumentTagId')?.invalid && documentDocumentTagChangeHistoryForm.get('documentDocumentTagId')?.touched" class="text-danger">
+                    Document Document Tag is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="DocumentDocumentTagChangeHistory-versionNumber" id="label-DocumentDocumentTagChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="DocumentDocumentTagChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control document-document-tag-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="DocumentDocumentTagChangeHistory-timeStamp" id="label-DocumentDocumentTagChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="DocumentDocumentTagChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control document-document-tag-change-history-input" [disabled]="!userIsSchedulerDocumentDocumentTagChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="documentDocumentTagChangeHistoryForm.get('timeStamp')?.invalid && documentDocumentTagChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="DocumentDocumentTagChangeHistory-userId" id="label-DocumentDocumentTagChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="DocumentDocumentTagChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control document-document-tag-change-history-input" [disabled]="!userIsSchedulerDocumentDocumentTagChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="documentDocumentTagChangeHistoryForm.get('userId')?.invalid && documentDocumentTagChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="DocumentDocumentTagChangeHistory-data" id="label-DocumentDocumentTagChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="DocumentDocumentTagChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control document-document-tag-change-history-input" [disabled]="!userIsSchedulerDocumentDocumentTagChangeHistoryWriter()"></textarea>
+                <div *ngIf="documentDocumentTagChangeHistoryForm.get('data')?.invalid && documentDocumentTagChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer document-document-tag-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Document Document Tag Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !documentDocumentTagChangeHistoryForm.valid || documentDocumentTagChangeHistoryForm.pristine  || userIsSchedulerDocumentDocumentTagChangeHistoryWriter() == false " ngbTooltip="Save the Document Document Tag Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Document Document Tag Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

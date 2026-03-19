@@ -312,10 +312,8 @@ namespace Foundation.Scheduler.Database
 		public class DocumentDTO
 		{
 			public Int32 id { get; set; }
-			[Required]
-			public Int32 documentTypeId { get; set; }
-			public Int32? invoiceId { get; set; }
-			public Int32? receiptId { get; set; }
+			public Int32? documentTypeId { get; set; }
+			public Int32? documentFolderId { get; set; }
 			[Required]
 			public String name { get; set; }
 			public String description { get; set; }
@@ -329,6 +327,8 @@ namespace Foundation.Scheduler.Database
 			public Int64? fileDataSize { get; set; }
 			public Byte[] fileDataData { get; set; }
 			public String fileDataMimeType { get; set; }
+			public Int32? invoiceId { get; set; }
+			public Int32? receiptId { get; set; }
 			public Int32? scheduledEventId { get; set; }
 			public Int32? financialTransactionId { get; set; }
 			public Int32? contactId { get; set; }
@@ -372,6 +372,7 @@ namespace Foundation.Scheduler.Database
 			public Constituent.ConstituentDTO constituent { get; set; }
 			public Contact.ContactDTO contact { get; set; }
 			public Crew.CrewDTO crew { get; set; }
+			public DocumentFolder.DocumentFolderDTO documentFolder { get; set; }
 			public DocumentType.DocumentTypeDTO documentType { get; set; }
 			public FinancialOffice.FinancialOfficeDTO financialOffice { get; set; }
 			public FinancialTransaction.FinancialTransactionDTO financialTransaction { get; set; }
@@ -402,8 +403,7 @@ namespace Foundation.Scheduler.Database
 			{
 				id = this.id,
 				documentTypeId = this.documentTypeId,
-				invoiceId = this.invoiceId,
-				receiptId = this.receiptId,
+				documentFolderId = this.documentFolderId,
 				name = this.name,
 				description = this.description,
 				fileName = this.fileName,
@@ -413,6 +413,8 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = this.fileDataSize,
 				fileDataData = this.fileDataData,
 				fileDataMimeType = this.fileDataMimeType,
+				invoiceId = this.invoiceId,
+				receiptId = this.receiptId,
 				scheduledEventId = this.scheduledEventId,
 				financialTransactionId = this.financialTransactionId,
 				contactId = this.contactId,
@@ -479,8 +481,7 @@ namespace Foundation.Scheduler.Database
 			{
 				id = this.id,
 				documentTypeId = this.documentTypeId,
-				invoiceId = this.invoiceId,
-				receiptId = this.receiptId,
+				documentFolderId = this.documentFolderId,
 				name = this.name,
 				description = this.description,
 				fileName = this.fileName,
@@ -490,6 +491,8 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = this.fileDataSize,
 				fileDataData = this.fileDataData,
 				fileDataMimeType = this.fileDataMimeType,
+				invoiceId = this.invoiceId,
+				receiptId = this.receiptId,
 				scheduledEventId = this.scheduledEventId,
 				financialTransactionId = this.financialTransactionId,
 				contactId = this.contactId,
@@ -521,6 +524,7 @@ namespace Foundation.Scheduler.Database
 				constituent = this.constituent?.ToDTO(),
 				contact = this.contact?.ToDTO(),
 				crew = this.crew?.ToDTO(),
+				documentFolder = this.documentFolder?.ToDTO(),
 				documentType = this.documentType?.ToDTO(),
 				financialOffice = this.financialOffice?.ToDTO(),
 				financialTransaction = this.financialTransaction?.ToDTO(),
@@ -575,8 +579,7 @@ namespace Foundation.Scheduler.Database
 			{
 				id = dto.id,
 				documentTypeId = dto.documentTypeId,
-				invoiceId = dto.invoiceId,
-				receiptId = dto.receiptId,
+				documentFolderId = dto.documentFolderId,
 				name = dto.name,
 				description = dto.description,
 				fileName = dto.fileName,
@@ -586,6 +589,8 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = dto.fileDataSize,
 				fileDataData = dto.fileDataData,
 				fileDataMimeType = dto.fileDataMimeType,
+				invoiceId = dto.invoiceId,
+				receiptId = dto.receiptId,
 				scheduledEventId = dto.scheduledEventId,
 				financialTransactionId = dto.financialTransactionId,
 				contactId = dto.contactId,
@@ -629,8 +634,7 @@ namespace Foundation.Scheduler.Database
 			}
 
 			this.documentTypeId = dto.documentTypeId;
-			this.invoiceId = dto.invoiceId;
-			this.receiptId = dto.receiptId;
+			this.documentFolderId = dto.documentFolderId;
 			this.name = dto.name;
 			this.description = dto.description;
 			this.fileName = dto.fileName;
@@ -640,6 +644,8 @@ namespace Foundation.Scheduler.Database
 			this.fileDataSize = dto.fileDataSize;
 			this.fileDataData = dto.fileDataData;
 			this.fileDataMimeType = dto.fileDataMimeType;
+			this.invoiceId = dto.invoiceId;
+			this.receiptId = dto.receiptId;
 			this.scheduledEventId = dto.scheduledEventId;
 			this.financialTransactionId = dto.financialTransactionId;
 			this.contactId = dto.contactId;
@@ -689,8 +695,7 @@ namespace Foundation.Scheduler.Database
 				id = this.id,
 				tenantGuid = this.tenantGuid,
 				documentTypeId = this.documentTypeId,
-				invoiceId = this.invoiceId,
-				receiptId = this.receiptId,
+				documentFolderId = this.documentFolderId,
 				name = this.name,
 				description = this.description,
 				fileName = this.fileName,
@@ -700,6 +705,8 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = this.fileDataSize,
 				fileDataData = this.fileDataData,
 				fileDataMimeType = this.fileDataMimeType,
+				invoiceId = this.invoiceId,
+				receiptId = this.receiptId,
 				scheduledEventId = this.scheduledEventId,
 				financialTransactionId = this.financialTransactionId,
 				contactId = this.contactId,
@@ -780,8 +787,7 @@ namespace Foundation.Scheduler.Database
 			return new {
 				id = document.id,
 				documentTypeId = document.documentTypeId,
-				invoiceId = document.invoiceId,
-				receiptId = document.receiptId,
+				documentFolderId = document.documentFolderId,
 				name = document.name,
 				description = document.description,
 				fileName = document.fileName,
@@ -791,6 +797,8 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = document.fileDataSize,
 				fileDataData = document.fileDataData,
 				fileDataMimeType = document.fileDataMimeType,
+				invoiceId = document.invoiceId,
+				receiptId = document.receiptId,
 				scheduledEventId = document.scheduledEventId,
 				financialTransactionId = document.financialTransactionId,
 				contactId = document.contactId,
@@ -838,8 +846,7 @@ namespace Foundation.Scheduler.Database
 			return new {
 				id = document.id,
 				documentTypeId = document.documentTypeId,
-				invoiceId = document.invoiceId,
-				receiptId = document.receiptId,
+				documentFolderId = document.documentFolderId,
 				name = document.name,
 				description = document.description,
 				fileName = document.fileName,
@@ -849,6 +856,8 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = document.fileDataSize,
 				fileDataData = document.fileDataData,
 				fileDataMimeType = document.fileDataMimeType,
+				invoiceId = document.invoiceId,
+				receiptId = document.receiptId,
 				scheduledEventId = document.scheduledEventId,
 				financialTransactionId = document.financialTransactionId,
 				contactId = document.contactId,
@@ -880,6 +889,7 @@ namespace Foundation.Scheduler.Database
 				constituent = Constituent.CreateMinimalAnonymous(document.constituent),
 				contact = Contact.CreateMinimalAnonymous(document.contact),
 				crew = Crew.CreateMinimalAnonymous(document.crew),
+				documentFolder = DocumentFolder.CreateMinimalAnonymous(document.documentFolder),
 				documentType = DocumentType.CreateMinimalAnonymous(document.documentType),
 				financialOffice = FinancialOffice.CreateMinimalAnonymous(document.financialOffice),
 				financialTransaction = FinancialTransaction.CreateMinimalAnonymous(document.financialTransaction),

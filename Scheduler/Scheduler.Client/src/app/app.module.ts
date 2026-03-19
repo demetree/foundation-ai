@@ -290,6 +290,7 @@ import { SchedulingTargetCustomDetailComponent } from './components/scheduling-t
 //
 import { DocumentCustomListingComponent } from './components/document-custom/document-custom-listing/document-custom-listing.component';
 import { DocumentCustomTableComponent } from './components/document-custom/document-custom-table/document-custom-table.component';
+import { FileManagerComponent } from './components/file-manager/file-manager.component';
 
 
 //
@@ -385,6 +386,12 @@ import { CurrencyService } from './scheduler-data-services/currency.service';
 import { DependencyTypeService } from './scheduler-data-services/dependency-type.service';
 import { DocumentService } from './scheduler-data-services/document.service';
 import { DocumentChangeHistoryService } from './scheduler-data-services/document-change-history.service';
+import { DocumentDocumentTagService } from './scheduler-data-services/document-document-tag.service';
+import { DocumentDocumentTagChangeHistoryService } from './scheduler-data-services/document-document-tag-change-history.service';
+import { DocumentFolderService } from './scheduler-data-services/document-folder.service';
+import { DocumentFolderChangeHistoryService } from './scheduler-data-services/document-folder-change-history.service';
+import { DocumentTagService } from './scheduler-data-services/document-tag.service';
+import { DocumentTagChangeHistoryService } from './scheduler-data-services/document-tag-change-history.service';
 import { DocumentTypeService } from './scheduler-data-services/document-type.service';
 import { EventCalendarService } from './scheduler-data-services/event-calendar.service';
 import { EventChargeService } from './scheduler-data-services/event-charge.service';
@@ -725,6 +732,30 @@ import { DocumentChangeHistoryListingComponent } from './scheduler-data-componen
 import { DocumentChangeHistoryAddEditComponent } from './scheduler-data-components/document-change-history/document-change-history-add-edit/document-change-history-add-edit.component';
 import { DocumentChangeHistoryDetailComponent } from './scheduler-data-components/document-change-history/document-change-history-detail/document-change-history-detail.component';
 import { DocumentChangeHistoryTableComponent } from './scheduler-data-components/document-change-history/document-change-history-table/document-change-history-table.component';
+import { DocumentDocumentTagListingComponent } from './scheduler-data-components/document-document-tag/document-document-tag-listing/document-document-tag-listing.component';
+import { DocumentDocumentTagAddEditComponent } from './scheduler-data-components/document-document-tag/document-document-tag-add-edit/document-document-tag-add-edit.component';
+import { DocumentDocumentTagDetailComponent } from './scheduler-data-components/document-document-tag/document-document-tag-detail/document-document-tag-detail.component';
+import { DocumentDocumentTagTableComponent } from './scheduler-data-components/document-document-tag/document-document-tag-table/document-document-tag-table.component';
+import { DocumentDocumentTagChangeHistoryListingComponent } from './scheduler-data-components/document-document-tag-change-history/document-document-tag-change-history-listing/document-document-tag-change-history-listing.component';
+import { DocumentDocumentTagChangeHistoryAddEditComponent } from './scheduler-data-components/document-document-tag-change-history/document-document-tag-change-history-add-edit/document-document-tag-change-history-add-edit.component';
+import { DocumentDocumentTagChangeHistoryDetailComponent } from './scheduler-data-components/document-document-tag-change-history/document-document-tag-change-history-detail/document-document-tag-change-history-detail.component';
+import { DocumentDocumentTagChangeHistoryTableComponent } from './scheduler-data-components/document-document-tag-change-history/document-document-tag-change-history-table/document-document-tag-change-history-table.component';
+import { DocumentFolderListingComponent } from './scheduler-data-components/document-folder/document-folder-listing/document-folder-listing.component';
+import { DocumentFolderAddEditComponent } from './scheduler-data-components/document-folder/document-folder-add-edit/document-folder-add-edit.component';
+import { DocumentFolderDetailComponent } from './scheduler-data-components/document-folder/document-folder-detail/document-folder-detail.component';
+import { DocumentFolderTableComponent } from './scheduler-data-components/document-folder/document-folder-table/document-folder-table.component';
+import { DocumentFolderChangeHistoryListingComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-listing/document-folder-change-history-listing.component';
+import { DocumentFolderChangeHistoryAddEditComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-add-edit/document-folder-change-history-add-edit.component';
+import { DocumentFolderChangeHistoryDetailComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-detail/document-folder-change-history-detail.component';
+import { DocumentFolderChangeHistoryTableComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-table/document-folder-change-history-table.component';
+import { DocumentTagListingComponent } from './scheduler-data-components/document-tag/document-tag-listing/document-tag-listing.component';
+import { DocumentTagAddEditComponent } from './scheduler-data-components/document-tag/document-tag-add-edit/document-tag-add-edit.component';
+import { DocumentTagDetailComponent } from './scheduler-data-components/document-tag/document-tag-detail/document-tag-detail.component';
+import { DocumentTagTableComponent } from './scheduler-data-components/document-tag/document-tag-table/document-tag-table.component';
+import { DocumentTagChangeHistoryListingComponent } from './scheduler-data-components/document-tag-change-history/document-tag-change-history-listing/document-tag-change-history-listing.component';
+import { DocumentTagChangeHistoryAddEditComponent } from './scheduler-data-components/document-tag-change-history/document-tag-change-history-add-edit/document-tag-change-history-add-edit.component';
+import { DocumentTagChangeHistoryDetailComponent } from './scheduler-data-components/document-tag-change-history/document-tag-change-history-detail/document-tag-change-history-detail.component';
+import { DocumentTagChangeHistoryTableComponent } from './scheduler-data-components/document-tag-change-history/document-tag-change-history-table/document-tag-change-history-table.component';
 import { DocumentTypeListingComponent } from './scheduler-data-components/document-type/document-type-listing/document-type-listing.component';
 import { DocumentTypeAddEditComponent } from './scheduler-data-components/document-type/document-type-add-edit/document-type-add-edit.component';
 import { DocumentTypeDetailComponent } from './scheduler-data-components/document-type/document-type-detail/document-type-detail.component';
@@ -1460,6 +1491,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     DocumentCustomListingComponent,
     DocumentCustomTableComponent,
+    FileManagerComponent,
 
 
     //
@@ -1677,6 +1709,30 @@ DocumentChangeHistoryListingComponent,
 DocumentChangeHistoryAddEditComponent,
 DocumentChangeHistoryDetailComponent,
 DocumentChangeHistoryTableComponent,
+DocumentDocumentTagListingComponent,
+DocumentDocumentTagAddEditComponent,
+DocumentDocumentTagDetailComponent,
+DocumentDocumentTagTableComponent,
+DocumentDocumentTagChangeHistoryListingComponent,
+DocumentDocumentTagChangeHistoryAddEditComponent,
+DocumentDocumentTagChangeHistoryDetailComponent,
+DocumentDocumentTagChangeHistoryTableComponent,
+DocumentFolderListingComponent,
+DocumentFolderAddEditComponent,
+DocumentFolderDetailComponent,
+DocumentFolderTableComponent,
+DocumentFolderChangeHistoryListingComponent,
+DocumentFolderChangeHistoryAddEditComponent,
+DocumentFolderChangeHistoryDetailComponent,
+DocumentFolderChangeHistoryTableComponent,
+DocumentTagListingComponent,
+DocumentTagAddEditComponent,
+DocumentTagDetailComponent,
+DocumentTagTableComponent,
+DocumentTagChangeHistoryListingComponent,
+DocumentTagChangeHistoryAddEditComponent,
+DocumentTagChangeHistoryDetailComponent,
+DocumentTagChangeHistoryTableComponent,
 DocumentTypeListingComponent,
 DocumentTypeAddEditComponent,
 DocumentTypeDetailComponent,
@@ -2300,6 +2356,12 @@ CurrencyService,
 DependencyTypeService,
 DocumentService,
 DocumentChangeHistoryService,
+DocumentDocumentTagService,
+DocumentDocumentTagChangeHistoryService,
+DocumentFolderService,
+DocumentFolderChangeHistoryService,
+DocumentTagService,
+DocumentTagChangeHistoryService,
 DocumentTypeService,
 EventCalendarService,
 EventChargeService,

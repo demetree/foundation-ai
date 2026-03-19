@@ -92,9 +92,7 @@ export class DocumentCustomTableComponent implements OnInit, OnChanges {
       { key: 'mimeType', label: 'MIME Type', width: undefined },
       { key: 'uploadedDate', label: 'Uploaded', width: undefined, template: 'date' },
       { key: 'uploadedBy', label: 'Uploaded By', width: undefined },
-      { key: 'contact.firstName', label: 'Contact', width: undefined, template: 'link', linkPath: ['/contact', 'contactId'] },
-      { key: 'resource.name', label: 'Resource', width: undefined, template: 'link', linkPath: ['/resource', 'resourceId'] },
-      { key: 'scheduledEvent.name', label: 'Event', width: undefined, template: 'link', linkPath: ['/schedule', 'scheduledEventId'] },
+      { key: '_linkedTo', label: 'Linked To', width: undefined, template: 'linkedTo' },
       { key: 'notes', label: 'Notes', width: undefined },
     ];
 
@@ -181,6 +179,11 @@ export class DocumentCustomTableComponent implements OnInit, OnChanges {
           'contact.lastName',
           'resource.name',
           'scheduledEvent.name',
+          'client.name',
+          'office.name',
+          'crew.name',
+          'schedulingTarget.name',
+          'volunteerProfile.resource.name',
         ];
 
         result = result.filter((document) =>
@@ -294,5 +297,32 @@ export class DocumentCustomTableComponent implements OnInit, OnChanges {
   // First "prominent" column for mobile view
   get prominentColumn(): TableColumn | null {
     return this.columns.find(col => col.mobile === 'prominent') || null;
+  }
+
+
+  // Resolve the first populated FK link into a { label, name, route } tuple
+  public getLinkedTo(doc: DocumentData): { label: string; name: string; route: any[] } | null {
+    const checks: { nav: string; nameField: string; label: string; route: string; fkField: string }[] = [
+      { nav: 'contact', nameField: 'firstName', label: 'Contact', route: '/contact', fkField: 'contactId' },
+      { nav: 'resource', nameField: 'name', label: 'Resource', route: '/resource', fkField: 'resourceId' },
+      { nav: 'scheduledEvent', nameField: 'name', label: 'Event', route: '/schedule', fkField: 'scheduledEventId' },
+      { nav: 'client', nameField: 'name', label: 'Client', route: '/clients', fkField: 'clientId' },
+      { nav: 'office', nameField: 'name', label: 'Office', route: '/offices', fkField: 'officeId' },
+      { nav: 'crew', nameField: 'name', label: 'Crew', route: '/crews', fkField: 'crewId' },
+      { nav: 'schedulingTarget', nameField: 'name', label: 'Target', route: '/scheduling-targets', fkField: 'schedulingTargetId' },
+      { nav: 'invoice', nameField: 'invoiceNumber', label: 'Invoice', route: '/finances/invoices', fkField: 'invoiceId' },
+      { nav: 'receipt', nameField: 'receiptNumber', label: 'Receipt', route: '/finances/receipts', fkField: 'receiptId' },
+      { nav: 'paymentTransaction', nameField: 'payerName', label: 'Payment', route: '/finances/payments', fkField: 'paymentTransactionId' },
+      { nav: 'volunteerProfile', nameField: 'resource.name', label: 'Volunteer', route: '/volunteers', fkField: 'volunteerProfileId' },
+    ];
+
+    for (const c of checks) {
+      const entity = (doc as any)[c.nav];
+      if (entity) {
+        const name = this.getNestedValue(entity, c.nameField) || c.label;
+        return { label: c.label, name: String(name), route: [c.route, (doc as any)[c.fkField]] };
+      }
+    }
+    return null;
   }
 }

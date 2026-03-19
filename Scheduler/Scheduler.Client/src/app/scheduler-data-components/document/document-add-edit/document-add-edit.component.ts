@@ -25,6 +25,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { DocumentService, DocumentData, DocumentSubmitData } from '../../../scheduler-data-services/document.service';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
 import { DocumentTypeService } from '../../../scheduler-data-services/document-type.service';
+import { DocumentFolderService } from '../../../scheduler-data-services/document-folder.service';
 import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
 import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
@@ -53,9 +54,8 @@ import { AuthService } from '../../../services/auth.service';
 // - Does not include navigation properties or methods from domain models.
 //
 interface DocumentFormValues {
-  documentTypeId: number | bigint,       // For FK link number
-  invoiceId: number | bigint | null,       // For FK link number
-  receiptId: number | bigint | null,       // For FK link number
+  documentTypeId: number | bigint | null,       // For FK link number
+  documentFolderId: number | bigint | null,       // For FK link number
   name: string,
   description: string | null,
   fileName: string,
@@ -65,6 +65,8 @@ interface DocumentFormValues {
   fileDataSize: string | null,     // Stored as string for form input, converted to number on submit.
   fileDataData: string | null,
   fileDataMimeType: string | null,
+  invoiceId: number | bigint | null,       // For FK link number
+  receiptId: number | bigint | null,       // For FK link number
   scheduledEventId: number | bigint | null,       // For FK link number
   financialTransactionId: number | bigint | null,       // For FK link number
   contactId: number | bigint | null,       // For FK link number
@@ -120,9 +122,8 @@ export class DocumentAddEditComponent {
 
 
   public documentForm: FormGroup = this.fb.group({
-        documentTypeId: [null, Validators.required],
-        invoiceId: [null],
-        receiptId: [null],
+        documentTypeId: [null],
+        documentFolderId: [null],
         name: ['', Validators.required],
         description: [''],
         fileName: ['', Validators.required],
@@ -132,6 +133,8 @@ export class DocumentAddEditComponent {
         fileDataSize: [''],
         fileDataData: [''],
         fileDataMimeType: [''],
+        invoiceId: [null],
+        receiptId: [null],
         scheduledEventId: [null],
         financialTransactionId: [null],
         contactId: [null],
@@ -168,6 +171,7 @@ export class DocumentAddEditComponent {
 
   documents$ = this.documentService.GetDocumentList();
   documentTypes$ = this.documentTypeService.GetDocumentTypeList();
+  documentFolders$ = this.documentFolderService.GetDocumentFolderList();
   invoices$ = this.invoiceService.GetInvoiceList();
   receipts$ = this.receiptService.GetReceiptList();
   scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
@@ -191,6 +195,7 @@ export class DocumentAddEditComponent {
     private modalService: NgbModal,
     private documentService: DocumentService,
     private documentTypeService: DocumentTypeService,
+    private documentFolderService: DocumentFolderService,
     private invoiceService: InvoiceService,
     private receiptService: ReceiptService,
     private scheduledEventService: ScheduledEventService,
@@ -328,9 +333,8 @@ export class DocumentAddEditComponent {
     //
     const documentSubmitData: DocumentSubmitData = {
         id: this.documentSubmitData?.id || 0,
-        documentTypeId: Number(formValue.documentTypeId),
-        invoiceId: formValue.invoiceId ? Number(formValue.invoiceId) : null,
-        receiptId: formValue.receiptId ? Number(formValue.receiptId) : null,
+        documentTypeId: formValue.documentTypeId ? Number(formValue.documentTypeId) : null,
+        documentFolderId: formValue.documentFolderId ? Number(formValue.documentFolderId) : null,
         name: formValue.name!.trim(),
         description: formValue.description?.trim() || null,
         fileName: formValue.fileName!.trim(),
@@ -340,6 +344,8 @@ export class DocumentAddEditComponent {
         fileDataSize: formValue.fileDataSize ? Number(formValue.fileDataSize) : null,
         fileDataData: formValue.fileDataData?.trim() || null,
         fileDataMimeType: formValue.fileDataMimeType?.trim() || null,
+        invoiceId: formValue.invoiceId ? Number(formValue.invoiceId) : null,
+        receiptId: formValue.receiptId ? Number(formValue.receiptId) : null,
         scheduledEventId: formValue.scheduledEventId ? Number(formValue.scheduledEventId) : null,
         financialTransactionId: formValue.financialTransactionId ? Number(formValue.financialTransactionId) : null,
         contactId: formValue.contactId ? Number(formValue.contactId) : null,
@@ -492,8 +498,7 @@ export class DocumentAddEditComponent {
       //
       this.documentForm.reset({
         documentTypeId: null,
-        invoiceId: null,
-        receiptId: null,
+        documentFolderId: null,
         name: '',
         description: '',
         fileName: '',
@@ -503,6 +508,8 @@ export class DocumentAddEditComponent {
         fileDataSize: '',
         fileDataData: '',
         fileDataMimeType: '',
+        invoiceId: null,
+        receiptId: null,
         scheduledEventId: null,
         financialTransactionId: null,
         contactId: null,
@@ -538,8 +545,7 @@ export class DocumentAddEditComponent {
         //
         this.documentForm.reset({
         documentTypeId: documentData.documentTypeId,
-        invoiceId: documentData.invoiceId,
-        receiptId: documentData.receiptId,
+        documentFolderId: documentData.documentFolderId,
         name: documentData.name ?? '',
         description: documentData.description ?? '',
         fileName: documentData.fileName ?? '',
@@ -549,6 +555,8 @@ export class DocumentAddEditComponent {
         fileDataSize: documentData.fileDataSize?.toString() ?? '',
         fileDataData: documentData.fileDataData ?? '',
         fileDataMimeType: documentData.fileDataMimeType ?? '',
+        invoiceId: documentData.invoiceId,
+        receiptId: documentData.receiptId,
         scheduledEventId: documentData.scheduledEventId,
         financialTransactionId: documentData.financialTransactionId,
         contactId: documentData.contactId,

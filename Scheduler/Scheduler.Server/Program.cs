@@ -33,9 +33,7 @@ namespace Foundation.Scheduler
     {
         public const int ONE_GIGABYTE_IN_BYTES = 1073741824;
 
-
         public const string UNKNOWN = "Unknown";
-
     }
 
     public class Program
@@ -132,6 +130,9 @@ namespace Foundation.Scheduler
                 // Register Geocoding Service (for address-to-coordinate resolution via Nominatim)
                 builder.Services.AddScoped<global::Scheduler.Server.Services.GeocodingService>();
 
+                // Register File Storage Service (for Document Manager / File Manager feature)
+                builder.Services.AddScoped<global::Scheduler.Server.Services.IFileStorageService, global::Scheduler.Server.Services.SqlFileStorageService>();
+
                 // Register Volunteer Communications Services
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerNotificationService>();
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerHubService>();
@@ -208,6 +209,7 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(TenantProfileController));           // For profile access with auto creation
                 controllers.Add(typeof(GeocodingController));               // For address-to-coordinate resolution
                 controllers.Add(typeof(VolunteerHubController));            // For setting up volunteer user accounts for hub acces
+                controllers.Add(typeof(FileManagerController));             // For Document Manager / File Manager feature
 
 
                 //
@@ -270,6 +272,12 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(DependencyTypesController));
                 controllers.Add(typeof(DocumentsController));
                 controllers.Add(typeof(DocumentChangeHistoriesController));
+                controllers.Add(typeof(DocumentDocumentTagsController));
+                controllers.Add(typeof(DocumentDocumentTagChangeHistoriesController));
+                controllers.Add(typeof(DocumentFoldersController));
+                controllers.Add(typeof(DocumentFolderChangeHistoriesController));
+                controllers.Add(typeof(DocumentTagsController));
+                controllers.Add(typeof(DocumentTagChangeHistoriesController));
                 controllers.Add(typeof(DocumentTypesController));
                 controllers.Add(typeof(EventCalendarsController));
                 controllers.Add(typeof(EventChargesController));
@@ -289,6 +297,8 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(FiscalPeriodChangeHistoriesController));
                 controllers.Add(typeof(FundsController));
                 controllers.Add(typeof(FundChangeHistoriesController));
+                controllers.Add(typeof(GeneralLedgerEntriesController));
+                controllers.Add(typeof(GeneralLedgerLinesController));
                 controllers.Add(typeof(GiftsController));
                 controllers.Add(typeof(GiftChangeHistoriesController));
                 controllers.Add(typeof(HouseholdsController));
@@ -390,7 +400,6 @@ namespace Foundation.Scheduler
                 //
                 // End of code generated controller list for Scheduler module
                 //
-
 
 
                 logger.LogInformation("Controllers have been configured.");

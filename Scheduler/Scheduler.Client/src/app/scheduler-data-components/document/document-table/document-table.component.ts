@@ -176,8 +176,7 @@ export class DocumentTableComponent implements OnInit, OnChanges, AfterViewInit 
     //
     const defaultColumns: TableColumn[] = [
     { key: 'documentType.name', label: 'Document Type', width: undefined, template: 'link', linkPath: ['/documenttype', 'documentTypeId'] },
-    { key: 'invoice.name', label: 'Invoice', width: undefined, template: 'link', linkPath: ['/invoice', 'invoiceId'] },
-    { key: 'receipt.name', label: 'Receipt', width: undefined, template: 'link', linkPath: ['/receipt', 'receiptId'] },
+    { key: 'documentFolder.name', label: 'Document Folder', width: undefined, template: 'link', linkPath: ['/documentfolder', 'documentFolderId'] },
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/document', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
     { key: 'fileName', label: 'File Name', width: undefined },
@@ -187,6 +186,8 @@ export class DocumentTableComponent implements OnInit, OnChanges, AfterViewInit 
     // { key: 'fileDataSize', label: 'File Data Size', width: undefined },
     // { key: 'fileDataData', label: 'File Data Data', width: undefined },
     // { key: 'fileDataMimeType', label: 'File Data Mime Type', width: undefined },
+    { key: 'invoice.name', label: 'Invoice', width: undefined, template: 'link', linkPath: ['/invoice', 'invoiceId'] },
+    { key: 'receipt.name', label: 'Receipt', width: undefined, template: 'link', linkPath: ['/receipt', 'receiptId'] },
     { key: 'scheduledEvent.name', label: 'Scheduled Event', width: undefined, template: 'link', linkPath: ['/scheduledevent', 'scheduledEventId'] },
     { key: 'financialTransaction.name', label: 'Financial Transaction', width: undefined, template: 'link', linkPath: ['/financialtransaction', 'financialTransactionId'] },
     { key: 'contact.name', label: 'Contact', width: undefined, template: 'link', linkPath: ['/contact', 'contactId'] },
@@ -357,8 +358,7 @@ export class DocumentTableComponent implements OnInit, OnChanges, AfterViewInit 
         // Define fields to filter on, including nested properties
         const filterFields = [
                       'documentType.name',
-                      'invoice.name',
-                      'receipt.name',
+                      'documentFolder.name',
                       'name',
                       'description',
                       'fileName',
@@ -368,6 +368,8 @@ export class DocumentTableComponent implements OnInit, OnChanges, AfterViewInit 
                       'fileDataSize',
                       'fileDataData',
                       'fileDataMimeType',
+                      'invoice.name',
+                      'receipt.name',
                       'scheduledEvent.name',
                       'financialTransaction.name',
                       'contact.name',

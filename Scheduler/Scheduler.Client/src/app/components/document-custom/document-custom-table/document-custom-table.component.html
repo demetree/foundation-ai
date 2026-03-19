@@ -50,6 +50,16 @@
                     {{ getNestedValue(document, col.key) }}
                   </a>
 
+                  <!-- handle linkedTo (flattened FK display) -->
+                  <ng-container *ngSwitchCase="'linkedTo'">
+                    <ng-container *ngIf="getLinkedTo(document) as linked; else noLink">
+                      <a [routerLink]="linked.route" class="btn btn-link text-left p-0">
+                        <span class="badge bg-secondary me-1">{{ linked.label }}</span>{{ linked.name }}
+                      </a>
+                    </ng-container>
+                    <ng-template #noLink><span class="text-muted">-</span></ng-template>
+                  </ng-container>
+
                   <!-- handle dates -->
                   <span *ngSwitchCase="'date'">
                     {{ getNestedValue(document, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
@@ -117,6 +127,16 @@
                        class="text-primary">
                       {{ getNestedValue(document, col.key)}}
                     </a>
+
+                    <!-- linkedTo handling -->
+                    <ng-container *ngSwitchCase="'linkedTo'">
+                      <ng-container *ngIf="getLinkedTo(document) as linked; else noLinkMobile">
+                        <a [routerLink]="linked.route" class="text-primary">
+                          <span class="badge bg-secondary me-1">{{ linked.label }}</span>{{ linked.name }}
+                        </a>
+                      </ng-container>
+                      <ng-template #noLinkMobile><span class="text-muted">-</span></ng-template>
+                    </ng-container>
 
                     <!-- date handling -->
                     <span *ngSwitchCase="'date'">

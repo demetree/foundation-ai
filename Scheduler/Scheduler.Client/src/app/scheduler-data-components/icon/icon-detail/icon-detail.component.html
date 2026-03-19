@@ -427,6 +427,20 @@
                             </div>
                             </ng-template>
                         </li>
+                      <li ngbNavItem *ngIf="documentFolderService.userIsSchedulerDocumentFolderReader()">
+                            <button ngbNavLink>Document Folders
+                                <span class="badge bg-primary ms-2">
+                                    {{ (iconData?.DocumentFoldersCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-folder-table [queryParams]="{ iconId: iconData?.id }" [showAddButton]="true" [preSeededData]="{ iconId: iconData?.id }" [hiddenFields]="['iconId']"></app-document-folder-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
                     </ul>
                      <div [ngbNavOutlet]="nav"></div>
                 </div>

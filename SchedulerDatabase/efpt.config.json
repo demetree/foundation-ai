@@ -228,6 +228,30 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[DocumentDocumentTag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentDocumentTagChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentFolder]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentFolderChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentTag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentTagChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[DocumentType]",
          "ObjectType": 0
       },

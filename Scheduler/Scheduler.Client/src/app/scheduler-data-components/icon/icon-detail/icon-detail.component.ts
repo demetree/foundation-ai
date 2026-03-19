@@ -49,6 +49,7 @@ import { ConstituentService } from '../../../scheduler-data-services/constituent
 import { TributeService } from '../../../scheduler-data-services/tribute.service';
 import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { VolunteerGroupService } from '../../../scheduler-data-services/volunteer-group.service';
+import { DocumentFolderService } from '../../../scheduler-data-services/document-folder.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -137,6 +138,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
   public tributes$ = this.tributeService.GetTributeList();
   public volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
   public volunteerGroups$ = this.volunteerGroupService.GetVolunteerGroupList();
+  public documentFolders$ = this.documentFolderService.GetDocumentFolderList();
 
   private destroy$ = new Subject<void>();
 
@@ -168,6 +170,7 @@ export class IconDetailComponent implements OnInit, CanComponentDeactivate {
     public tributeService: TributeService,
     public volunteerProfileService: VolunteerProfileService,
     public volunteerGroupService: VolunteerGroupService,
+    public documentFolderService: DocumentFolderService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

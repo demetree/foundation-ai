@@ -1,0 +1,87 @@
+<div class="add-document-tag" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-document-tag me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Document Tag" 
+        *ngIf="userIsSchedulerDocumentTagWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #documentTagModal let-modal>
+   <div class="modal-header document-tag-modal-header">
+      <h5 class="modal-title mb-0" id="documentTagModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Document Tag' : 'Add Document Tag' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body document-tag-modal-body">
+      <form [formGroup]="documentTagForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="DocumentTag-name" id="label-DocumentTag-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="DocumentTag-name" formControlName="name" placeholder="Enter Name" class="form-control document-tag-input" [disabled]="!userIsSchedulerDocumentTagWriter()" aria-labelledby="label-name" />
+                <div *ngIf="documentTagForm.get('name')?.invalid && documentTagForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="DocumentTag-description" id="label-DocumentTag-description">Description</label>
+                <textarea id="DocumentTag-description" formControlName="description" placeholder="Enter Description" class="form-control document-tag-input" [disabled]="!userIsSchedulerDocumentTagWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="DocumentTag-color" id="label-DocumentTag-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="DocumentTag-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerDocumentTagWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="documentTagForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="DocumentTag-sequence" id="label-DocumentTag-sequence">Sequence</label>
+                <input type="number" id="DocumentTag-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control document-tag-input" [disabled]="!userIsSchedulerDocumentTagWriter()" aria-labelledby="label-sequence" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="DocumentTag-versionNumber" id="label-DocumentTag-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="DocumentTag-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control document-tag-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="DocumentTag-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerDocumentTagWriter()" />
+                <label for="DocumentTag-active" class="form-check-label" id="label-DocumentTag-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="DocumentTag-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerDocumentTagWriter()" />
+                <label for="DocumentTag-deleted" class="form-check-label" id="label-DocumentTag-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer document-tag-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Document Tag changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !documentTagForm.valid || documentTagForm.pristine  || userIsSchedulerDocumentTagWriter() == false " ngbTooltip="Save the Document Tag changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Document Tag' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

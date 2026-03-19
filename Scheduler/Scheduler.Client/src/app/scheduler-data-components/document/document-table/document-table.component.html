@@ -31,13 +31,9 @@
                 Document  Type
                 <span *ngIf="sortColumn === 'documentType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('invoice.name')">
-                Invoice
-                <span *ngIf="sortColumn === 'invoice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
-            </th>
-            <th class="sortable" scope="col" (click)="sortBy('receipt.name')">
-                Receipt
-                <span *ngIf="sortColumn === 'receipt.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            <th class="sortable" scope="col" (click)="sortBy('documentFolder.name')">
+                Document  Folder
+                <span *ngIf="sortColumn === 'documentFolder.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('name')">
                 Name
@@ -74,6 +70,14 @@
             <th class="sortable" scope="col" (click)="sortBy('fileDataMimeType')">
                 File  Data  Mime  Type
                 <span *ngIf="sortColumn === 'fileDataMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('invoice.name')">
+                Invoice
+                <span *ngIf="sortColumn === 'invoice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('receipt.name')">
+                Receipt
+                <span *ngIf="sortColumn === 'receipt.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
             <th class="sortable" scope="col" (click)="sortBy('scheduledEvent.name')">
                 Scheduled  Event
@@ -249,8 +253,7 @@ End of commented block for alternate definition option -->
               </td>
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/documenttype', document.documentTypeId]" class="btn btn-link text-left" ngbTooltip="Open Document Type details">{{document.documentType?.name}}</a></td>
-            <td class="text-truncate"><a [routerLink]="['/invoice', document.invoiceId]" class="btn btn-link text-left" ngbTooltip="Open Invoice details">{{document.invoice?.name}}</a></td>
-            <td class="text-truncate"><a [routerLink]="['/receipt', document.receiptId]" class="btn btn-link text-left" ngbTooltip="Open Receipt details">{{document.receipt?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/documentfolder', document.documentFolderId]" class="btn btn-link text-left" ngbTooltip="Open Document Folder details">{{document.documentFolder?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/document', document.id]" class="btn btn-link text-left" ngbTooltip="Open Document details">{{document.name}}</a></td>
             <td class="text-truncate">{{document.description}}</td>
             <td class="text-truncate">{{document.fileName}}</td>
@@ -260,6 +263,8 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{document.fileDataSize | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{document.fileDataData}}</td>
             <td class="text-truncate">{{document.fileDataMimeType}}</td>
+            <td class="text-truncate"><a [routerLink]="['/invoice', document.invoiceId]" class="btn btn-link text-left" ngbTooltip="Open Invoice details">{{document.invoice?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/receipt', document.receiptId]" class="btn btn-link text-left" ngbTooltip="Open Receipt details">{{document.receipt?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/scheduledevent', document.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{document.scheduledEvent?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/financialtransaction', document.financialTransactionId]" class="btn btn-link text-left" ngbTooltip="Open Financial Transaction details">{{document.financialTransaction?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/contact', document.contactId]" class="btn btn-link text-left" ngbTooltip="Open Contact details">{{document.contact?.name}}</a></td>
@@ -433,13 +438,9 @@ End of commented block for alternate definition option -->
               <strong>Document Type: </strong>
               <a [routerLink]="['/documenttype', document.documentTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Document Type details">{{document.documentType?.name}}</a>
             </p>
-            <p class="document-info" *ngIf="document.invoiceId != null">
-              <strong>Invoice: </strong>
-              <a [routerLink]="['/invoice', document.invoiceId]" class="text-left p-0 m-0" ngbTooltip="Open Invoice details">{{document.invoice?.name}}</a>
-            </p>
-            <p class="document-info" *ngIf="document.receiptId != null">
-              <strong>Receipt: </strong>
-              <a [routerLink]="['/receipt', document.receiptId]" class="text-left p-0 m-0" ngbTooltip="Open Receipt details">{{document.receipt?.name}}</a>
+            <p class="document-info" *ngIf="document.documentFolderId != null">
+              <strong>Document Folder: </strong>
+              <a [routerLink]="['/documentfolder', document.documentFolderId]" class="text-left p-0 m-0" ngbTooltip="Open Document Folder details">{{document.documentFolder?.name}}</a>
             </p>
             <p class="document-info" *ngIf="document.name != null">
               <strong>Name: </strong>
@@ -476,6 +477,14 @@ End of commented block for alternate definition option -->
             <p class="document-info" *ngIf="document.fileDataMimeType != null">
               <strong>File Data Mime Type: </strong>
               {{document.fileDataMimeType}}
+            </p>
+            <p class="document-info" *ngIf="document.invoiceId != null">
+              <strong>Invoice: </strong>
+              <a [routerLink]="['/invoice', document.invoiceId]" class="text-left p-0 m-0" ngbTooltip="Open Invoice details">{{document.invoice?.name}}</a>
+            </p>
+            <p class="document-info" *ngIf="document.receiptId != null">
+              <strong>Receipt: </strong>
+              <a [routerLink]="['/receipt', document.receiptId]" class="text-left p-0 m-0" ngbTooltip="Open Receipt details">{{document.receipt?.name}}</a>
             </p>
             <p class="document-info" *ngIf="document.scheduledEventId != null">
               <strong>Scheduled Event: </strong>

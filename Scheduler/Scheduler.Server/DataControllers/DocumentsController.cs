@@ -72,8 +72,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Documents")]
 		public async Task<IActionResult> GetDocuments(
 			int? documentTypeId = null,
-			int? invoiceId = null,
-			int? receiptId = null,
+			int? documentFolderId = null,
 			string name = null,
 			string description = null,
 			string fileName = null,
@@ -82,6 +81,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string fileDataFileName = null,
 			long? fileDataSize = null,
 			string fileDataMimeType = null,
+			int? invoiceId = null,
+			int? receiptId = null,
 			int? scheduledEventId = null,
 			int? financialTransactionId = null,
 			int? contactId = null,
@@ -175,13 +176,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(d => d.documentTypeId == documentTypeId.Value);
 			}
-			if (invoiceId.HasValue == true)
+			if (documentFolderId.HasValue == true)
 			{
-				query = query.Where(d => d.invoiceId == invoiceId.Value);
-			}
-			if (receiptId.HasValue == true)
-			{
-				query = query.Where(d => d.receiptId == receiptId.Value);
+				query = query.Where(d => d.documentFolderId == documentFolderId.Value);
 			}
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -214,6 +211,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(fileDataMimeType) == false)
 			{
 				query = query.Where(d => d.fileDataMimeType == fileDataMimeType);
+			}
+			if (invoiceId.HasValue == true)
+			{
+				query = query.Where(d => d.invoiceId == invoiceId.Value);
+			}
+			if (receiptId.HasValue == true)
+			{
+				query = query.Where(d => d.receiptId == receiptId.Value);
 			}
 			if (scheduledEventId.HasValue == true)
 			{
@@ -404,6 +409,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || (includeRelations == true && x.crew.color.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.avatarFileName.Contains(anyStringContains))
 			       || (includeRelations == true && x.crew.avatarMimeType.Contains(anyStringContains))
+			       || (includeRelations == true && x.documentFolder.name.Contains(anyStringContains))
+			       || (includeRelations == true && x.documentFolder.description.Contains(anyStringContains))
+			       || (includeRelations == true && x.documentFolder.color.Contains(anyStringContains))
+			       || (includeRelations == true && x.documentFolder.notes.Contains(anyStringContains))
 			       || (includeRelations == true && x.documentType.name.Contains(anyStringContains))
 			       || (includeRelations == true && x.documentType.description.Contains(anyStringContains))
 			       || (includeRelations == true && x.documentType.color.Contains(anyStringContains))
@@ -520,6 +529,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Include(x => x.constituent);
 				query = query.Include(x => x.contact);
 				query = query.Include(x => x.crew);
+				query = query.Include(x => x.documentFolder);
 				query = query.Include(x => x.documentType);
 				query = query.Include(x => x.financialOffice);
 				query = query.Include(x => x.financialTransaction);
@@ -603,8 +613,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[Route("api/Documents/RowCount")]
 		public async Task<IActionResult> GetRowCount(
 			int? documentTypeId = null,
-			int? invoiceId = null,
-			int? receiptId = null,
+			int? documentFolderId = null,
 			string name = null,
 			string description = null,
 			string fileName = null,
@@ -613,6 +622,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string fileDataFileName = null,
 			long? fileDataSize = null,
 			string fileDataMimeType = null,
+			int? invoiceId = null,
+			int? receiptId = null,
 			int? scheduledEventId = null,
 			int? financialTransactionId = null,
 			int? contactId = null,
@@ -686,13 +697,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(d => d.documentTypeId == documentTypeId.Value);
 			}
-			if (invoiceId.HasValue == true)
+			if (documentFolderId.HasValue == true)
 			{
-				query = query.Where(d => d.invoiceId == invoiceId.Value);
-			}
-			if (receiptId.HasValue == true)
-			{
-				query = query.Where(d => d.receiptId == receiptId.Value);
+				query = query.Where(d => d.documentFolderId == documentFolderId.Value);
 			}
 			if (name != null)
 			{
@@ -725,6 +732,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (fileDataMimeType != null)
 			{
 				query = query.Where(d => d.fileDataMimeType == fileDataMimeType);
+			}
+			if (invoiceId.HasValue == true)
+			{
+				query = query.Where(d => d.invoiceId == invoiceId.Value);
+			}
+			if (receiptId.HasValue == true)
+			{
+				query = query.Where(d => d.receiptId == receiptId.Value);
 			}
 			if (scheduledEventId.HasValue == true)
 			{
@@ -912,6 +927,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.crew.color.Contains(anyStringContains)
 			       || x.crew.avatarFileName.Contains(anyStringContains)
 			       || x.crew.avatarMimeType.Contains(anyStringContains)
+			       || x.documentFolder.name.Contains(anyStringContains)
+			       || x.documentFolder.description.Contains(anyStringContains)
+			       || x.documentFolder.color.Contains(anyStringContains)
+			       || x.documentFolder.notes.Contains(anyStringContains)
 			       || x.documentType.name.Contains(anyStringContains)
 			       || x.documentType.description.Contains(anyStringContains)
 			       || x.documentType.color.Contains(anyStringContains)
@@ -1086,6 +1105,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					query = query.Include(x => x.constituent);
 					query = query.Include(x => x.contact);
 					query = query.Include(x => x.crew);
+					query = query.Include(x => x.documentFolder);
 					query = query.Include(x => x.documentType);
 					query = query.Include(x => x.financialOffice);
 					query = query.Include(x => x.financialTransaction);
@@ -1612,11 +1632,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    //
 					document.fileDataData = null;
 					document.DocumentChangeHistories = null;
+					document.DocumentDocumentTags = null;
 					document.campaign = null;
 					document.client = null;
 					document.constituent = null;
 					document.contact = null;
 					document.crew = null;
+					document.documentFolder = null;
 					document.documentType = null;
 					document.financialOffice = null;
 					document.financialTransaction = null;
@@ -1758,11 +1780,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				//
 				cloneOfExisting.fileDataData = null;
 				cloneOfExisting.DocumentChangeHistories = null;
+				cloneOfExisting.DocumentDocumentTags = null;
 				cloneOfExisting.campaign = null;
 				cloneOfExisting.client = null;
 				cloneOfExisting.constituent = null;
 				cloneOfExisting.contact = null;
 				cloneOfExisting.crew = null;
+				cloneOfExisting.documentFolder = null;
 				cloneOfExisting.documentType = null;
 				cloneOfExisting.financialOffice = null;
 				cloneOfExisting.financialTransaction = null;
@@ -1806,8 +1830,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    // Put all other fields back the way that they were 
 				    //
 				    document.documentTypeId = oldDocument.documentTypeId;
-				    document.invoiceId = oldDocument.invoiceId;
-				    document.receiptId = oldDocument.receiptId;
+				    document.documentFolderId = oldDocument.documentFolderId;
 				    document.name = oldDocument.name;
 				    document.description = oldDocument.description;
 				    document.fileName = oldDocument.fileName;
@@ -1817,6 +1840,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    document.fileDataSize = oldDocument.fileDataSize;
 				    document.fileDataData = oldDocument.fileDataData;
 				    document.fileDataMimeType = oldDocument.fileDataMimeType;
+				    document.invoiceId = oldDocument.invoiceId;
+				    document.receiptId = oldDocument.receiptId;
 				    document.scheduledEventId = oldDocument.scheduledEventId;
 				    document.financialTransactionId = oldDocument.financialTransactionId;
 				    document.contactId = oldDocument.contactId;
@@ -2309,8 +2334,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
 		public async Task<IActionResult> GetListData(
 			int? documentTypeId = null,
-			int? invoiceId = null,
-			int? receiptId = null,
+			int? documentFolderId = null,
 			string name = null,
 			string description = null,
 			string fileName = null,
@@ -2319,6 +2343,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string fileDataFileName = null,
 			long? fileDataSize = null,
 			string fileDataMimeType = null,
+			int? invoiceId = null,
+			int? receiptId = null,
 			int? scheduledEventId = null,
 			int? financialTransactionId = null,
 			int? contactId = null,
@@ -2411,13 +2437,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			{
 				query = query.Where(d => d.documentTypeId == documentTypeId.Value);
 			}
-			if (invoiceId.HasValue == true)
+			if (documentFolderId.HasValue == true)
 			{
-				query = query.Where(d => d.invoiceId == invoiceId.Value);
-			}
-			if (receiptId.HasValue == true)
-			{
-				query = query.Where(d => d.receiptId == receiptId.Value);
+				query = query.Where(d => d.documentFolderId == documentFolderId.Value);
 			}
 			if (string.IsNullOrEmpty(name) == false)
 			{
@@ -2450,6 +2472,14 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(fileDataMimeType) == false)
 			{
 				query = query.Where(d => d.fileDataMimeType == fileDataMimeType);
+			}
+			if (invoiceId.HasValue == true)
+			{
+				query = query.Where(d => d.invoiceId == invoiceId.Value);
+			}
+			if (receiptId.HasValue == true)
+			{
+				query = query.Where(d => d.receiptId == receiptId.Value);
 			}
 			if (scheduledEventId.HasValue == true)
 			{
@@ -2638,6 +2668,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.crew.color.Contains(anyStringContains)
 			       || x.crew.avatarFileName.Contains(anyStringContains)
 			       || x.crew.avatarMimeType.Contains(anyStringContains)
+			       || x.documentFolder.name.Contains(anyStringContains)
+			       || x.documentFolder.description.Contains(anyStringContains)
+			       || x.documentFolder.color.Contains(anyStringContains)
+			       || x.documentFolder.notes.Contains(anyStringContains)
 			       || x.documentType.name.Contains(anyStringContains)
 			       || x.documentType.description.Contains(anyStringContains)
 			       || x.documentType.color.Contains(anyStringContains)

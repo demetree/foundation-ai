@@ -21,7 +21,7 @@ export interface TableColumn {
   width?: string;
 
   // Cell template data type 
-  template?: 'boolean' | 'date' | 'link' | 'color' | 'default';
+  template?: 'boolean' | 'date' | 'link' | 'color' | 'default' | 'linkedTo';
 
   // Link target for link template types.  First element is the route, starting with a slash, the second element is the name of the property that contains the index to the route.  eg ['/auditevent', 'auditEventId']
   linkPath?: string[];

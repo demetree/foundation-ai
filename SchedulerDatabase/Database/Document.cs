@@ -11,11 +11,9 @@ public partial class Document
 
     public Guid tenantGuid { get; set; }
 
-    public int documentTypeId { get; set; }
+    public int? documentTypeId { get; set; }
 
-    public int? invoiceId { get; set; }
-
-    public int? receiptId { get; set; }
+    public int? documentFolderId { get; set; }
 
     public string name { get; set; }
 
@@ -34,6 +32,10 @@ public partial class Document
     public byte[] fileDataData { get; set; }
 
     public string fileDataMimeType { get; set; }
+
+    public int? invoiceId { get; set; }
+
+    public int? receiptId { get; set; }
 
     public int? scheduledEventId { get; set; }
 
@@ -89,6 +91,8 @@ public partial class Document
 
     public virtual ICollection<DocumentChangeHistory> DocumentChangeHistories { get; set; } = new List<DocumentChangeHistory>();
 
+    public virtual ICollection<DocumentDocumentTag> DocumentDocumentTags { get; set; } = new List<DocumentDocumentTag>();
+
     public virtual Campaign campaign { get; set; }
 
     public virtual Client client { get; set; }
@@ -98,6 +102,8 @@ public partial class Document
     public virtual Contact contact { get; set; }
 
     public virtual Crew crew { get; set; }
+
+    public virtual DocumentFolder documentFolder { get; set; }
 
     public virtual DocumentType documentType { get; set; }
 

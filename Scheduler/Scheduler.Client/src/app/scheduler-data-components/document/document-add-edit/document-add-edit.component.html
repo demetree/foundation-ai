@@ -21,27 +21,17 @@
    <div class="modal-body document-modal-body">
       <form [formGroup]="documentForm" (ngSubmit)="submitForm()">
             <div class="form-group" *ngIf="!isFieldHidden('documentTypeId')">
-                <label for="Document-documentTypeId" id="label-Document-documentTypeId"><span class="text-danger">*</span>Document Type</label>
+                <label for="Document-documentTypeId" id="label-Document-documentTypeId">Document Type</label>
                 <select id="Document-documentTypeId" formControlName="documentTypeId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
                     <option [ngValue]="null">Select Document Type</option>
                     <option *ngFor="let documentType of documentTypes$ | async" [ngValue]="documentType.id">{{documentType.name}}</option>
                 </select>
-                <div *ngIf="documentForm.get('documentTypeId')?.invalid && documentForm.get('documentTypeId')?.touched" class="text-danger">
-                    Document Type is required
-                </div>
             </div>
-            <div class="form-group" *ngIf="!isFieldHidden('invoiceId')">
-                <label for="Document-invoiceId" id="label-Document-invoiceId">Invoice</label>
-                <select id="Document-invoiceId" formControlName="invoiceId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
-                    <option [ngValue]="null">Select Invoice</option>
-                    <option *ngFor="let invoice of invoices$ | async" [ngValue]="invoice.id">{{[invoice.invoiceNumber] | filterAndJoin}}</option>
-                </select>
-            </div>
-            <div class="form-group" *ngIf="!isFieldHidden('receiptId')">
-                <label for="Document-receiptId" id="label-Document-receiptId">Receipt</label>
-                <select id="Document-receiptId" formControlName="receiptId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
-                    <option [ngValue]="null">Select Receipt</option>
-                    <option *ngFor="let receipt of receipts$ | async" [ngValue]="receipt.id">{{[receipt.receiptNumber] | filterAndJoin}}</option>
+            <div class="form-group" *ngIf="!isFieldHidden('documentFolderId')">
+                <label for="Document-documentFolderId" id="label-Document-documentFolderId">Document Folder</label>
+                <select id="Document-documentFolderId" formControlName="documentFolderId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Document Folder</option>
+                    <option *ngFor="let documentFolder of documentFolders$ | async" [ngValue]="documentFolder.id">{{documentFolder.name}}</option>
                 </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('name')">
@@ -91,6 +81,20 @@
             <div class="form-group" *ngIf="!isFieldHidden('fileDataMimeType')">
                 <label for="Document-fileDataMimeType" id="label-Document-fileDataMimeType">File Data Mime Type</label>
                 <input type="text" id="Document-fileDataMimeType" formControlName="fileDataMimeType" placeholder="Enter File Data Mime Type" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-fileDataMimeType" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('invoiceId')">
+                <label for="Document-invoiceId" id="label-Document-invoiceId">Invoice</label>
+                <select id="Document-invoiceId" formControlName="invoiceId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Invoice</option>
+                    <option *ngFor="let invoice of invoices$ | async" [ngValue]="invoice.id">{{[invoice.invoiceNumber] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('receiptId')">
+                <label for="Document-receiptId" id="label-Document-receiptId">Receipt</label>
+                <select id="Document-receiptId" formControlName="receiptId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">
+                    <option [ngValue]="null">Select Receipt</option>
+                    <option *ngFor="let receipt of receipts$ | async" [ngValue]="receipt.id">{{[receipt.receiptNumber] | filterAndJoin}}</option>
+                </select>
             </div>
             <div class="form-group" *ngIf="!isFieldHidden('scheduledEventId')">
                 <label for="Document-scheduledEventId" id="label-Document-scheduledEventId">Scheduled Event</label>

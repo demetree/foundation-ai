@@ -62,6 +62,12 @@ import {CurrencyService} from  './currency.service';
 import {DependencyTypeService} from  './dependency-type.service';
 import {DocumentService} from  './document.service';
 import {DocumentChangeHistoryService} from  './document-change-history.service';
+import {DocumentDocumentTagService} from  './document-document-tag.service';
+import {DocumentDocumentTagChangeHistoryService} from  './document-document-tag-change-history.service';
+import {DocumentFolderService} from  './document-folder.service';
+import {DocumentFolderChangeHistoryService} from  './document-folder-change-history.service';
+import {DocumentTagService} from  './document-tag.service';
+import {DocumentTagChangeHistoryService} from  './document-tag-change-history.service';
 import {DocumentTypeService} from  './document-type.service';
 import {EventCalendarService} from  './event-calendar.service';
 import {EventChargeService} from  './event-charge.service';
@@ -241,6 +247,12 @@ export class SchedulerDataServiceManagerService  {
               , public dependencyTypeService: DependencyTypeService
               , public documentService: DocumentService
               , public documentChangeHistoryService: DocumentChangeHistoryService
+              , public documentDocumentTagService: DocumentDocumentTagService
+              , public documentDocumentTagChangeHistoryService: DocumentDocumentTagChangeHistoryService
+              , public documentFolderService: DocumentFolderService
+              , public documentFolderChangeHistoryService: DocumentFolderChangeHistoryService
+              , public documentTagService: DocumentTagService
+              , public documentTagChangeHistoryService: DocumentTagChangeHistoryService
               , public documentTypeService: DocumentTypeService
               , public eventCalendarService: EventCalendarService
               , public eventChargeService: EventChargeService
@@ -418,6 +430,12 @@ export class SchedulerDataServiceManagerService  {
         this.dependencyTypeService.ClearAllCaches();
         this.documentService.ClearAllCaches();
         this.documentChangeHistoryService.ClearAllCaches();
+        this.documentDocumentTagService.ClearAllCaches();
+        this.documentDocumentTagChangeHistoryService.ClearAllCaches();
+        this.documentFolderService.ClearAllCaches();
+        this.documentFolderChangeHistoryService.ClearAllCaches();
+        this.documentTagService.ClearAllCaches();
+        this.documentTagChangeHistoryService.ClearAllCaches();
         this.documentTypeService.ClearAllCaches();
         this.eventCalendarService.ClearAllCaches();
         this.eventChargeService.ClearAllCaches();

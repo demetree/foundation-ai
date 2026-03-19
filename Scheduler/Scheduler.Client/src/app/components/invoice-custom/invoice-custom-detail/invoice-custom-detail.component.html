@@ -169,6 +169,11 @@
                     <i class="fa-solid fa-circle-info me-1"></i> Info
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" [class.active]="activeTab === 'documents'" (click)="activeTab = 'documents'">
+                    <i class="fa-solid fa-file-lines me-1"></i> Documents
+                </a>
+            </li>
         </ul>
 
         <!-- ═══ Line Items Tab ═══ -->
@@ -266,6 +271,11 @@
                     <span class="info-value notes-value">{{ invoice.notes }}</span>
                 </div>
             </div>
+        </div>
+
+        <!-- ═══ Documents Tab ═══ -->
+        <div class="tab-content-panel" *ngIf="activeTab === 'documents'">
+            <app-event-document-panel [ownerField]="'invoiceId'" [ownerId]="invoice!.id"></app-event-document-panel>
         </div>
     </div>
 </div>

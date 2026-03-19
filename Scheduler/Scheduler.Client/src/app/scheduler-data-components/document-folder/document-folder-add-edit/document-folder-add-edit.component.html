@@ -1,0 +1,108 @@
+<div class="add-document-folder" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-document-folder me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Document Folder" 
+        *ngIf="userIsSchedulerDocumentFolderWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #documentFolderModal let-modal>
+   <div class="modal-header document-folder-modal-header">
+      <h5 class="modal-title mb-0" id="documentFolderModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Document Folder' : 'Add Document Folder' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body document-folder-modal-body">
+      <form [formGroup]="documentFolderForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="DocumentFolder-name" id="label-DocumentFolder-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="DocumentFolder-name" formControlName="name" placeholder="Enter Name" class="form-control document-folder-input" [disabled]="!userIsSchedulerDocumentFolderWriter()" aria-labelledby="label-name" />
+                <div *ngIf="documentFolderForm.get('name')?.invalid && documentFolderForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="DocumentFolder-description" id="label-DocumentFolder-description">Description</label>
+                <textarea id="DocumentFolder-description" formControlName="description" placeholder="Enter Description" class="form-control document-folder-input" [disabled]="!userIsSchedulerDocumentFolderWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('parentDocumentFolderId')">
+                <label for="DocumentFolder-parentDocumentFolderId" id="label-DocumentFolder-parentDocumentFolderId">Parent Document Folder</label>
+                <select id="DocumentFolder-parentDocumentFolderId" formControlName="parentDocumentFolderId" class="form-select document-folder-select" [disabled]="!userIsSchedulerDocumentFolderWriter()">
+                    <option [ngValue]="null">Select Document Folder</option>
+                    <option *ngFor="let documentFolder of documentFolders$ | async" [ngValue]="documentFolder.id">{{documentFolder.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('iconId')">
+                <label for="DocumentFolder-iconId" id="label-DocumentFolder-iconId">Icon</label>
+                <select id="DocumentFolder-iconId" formControlName="iconId" class="form-select document-folder-select" [disabled]="!userIsSchedulerDocumentFolderWriter()">
+                    <option [ngValue]="null">Select Icon</option>
+                    <option *ngFor="let icon of icons$ | async" [ngValue]="icon.id">{{icon.name}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                <label for="DocumentFolder-color" id="label-DocumentFolder-color">Color</label>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="DocumentFolder-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerDocumentFolderWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="documentFolderForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                <label for="DocumentFolder-sequence" id="label-DocumentFolder-sequence"><span class="text-danger">*</span>Sequence</label>
+                <input type="number" id="DocumentFolder-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control document-folder-input" [disabled]="!userIsSchedulerDocumentFolderWriter()" aria-labelledby="label-sequence" />
+                <div *ngIf="documentFolderForm.get('sequence')?.invalid && documentFolderForm.get('sequence')?.touched" class="text-danger">
+                    Sequence is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('notes')">
+                <label for="DocumentFolder-notes" id="label-DocumentFolder-notes">Notes</label>
+                <textarea id="DocumentFolder-notes" formControlName="notes" placeholder="Enter Notes" class="form-control document-folder-input" [disabled]="!userIsSchedulerDocumentFolderWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="DocumentFolder-versionNumber" id="label-DocumentFolder-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="DocumentFolder-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control document-folder-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="DocumentFolder-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerDocumentFolderWriter()" />
+                <label for="DocumentFolder-active" class="form-check-label" id="label-DocumentFolder-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="DocumentFolder-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerDocumentFolderWriter()" />
+                <label for="DocumentFolder-deleted" class="form-check-label" id="label-DocumentFolder-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer document-folder-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Document Folder changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !documentFolderForm.valid || documentFolderForm.pristine  || userIsSchedulerDocumentFolderWriter() == false " ngbTooltip="Save the Document Folder changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Document Folder' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

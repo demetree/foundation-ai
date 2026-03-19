@@ -1,0 +1,127 @@
+<div class="container-fluid p-1 m-0 document-tag-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="document-tag-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Document Tag</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Document Tag' : 'Add Document Tag'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerDocumentTagReader()">
+                <div class="col m-2 document-tag-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="documentTagForm" (ngSubmit)="submitForm()" class="document-tag-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="DocumentTag-name" id="label-DocumentTag-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="DocumentTag-name" formControlName="name" placeholder="Enter Name" class="form-control document-tag-input" [disabled]="!userIsSchedulerDocumentTagWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="documentTagForm.get('name')?.invalid && documentTagForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                                <label for="DocumentTag-description" id="label-DocumentTag-description">Description</label>
+                                <textarea id="DocumentTag-description" formControlName="description" placeholder="Enter Description" class="form-control document-tag-input" [disabled]="!userIsSchedulerDocumentTagWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('color')">
+                                <label for="DocumentTag-color" id="label-DocumentTag-color">Color</label>
+                                <div class="d-flex align-items-center gap-3">
+                    <!-- Native color picker input (type="color") -->
+                    <input 
+                        type="color" 
+                        id="DocumentTag-color" 
+                        formControlName="color" 
+                        class="form-control form-control-color color-picker" 
+                        [disabled]="!userIsSchedulerDocumentTagWriter()"
+                        aria-labelledby="label-color"
+                        title="Choose Color">
+                    
+                    <!-- Usually this isn't needed
+                    <input 
+                        type="text" 
+                        [value]="documentTagForm.get('color')?.value || '#000000'" 
+                        readonly 
+                        class="form-control input-color-display"
+                        style="width: 120px;">-->
+                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
+                                <label for="DocumentTag-sequence" id="label-DocumentTag-sequence">Sequence</label>
+                                <input type="number" id="DocumentTag-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control document-tag-input" [disabled]="!userIsSchedulerDocumentTagWriter()" aria-labelledby="label-sequence" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="DocumentTag-versionNumber" id="label-DocumentTag-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="DocumentTag-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control document-tag-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="DocumentTag-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerDocumentTagWriter()" />
+                                <label for="DocumentTag-active" class="form-check-label" id="label-DocumentTag-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="DocumentTag-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerDocumentTagWriter()" />
+                                <label for="DocumentTag-deleted" class="form-check-label" id="label-DocumentTag-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="document-tag-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="documentTagForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Document Tag">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !documentTagForm.valid || !documentTagForm.dirty || documentTagForm.pristine  || userIsSchedulerDocumentTagWriter() == false " ngbTooltip="Save the Document Tag changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Document Tag' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerDocumentTagReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 document-tag-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="documentTagChangeHistoryService.userIsSchedulerDocumentTagChangeHistoryReader()">
+                            <button ngbNavLink>Document Tag Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (documentTagData?.DocumentTagChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-tag-change-history-table [queryParams]="{ documentTagId: documentTagData?.id }" [showAddButton]="true" [preSeededData]="{ documentTagId: documentTagData?.id }" [hiddenFields]="['documentTagId']"></app-document-tag-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="documentDocumentTagService.userIsSchedulerDocumentDocumentTagReader()">
+                            <button ngbNavLink>Document Document Tags
+                                <span class="badge bg-primary ms-2">
+                                    {{ (documentTagData?.DocumentDocumentTagsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-document-tag-table [queryParams]="{ documentTagId: documentTagData?.id }" [showAddButton]="true" [preSeededData]="{ documentTagId: documentTagData?.id }" [hiddenFields]="['documentTagId']"></app-document-document-tag-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

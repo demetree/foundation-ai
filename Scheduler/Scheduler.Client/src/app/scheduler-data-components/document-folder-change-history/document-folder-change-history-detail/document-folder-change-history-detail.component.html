@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 document-folder-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="document-folder-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Document Folder Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Document Folder Change History' : 'Add Document Folder Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerDocumentFolderChangeHistoryReader()">
+                <div class="col m-2 document-folder-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="documentFolderChangeHistoryForm" (ngSubmit)="submitForm()" class="document-folder-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('documentFolderId')">
+                                <label for="DocumentFolderChangeHistory-documentFolderId" id="label-DocumentFolderChangeHistory-documentFolderId"><span class="text-danger">*</span>Document Folder</label>
+                                <select id="DocumentFolderChangeHistory-documentFolderId" formControlName="documentFolderId" class="form-select document-folder-change-history-select" [disabled]="!userIsSchedulerDocumentFolderChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Document Folder</option>
+                                    <option *ngFor="let documentFolder of documentFolders$ | async" [ngValue]="documentFolder.id">{{documentFolder.name}}</option>
+                                </select>
+                                <div *ngIf="documentFolderChangeHistoryForm.get('documentFolderId')?.invalid && documentFolderChangeHistoryForm.get('documentFolderId')?.touched" class="text-danger">
+                                    Document Folder is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="DocumentFolderChangeHistory-versionNumber" id="label-DocumentFolderChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="DocumentFolderChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control document-folder-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="DocumentFolderChangeHistory-timeStamp" id="label-DocumentFolderChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="DocumentFolderChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control document-folder-change-history-input" [disabled]="!userIsSchedulerDocumentFolderChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="documentFolderChangeHistoryForm.get('timeStamp')?.invalid && documentFolderChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="DocumentFolderChangeHistory-userId" id="label-DocumentFolderChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="DocumentFolderChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control document-folder-change-history-input" [disabled]="!userIsSchedulerDocumentFolderChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="documentFolderChangeHistoryForm.get('userId')?.invalid && documentFolderChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="DocumentFolderChangeHistory-data" id="label-DocumentFolderChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="DocumentFolderChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control document-folder-change-history-input" [disabled]="!userIsSchedulerDocumentFolderChangeHistoryWriter()"></textarea>
+                                <div *ngIf="documentFolderChangeHistoryForm.get('data')?.invalid && documentFolderChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="document-folder-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="documentFolderChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Document Folder Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !documentFolderChangeHistoryForm.valid || !documentFolderChangeHistoryForm.dirty || documentFolderChangeHistoryForm.pristine  || userIsSchedulerDocumentFolderChangeHistoryWriter() == false " ngbTooltip="Save the Document Folder Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Document Folder Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

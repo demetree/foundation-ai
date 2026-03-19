@@ -84,6 +84,21 @@
                 </ng-template>
             </li>
 
+            <!-- Volunteer Documents -->
+            <li ngbNavItem="documents">
+                <a ngbNavLink>
+                    <i class="fa-solid fa-file-lines me-1"></i> Documents
+                    <span class="badge bg-secondary ms-1">
+                        {{ (volunteer.DocumentsCount$ | async) ?? '-' }}
+                    </span>
+                </a>
+                <ng-template ngbNavContent>
+                    <div class="p-4">
+                        <app-event-document-panel [ownerField]="'volunteerProfileId'" [ownerId]="volunteer!.id"></app-event-document-panel>
+                    </div>
+                </ng-template>
+            </li>
+
             <li ngbNavItem="history">
                 <a ngbNavLink>
                     <i class="fa-solid fa-clock-rotate-left me-1"></i> History

@@ -20,8 +20,14 @@ GO
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
 -- DROP TABLE [Scheduler].[EventResourceAssignmentChangeHistory]
 -- DROP TABLE [Scheduler].[EventResourceAssignment]
+-- DROP TABLE [Scheduler].[DocumentDocumentTagChangeHistory]
+-- DROP TABLE [Scheduler].[DocumentDocumentTag]
 -- DROP TABLE [Scheduler].[DocumentChangeHistory]
 -- DROP TABLE [Scheduler].[Document]
+-- DROP TABLE [Scheduler].[DocumentTagChangeHistory]
+-- DROP TABLE [Scheduler].[DocumentTag]
+-- DROP TABLE [Scheduler].[DocumentFolderChangeHistory]
+-- DROP TABLE [Scheduler].[DocumentFolder]
 -- DROP TABLE [Scheduler].[DocumentType]
 -- DROP TABLE [Scheduler].[VolunteerGroupMemberChangeHistory]
 -- DROP TABLE [Scheduler].[VolunteerGroupMember]
@@ -194,8 +200,14 @@ GO
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentDocumentTagChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentDocumentTag] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[DocumentChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Document] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentTagChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentTag] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentFolderChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[DocumentFolder] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[DocumentType] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMemberChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMember] DISABLE
@@ -368,8 +380,14 @@ GO
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentDocumentTagChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentDocumentTag] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[DocumentChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Document] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentTagChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentTag] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentFolderChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[DocumentFolder] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[DocumentType] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMemberChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[VolunteerGroupMember] REBUILD
@@ -8973,7 +8991,13 @@ GO
 INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Background Check', 'Background Check supporting documentation (police etc..)', 6, 'f1a1b2c3-d4e5-6789-abcd-ef0123456706' )
 GO
 
-INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Insurance Certificate', 'Liability insurance certificate for event coverage', 7, 'f1a1b2c3-d4e5-6789-abcd-ef0123456707' )
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'License', 'License that certifies a resource for a function (driving etc..)', 7, 'f1a1b2c3-d4e5-6789-abcd-ef0123456707' )
+GO
+
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Insurance Certificate', 'Liability insurance certificate for event coverage', 8, 'f1a1b2c3-d4e5-6789-abcd-ef0123456708' )
+GO
+
+INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Meeting Minutes', 'The notes from a meeting', 9, 'f1a1b2c3-d4e5-6789-abcd-ef0123456709' )
 GO
 
 INSERT INTO [Scheduler].[DocumentType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Other', 'Other document type', 99, 'f1a1b2c3-d4e5-6789-abcd-ef0123456799' )
@@ -8982,13 +9006,185 @@ GO
 
 /*
 ====================================================================================================
+ DOCUMENT FOLDER (File Manager Hierarchy)
+ Provides a hierarchical folder structure for organizing documents in an Explorer-like
+ file management interface.  Self-referencing via parentDocumentFolderId enables unlimited
+ nesting.  Documents link to folders via Document.documentFolderId (nullable — documents
+ without a folder are considered root-level / unfiled).
+
+ A unique constraint on (tenantGuid, parentDocumentFolderId, name) prevents duplicate
+ folder names at the same hierarchy level within a tenant.
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[DocumentFolder]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(250) NOT NULL,		-- Folder display name.
+	[description] NVARCHAR(500) NULL,		-- Optional folder description.
+	[parentDocumentFolderId] INT NULL,		-- Self-referencing FK for folder hierarchy. NULL = root-level folder.
+	[iconId] INT NULL,		-- Optional custom folder icon for UI display.
+	[color] NVARCHAR(10) NULL,		-- Optional folder color for UI display.
+	[sequence] INT NOT NULL DEFAULT 0,		-- Display order among sibling folders.
+	[notes] NVARCHAR(MAX) NULL,		-- Optional notes about the folder.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_DocumentFolder_DocumentFolder_parentDocumentFolderId] FOREIGN KEY ([parentDocumentFolderId]) REFERENCES [Scheduler].[DocumentFolder] ([id]),		-- Foreign key to the DocumentFolder table.
+	CONSTRAINT [FK_DocumentFolder_Icon_iconId] FOREIGN KEY ([iconId]) REFERENCES [Scheduler].[Icon] ([id]),		-- Foreign key to the Icon table.
+	CONSTRAINT [UC_DocumentFolder_tenantGuid_parentDocumentFolderId_name] UNIQUE ( [tenantGuid], [parentDocumentFolderId], [name]) 		-- Uniqueness enforced on the DocumentFolder table's tenantGuid and parentDocumentFolderId and name fields.
+)
+GO
+
+-- Index on the DocumentFolder table's tenantGuid field.
+CREATE INDEX [I_DocumentFolder_tenantGuid] ON [Scheduler].[DocumentFolder] ([tenantGuid])
+GO
+
+-- Index on the DocumentFolder table's tenantGuid,parentDocumentFolderId fields.
+CREATE INDEX [I_DocumentFolder_tenantGuid_parentDocumentFolderId] ON [Scheduler].[DocumentFolder] ([tenantGuid], [parentDocumentFolderId])
+GO
+
+-- Index on the DocumentFolder table's tenantGuid,iconId fields.
+CREATE INDEX [I_DocumentFolder_tenantGuid_iconId] ON [Scheduler].[DocumentFolder] ([tenantGuid], [iconId])
+GO
+
+-- Index on the DocumentFolder table's tenantGuid,active fields.
+CREATE INDEX [I_DocumentFolder_tenantGuid_active] ON [Scheduler].[DocumentFolder] ([tenantGuid], [active])
+GO
+
+-- Index on the DocumentFolder table's tenantGuid,deleted fields.
+CREATE INDEX [I_DocumentFolder_tenantGuid_deleted] ON [Scheduler].[DocumentFolder] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the DocumentFolder table.
+CREATE TABLE [Scheduler].[DocumentFolderChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[documentFolderId] INT NOT NULL,		-- Link to the DocumentFolder table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_DocumentFolderChangeHistory_DocumentFolder_documentFolderId] FOREIGN KEY ([documentFolderId]) REFERENCES [Scheduler].[DocumentFolder] ([id])		-- Foreign key to the DocumentFolder table.
+)
+GO
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid field.
+CREATE INDEX [I_DocumentFolderChangeHistory_tenantGuid] ON [Scheduler].[DocumentFolderChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_DocumentFolderChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[DocumentFolderChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_DocumentFolderChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[DocumentFolderChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_DocumentFolderChangeHistory_tenantGuid_userId] ON [Scheduler].[DocumentFolderChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the DocumentFolderChangeHistory table's tenantGuid,documentFolderId fields.
+CREATE INDEX [I_DocumentFolderChangeHistory_tenantGuid_documentFolderId] ON [Scheduler].[DocumentFolderChangeHistory] ([tenantGuid], [documentFolderId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+====================================================================================================
+ DOCUMENT TAG (Flexible Tagging)
+ Lightweight tagging system for documents.  Tags complement DocumentType classification
+ and folder organization by allowing multiple user-defined labels on each document
+ (e.g., 'urgent', '2026 budget', 'board meeting', 'needs review').
+
+ Tags are tenant-scoped and linked to documents via the DocumentDocumentTag junction table.
+ ====================================================================================================
+*/
+CREATE TABLE [Scheduler].[DocumentTag]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[name] NVARCHAR(100) NOT NULL,
+	[description] NVARCHAR(500) NULL,
+	[color] NVARCHAR(10) NULL,		-- Tag badge color for UI display.
+	[sequence] INT NULL,		-- Sequence to use for sorting.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_DocumentTag_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the DocumentTag table's tenantGuid and name fields.
+)
+GO
+
+-- Index on the DocumentTag table's tenantGuid field.
+CREATE INDEX [I_DocumentTag_tenantGuid] ON [Scheduler].[DocumentTag] ([tenantGuid])
+GO
+
+-- Index on the DocumentTag table's tenantGuid,name fields.
+CREATE INDEX [I_DocumentTag_tenantGuid_name] ON [Scheduler].[DocumentTag] ([tenantGuid], [name])
+GO
+
+-- Index on the DocumentTag table's tenantGuid,active fields.
+CREATE INDEX [I_DocumentTag_tenantGuid_active] ON [Scheduler].[DocumentTag] ([tenantGuid], [active])
+GO
+
+-- Index on the DocumentTag table's tenantGuid,deleted fields.
+CREATE INDEX [I_DocumentTag_tenantGuid_deleted] ON [Scheduler].[DocumentTag] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the DocumentTag table.
+CREATE TABLE [Scheduler].[DocumentTagChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[documentTagId] INT NOT NULL,		-- Link to the DocumentTag table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_DocumentTagChangeHistory_DocumentTag_documentTagId] FOREIGN KEY ([documentTagId]) REFERENCES [Scheduler].[DocumentTag] ([id])		-- Foreign key to the DocumentTag table.
+)
+GO
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid field.
+CREATE INDEX [I_DocumentTagChangeHistory_tenantGuid] ON [Scheduler].[DocumentTagChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_DocumentTagChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[DocumentTagChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_DocumentTagChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[DocumentTagChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_DocumentTagChangeHistory_tenantGuid_userId] ON [Scheduler].[DocumentTagChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the DocumentTagChangeHistory table's tenantGuid,documentTagId fields.
+CREATE INDEX [I_DocumentTagChangeHistory_tenantGuid_documentTagId] ON [Scheduler].[DocumentTagChangeHistory] ([tenantGuid], [documentTagId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+====================================================================================================
  DOCUMENT (Attachment Storage)
  Stores file attachments (images, PDFs, scans) with metadata and binary content.
  Uses polymorphic nullable FKs to link to entities across the system.
+ Documents can optionally be organized into folders via documentFolderId.
 
  DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
- This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
- Azure Blob Storage or similar, storing only a reference URL here.
+ This is pragmatic for small-to-medium volumes.  The server-side IFileStorageService abstraction
+ allows future migration to Azure Blob Storage or similar without changing the API surface.
 
  The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
  ====================================================================================================
@@ -8997,9 +9193,8 @@ CREATE TABLE [Scheduler].[Document]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[documentTypeId] INT NOT NULL,		-- The type of document (Rental Agreement, Receipt, Photo, etc.).
-	[invoiceId] INT NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
-	[receiptId] INT NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
+	[documentTypeId] INT NULL,		-- Optional type classification (Rental Agreement, Receipt, Photo, etc.). Nullable because general-purpose files in the file manager may not need a type.
+	[documentFolderId] INT NULL,		-- Optional folder placement. NULL = root level / unfiled document.
 	[name] NVARCHAR(250) NOT NULL,		-- Display name for the document.
 	[description] NVARCHAR(500) NULL,		-- Optional description of the document.
 	[fileName] NVARCHAR(500) NOT NULL,		-- Original filename with extension (e.g., 'rental-agreement-smith.pdf').
@@ -9009,6 +9204,8 @@ CREATE TABLE [Scheduler].[Document]
 	[fileDataSize] BIGINT NULL,		-- Part of the binary data field setup
 	[fileDataData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
 	[fileDataMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
+	[invoiceId] INT NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
+	[receiptId] INT NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
 	[scheduledEventId] INT NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).
 	[financialTransactionId] INT NULL,		-- Optional link to a FinancialTransaction (e.g., receipt for a purchase).
 	[contactId] INT NULL,		-- Optional link to a Contact.
@@ -9037,6 +9234,7 @@ CREATE TABLE [Scheduler].[Document]
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 	CONSTRAINT [FK_Document_DocumentType_documentTypeId] FOREIGN KEY ([documentTypeId]) REFERENCES [Scheduler].[DocumentType] ([id]),		-- Foreign key to the DocumentType table.
+	CONSTRAINT [FK_Document_DocumentFolder_documentFolderId] FOREIGN KEY ([documentFolderId]) REFERENCES [Scheduler].[DocumentFolder] ([id]),		-- Foreign key to the DocumentFolder table.
 	CONSTRAINT [FK_Document_Invoice_invoiceId] FOREIGN KEY ([invoiceId]) REFERENCES [Scheduler].[Invoice] ([id]),		-- Foreign key to the Invoice table.
 	CONSTRAINT [FK_Document_Receipt_receiptId] FOREIGN KEY ([receiptId]) REFERENCES [Scheduler].[Receipt] ([id]),		-- Foreign key to the Receipt table.
 	CONSTRAINT [FK_Document_ScheduledEvent_scheduledEventId] FOREIGN KEY ([scheduledEventId]) REFERENCES [Scheduler].[ScheduledEvent] ([id]),		-- Foreign key to the ScheduledEvent table.
@@ -9064,6 +9262,10 @@ GO
 
 -- Index on the Document table's tenantGuid,documentTypeId fields.
 CREATE INDEX [I_Document_tenantGuid_documentTypeId] ON [Scheduler].[Document] ([tenantGuid], [documentTypeId])
+GO
+
+-- Index on the Document table's tenantGuid,documentFolderId fields.
+CREATE INDEX [I_Document_tenantGuid_documentFolderId] ON [Scheduler].[Document] ([tenantGuid], [documentFolderId])
 GO
 
 -- Index on the Document table's tenantGuid,invoiceId fields.
@@ -9180,6 +9382,81 @@ GO
 
 -- Index on the DocumentChangeHistory table's tenantGuid,documentId fields.
 CREATE INDEX [I_DocumentChangeHistory_tenantGuid_documentId] ON [Scheduler].[DocumentChangeHistory] ([tenantGuid], [documentId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- Junction table linking Documents to DocumentTags. Enables many-to-many tagging of documents.
+CREATE TABLE [Scheduler].[DocumentDocumentTag]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	[documentId] INT NOT NULL,		-- The document being tagged.
+	[documentTagId] INT NOT NULL		-- The tag applied to the document.
+
+	CONSTRAINT [FK_DocumentDocumentTag_Document_documentId] FOREIGN KEY ([documentId]) REFERENCES [Scheduler].[Document] ([id]),		-- Foreign key to the Document table.
+	CONSTRAINT [FK_DocumentDocumentTag_DocumentTag_documentTagId] FOREIGN KEY ([documentTagId]) REFERENCES [Scheduler].[DocumentTag] ([id]),		-- Foreign key to the DocumentTag table.
+	CONSTRAINT [UC_DocumentDocumentTag_tenantGuid_documentId_documentTagId] UNIQUE ( [tenantGuid], [documentId], [documentTagId]) 		-- Uniqueness enforced on the DocumentDocumentTag table's tenantGuid and documentId and documentTagId fields.
+)
+GO
+
+-- Index on the DocumentDocumentTag table's tenantGuid field.
+CREATE INDEX [I_DocumentDocumentTag_tenantGuid] ON [Scheduler].[DocumentDocumentTag] ([tenantGuid])
+GO
+
+-- Index on the DocumentDocumentTag table's tenantGuid,active fields.
+CREATE INDEX [I_DocumentDocumentTag_tenantGuid_active] ON [Scheduler].[DocumentDocumentTag] ([tenantGuid], [active])
+GO
+
+-- Index on the DocumentDocumentTag table's tenantGuid,deleted fields.
+CREATE INDEX [I_DocumentDocumentTag_tenantGuid_deleted] ON [Scheduler].[DocumentDocumentTag] ([tenantGuid], [deleted])
+GO
+
+-- Index on the DocumentDocumentTag table's tenantGuid,documentId fields.
+CREATE INDEX [I_DocumentDocumentTag_tenantGuid_documentId] ON [Scheduler].[DocumentDocumentTag] ([tenantGuid], [documentId])
+GO
+
+-- Index on the DocumentDocumentTag table's tenantGuid,documentTagId fields.
+CREATE INDEX [I_DocumentDocumentTag_tenantGuid_documentTagId] ON [Scheduler].[DocumentDocumentTag] ([tenantGuid], [documentTagId])
+GO
+
+
+-- The change history for records from the DocumentDocumentTag table.
+CREATE TABLE [Scheduler].[DocumentDocumentTagChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[documentDocumentTagId] INT NOT NULL,		-- Link to the DocumentDocumentTag table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_DocumentDocumentTagChangeHistory_DocumentDocumentTag_documentDocumentTagId] FOREIGN KEY ([documentDocumentTagId]) REFERENCES [Scheduler].[DocumentDocumentTag] ([id])		-- Foreign key to the DocumentDocumentTag table.
+)
+GO
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid field.
+CREATE INDEX [I_DocumentDocumentTagChangeHistory_tenantGuid] ON [Scheduler].[DocumentDocumentTagChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_DocumentDocumentTagChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[DocumentDocumentTagChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_DocumentDocumentTagChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[DocumentDocumentTagChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_DocumentDocumentTagChangeHistory_tenantGuid_userId] ON [Scheduler].[DocumentDocumentTagChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,documentDocumentTagId fields.
+CREATE INDEX [I_DocumentDocumentTagChangeHistory_tenantGuid_documentDocumentTagId] ON [Scheduler].[DocumentDocumentTagChangeHistory] ([tenantGuid], [documentDocumentTagId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

@@ -131,10 +131,8 @@ export class DocumentCustomListingComponent implements OnInit {
       { key: 'uploadedDate', label: 'Uploaded', width: undefined, template: 'date' },
       { key: 'uploadedBy', label: 'Uploaded By', width: undefined },
 
-      // Owner entity links
-      { key: 'contact.firstName', label: 'Contact', width: undefined, template: 'link', linkPath: ['/contact', 'contactId'] },
-      { key: 'resource.name', label: 'Resource', width: undefined, template: 'link', linkPath: ['/resource', 'resourceId'] },
-      { key: 'scheduledEvent.name', label: 'Event', width: undefined, template: 'link', linkPath: ['/schedule', 'scheduledEventId'] },
+      // Flattened FK link — shows the first populated entity relationship
+      { key: '_linkedTo', label: 'Linked To', width: undefined, template: 'linkedTo' },
 
     ];
 

@@ -1,0 +1,682 @@
+/*
+ * file-manager.component.scss
+ *
+ * AI-Developed — This file was significantly developed with AI assistance.
+ *
+ * Premium, Explorer-like styling for the File Manager component.
+ * Uses a dark header, light content area, with glassmorphism and subtle animations.
+ */
+
+// ─── Variables ──────────────────────────────────────────────────────
+$sidebar-width: 260px;
+$sidebar-collapsed-width: 40px;
+$detail-panel-width: 300px;
+$toolbar-height: 54px;
+$action-bar-height: 44px;
+$accent: #4a90d9;
+$accent-hover: #3a7bc8;
+$folder-gold: #f0ad4e;
+$bg-sidebar: #1e2530;
+$bg-sidebar-hover: #2a3340;
+$bg-content: #f8f9fa;
+$bg-toolbar: #212a36;
+$border-subtle: rgba(255,255,255,0.08);
+$card-bg: #ffffff;
+$card-shadow: 0 1px 3px rgba(0,0,0,0.08);
+$card-hover-shadow: 0 4px 12px rgba(0,0,0,0.12);
+$transition-fast: 0.15s ease;
+$transition-normal: 0.25s ease;
+
+// ─── Host ───────────────────────────────────────────────────────────
+:host {
+  display: block;
+  height: calc(100vh - 56px); // Account for app header
+  overflow: hidden;
+}
+
+// ─── Container ──────────────────────────────────────────────────────
+.file-manager-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  background: $bg-content;
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  TOOLBAR
+// ═══════════════════════════════════════════════════════════════════════
+.fm-toolbar {
+  display: flex;
+  align-items: center;
+  height: $toolbar-height;
+  padding: 0 16px;
+  background: $bg-toolbar;
+  color: #fff;
+  flex-shrink: 0;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.fm-toolbar-left {
+  flex: 0 0 auto;
+}
+
+.fm-toolbar-center {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.fm-toolbar-right {
+  flex: 0 0 auto;
+}
+
+.fm-title {
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: rgba(255,255,255,0.92);
+  letter-spacing: 0.02em;
+
+  i {
+    color: $accent;
+  }
+}
+
+// ─── Breadcrumbs ────────────────────────────────────────────────────
+.fm-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fm-crumb {
+  color: rgba(255,255,255,0.6);
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+  }
+
+  &.active {
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+.fm-crumb-sep {
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.3);
+}
+
+// ─── Search ─────────────────────────────────────────────────────────
+.fm-search-wrapper {
+  position: relative;
+  width: 240px;
+}
+
+.fm-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
+}
+
+.fm-search-input {
+  width: 100%;
+  padding: 6px 28px 6px 30px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  font-size: 0.82rem;
+  transition: all $transition-fast;
+
+  &::placeholder {
+    color: rgba(255,255,255,0.35);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $accent;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 0 0 2px rgba($accent, 0.2);
+  }
+}
+
+.fm-search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 0.75rem;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+//  MAIN SPLIT
+// ═══════════════════════════════════════════════════════════════════════
+.fm-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+// ─── Sidebar / Folder Tree ──────────────────────────────────────────
+.fm-sidebar {
+  width: $sidebar-width;
+  background: $bg-sidebar;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width $transition-normal;
+  border-right: 1px solid $border-subtle;
+
+  &.collapsed {
+    width: $sidebar-collapsed-width;
+  }
+}
+
+.fm-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid $border-subtle;
+}
+
+.fm-sidebar-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+}
+
+.fm-sidebar-toggle {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+  }
+}
+
+.fm-folder-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+
+.fm-folder-node {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.78);
+  font-size: 0.85rem;
+  transition: all $transition-fast;
+  user-select: none;
+
+  &:hover {
+    background: $bg-sidebar-hover;
+    color: #fff;
+  }
+
+  &.active {
+    background: rgba($accent, 0.18);
+    color: #fff;
+    border-right: 3px solid $accent;
+  }
+}
+
+.fm-tree-arrow {
+  width: 14px;
+  text-align: center;
+  margin-right: 4px;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+.fm-tree-arrow-spacer {
+  width: 14px;
+  margin-right: 4px;
+}
+
+.fm-folder-icon {
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+.fm-folder-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fm-sidebar-footer {
+  padding: 8px 12px;
+  border-top: 1px solid $border-subtle;
+}
+
+
+// ─── Content Area ───────────────────────────────────────────────────
+.fm-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  background: $bg-content;
+}
+
+.fm-action-bar {
+  display: flex;
+  align-items: center;
+  padding: 6px 16px;
+  height: $action-bar-height;
+  border-bottom: 1px solid #e9ecef;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+// ─── Sub-folders row ────────────────────────────────────────────────
+.fm-subfolder-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px 4px;
+}
+
+.fm-subfolder-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: $card-bg;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all $transition-fast;
+  box-shadow: $card-shadow;
+
+  &:hover {
+    box-shadow: $card-hover-shadow;
+    border-color: $accent;
+    transform: translateY(-1px);
+  }
+}
+
+.fm-subfolder-icon {
+  font-size: 1.2rem;
+}
+
+.fm-subfolder-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
+
+// ─── Grid View ──────────────────────────────────────────────────────
+.fm-file-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+
+.fm-file-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 10px 10px;
+  background: $card-bg;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all $transition-fast;
+  box-shadow: $card-shadow;
+
+  &:hover {
+    box-shadow: $card-hover-shadow;
+    border-color: #d0d0d0;
+    transform: translateY(-2px);
+  }
+
+  &.selected {
+    border-color: $accent;
+    box-shadow: 0 0 0 2px rgba($accent, 0.2), $card-hover-shadow;
+  }
+}
+
+.fm-file-card-icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.fm-file-card-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-file-card-meta {
+  font-size: 0.7rem;
+  color: #999;
+  margin-top: 2px;
+}
+
+// ─── List View ──────────────────────────────────────────────────────
+.fm-file-list {
+  flex: 1;
+  overflow-y: auto;
+
+  .table {
+    margin-bottom: 0;
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #fff;
+      border-top: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #6c757d;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      z-index: 1;
+    }
+
+    tbody td {
+      font-size: 0.85rem;
+      vertical-align: middle;
+    }
+  }
+
+  .fm-file-row {
+    cursor: pointer;
+    transition: background $transition-fast;
+  }
+}
+
+// ─── Empty state ────────────────────────────────────────────────────
+.fm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  grid-column: 1 / -1;
+}
+
+// ─── Search indicator ───────────────────────────────────────────────
+.fm-search-indicator {
+  padding: 8px 16px;
+  background: #eef4ff;
+  border-bottom: 1px solid #d4e3f9;
+  font-size: 0.85rem;
+  color: #456;
+}
+
+// ─── Loading ────────────────────────────────────────────────────────
+.fm-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  flex: 1;
+}
+
+// ─── Drag/Drop ──────────────────────────────────────────────────────
+.fm-drop-overlay {
+  position: absolute;
+  inset: $action-bar-height 0 0 0;
+  z-index: 50;
+  background: rgba($accent, 0.06);
+  border: 3px dashed $accent;
+  border-radius: 8px;
+  margin: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fm-drop-overlay-inner {
+  text-align: center;
+  color: $accent;
+  animation: pulse-drop 1.5s ease-in-out infinite;
+
+  i {
+    opacity: 0.7;
+  }
+}
+
+@keyframes pulse-drop {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.05); opacity: 1; }
+}
+
+
+// ─── Detail Panel ───────────────────────────────────────────────────
+.fm-detail-panel {
+  width: $detail-panel-width;
+  background: $bg-sidebar;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-left: 1px solid $border-subtle;
+  overflow-y: auto;
+}
+
+.fm-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid $border-subtle;
+}
+
+.fm-detail-body {
+  padding: 16px 14px;
+  flex: 1;
+}
+
+.fm-detail-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.fm-detail-props {
+  margin-bottom: 16px;
+}
+
+.fm-prop-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.8rem;
+}
+
+.fm-prop-label {
+  color: rgba(255,255,255,0.5);
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.fm-prop-value {
+  color: rgba(255,255,255,0.9);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-detail-actions {
+  margin-top: auto;
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  CONTEXT MENUS
+// ═══════════════════════════════════════════════════════════════════════
+.fm-context-menu {
+  position: fixed;
+  z-index: 9999;
+  background: $bg-sidebar;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  min-width: 180px;
+  overflow: hidden;
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 4px 0;
+
+    li {
+      padding: 8px 14px;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.85);
+      cursor: pointer;
+      transition: background $transition-fast;
+
+      &:hover {
+        background: rgba($accent, 0.2);
+        color: #fff;
+      }
+    }
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  MODALS (lightweight inline)
+// ═══════════════════════════════════════════════════════════════════════
+.fm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1050;
+  backdrop-filter: blur(2px);
+}
+
+.fm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1060;
+  background: $bg-sidebar;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  width: 400px;
+  max-width: 90vw;
+  color: #fff;
+}
+
+.fm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.fm-modal-body {
+  padding: 18px;
+}
+
+.fm-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  RESPONSIVE
+// ═══════════════════════════════════════════════════════════════════════
+@media (max-width: 768px) {
+  .fm-sidebar {
+    width: 0;
+    &.collapsed {
+      width: 0;
+    }
+  }
+
+  .fm-search-wrapper {
+    width: 160px;
+  }
+
+  .fm-detail-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 100;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+  }
+
+  .fm-file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+    padding: 10px;
+  }
+}

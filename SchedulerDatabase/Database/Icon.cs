@@ -45,6 +45,8 @@ public partial class Icon
 
     public virtual ICollection<Crew> Crews { get; set; } = new List<Crew>();
 
+    public virtual ICollection<DocumentFolder> DocumentFolders { get; set; } = new List<DocumentFolder>();
+
     public virtual ICollection<EventType> EventTypes { get; set; } = new List<EventType>();
 
     public virtual ICollection<Fund> Funds { get; set; } = new List<Fund>();

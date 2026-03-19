@@ -96,6 +96,12 @@
             <span class="info-value notes-value">{{ payment.notes }}</span>
         </div>
     </div>
+
+    <!-- ═══ Documents ═══ -->
+    <div class="mt-4">
+        <h5 class="mb-3"><i class="fa-solid fa-file-lines me-2"></i>Documents</h5>
+        <app-event-document-panel [ownerField]="'paymentTransactionId'" [ownerId]="payment!.id"></app-event-document-panel>
+    </div>
 </div>
 
 <ng-template #loadingTemplate>

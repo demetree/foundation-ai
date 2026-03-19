@@ -4351,7 +4351,7 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             #endregion
 
 
-            #region Document Attachments — DocumentType + Document
+            #region Document Attachments — DocumentType + DocumentFolder + Document + DocumentTag
 
             //
             // Document Type — Classification of attachments
@@ -4364,21 +4364,6 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             documentTypeTable.AddSequenceField();
             documentTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display.");
             documentTypeTable.AddControlFields();
-
-            //
-
-
-            /*
-            
-                                 (Name: "Rental Agreement",       Description: "Signed rental agreement / contract for facility bookings",  Color: "#7C3AED", Sequence: 1),
-                    (Name: "Insurance Certificate",  Description: "Liability insurance certificate for event coverage",       Color: "#2563EB", Sequence: 2),
-                    (Name: "Permit",                 Description: "Required permits (liquor license, fire permit, etc.)",     Color: "#D97706", Sequence: 3),
-                    (Name: "Receipt",                Description: "Payment receipt or proof of payment",                     Color: "#059669", Sequence: 4),
-                    (Name: "Other",                  Description: "Miscellaneous supporting documents",                      Color: "#6B7280", Sequence: 5)
-
-             * 
-             * */
-
 
 
 
@@ -4406,7 +4391,6 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
                 { "sequence", "4" },
                 { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456704" } });
 
-
             documentTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "Permit" },
                 { "description", "Required permits (liquor license, fire permit, etc.)" },
@@ -4419,14 +4403,23 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
                 { "sequence", "6" },
                 { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456706" } });
 
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "License" },
+                { "description", "License that certifies a resource for a function (driving etc..)" },
+                { "sequence", "7" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456707" } });
 
             documentTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "Insurance Certificate" },
                 { "description", "Liability insurance certificate for event coverage" },
-                { "sequence", "7" },
-                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456707" } });
+                { "sequence", "8" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456708" } });
 
-
+            documentTypeTable.AddData(new Dictionary<string, string> {
+                { "name", "Meeting Minutes" },
+                { "description", "The notes from a meeting" },
+                { "sequence", "9" },
+                { "objectGuid", "f1a1b2c3-d4e5-6789-abcd-ef0123456709" } });
 
             documentTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "Other" },
@@ -4436,19 +4429,90 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
 
 
             //
+            // AI-Developed — DocumentFolder table significantly developed with AI assistance.
+            //
+            // DocumentFolder — Hierarchical folder structure for file management
+            //
+            // Provides Explorer/SharePoint-like folder organization for documents.
+            // Self-referencing parentDocumentFolderId enables unlimited nesting depth.
+            // Documents without a folder FK are considered "root level" / unfiled.
+            //
+            Database.Table documentFolderTable = database.AddTable("DocumentFolder");
+            documentFolderTable.comment = @"====================================================================================================
+ DOCUMENT FOLDER (File Manager Hierarchy)
+ Provides a hierarchical folder structure for organizing documents in an Explorer-like
+ file management interface.  Self-referencing via parentDocumentFolderId enables unlimited
+ nesting.  Documents link to folders via Document.documentFolderId (nullable — documents
+ without a folder are considered root-level / unfiled).
+
+ A unique constraint on (tenantGuid, parentDocumentFolderId, name) prevents duplicate
+ folder names at the same hierarchy level within a tenant.
+ ====================================================================================================";
+
+            documentFolderTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            documentFolderTable.AddIdField();
+            documentFolderTable.AddMultiTenantSupport();
+            documentFolderTable.AddString250Field("name", false).AddScriptComments("Folder display name.");
+            documentFolderTable.AddString500Field("description", true).AddScriptComments("Optional folder description.");
+            documentFolderTable.AddForeignKeyField("parentDocumentFolderId", documentFolderTable, true, true).AddScriptComments("Self-referencing FK for folder hierarchy. NULL = root-level folder.");
+            documentFolderTable.AddForeignKeyField(iconTable, true).AddScriptComments("Optional custom folder icon for UI display.");
+            documentFolderTable.AddHTMLColorField("color", true).AddScriptComments("Optional folder color for UI display.");
+            documentFolderTable.AddIntField("sequence", false, 0).AddScriptComments("Display order among sibling folders.");
+            documentFolderTable.AddTextField("notes", true).AddScriptComments("Optional notes about the folder.");
+            documentFolderTable.AddVersionControl();
+            documentFolderTable.AddControlFields();
+
+            // Prevent duplicate folder names at the same level within a tenant
+            documentFolderTable.AddUniqueConstraint("tenantGuid", "parentDocumentFolderId", "name", true);
+
+
+            //
+            // AI-Developed — DocumentTag table significantly developed with AI assistance.
+            //
+            // DocumentTag — Flexible tagging for documents beyond type classification
+            //
+            // Provides a lightweight tagging system that allows documents to be categorized
+            // with multiple user-defined tags (e.g., "urgent", "2026 budget", "board meeting").
+            // Tags complement the DocumentType classification and folder organization.
+            //
+            Database.Table documentTagTable = database.AddTable("DocumentTag");
+            documentTagTable.comment = @"====================================================================================================
+ DOCUMENT TAG (Flexible Tagging)
+ Lightweight tagging system for documents.  Tags complement DocumentType classification
+ and folder organization by allowing multiple user-defined labels on each document
+ (e.g., 'urgent', '2026 budget', 'board meeting', 'needs review').
+
+ Tags are tenant-scoped and linked to documents via the DocumentDocumentTag junction table.
+ ====================================================================================================";
+
+            documentTagTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            documentTagTable.AddIdField();
+            documentTagTable.AddMultiTenantSupport();
+            documentTagTable.AddNameAndDescriptionFields(true, true, true);
+            documentTagTable.AddHTMLColorField("color", true).AddScriptComments("Tag badge color for UI display.");
+            documentTagTable.AddSequenceField();
+            documentTagTable.AddVersionControl();
+            documentTagTable.AddControlFields();
+
+
+
+            //
             // Document — Attachment record with binary storage
             // Supports polymorphic links to events, financial transactions, contacts, and resources.
             // Includes status tracking for workflows like rental agreement signing.
+            //
+            // AI-Developed — DocumentFolder FK and DocumentType nullable change significantly developed with AI assistance.
             //
             Database.Table documentTable = database.AddTable("Document");
             documentTable.comment = @"====================================================================================================
  DOCUMENT (Attachment Storage)
  Stores file attachments (images, PDFs, scans) with metadata and binary content.
  Uses polymorphic nullable FKs to link to entities across the system.
+ Documents can optionally be organized into folders via documentFolderId.
 
  DESIGN NOTE: Binary content is stored directly in SQL Server (varbinary(max)) via AddBinaryDataFields.
- This is pragmatic for small-to-medium volumes. For high-volume scenarios, consider migrating to
- Azure Blob Storage or similar, storing only a reference URL here.
+ This is pragmatic for small-to-medium volumes.  The server-side IFileStorageService abstraction
+ allows future migration to Azure Blob Storage or similar without changing the API surface.
 
  The status/statusDate/statusChangedBy fields support document workflows like rental agreement signing.
  ====================================================================================================";
@@ -4456,14 +4520,14 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             documentTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
             documentTable.AddIdField();
             documentTable.AddMultiTenantSupport();
-            documentTable.AddForeignKeyField(documentTypeTable, false, true).AddScriptComments("The type of document (Rental Agreement, Receipt, Photo, etc.).");
+            documentTable.AddForeignKeyField(documentTypeTable, true, true).AddScriptComments("Optional type classification (Rental Agreement, Receipt, Photo, etc.). Nullable because general-purpose files in the file manager may not need a type.");
 
             //
-            // Add Invoice and Receipt FKs to the Document table (defined earlier)
-            // This allows generated PDF invoices/receipts to be stored as Document records.
+            // Folder placement — nullable because documents can exist at the root level (unfiled)
             //
-            documentTable.AddForeignKeyField(invoiceTable, true, true).AddScriptComments("Optional link to an Invoice (e.g., generated invoice PDF).");
-            documentTable.AddForeignKeyField(receiptTable, true, true).AddScriptComments("Optional link to a Receipt (e.g., generated receipt PDF).");
+            documentTable.AddForeignKeyField(documentFolderTable, true, true).AddScriptComments("Optional folder placement. NULL = root level / unfiled document.");
+
+            //
 
             documentTable.AddString250Field("name", false).AddScriptComments("Display name for the document.");
             documentTable.AddString500Field("description", true).AddScriptComments("Optional description of the document.");
@@ -4472,7 +4536,13 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             documentTable.AddLongField("fileSizeBytes", false).AddScriptComments("File size in bytes for UI display.");
             documentTable.AddBinaryDataFields("fileData"); // The actual file content stored as binary data.
 
-            // Polymorphic entity links — at least one should be set
+            // Add Invoice and Receipt FKs to the Document table (defined earlier)
+            // This allows generated PDF invoices/receipts to be stored as Document records.
+            //
+            documentTable.AddForeignKeyField(invoiceTable, true, true).AddScriptComments("Optional link to an Invoice (e.g., generated invoice PDF).");
+            documentTable.AddForeignKeyField(receiptTable, true, true).AddScriptComments("Optional link to a Receipt (e.g., generated receipt PDF).");
+
+            // Polymorphic entity links — all optional.  Documents can exist purely as general files without any entity link.
             documentTable.AddForeignKeyField(scheduledEventTable, true, true).AddScriptComments("Optional link to a ScheduledEvent (e.g., rental agreement for a booking).");
             documentTable.AddForeignKeyField(financialTransactionTable, true, true).AddScriptComments("Optional link to a FinancialTransaction (e.g., receipt for a purchase).");
             documentTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional link to a Contact.");
@@ -4502,6 +4572,29 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             documentTable.AddTextField("notes", true).AddScriptComments("Optional notes about the document.");
             documentTable.AddVersionControl();
             documentTable.AddControlFields();
+
+
+
+
+            //
+            // AI-Developed — DocumentDocumentTag junction table significantly developed with AI assistance.
+            //
+            // DocumentDocumentTag — Junction table linking Documents to Tags (many-to-many)
+            //
+            Database.Table documentDocumentTagTable = database.AddTable("DocumentDocumentTag");
+            documentDocumentTagTable.comment = "Junction table linking Documents to DocumentTags. Enables many-to-many tagging of documents.";
+            documentDocumentTagTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            documentDocumentTagTable.AddIdField();
+            documentDocumentTagTable.AddMultiTenantSupport();
+            // FK fields added below after documentTable is defined
+            documentDocumentTagTable.AddVersionControl();
+            documentDocumentTagTable.AddControlFields();
+
+            documentDocumentTagTable.AddForeignKeyField(documentTable, false, true).AddScriptComments("The document being tagged.");
+            documentDocumentTagTable.AddForeignKeyField(documentTagTable, false, true).AddScriptComments("The tag applied to the document.");
+
+            // Prevent duplicate tag assignments on the same document
+            documentDocumentTagTable.AddUniqueConstraint("tenantGuid", "documentId", "documentTagId", false);
 
             #endregion
 
