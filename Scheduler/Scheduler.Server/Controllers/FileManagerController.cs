@@ -28,6 +28,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Foundation.Scheduler.Controllers.WebAPI
 {
@@ -43,15 +44,36 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         private readonly SchedulerContext _db;
         private readonly IFileStorageService _fileStorage;
         private readonly ILogger<FileManagerController> _logger;
+        private readonly IHubContext<FileManagerHub, IFileManagerHubClient> _hub;
 
         public FileManagerController(
             SchedulerContext db,
             IFileStorageService fileStorage,
-            ILogger<FileManagerController> logger) : base("Scheduler", "FileManager")
+            ILogger<FileManagerController> logger,
+            IHubContext<FileManagerHub, IFileManagerHubClient> hub) : base("Scheduler", "FileManager")
         {
             _db = db;
             _fileStorage = fileStorage;
             _logger = logger;
+            _hub = hub;
+        }
+
+        /// <summary>
+        /// Broadcasts a signal to all clients in the same tenant group.
+        /// </summary>
+        private async Task BroadcastDocumentChangedAsync(Guid tenantGuid, object payload)
+        {
+            await _hub.Clients.Group($"filemanager_{tenantGuid}").DocumentChanged(payload);
+        }
+
+        private async Task BroadcastDocumentDeletedAsync(Guid tenantGuid, object payload)
+        {
+            await _hub.Clients.Group($"filemanager_{tenantGuid}").DocumentDeleted(payload);
+        }
+
+        private async Task BroadcastFolderChangedAsync(Guid tenantGuid, object payload)
+        {
+            await _hub.Clients.Group($"filemanager_{tenantGuid}").FolderChanged(payload);
         }
 
 
@@ -350,6 +372,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     $"Uploaded {uploadedResults.Count} document(s) to folder {folderId?.ToString() ?? "root"}",
                     securityUser.accountName);
 
+                // Broadcast real-time update
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "uploaded", count = uploadedResults.Count, folderId });
+
                 return Ok(uploadedResults);
             }
             catch (Exception ex)
@@ -528,6 +553,259 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error downloading documents as zip.");
                 return StatusCode(500, "Error creating zip archive.");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  RECYCLE BIN / TRASH
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Returns all soft-deleted documents for the current tenant.
+        /// </summary>
+        [Route("api/FileManager/Trash")]
+        [HttpGet]
+        public async Task<IActionResult> GetTrash()
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+                List<Document> deleted = await _fileStorage.GetDeletedDocumentsAsync(tenantGuid);
+
+                return Ok(deleted.Select(d => new {
+                    d.id, d.name, d.fileName, d.mimeType, d.fileSizeBytes,
+                    d.uploadedDate, d.uploadedBy, d.documentFolderId
+                }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving trash.");
+                return StatusCode(500, "Error retrieving trash.");
+            }
+        }
+
+
+        /// <summary>
+        /// Restores a soft-deleted document.
+        /// </summary>
+        [Route("api/FileManager/Trash/{documentId}/Restore")]
+        [HttpPost]
+        public async Task<IActionResult> RestoreFromTrash(int documentId)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+                await _fileStorage.RestoreDocumentAsync(documentId, tenantGuid, securityUser.id);
+
+                return Ok(new { message = "Document restored." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error restoring document {DocumentId}.", documentId);
+                return StatusCode(500, "Error restoring document.");
+            }
+        }
+
+
+        /// <summary>
+        /// Permanently deletes a document from the database.
+        /// </summary>
+        [Route("api/FileManager/Trash/{documentId}")]
+        [HttpDelete]
+        public async Task<IActionResult> PermanentlyDelete(int documentId)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+                await _fileStorage.PermanentlyDeleteDocumentAsync(documentId, tenantGuid, securityUser.id);
+
+                return Ok(new { message = "Document permanently deleted." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error permanently deleting document {DocumentId}.", documentId);
+                return StatusCode(500, "Error permanently deleting document.");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  VERSION HISTORY
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Returns all versions of a document, sorted descending by version number.
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/Versions")]
+        [HttpGet]
+        public async Task<IActionResult> GetDocumentVersions(int documentId)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+                List<Document> versions = await _fileStorage.GetDocumentVersionsAsync(documentId, tenantGuid);
+
+                return Ok(versions.Select(d => new {
+                    d.id, d.name, d.fileName, d.mimeType, d.fileSizeBytes,
+                    d.uploadedDate, d.uploadedBy, d.versionNumber, d.objectGuid
+                }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving versions for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error retrieving version history.");
+            }
+        }
+
+
+        /// <summary>
+        /// Uploads a new version of an existing document, preserving the same objectGuid.
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/NewVersion")]
+        [HttpPost]
+        public async Task<IActionResult> UploadNewVersion(int documentId)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                // Get existing document to copy objectGuid and versionNumber
+                Document existing = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+                if (existing == null)
+                {
+                    return NotFound("Document not found.");
+                }
+
+                IFormFileCollection files = Request.Form.Files;
+                if (files == null || files.Count == 0)
+                {
+                    return BadRequest("No file provided.");
+                }
+
+                IFormFile file = files[0];
+                byte[] fileBytes;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    await file.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                Document newVersion = new Document
+                {
+                    tenantGuid = tenantGuid,
+                    name = Path.GetFileNameWithoutExtension(file.FileName),
+                    fileName = file.FileName,
+                    mimeType = file.ContentType ?? "application/octet-stream",
+                    fileSizeBytes = file.Length,
+                    fileDataFileName = file.FileName,
+                    fileDataSize = file.Length,
+                    fileDataData = fileBytes,
+                    fileDataMimeType = file.ContentType ?? "application/octet-stream",
+                    documentFolderId = existing.documentFolderId,
+                    documentTypeId = existing.documentTypeId,
+                    uploadedBy = securityUser.accountName,
+                    objectGuid = existing.objectGuid != Guid.Empty ? existing.objectGuid : Guid.NewGuid(),
+                    versionNumber = existing.versionNumber + 1,
+
+                    // Preserve entity links
+                    scheduledEventId = existing.scheduledEventId,
+                    contactId = existing.contactId,
+                    clientId = existing.clientId,
+                    resourceId = existing.resourceId,
+                    crewId = existing.crewId,
+                    schedulingTargetId = existing.schedulingTargetId,
+                    financialTransactionId = existing.financialTransactionId,
+                    officeId = existing.officeId,
+                    campaignId = existing.campaignId,
+                    householdId = existing.householdId,
+                    constituentId = existing.constituentId,
+                    tributeId = existing.tributeId,
+                    volunteerProfileId = existing.volunteerProfileId
+                };
+
+                Document saved = await _fileStorage.UploadDocumentAsync(newVersion, securityUser.id);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+                    $"Uploaded new version (v{saved.versionNumber}) for document {documentId}",
+                    securityUser.accountName);
+
+                return Ok(saved.ToDTO());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error uploading new version for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error uploading new version.");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  STORAGE QUOTA
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Returns storage usage stats for the current tenant.
+        /// </summary>
+        [Route("api/FileManager/Storage")]
+        [HttpGet]
+        public async Task<IActionResult> GetStorageUsage()
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+                var (totalBytes, documentCount) = await _fileStorage.GetStorageUsageAsync(tenantGuid);
+
+                return Ok(new { totalBytes, documentCount });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving storage usage.");
+                return StatusCode(500, "Error retrieving storage usage.");
             }
         }
 

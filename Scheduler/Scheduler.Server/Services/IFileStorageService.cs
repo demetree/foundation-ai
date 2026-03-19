@@ -87,6 +87,40 @@ namespace Scheduler.Server.Services
         Task DeleteDocumentAsync(int documentId, Guid tenantGuid, int securityUserId, CancellationToken ct = default);
 
 
+        // ─── Recycle Bin ─────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns all soft-deleted documents (metadata only — no binary data).
+        /// </summary>
+        Task<List<Document>> GetDeletedDocumentsAsync(Guid tenantGuid, CancellationToken ct = default);
+
+        /// <summary>
+        /// Restores a soft-deleted document by setting deleted = false.
+        /// </summary>
+        Task RestoreDocumentAsync(int documentId, Guid tenantGuid, int securityUserId, CancellationToken ct = default);
+
+        /// <summary>
+        /// Permanently removes a document from the database.
+        /// </summary>
+        Task PermanentlyDeleteDocumentAsync(int documentId, Guid tenantGuid, int securityUserId, CancellationToken ct = default);
+
+
+        // ─── Version History ─────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns all versions of a document (by objectGuid), metadata only, sorted descending by version.
+        /// </summary>
+        Task<List<Document>> GetDocumentVersionsAsync(int documentId, Guid tenantGuid, CancellationToken ct = default);
+
+
+        // ─── Storage Quota ───────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns total storage used (sum of fileSizeBytes) for a tenant.
+        /// </summary>
+        Task<(long totalBytes, int documentCount)> GetStorageUsageAsync(Guid tenantGuid, CancellationToken ct = default);
+
+
         // ─── Search ──────────────────────────────────────────────────────────
 
         /// <summary>

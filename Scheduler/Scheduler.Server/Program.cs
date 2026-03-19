@@ -494,6 +494,11 @@ namespace Foundation.Scheduler
 
 
                 //
+                // SignalR for real-time event notifications (concurrent scheduler support)
+                //
+                builder.Services.AddSignalR();
+
+                //
                 // Alerting Integration Service (for incident management)
                 //
                 builder.Services.AddAlertingIntegration(builder.Configuration);
@@ -577,27 +582,31 @@ namespace Foundation.Scheduler
                 if (app.Environment.IsDevelopment())
                 {
                     //
-                    // This is for development only
+                    // This is for development only.
+                    // SignalR requires AllowCredentials, which is incompatible with AllowAnyOrigin.
+                    // SetIsOriginAllowed(_ => true) is the dev-mode equivalent.
                     //
                     app.UseCors(builder => builder
-                    .AllowAnyOrigin()
+                    .SetIsOriginAllowed(_ => true)
                     .AllowAnyHeader()
                     .AllowAnyMethod()
+                    .AllowCredentials()
                     );
                 }
                 else
                 {
                     //
-                    // This is for production
+                    // This is for production.
+                    // AllowCredentials is required for SignalR negotiation and fallback transports.
                     //
                     string allowedDomains = Configuration.GetStringConfigurationSetting("AllowedCORSDomains", "https:////k2research.ca;");
 
-                    // Note that since bearer tokens are used, we do not need to use .AllowCredentials
                     app.UseCors(builder => builder
                         .WithOrigins(allowedDomains.Split(","))
                         .SetIsOriginAllowedToAllowWildcardSubdomains()      // To allow other apps under the root domain
                         .WithHeaders("Content-Type", "Accept", "Authorization")
                         .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .AllowCredentials()
                         .SetPreflightMaxAge(TimeSpan.FromMinutes(5))
                     );
                 }
@@ -619,7 +628,7 @@ namespace Foundation.Scheduler
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline'; " +
                                         "img-src 'self' data: blob: ; " +
-                                        "connect-src 'self';";
+                                        "connect-src 'self' ws: wss:;";
                         }
                         else
                         {
@@ -628,7 +637,7 @@ namespace Foundation.Scheduler
                                         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
                                         "style-src 'self' 'unsafe-inline'; " +
                                         "img-src 'self' data: blob: ; " +
-                                        "connect-src 'self' ;";
+                                        "connect-src 'self' wss:;";
                         }
 
                         context.Response.Headers["Content-Security-Policy"] = cspPolicy;
@@ -641,6 +650,9 @@ namespace Foundation.Scheduler
                 });
 
 
+
+                app.MapHub<SchedulerHub>("/SchedulerSignal");
+                app.MapHub<FileManagerHub>("/FileManagerSignal");
 
                 app.MapControllers();
 

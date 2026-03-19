@@ -362,6 +362,133 @@ namespace Scheduler.Server.Services
 
 
         // ═══════════════════════════════════════════════════════════════════════
+        //  RECYCLE BIN
+        // ═══════════════════════════════════════════════════════════════════════
+
+        public async Task<List<Document>> GetDeletedDocumentsAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            return await _db.Documents
+                .Where(d => d.tenantGuid == tenantGuid && d.deleted == true)
+                .OrderByDescending(d => d.uploadedDate)
+                .Select(d => new Document {
+                    id = d.id,
+                    tenantGuid = d.tenantGuid,
+                    documentFolderId = d.documentFolderId,
+                    name = d.name,
+                    description = d.description,
+                    fileName = d.fileName,
+                    mimeType = d.mimeType,
+                    fileSizeBytes = d.fileSizeBytes,
+                    uploadedDate = d.uploadedDate,
+                    uploadedBy = d.uploadedBy,
+                    deleted = d.deleted
+                })
+                .AsNoTracking()
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
+        }
+
+        public async Task RestoreDocumentAsync(int documentId, Guid tenantGuid, int securityUserId, CancellationToken ct = default)
+        {
+            Document document = await _db.Documents
+                .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == true)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (document == null)
+            {
+                throw new InvalidOperationException($"Deleted document {documentId} not found.");
+            }
+
+            document.deleted = false;
+
+            var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(_db, securityUserId, false, ct);
+            await chts.SaveEntityAsync(document).ConfigureAwait(false);
+
+            _logger.LogInformation("Restored Document {DocumentId} for tenant {TenantGuid}.", documentId, tenantGuid);
+        }
+
+        public async Task PermanentlyDeleteDocumentAsync(int documentId, Guid tenantGuid, int securityUserId, CancellationToken ct = default)
+        {
+            Document document = await _db.Documents
+                .Where(d => d.id == documentId && d.tenantGuid == tenantGuid)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (document == null)
+            {
+                throw new InvalidOperationException($"Document {documentId} not found.");
+            }
+
+            _db.Documents.Remove(document);
+            await _db.SaveChangesAsync(ct).ConfigureAwait(false);
+
+            _logger.LogInformation("Permanently deleted Document {DocumentId} for tenant {TenantGuid}.", documentId, tenantGuid);
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  VERSION HISTORY
+        // ═══════════════════════════════════════════════════════════════════════
+
+        public async Task<List<Document>> GetDocumentVersionsAsync(int documentId, Guid tenantGuid, CancellationToken ct = default)
+        {
+            // First, get the objectGuid for this document
+            Document source = await _db.Documents
+                .Where(d => d.id == documentId && d.tenantGuid == tenantGuid)
+                .Select(d => new Document { objectGuid = d.objectGuid })
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (source == null || source.objectGuid == Guid.Empty)
+            {
+                return new List<Document>();
+            }
+
+            // Return all documents with the same objectGuid (all versions)
+            return await _db.Documents
+                .Where(d => d.tenantGuid == tenantGuid && d.objectGuid == source.objectGuid && d.deleted == false)
+                .OrderByDescending(d => d.versionNumber)
+                .Select(d => new Document {
+                    id = d.id,
+                    tenantGuid = d.tenantGuid,
+                    name = d.name,
+                    fileName = d.fileName,
+                    mimeType = d.mimeType,
+                    fileSizeBytes = d.fileSizeBytes,
+                    uploadedDate = d.uploadedDate,
+                    uploadedBy = d.uploadedBy,
+                    versionNumber = d.versionNumber,
+                    objectGuid = d.objectGuid
+                })
+                .AsNoTracking()
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  STORAGE QUOTA
+        // ═══════════════════════════════════════════════════════════════════════
+
+        public async Task<(long totalBytes, int documentCount)> GetStorageUsageAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            var result = await _db.Documents
+                .Where(d => d.tenantGuid == tenantGuid && d.deleted == false)
+                .GroupBy(d => 1)
+                .Select(g => new {
+                    totalBytes = g.Sum(d => d.fileSizeBytes),
+                    documentCount = g.Count()
+                })
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            return result != null ? (result.totalBytes, result.documentCount) : (0, 0);
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
         //  SEARCH
         // ═══════════════════════════════════════════════════════════════════════
 

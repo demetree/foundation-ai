@@ -288,10 +288,57 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
+
+    // ─── Recycle Bin / Trash ─────────────────────────────────────────
+
+    getTrash(): Observable<DocumentDTO[]> {
+        return this.http.get<DocumentDTO[]>(`${this.base}/Trash`, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getTrash()))
+        );
+    }
+
+    restoreFromTrash(documentId: number): Observable<any> {
+        return this.http.post(`${this.base}/Trash/${documentId}/Restore`, null, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.restoreFromTrash(documentId)))
+        );
+    }
+
+    permanentlyDelete(documentId: number): Observable<any> {
+        return this.http.delete(`${this.base}/Trash/${documentId}`, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.permanentlyDelete(documentId)))
+        );
+    }
+
     searchDocuments(query: string): Observable<DocumentDTO[]> {
         const params = new HttpParams().set('q', query);
         return this.http.get<DocumentDTO[]>(`${this.base}/Documents/Search`, { headers: this.authHeaders(), params }).pipe(
             catchError((error: any) => this.handleError(error, () => this.searchDocuments(query)))
+        );
+    }
+
+
+    // ─── Version History ─────────────────────────────────────────────
+
+    getVersions(documentId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.base}/Documents/${documentId}/Versions`, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getVersions(documentId)))
+        );
+    }
+
+    uploadNewVersion(documentId: number, file: File): Observable<DocumentDTO> {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        return this.http.post<DocumentDTO>(`${this.base}/Documents/${documentId}/NewVersion`, formData, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.uploadNewVersion(documentId, file)))
+        );
+    }
+
+
+    // ─── Storage Quota ───────────────────────────────────────────────
+
+    getStorageUsage(): Observable<{ totalBytes: number; documentCount: number }> {
+        return this.http.get<{ totalBytes: number; documentCount: number }>(`${this.base}/Storage`, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getStorageUsage()))
         );
     }
 

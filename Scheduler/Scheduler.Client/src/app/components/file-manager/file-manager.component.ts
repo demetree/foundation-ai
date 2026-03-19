@@ -6,12 +6,14 @@
 // Main File Manager component — an Explorer-like UI for managing
 // documents and folders.  Uses FileManagerService for all API calls.
 //
-import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { FileManagerService, FolderDTO, DocumentDTO, DocumentTagDTO, UploadOptions } from '../../services/file-manager.service';
 import { ConfirmationService } from '../../services/confirmation-service';
+import { FileManagerSignalrService } from '../../services/filemanager-signalr.service';
 
 
 @Component({
@@ -30,7 +32,9 @@ import { ConfirmationService } from '../../services/confirmation-service';
         ])
     ]
 })
-export class FileManagerComponent implements OnInit {
+export class FileManagerComponent implements OnInit, OnDestroy {
+
+    private signalrSubscriptions: Subscription[] = [];
 
     @ViewChild('fileUploadInput') fileUploadInput!: ElementRef<HTMLInputElement>;
 
@@ -52,6 +56,9 @@ export class FileManagerComponent implements OnInit {
 
     // Folder import progress
     importProgress: { phase: string; current: number; total: number; detail: string } | null = null;
+
+    // Document preview
+    textPreviewContent: string | null = null;
 
     // Search
     searchQuery = '';
@@ -98,11 +105,29 @@ export class FileManagerComponent implements OnInit {
     selectedDocIds: Set<number> = new Set();
     showBulkTagDropdown = false;
 
+    // Trash / recycle bin
+    showTrash = false;
+    trashDocuments: any[] = [];
+    trashCount = 0;
+
+    // Version history
+    showVersionHistory = false;
+    documentVersions: any[] = [];
+    @ViewChild('versionUploadInput') versionUploadInput!: ElementRef<HTMLInputElement>;
+
+    // Storage quota
+    storageUsage: { totalBytes: number; documentCount: number } | null = null;
+
+    // Favorites (localStorage-based — upgrade to server-side DocumentFavorite table later)
+    favoriteDocIds: Set<number> = new Set();
+
 
     constructor(
         public fileManagerService: FileManagerService,
         private alertService: AlertService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private sanitizer: DomSanitizer,
+        private fmSignalr: FileManagerSignalrService
     ) {}
 
 
@@ -110,6 +135,33 @@ export class FileManagerComponent implements OnInit {
         this.loadFolders();
         this.loadDocuments();
         this.loadTags();
+        this.loadTrashCount();
+        this.loadStorageUsage();
+        this.loadFavorites();
+        this.connectSignalR();
+    }
+
+    ngOnDestroy(): void {
+        this.signalrSubscriptions.forEach(s => s.unsubscribe());
+        this.fmSignalr.disconnect();
+    }
+
+    private connectSignalR(): void {
+        this.fmSignalr.connect();
+
+        this.signalrSubscriptions.push(
+            this.fmSignalr.onDocumentChanged$.subscribe(() => {
+                this.loadDocuments();
+                this.loadStorageUsage();
+            }),
+            this.fmSignalr.onDocumentDeleted$.subscribe(() => {
+                this.loadDocuments();
+                this.loadTrashCount();
+            }),
+            this.fmSignalr.onFolderChanged$.subscribe(() => {
+                this.loadFolders();
+            })
+        );
     }
 
 
@@ -229,12 +281,59 @@ export class FileManagerComponent implements OnInit {
         const newSelection = this.selectedDocument?.id === doc.id ? null : doc;
         this.selectedDocument = newSelection;
         this.showTagDropdown = false;
+        this.textPreviewContent = null;
 
         if (newSelection) {
             this.selectedDocumentTags = this.documentTagsMap.get(newSelection.id) || [];
+
+            // Load text preview content if applicable
+            if (this.isTextPreviewable(newSelection.mimeType)) {
+                this.fileManagerService.downloadDocument(newSelection.id).subscribe({
+                    next: (blob) => {
+                        blob.text().then(text => {
+                            this.textPreviewContent = text.substring(0, 5000); // Cap at 5000 chars
+                        });
+                    }
+                });
+            }
+
+            // Load version history
+            this.loadVersionHistory(newSelection.id);
         } else {
             this.selectedDocumentTags = [];
         }
+    }
+
+
+    // ─── Preview Helpers ────────────────────────────────────────────
+
+    isImagePreviewable(mimeType: string): boolean {
+        return /^image\/(png|jpe?g|gif|svg\+xml|webp|bmp|ico)$/i.test(mimeType || '');
+    }
+
+    isPdfPreviewable(mimeType: string): boolean {
+        return (mimeType || '').toLowerCase() === 'application/pdf';
+    }
+
+    isTextPreviewable(mimeType: string): boolean {
+        const m = (mimeType || '').toLowerCase();
+        return m.startsWith('text/') ||
+            m === 'application/json' ||
+            m === 'application/xml' ||
+            m === 'application/javascript' ||
+            m === 'application/x-yaml';
+    }
+
+    isPreviewable(mimeType: string): boolean {
+        return this.isImagePreviewable(mimeType) || this.isPdfPreviewable(mimeType) || this.isTextPreviewable(mimeType);
+    }
+
+    getPreviewUrl(doc: DocumentDTO): string {
+        return this.fileManagerService.downloadDocumentUrl(doc.id);
+    }
+
+    getSafePreviewUrl(doc: DocumentDTO): SafeResourceUrl {
+        return this.sanitizer.bypassSecurityTrustResourceUrl(this.getPreviewUrl(doc));
     }
 
     downloadFile(doc: DocumentDTO): void {
@@ -263,9 +362,10 @@ export class FileManagerComponent implements OnInit {
 
             this.fileManagerService.deleteDocument(doc.id).subscribe({
                 next: () => {
-                    this.alertService.showMessage('Deleted', `"${doc.fileName}" has been deleted.`, MessageSeverity.success);
+                    this.alertService.showMessage('Deleted', `"${doc.fileName}" has been moved to trash.`, MessageSeverity.success);
                     if (this.selectedDocument?.id === doc.id) this.selectedDocument = null;
                     this.loadDocuments();
+                    this.trashCount++;
                 },
                 error: (err) => {
                     console.error('Delete failed', err);
@@ -273,6 +373,168 @@ export class FileManagerComponent implements OnInit {
                 }
             });
         });
+    }
+
+
+    // ─── Trash / Recycle Bin ─────────────────────────────────────────
+
+    loadTrashCount(): void {
+        this.fileManagerService.getTrash().subscribe({
+            next: (docs) => {
+                this.trashCount = docs.length;
+            }
+        });
+    }
+
+    toggleTrash(): void {
+        this.showTrash = !this.showTrash;
+        if (this.showTrash) {
+            this.selectedDocument = null;
+            this.fileManagerService.getTrash().subscribe({
+                next: (docs) => {
+                    this.trashDocuments = docs;
+                    this.trashCount = docs.length;
+                }
+            });
+        }
+    }
+
+    restoreFromTrash(doc: any): void {
+        this.fileManagerService.restoreFromTrash(doc.id).subscribe({
+            next: () => {
+                this.alertService.showMessage('Restored', `"${doc.fileName}" has been restored.`, MessageSeverity.success);
+                this.trashDocuments = this.trashDocuments.filter(d => d.id !== doc.id);
+                this.trashCount--;
+                this.loadDocuments();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Could not restore document.', MessageSeverity.error);
+            }
+        });
+    }
+
+    permanentDeleteFromTrash(doc: any): void {
+        this.confirmationService.confirm(
+            'Permanently Delete',
+            `This will permanently remove "${doc.fileName}". This cannot be undone.`
+        ).then((confirmed: boolean) => {
+            if (!confirmed) return;
+            this.fileManagerService.permanentlyDelete(doc.id).subscribe({
+                next: () => {
+                    this.alertService.showMessage('Deleted', `"${doc.fileName}" permanently deleted.`, MessageSeverity.success);
+                    this.trashDocuments = this.trashDocuments.filter(d => d.id !== doc.id);
+                    this.trashCount--;
+                },
+                error: () => {
+                    this.alertService.showMessage('Error', 'Could not permanently delete.', MessageSeverity.error);
+                }
+            });
+        });
+    }
+
+    emptyTrash(): void {
+        this.confirmationService.confirm(
+            'Empty Trash',
+            `Permanently delete all ${this.trashCount} items in the trash? This cannot be undone.`
+        ).then((confirmed: boolean) => {
+            if (!confirmed) return;
+            const deleteOps = this.trashDocuments.map(d => this.fileManagerService.permanentlyDelete(d.id));
+            forkJoin(deleteOps).subscribe({
+                next: () => {
+                    this.alertService.showMessage('Emptied', 'Trash has been emptied.', MessageSeverity.success);
+                    this.trashDocuments = [];
+                    this.trashCount = 0;
+                },
+                error: () => {
+                    this.alertService.showMessage('Error', 'Could not empty trash.', MessageSeverity.error);
+                    this.loadTrashCount();
+                }
+            });
+        });
+    }
+
+
+    // ─── Version History ───────────────────────────────────────────
+
+    loadVersionHistory(documentId: number): void {
+        this.documentVersions = [];
+        this.showVersionHistory = false;
+        this.fileManagerService.getVersions(documentId).subscribe({
+            next: (versions) => {
+                this.documentVersions = versions;
+            }
+        });
+    }
+
+    toggleVersionHistory(): void {
+        this.showVersionHistory = !this.showVersionHistory;
+    }
+
+    uploadNewVersionFile(): void {
+        this.versionUploadInput?.nativeElement?.click();
+    }
+
+    onVersionFileSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (!input.files?.length || !this.selectedDocument) return;
+
+        const file = input.files[0];
+        this.fileManagerService.uploadNewVersion(this.selectedDocument.id, file).subscribe({
+            next: () => {
+                this.alertService.showMessage('Version Uploaded', `New version of "${this.selectedDocument!.fileName}" uploaded.`, MessageSeverity.success);
+                this.loadVersionHistory(this.selectedDocument!.id);
+                this.loadDocuments();
+                this.loadStorageUsage();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Could not upload new version.', MessageSeverity.error);
+            }
+        });
+        input.value = '';
+    }
+
+
+    // ─── Storage Quota ─────────────────────────────────────────────
+
+    loadStorageUsage(): void {
+        this.fileManagerService.getStorageUsage().subscribe({
+            next: (usage) => {
+                this.storageUsage = usage;
+            }
+        });
+    }
+
+
+    // ─── Favorites ──────────────────────────────────────────────────
+
+    loadFavorites(): void {
+        try {
+            const stored = localStorage.getItem('fm-favorites');
+            this.favoriteDocIds = new Set(stored ? JSON.parse(stored) : []);
+        } catch {
+            this.favoriteDocIds = new Set();
+        }
+    }
+
+    saveFavorites(): void {
+        localStorage.setItem('fm-favorites', JSON.stringify([...this.favoriteDocIds]));
+    }
+
+    toggleFavorite(docId: number): void {
+        if (this.favoriteDocIds.has(docId)) {
+            this.favoriteDocIds.delete(docId);
+        } else {
+            this.favoriteDocIds.add(docId);
+        }
+        this.saveFavorites();
+    }
+
+    isFavorite(docId: number): boolean {
+        return this.favoriteDocIds.has(docId);
+    }
+
+    get favoriteDocuments(): DocumentDTO[] {
+        return this.documents.filter(d => this.favoriteDocIds.has(d.id));
     }
 
     renameDocument(doc: DocumentDTO): void {

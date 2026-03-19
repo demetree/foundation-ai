@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -41,14 +42,40 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 		private ILogger<ScheduledEventsController> _logger;
 
-		public ScheduledEventsController(SchedulerContext context, ILogger<ScheduledEventsController> logger) : base("Scheduler", "ScheduledEvent")
+		private IHubContext<SchedulerHub> _schedulerHubContext;
+
+		public ScheduledEventsController(SchedulerContext context, ILogger<ScheduledEventsController> logger, IHubContext<SchedulerHub> schedulerHubContext) : base("Scheduler", "ScheduledEvent")
 		{
 			this._context = context;
 			this._logger = logger;
+			this._schedulerHubContext = schedulerHubContext;
 
 			this._context.Database.SetCommandTimeout(60);
 
 			return;
+		}
+
+
+		/// <summary>
+		/// Broadcasts an EventsChanged notification to all connected schedulers in the same tenant.
+		/// </summary>
+		private async Task BroadcastEventsChangedAsync(Guid tenantGuid, string action, int eventId)
+		{
+			try
+			{
+				await _schedulerHubContext.Clients
+					.Group($"scheduler_{tenantGuid}")
+					.SendAsync("EventsChanged", new
+					{
+						action = action,
+						eventId = eventId,
+						timestamp = DateTime.UtcNow
+					});
+			}
+			catch (Exception ex)
+			{
+				_logger?.LogWarning(ex, "Failed to broadcast EventsChanged via SignalR");
+			}
 		}
 
 /* This function is expected to be overridden in a custom file
@@ -1161,6 +1188,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 						JsonSerializer.Serialize(Database.ScheduledEvent.CreateAnonymousWithFirstLevelSubObjects(scheduledEvent)),
 						null);
 
+					// Broadcast real-time event change to all connected schedulers in this tenant
+					_ = BroadcastEventsChangedAsync(userTenantGuid, "updated", scheduledEvent.id);
+
 				return Ok(Database.ScheduledEvent.CreateAnonymous(scheduledEvent));
 				}
 				catch (Exception ex)
@@ -1372,6 +1402,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
 			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "ScheduledEvent", scheduledEvent.id, scheduledEvent.name));
+
+			// Broadcast real-time event change to all connected schedulers in this tenant
+			_ = BroadcastEventsChangedAsync(userTenantGuid, "created", scheduledEvent.id);
 
 			return CreatedAtRoute("ScheduledEvent", new { id = scheduledEvent.id }, Database.ScheduledEvent.CreateAnonymousWithFirstLevelSubObjects(scheduledEvent));
 		}

@@ -27,7 +27,8 @@ import { EventAddEditModalComponent } from '../event-add-edit-modal/event-add-ed
 import { PrivateRentalBookingComponent } from '../private-rental-booking/private-rental-booking.component';
 import { CommitteeEventBookingComponent } from '../committee-event-booking/committee-event-booking.component';
 import { format, parseISO } from 'date-fns';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Subject, Subscription } from 'rxjs';
+import { debounceTime, takeUntil } from 'rxjs/operators';
 import { ConflictDetectionService, ScheduleConflict, BlackoutPeriod, ShiftViolation } from '../../../services/conflict-detection.service';
 import { ResourceService } from '../../../scheduler-data-services/resource.service';
 import { CrewService } from '../../../scheduler-data-services/crew.service';
@@ -37,6 +38,7 @@ import { ResourceAvailabilityService, ResourceAvailabilityData } from '../../../
 import { ResourceShiftService, ResourceShiftData } from '../../../scheduler-data-services/resource-shift.service';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { SchedulerModeService } from '../../../services/scheduler-mode.service';
+import { SchedulerSignalrService } from '../../../services/scheduler-signalr.service';
 
 @Component({
   selector: 'app-scheduler-calendar',
@@ -101,6 +103,8 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
   bookingChooserPosition = { top: 0, left: 0 };
   private pendingSelectInfo: any = null;
   private modeSubscription: Subscription | null = null;
+  private destroy$ = new Subject<void>();
+  signalrConnected = false;
 
   //
   // Availability Overlay state
@@ -157,6 +161,7 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     private resourceShiftService: ResourceShiftService,
     private navigationService: NavigationService,
     private schedulerModeService: SchedulerModeService,
+    private schedulerSignalr: SchedulerSignalrService,
     private route: ActivatedRoute,
     private router: Router
   ) { }
@@ -198,12 +203,33 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
         });
       }
     });
+
+    //
+    // Connect to SignalR for real-time event updates from other schedulers
+    //
+    this.schedulerSignalr.connect();
+
+    this.schedulerSignalr.onEventsChanged$.pipe(
+      debounceTime(500),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.loadEvents();
+    });
+
+    this.schedulerSignalr.onHubConnectionChange$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(connected => {
+      this.signalrConnected = connected;
+    });
   }
 
 
   ngOnDestroy(): void {
     this.clearPopoverTimers();
     this.modeSubscription?.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.schedulerSignalr.disconnect();
   }
 
 

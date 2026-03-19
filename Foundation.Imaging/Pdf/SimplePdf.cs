@@ -53,6 +53,9 @@ namespace Foundation.Imaging.Pdf
             return page;
         }
 
+        internal int GetPageIndex(SimplePdfPage page) => _pages.IndexOf(page);
+        internal int GetTotalPages() => _pages.Count;
+
 
         /// <summary>Serialize the entire PDF document to bytes.</summary>
         public byte[] Save()
@@ -62,6 +65,15 @@ namespace Foundation.Imaging.Pdf
                 Write(ms);
                 return ms.ToArray();
             }
+        }
+
+
+        /// <summary>Serialize the PDF and write it to a file path.</summary>
+        public void SaveToFile(string filePath)
+        {
+            byte[] pdf = Save();
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? ".");
+            File.WriteAllBytes(filePath, pdf);
         }
 
 
@@ -155,9 +167,12 @@ namespace Foundation.Imaging.Pdf
         }
 
         internal void WriteStreamObj(PdfStreamWriter writer, int id,
-            string dict, byte[] streamData)
+            string dict, byte[] streamData, int uncompressedLength = 0)
         {
             Objects[id - 1].Offset = writer.Position;
+            string lengthPart = uncompressedLength > 0
+                ? $"/LengthKey {uncompressedLength} "
+                : "";
             writer.WriteRaw($"{id} 0 obj\n{dict}\nstream\n");
             writer.WriteBytes(streamData);
             writer.WriteRaw("\nendstream\nendobj\n");
@@ -167,7 +182,24 @@ namespace Foundation.Imaging.Pdf
 
         internal static string PdfEscape(string s)
         {
-            return s.Replace("\\", "\\\\").Replace("(", "\\(").Replace(")", "\\)");
+            if (string.IsNullOrEmpty(s)) return s;
+            StringBuilder sb = new StringBuilder(s.Length);
+            foreach (char c in s)
+            {
+                if (c == '\\' || c == '(' || c == ')')
+                {
+                    sb.Append('\\').Append(c);
+                }
+                else if (c < 32 || (c > 127 && c < 160))
+                {
+                    sb.Append('?'); // Replace problematic control / Win-1252 special chars
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+            return sb.ToString();
         }
 
         internal static string F(double v)
@@ -197,6 +229,14 @@ namespace Foundation.Imaging.Pdf
 
         // Images embedded in this page
         private readonly List<PageImage> _images = new List<PageImage>();
+
+        // Page numbering
+        private bool _addPageNumber;
+        private SimplePdfFont _pageNumberFont;
+        private double _pageNumberFontSize;
+        private byte _pageNumberR, _pageNumberG, _pageNumberB;
+        private double _pageNumberMargin;
+        private bool _pageNumberRight;
 
         internal SimplePdfPage(SimplePdfDocument doc, double width, double height)
         {
@@ -348,6 +388,21 @@ namespace Foundation.Imaging.Pdf
         }
 
 
+        /// <summary>
+        /// Draw text right-aligned within a horizontal rectangle.
+        /// </summary>
+        public void DrawTextRight(string text, SimplePdfFont font, double fontSize,
+            double rectX, double rectY, double rectW,
+            byte r, byte g, byte b, byte a = 255)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+
+            double textW = MeasureText(text, font, fontSize);
+            double x = rectX + rectW - textW;
+            DrawText(text, font, fontSize, x, rectY, r, g, b, a);
+        }
+
+
         /// <summary>Measure text width in points.</summary>
         public double MeasureText(string text, SimplePdfFont font, double fontSize)
         {
@@ -371,8 +426,260 @@ namespace Foundation.Imaging.Pdf
 
 
         /// <summary>
-        /// Draw a PNG image (from raw PNG bytes) at the given position and size.
+        /// Draw text that wraps within a bounding box. Breaks at word boundaries first,
+        /// then at character boundaries if a single word is too wide.
+        /// Returns the y position after the last line drawn.
         /// </summary>
+        /// <param name="text">Text to draw.</param>
+        /// <param name="font">Font selection.</param>
+        /// <param name="fontSize">Font size in points.</param>
+        /// <param name="x">Left edge of bounding box.</param>
+        /// <param name="y">Top edge of bounding box (baseline of first line).</param>
+        /// <param name="maxWidth">Width of the bounding box.</param>
+        /// <param name="maxHeight">Height of the bounding box. Drawing stops if this is exceeded.</param>
+        /// <param name="r">Red (0-255).</param>
+        /// <param name="g">Green (0-255).</param>
+        /// <param name="b">Blue (0-255).</param>
+        /// <param name="a">Alpha (0-255).</param>
+        /// <param name="lineSpacing">Multiplier for line height. Default 1.2.</param>
+        /// <returns>The y position after the last line drawn (may be used to continue text below).</returns>
+        public double DrawTextWrapped(string text, SimplePdfFont font, double fontSize,
+            double x, double y, double maxWidth, double maxHeight,
+            byte r, byte g, byte b, byte a = 255, double lineSpacing = 1.2)
+        {
+            if (string.IsNullOrEmpty(text) || maxWidth <= 0 || maxHeight <= 0)
+                return y;
+
+            double lineHeight = fontSize * lineSpacing;
+            double currentY = y;
+
+            string[] paragraphs = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+
+            foreach (string paragraph in paragraphs)
+            {
+                if (paragraph.Length == 0)
+                {
+                    currentY += lineHeight;
+                    if (currentY - y >= maxHeight) break;
+                    continue;
+                }
+
+                string[] words = paragraph.Split(' ');
+                string currentLine = "";
+
+                foreach (string word in words)
+                {
+                    string testLine = currentLine.Length == 0 ? word : currentLine + " " + word;
+                    double testWidth = MeasureText(testLine, font, fontSize);
+
+                    if (testWidth > maxWidth)
+                    {
+                        if (currentLine.Length > 0)
+                        {
+                            DrawText(currentLine, font, fontSize, x, currentY, r, g, b, a);
+                            currentY += lineHeight;
+                            if (currentY - y >= maxHeight) return currentY;
+                            currentLine = word;
+                        }
+                        else
+                        {
+                            string remaining = word;
+                            while (remaining.Length > 0)
+                            {
+                                int charsFitting = 0;
+                                double widthFitting = 0;
+                                for (int i = 0; i < remaining.Length; i++)
+                                {
+                                    double w2 = MeasureText(remaining.Substring(0, i + 1), font, fontSize);
+                                    if (w2 > maxWidth)
+                                    {
+                                        charsFitting = i;
+                                        widthFitting = MeasureText(remaining.Substring(0, i), font, fontSize);
+                                        break;
+                                    }
+                                    charsFitting = i + 1;
+                                    widthFitting = w2;
+                                }
+
+                                if (charsFitting == 0) break;
+
+                                DrawText(remaining.Substring(0, charsFitting), font, fontSize, x, currentY, r, g, b, a);
+                                currentY += lineHeight;
+                                if (currentY - y >= maxHeight) return currentY;
+                                remaining = remaining.Substring(charsFitting);
+                            }
+                            currentLine = "";
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        currentLine = testLine;
+                    }
+                }
+
+                if (currentLine.Length > 0)
+                {
+                    DrawText(currentLine, font, fontSize, x, currentY, r, g, b, a);
+                    currentY += lineHeight;
+                    if (currentY - y >= maxHeight) return currentY;
+                }
+            }
+
+            return currentY;
+        }
+
+
+        /// <summary>
+        /// Draw a table starting at the given position. Returns the y position after the table.
+        /// </summary>
+        /// <param name="columns">Column widths from left to right. Must sum to the intended table width.</param>
+        /// <param name="data">2D array of cell text. First row is the header row.</param>
+        /// <param name="x">Left edge of the table.</param>
+        /// <param name="y">Top edge of the table (first row baseline).</param>
+        /// <param name="rowHeight">Fixed row height in points. Default 18.</param>
+        /// <param name="fontSize">Font size for cell text. Default 9.</param>
+        /// <param name="border">Border style. Default Outer.</param>
+        /// <param name="headerBgR">Header background red (0-255). Default 200.</param>
+        /// <param name="headerBgG">Header background green.</param>
+        /// <param name="headerBgB">Header background blue.</param>
+        /// <param name="textR">Cell text red. Default 0 (black).</param>
+        /// <param name="textG">Cell text green.</param>
+        /// <param name="textB">Cell text blue.</param>
+        /// <param name="alternateRowBg">If true, odd rows get a light gray background. Default true.</param>
+        /// <param name="altBgR">Alternate row background red. Default 245.</param>
+        /// <param name="altBgG">Alternate row background green.</param>
+        /// <param name="altBgB">Alternate row background blue.</param>
+        /// <param name="headerTextR">Header text red. Default 255 (white).</param>
+        /// <param name="headerTextG">Header text green.</param>
+        /// <param name="headerTextB">Header text blue.</param>
+        /// <param name="cellPadding">Horizontal padding inside each cell. Default 4.</param>
+        /// <param name="cellAlign">Default alignment for data cells. Default Left.</param>
+        /// <param name="headerAlign">Alignment for header cells. Default Left.</param>
+        /// <returns>The y position after the last row of the table.</returns>
+        public double DrawTable(double[] columns, string[][] data,
+            double x, double y,
+            double rowHeight = 18, double fontSize = 9,
+            SimplePdfTableBorderStyle border = SimplePdfTableBorderStyle.Outer,
+            byte headerBgR = 200, byte headerBgG = 200, byte headerBgB = 200,
+            byte textR = 0, byte textG = 0, byte textB = 0,
+            bool alternateRowBg = true,
+            byte altBgR = 245, byte altBgG = 245, byte altBgB = 245,
+            byte headerTextR = 255, byte headerTextG = 255, byte headerTextB = 255,
+            double cellPadding = 4,
+            SimplePdfCellAlign cellAlign = SimplePdfCellAlign.Left,
+            SimplePdfCellAlign headerAlign = SimplePdfCellAlign.Left)
+        {
+            if (columns == null || columns.Length == 0 || data == null || data.Length == 0)
+                return y;
+
+            int rowCount = data.Length;
+            int colCount = columns.Length;
+            double tableWidth = 0;
+            foreach (double c in columns) tableWidth += c;
+            double currentY = y;
+            byte lineGray = 180;
+
+            for (int row = 0; row < rowCount; row++)
+            {
+                bool isHeader = row == 0;
+                bool isAlternate = !isHeader && alternateRowBg && (row % 2 == 0);
+
+                double rowTop = currentY + rowHeight - fontSize * 0.85;
+                double rowBottom = currentY;
+
+                // ── Background fill ──
+                if (isHeader)
+                {
+                    FillRect(x, currentY, tableWidth, rowHeight, headerBgR, headerBgG, headerBgB);
+                }
+                else if (isAlternate)
+                {
+                    FillRect(x, currentY, tableWidth, rowHeight, altBgR, altBgG, altBgB);
+                }
+
+                // ── Cell text ──
+                double colX = x;
+                for (int col = 0; col < colCount; col++)
+                {
+                    double colW = columns[col];
+                    string cellText = data[row].Length > col ? (data[row][col] ?? "") : "";
+
+                    byte tR = isHeader ? headerTextR : textR;
+                    byte tG = isHeader ? headerTextG : textG;
+                    byte tB = isHeader ? headerTextB : textB;
+                    SimplePdfFont cellFont = isHeader ? SimplePdfFont.Bold : SimplePdfFont.Regular;
+                    SimplePdfCellAlign align = isHeader ? headerAlign : cellAlign;
+
+                    double textX = colX + cellPadding;
+                    double availW = colW - cellPadding * 2;
+
+                    if (align == SimplePdfCellAlign.Right)
+                    {
+                        double tw = MeasureText(cellText, cellFont, fontSize);
+                        textX = colX + colW - cellPadding - tw;
+                    }
+                    else if (align == SimplePdfCellAlign.Center)
+                    {
+                        double tw = MeasureText(cellText, cellFont, fontSize);
+                        textX = colX + (colW - tw) / 2;
+                    }
+
+                    if (availW > 0)
+                    {
+                        DrawTextWrapped(cellText, cellFont, fontSize,
+                            textX, rowTop, availW, rowHeight,
+                            tR, tG, tB);
+                    }
+
+                    colX += colW;
+                }
+
+                // ── Borders ──
+                if (border == SimplePdfTableBorderStyle.All)
+                {
+                    DrawLine(x, rowBottom, x + tableWidth, rowBottom, lineGray, lineGray, lineGray, 0.3);
+                }
+                else if (border == SimplePdfTableBorderStyle.Outer || border == SimplePdfTableBorderStyle.HeaderOnly)
+                {
+                    DrawLine(x, rowBottom, x + tableWidth, rowBottom, lineGray, lineGray, lineGray, 0.3);
+                }
+
+                // Vertical borders
+                if (border == SimplePdfTableBorderStyle.All)
+                {
+                    colX = x;
+                    for (int col = 0; col <= colCount; col++)
+                    {
+                        if (col == 0 || col == colCount)
+                        {
+                            DrawLine(colX, rowBottom, colX, rowBottom + rowHeight, lineGray, lineGray, lineGray, 0.3);
+                        }
+                        else if (col < colCount)
+                        {
+                            DrawLine(colX, rowBottom, colX, rowBottom + rowHeight, lineGray, lineGray, lineGray, 0.3);
+                        }
+                        if (col < colCount) colX += columns[col];
+                    }
+                }
+
+                currentY += rowHeight;
+            }
+
+            // ── Outer border ──
+            if (border == SimplePdfTableBorderStyle.Outer || border == SimplePdfTableBorderStyle.All)
+            {
+                double tableTop = y;
+                double tableBottom = currentY;
+
+                DrawLine(x, tableTop, x + tableWidth, tableTop, lineGray, lineGray, lineGray, 0.5);
+                DrawLine(x, tableBottom, x + tableWidth, tableBottom, lineGray, lineGray, lineGray, 0.5);
+                DrawLine(x, tableTop, x, tableBottom, lineGray, lineGray, lineGray, 0.5);
+                DrawLine(x + tableWidth, tableTop, x + tableWidth, tableBottom, lineGray, lineGray, lineGray, 0.5);
+            }
+
+            return currentY;
+        }
         public void DrawImage(byte[] pngBytes, double x, double y, double w, double h)
         {
             if (pngBytes == null || pngBytes.Length == 0) return;
@@ -389,6 +696,31 @@ namespace Foundation.Imaging.Pdf
             _stream.AppendLine($"{F(w)} 0 0 {F(h)} {F(x)} {F(py)} cm");
             _stream.AppendLine($"/{imgName} Do");
             _stream.AppendLine("Q");
+        }
+
+
+        /// <summary>
+        /// Add page numbering to this page's footer. Call after all other drawing on the page.
+        /// Format: "1 of N" right-aligned, or "N" centred.
+        /// </summary>
+        /// <param name="font">Font for the page number.</param>
+        /// <param name="fontSize">Font size in points.</param>
+        /// <param name="margin">Distance from the bottom edge. Default 20pt.</param>
+        /// <param name="r">Red (0-255).</param>
+        /// <param name="g">Green (0-255).</param>
+        /// <param name="b">Blue (0-255).</param>
+        /// <param name="rightAlign">If true, show "Page N of Total". If false, show just "N".</param>
+        public void AddPageNumber(SimplePdfFont font = SimplePdfFont.Regular, double fontSize = 8,
+            double margin = 20, byte r = 100, byte g = 100, byte b = 100, bool rightAlign = true)
+        {
+            _addPageNumber = true;
+            _pageNumberFont = font;
+            _pageNumberFontSize = fontSize;
+            _pageNumberR = r;
+            _pageNumberG = g;
+            _pageNumberB = b;
+            _pageNumberMargin = margin;
+            _pageNumberRight = rightAlign;
         }
 
 
@@ -410,6 +742,44 @@ namespace Foundation.Imaging.Pdf
 
         // ─── Internal ────────────────────────────────────────────
 
+        private void AppendPageNumber()
+        {
+            if (!_addPageNumber) return;
+
+            int pageIndex = _doc.GetPageIndex(this) + 1;
+            int totalPages = _doc.GetTotalPages();
+
+            double baselineY = _pageNumberMargin;
+            string fontRef = _pageNumberFont == SimplePdfFont.Bold ? "/F2" : "/F1";
+
+            if (_pageNumberRight)
+            {
+                string label = $"Page {pageIndex} of {totalPages}";
+                double labelWidth = MeasureText(label, _pageNumberFont, _pageNumberFontSize);
+                double x = Width - labelWidth - 20;
+
+                _stream.AppendLine("BT");
+                _stream.AppendLine($"{fontRef} {_pageNumberFontSize} Tf");
+                _stream.AppendLine($"{F(_pageNumberR / 255.0)} {F(_pageNumberG / 255.0)} {F(_pageNumberB / 255.0)} rg");
+                _stream.AppendLine($"{F(x)} {F(baselineY)} Td");
+                _stream.AppendLine($"({SimplePdfDocument.PdfEscape(label)}) Tj");
+                _stream.AppendLine("ET");
+            }
+            else
+            {
+                string label = pageIndex.ToString();
+                double labelWidth = MeasureText(label, _pageNumberFont, _pageNumberFontSize);
+                double x = (Width - labelWidth) / 2;
+
+                _stream.AppendLine("BT");
+                _stream.AppendLine($"{fontRef} {_pageNumberFontSize} Tf");
+                _stream.AppendLine($"{F(_pageNumberR / 255.0)} {F(_pageNumberG / 255.0)} {F(_pageNumberB / 255.0)} rg");
+                _stream.AppendLine($"{F(x)} {F(baselineY)} Td");
+                _stream.AppendLine($"({SimplePdfDocument.PdfEscape(label)}) Tj");
+                _stream.AppendLine("ET");
+            }
+        }
+
         internal void Prepare(int pagesId, int fontHelveticaId, int fontBoldId)
         {
             _fontHelveticaId = fontHelveticaId;
@@ -424,6 +794,9 @@ namespace Foundation.Imaging.Pdf
                 img.ImageObjectId = _doc.AllocId();
                 img.SmaskObjectId = _doc.AllocId();
             }
+
+            // Inject page numbering into the content stream
+            AppendPageNumber();
         }
 
 
@@ -435,7 +808,7 @@ namespace Foundation.Imaging.Pdf
 
             _doc.WriteStreamObj(writer, _contentsId,
                 $"<< /Length {compressed.Length} /Filter /FlateDecode >>",
-                compressed);
+                compressed, contentBytes.Length);
 
             // ── Image XObjects ──
             StringBuilder xobjectEntries = new StringBuilder();
@@ -492,7 +865,7 @@ namespace Foundation.Imaging.Pdf
                 $"<< /Type /XObject /Subtype /Image /Width {imgW} /Height {imgH} " +
                 $"/ColorSpace /DeviceGray /BitsPerComponent 8 " +
                 $"/Length {compressedAlpha.Length} /Filter /FlateDecode >>",
-                compressedAlpha);
+                compressedAlpha, alpha.Length);
 
             // Image
             byte[] compressedRgb = Deflate(rgb);
@@ -501,7 +874,7 @@ namespace Foundation.Imaging.Pdf
                 $"<< /Type /XObject /Subtype /Image /Width {imgW} /Height {imgH} " +
                 $"/ColorSpace /DeviceRGB /BitsPerComponent 8 " +
                 $"/Length {compressedRgb.Length} /Filter /FlateDecode{smaskRef} >>",
-                compressedRgb);
+                compressedRgb, rgb.Length);
         }
 
 
@@ -522,6 +895,13 @@ namespace Foundation.Imaging.Pdf
 
             int channels = colourType == 6 ? 4 : colourType == 2 ? 3 : 4;
             int bpp = channels * (bitDepth / 8);
+
+            // Collect tRNS chunk (palette / RGB transparency)
+            byte[] trnsData = null;
+            if (colourType == 2 || colourType == 4 || colourType == 6)
+            {
+                trnsData = ExtractChunkData(png, "tRNS");
+            }
 
             // Collect all IDAT chunks
             using (MemoryStream idatStream = new MemoryStream())
@@ -583,17 +963,19 @@ namespace Foundation.Imaging.Pdf
                         int dstOff = (y * width + x) * 4;
                         if (channels == 4)
                         {
-                            rgba[dstOff + 0] = currRow[x * 4 + 0]; // R
-                            rgba[dstOff + 1] = currRow[x * 4 + 1]; // G
-                            rgba[dstOff + 2] = currRow[x * 4 + 2]; // B
-                            rgba[dstOff + 3] = currRow[x * 4 + 3]; // A
+                            rgba[dstOff + 0] = currRow[x * 4 + 0];
+                            rgba[dstOff + 1] = currRow[x * 4 + 1];
+                            rgba[dstOff + 2] = currRow[x * 4 + 2];
+                            rgba[dstOff + 3] = currRow[x * 4 + 3];
                         }
-                        else // RGB
+                        else // RGB — apply tRNS transparency if present
                         {
                             rgba[dstOff + 0] = currRow[x * 3 + 0];
                             rgba[dstOff + 1] = currRow[x * 3 + 1];
                             rgba[dstOff + 2] = currRow[x * 3 + 2];
-                            rgba[dstOff + 3] = 255;
+                            rgba[dstOff + 3] = (trnsData != null && x < trnsData.Length)
+                                ? trnsData[x]
+                                : (byte)255;
                         }
                     }
 
@@ -601,6 +983,24 @@ namespace Foundation.Imaging.Pdf
                     srcPos += stride;
                 }
             }
+        }
+
+        private static byte[] ExtractChunkData(byte[] png, string chunkName)
+        {
+            int pos = 8;
+            while (pos < png.Length)
+            {
+                int chunkLen = ReadBE32(png, pos);
+                string chunkType = Encoding.ASCII.GetString(png, pos + 4, 4);
+                if (chunkType == chunkName)
+                {
+                    byte[] data = new byte[chunkLen];
+                    Array.Copy(png, pos + 8, data, 0, chunkLen);
+                    return data;
+                }
+                pos += 12 + chunkLen;
+            }
+            return null;
         }
 
         private static byte PaethPredictor(byte a, byte b, byte c)
@@ -725,6 +1125,21 @@ namespace Foundation.Imaging.Pdf
     {
         Regular,
         Bold
+    }
+
+    public enum SimplePdfTableBorderStyle
+    {
+        None,
+        All,
+        Outer,
+        HeaderOnly
+    }
+
+    public enum SimplePdfCellAlign
+    {
+        Left,
+        Center,
+        Right
     }
 
 

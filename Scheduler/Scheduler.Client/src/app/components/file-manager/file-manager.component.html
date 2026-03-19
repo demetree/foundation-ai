@@ -83,6 +83,21 @@
       </div>
 
       <!-- ─── Sidebar Tag Section (#6) ──────────────────────────── -->
+      <!-- Favorites section -->
+      <div class="fm-tag-section" *ngIf="!sidebarCollapsed && favoriteDocuments.length > 0">
+        <div class="fm-sidebar-header">
+          <span class="fm-sidebar-title"><i class="fa-solid fa-star me-1" style="color:#f59e0b"></i> Favorites</span>
+        </div>
+        <div class="fm-tag-list">
+          <div class="fm-tag-sidebar-item" *ngFor="let doc of favoriteDocuments"
+               (click)="navigateToFolder(doc.documentFolderId); selectDocument(doc)">
+            <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
+               [style.color]="fileManagerService.getFileColor(doc.mimeType)" style="font-size:0.75rem"></i>
+            <span class="fm-tag-sidebar-name">{{ doc.fileName }}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="fm-tag-section" *ngIf="!sidebarCollapsed">
         <div class="fm-sidebar-header">
           <span class="fm-sidebar-title">Tags</span>
@@ -104,7 +119,26 @@
         </div>
       </div>
 
+      <!-- Trash section -->
+      <div class="fm-trash-section" *ngIf="!sidebarCollapsed">
+        <div class="fm-sidebar-header">
+          <span class="fm-sidebar-title">Trash</span>
+        </div>
+        <div class="fm-tag-list">
+          <div class="fm-tag-sidebar-item" (click)="toggleTrash()" [class.active]="showTrash">
+            <i class="fa-solid fa-trash me-2" style="color: var(--sch-text-muted)"></i>
+            <span class="fm-tag-sidebar-name">Deleted Files</span>
+            <span class="fm-tag-count" *ngIf="trashCount > 0">{{ trashCount }}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="fm-sidebar-footer" *ngIf="!sidebarCollapsed">
+        <div class="fm-storage-usage" *ngIf="storageUsage">
+          <i class="fa-solid fa-hard-drive me-1"></i>
+          <span>{{ fileManagerService.formatFileSize(storageUsage.totalBytes) }}</span>
+          <span class="text-muted ms-1">({{ storageUsage.documentCount }} files)</span>
+        </div>
         <button class="btn btn-sm btn-outline-primary w-100 mb-2" (click)="showNewFolderDialog()">
           <i class="fa-solid fa-folder-plus me-1"></i> New Folder
         </button>
@@ -120,7 +154,7 @@
          (drop)="onDrop($event)">
 
       <!-- Action bar -->
-      <div class="fm-action-bar">
+      <div class="fm-action-bar" *ngIf="!showTrash">
         <nav class="fm-breadcrumbs" aria-label="Folder navigation">
           <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId">
             <i class="fa-solid fa-house-chimney"></i>
@@ -242,15 +276,57 @@
         </div>
       </div>
 
+      <!-- ─── Trash View ────────────────────────────────────── -->
+      <div class="fm-trash-view" *ngIf="showTrash">
+        <div class="fm-trash-header">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" (click)="showTrash = false">
+              <i class="fa-solid fa-arrow-left me-1"></i> Back
+            </button>
+            <h6 class="mb-0"><i class="fa-solid fa-trash me-2"></i>Trash ({{ trashDocuments.length }})</h6>
+          </div>
+          <button class="btn btn-sm btn-outline-danger" *ngIf="trashDocuments.length > 0"
+                  (click)="emptyTrash()">
+            <i class="fa-solid fa-broom me-1"></i> Empty Trash
+          </button>
+        </div>
+
+        <div class="fm-trash-empty" *ngIf="trashDocuments.length === 0">
+          <i class="fa-solid fa-recycle fa-3x mb-3" style="color: var(--sch-text-muted)"></i>
+          <p class="text-muted">Trash is empty</p>
+        </div>
+
+        <div class="fm-trash-list" *ngIf="trashDocuments.length > 0">
+          <div class="fm-trash-item" *ngFor="let doc of trashDocuments">
+            <div class="fm-trash-item-info">
+              <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
+                 [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
+              <div class="fm-trash-item-details">
+                <span class="fm-trash-item-name">{{ doc.fileName }}</span>
+                <span class="fm-trash-item-meta">{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }} · Deleted {{ doc.uploadedDate | date:'short' }}</span>
+              </div>
+            </div>
+            <div class="fm-trash-item-actions">
+              <button class="btn btn-sm btn-outline-success" title="Restore" (click)="restoreFromTrash(doc)">
+                <i class="fa-solid fa-rotate-left"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger ms-1" title="Delete permanently" (click)="permanentDeleteFromTrash(doc)">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Search mode indicator -->
-      <div class="fm-search-indicator" *ngIf="isSearching">
+      <div class="fm-search-indicator" *ngIf="isSearching && !showTrash">
         <i class="fa-solid fa-magnifying-glass me-2"></i>
         Search results for "<strong>{{ searchQuery }}</strong>"
         <button class="btn btn-sm btn-link ms-2" (click)="clearSearch()">Clear</button>
       </div>
 
       <!-- Sub-folders -->
-      <div class="fm-subfolder-row" *ngIf="!isSearching && childFolders.length > 0 && !isLoading">
+      <div class="fm-subfolder-row" *ngIf="!isSearching && childFolders.length > 0 && !isLoading && !showTrash">
         <div class="fm-subfolder-card" *ngFor="let folder of childFolders"
              (click)="navigateToFolder(folder.id)"
              (contextmenu)="onFolderContextMenu($event, folder)">
@@ -260,7 +336,7 @@
       </div>
 
       <!-- ─── Grid View (with tag dots #3) ────────────────────── -->
-      <div class="fm-file-grid" *ngIf="viewMode === 'grid' && !isLoading">
+      <div class="fm-file-grid" *ngIf="viewMode === 'grid' && !isLoading && !showTrash">
         <div class="fm-file-card" *ngFor="let doc of filteredDocuments"
              (click)="selectDocument(doc)"
              (dblclick)="downloadFile(doc)"
@@ -271,6 +347,12 @@
           <!-- Bulk checkbox -->
           <input type="checkbox" class="fm-card-check" [checked]="isDocSelected(doc.id)"
                  (click)="toggleDocSelection($event, doc)" (change)="$event.stopPropagation()" />
+
+          <!-- Favorite star -->
+          <button class="fm-favorite-btn" [class.active]="isFavorite(doc.id)"
+                  (click)="toggleFavorite(doc.id); $event.stopPropagation()" title="Toggle favorite">
+            <i class="fa-star" [ngClass]="isFavorite(doc.id) ? 'fa-solid' : 'fa-regular'"></i>
+          </button>
 
           <div class="fm-file-card-icon">
             <i class="fa-solid" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
@@ -298,7 +380,7 @@
       </div>
 
       <!-- ─── List View (with tags column #3) ─────────────────── -->
-      <div class="fm-file-list" *ngIf="viewMode === 'list' && !isLoading">
+      <div class="fm-file-list" *ngIf="viewMode === 'list' && !isLoading && !showTrash">
         <table class="table table-sm table-hover mb-0">
           <thead>
             <tr>
@@ -357,13 +439,38 @@
     <div class="fm-detail-panel" *ngIf="selectedDocument" [@slidePanel]>
       <div class="fm-detail-header">
         <h6 class="mb-0 text-truncate" [title]="selectedDocument.fileName">{{ selectedDocument.fileName }}</h6>
-        <button class="btn-close btn-sm ms-2" (click)="selectedDocument = null"></button>
+        <div class="d-flex align-items-center gap-1">
+          <button class="fm-favorite-btn" [class.active]="isFavorite(selectedDocument.id)"
+                  (click)="toggleFavorite(selectedDocument.id)" title="Toggle favorite">
+            <i class="fa-star" [ngClass]="isFavorite(selectedDocument.id) ? 'fa-solid' : 'fa-regular'"></i>
+          </button>
+          <button class="btn-close btn-sm" (click)="selectedDocument = null"></button>
+        </div>
       </div>
 
       <div class="fm-detail-body">
         <!-- Preview area -->
         <div class="fm-detail-preview">
-          <i class="fa-solid fa-4x" [ngClass]="fileManagerService.getFileIcon(selectedDocument.mimeType)"
+          <!-- Image preview -->
+          <img *ngIf="isImagePreviewable(selectedDocument.mimeType)"
+               [src]="getPreviewUrl(selectedDocument)"
+               [alt]="selectedDocument.fileName"
+               class="fm-preview-image" />
+
+          <!-- PDF preview -->
+          <iframe *ngIf="isPdfPreviewable(selectedDocument.mimeType)"
+                  [src]="getSafePreviewUrl(selectedDocument)"
+                  class="fm-preview-pdf"
+                  frameborder="0"></iframe>
+
+          <!-- Text/code preview -->
+          <pre *ngIf="isTextPreviewable(selectedDocument.mimeType) && textPreviewContent"
+               class="fm-preview-text">{{ textPreviewContent }}</pre>
+
+          <!-- Fallback icon for non-previewable types -->
+          <i *ngIf="!isPreviewable(selectedDocument.mimeType)"
+             class="fa-solid fa-4x"
+             [ngClass]="fileManagerService.getFileIcon(selectedDocument.mimeType)"
              [style.color]="fileManagerService.getFileColor(selectedDocument.mimeType)"></i>
         </div>
 
@@ -429,6 +536,36 @@
             <span class="fm-prop-label">Description</span>
             <span class="fm-prop-value">{{ selectedDocument.description }}</span>
           </div>
+        </div>
+
+        <!-- Version History -->
+        <div class="fm-detail-versions">
+          <div class="fm-detail-tags-header">
+            <span class="fm-prop-label" (click)="toggleVersionHistory()" style="cursor:pointer">
+              <i class="fa-solid fa-clock-rotate-left me-1"></i>
+              Versions ({{ documentVersions.length }})
+              <i class="fa-solid ms-1" [ngClass]="showVersionHistory ? 'fa-chevron-up' : 'fa-chevron-down'" style="font-size:0.65rem"></i>
+            </span>
+            <button class="btn btn-sm btn-link p-0" (click)="uploadNewVersionFile()" title="Upload new version">
+              <i class="fa-solid fa-upload"></i>
+            </button>
+          </div>
+
+          <div class="fm-version-list" *ngIf="showVersionHistory && documentVersions.length > 0">
+            <div class="fm-version-item" *ngFor="let ver of documentVersions" [class.active]="ver.id === selectedDocument!.id">
+              <div class="fm-version-info">
+                <span class="fm-version-label">v{{ ver.versionNumber }}</span>
+                <span class="fm-version-meta">{{ ver.uploadedBy }} · {{ ver.uploadedDate | date:'short' }}</span>
+              </div>
+              <div class="fm-version-actions">
+                <button class="btn btn-sm btn-link p-0 me-2" title="Download this version" (click)="downloadFile(ver)">
+                  <i class="fa-solid fa-download"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <input type="file" #versionUploadInput style="display:none" (change)="onVersionFileSelected($event)" />
         </div>
 
         <!-- Actions -->
