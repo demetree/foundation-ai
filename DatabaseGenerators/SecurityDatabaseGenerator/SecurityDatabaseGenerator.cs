@@ -1150,17 +1150,17 @@ This will ensure that the Security system's configuration controls the Data Visi
 
             notificationTypeTable.AddData(new Dictionary<string, string> { { "name", "Informative" },
                                                                     { "description", "Informative" },
-                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+                                                                    { "objectGuid", "065c2b74-dae1-4450-b8ee-bc5500ce64eb" } });
 
 
             notificationTypeTable.AddData(new Dictionary<string, string> { { "name", "Regular" },
                                                                     { "description", "Regular" },
-                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+                                                                    { "objectGuid", "e7c40dde-461f-41d1-8a9b-32e128179baa" } });
 
 
             notificationTypeTable.AddData(new Dictionary<string, string> { { "name", "Urgent" },
                                                                     { "description", "Urgent" },
-                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+                                                                    { "objectGuid", "825c0094-f3bb-45da-aa22-da459f4593b4" } });
 
 
             //
@@ -1270,13 +1270,16 @@ It is part of the Foundation's Conversation/Messaging system.";
 
             conversationTypeTable.AddData(new Dictionary<string, string> { { "name", "Regular" },
                                                                     { "description", "Regular" },
-                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+                                                                    { "objectGuid", "70174fce-f8de-4c44-b11f-db68b314204b" } });
 
 
             conversationTypeTable.AddData(new Dictionary<string, string> { { "name", "Urgent" },
                                                                     { "description", "Urgent" },
-                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+                                                                    { "objectGuid", "987ea6eb-155a-44ed-ac57-15a72ad2ae27" } });
 
+            conversationTypeTable.AddData(new Dictionary<string, string> { { "name", "Channel" },
+                                                                    { "description", "A persistent named conversation (like a Teams/Slack channel)" },
+                                                                    { "objectGuid", "54883c38-7860-40bf-a6e4-ce5535db7ed4" } });
 
             //
             //
@@ -1296,6 +1299,17 @@ It is part of the Foundation's Conversation/Messaging system.";
             conversationTable.AddString250Field("entity", true).AddScriptComments("The in case the conversation is to do with an entity, it is named here");
             conversationTable.AddIntField("entityId", true).AddScriptComments("The id of the entity that the conversation is about");
             conversationTable.AddString1000Field("externalURL", true);
+
+            conversationTable.AddString250Field("name", true, null).AddScriptComments("The name of the conversation.  A named conversation is a channel.  Optional because not all conversations will be channels.");
+            conversationTable.AddString1000Field("description", true, null).AddScriptComments("The description of the channel conversation.  Optional because not all conversations need to have a description, but if it does have one, this is where it goes.");
+            conversationTable.AddBooleanField("isPublic", true, null).AddScriptComments("Whether or not the conversation is public");
+            /*
+             *         public string name { get; set; }
+        public string description { get; set; }
+        public bool isPublic { get; set; }
+             * 
+             */
+
 
             conversationTable.AddIntField("userId", true).AddScriptComments("Optional target user for this conversation.  Resolved by IMessagingUserResolver.");
             conversationTable.AddControlFields();
@@ -1325,6 +1339,36 @@ It is part of the Foundation's Conversation/Messaging system.";
             conversationUserIdActiveDeletedIndex.AddField("deleted");
 
 
+            //
+            // ConversationChannel - Extends conversations to support persistent named channels.
+            // A channel is a specialized conversation with a name, topic, and optional scope to an organization, department, or team.
+            //
+            Database.Table conversationChannelTable = database.AddTable("ConversationChannel");
+            conversationChannelTable.comment = @"This table extends a Conversation record to be a named Channel.  It is part of the Foundation's Messaging system.
+
+A channel is a persistent, named conversation that users can browse and join.  It links to the base Conversation record 
+and adds channel-specific fields like name, topic, and privacy.";
+
+            conversationChannelTable.minimumReadPermissionLevel = 50;
+            conversationChannelTable.minimumWritePermissionLevel = 50;
+            conversationChannelTable.adminAccessNeededToWrite = true;
+            conversationChannelTable.AddIdField();
+            conversationChannelTable.AddMultiTenantSupport();
+            conversationChannelTable.AddForeignKeyField("conversationId", conversationTable, false).AddScriptComments("The base conversation record that this channel extends.");
+            conversationChannelTable.AddString250Field("name", false).AddScriptComments("The display name for the channel.");
+            conversationChannelTable.AddString1000Field("topic", true).AddScriptComments("The current topic or description of the channel.  Can be changed over time.");
+            conversationChannelTable.AddBoolField("isPrivate", false, false).AddScriptComments("Whether or not this channel is private.  Private channels are invitation-only and do not appear in the channel browser.");
+            conversationChannelTable.AddBoolField("isPinned", false, false).AddScriptComments("Whether or not this channel is pinned in the UI.  Pinned channels appear at the top of the channel list.");
+
+            conversationChannelTable.AddVersionControl();
+            conversationChannelTable.AddControlFields();
+
+            Database.Table.Index conversationChannelIdActiveDeletedIndex = conversationChannelTable.CreateIndex("I_ConversationChannel_id_active_deleted");
+            conversationChannelIdActiveDeletedIndex.AddField("id");
+            conversationChannelIdActiveDeletedIndex.AddField("active");
+            conversationChannelIdActiveDeletedIndex.AddField("deleted");
+
+
 
             Database.Table conversationMessageTable = database.AddTable("ConversationMessage");
             conversationMessageTable.comment = "This is the ConversationMessage table.  It tracks the messages that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.";
@@ -1336,6 +1380,12 @@ It is part of the Foundation's Conversation/Messaging system.";
             conversationMessageTable.AddForeignKeyField("conversationId", conversationTable, false);
             conversationMessageTable.AddIntField("userId", false).AddScriptComments("The user that sent this message.  Resolved by IMessagingUserResolver.");
             conversationMessageTable.AddForeignKeyField("parentConversationMessageId", conversationMessageTable, true);
+            //
+            // Add conversationChannelId FK to ConversationMessage so messages can be
+            // scoped to a specific channel within a conversation.  Nullable — NULL means
+            // the message is at the conversation level (no channel assignment).
+            //
+            conversationMessageTable.AddForeignKeyField("conversationChannelId", conversationChannelTable, true).AddScriptComments("Optional channel that this message belongs to.  NULL = conversation-level (no channel).");
             conversationMessageTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this message was created.");
             conversationMessageTable.AddTextField("message", false);
             conversationMessageTable.AddString250Field("entity", true).AddScriptComments("The in case the conversation message is to do with an entity, it is named here");
@@ -1420,49 +1470,13 @@ It is part of the Foundation's Conversation/Messaging system.";
                 throw new Exception("Conversation tables must be in schema before messaging tables are added");
             }
 
-
             //
             // Additional ConversationType seed data for the messaging system
             //
-            conversationTypeTable.AddData(new Dictionary<string, string> { { "name", "Channel" },
-                                                                    { "description", "A persistent named conversation (like a Teams/Slack channel)" },
-                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
-
-
             conversationTypeTable.AddData(new Dictionary<string, string> { { "name", "Direct Message" },
                                                                     { "description", "A 1:1 or small group direct message conversation" },
-                                                                    { "objectGuid", Guid.NewGuid().ToString() } });
+                                                                    { "objectGuid", "d45cfb49-0dbc-4c05-a8b7-f17a6e71a926" } });
 
-
-
-            //
-            // ConversationChannel - Extends conversations to support persistent named channels.
-            // A channel is a specialized conversation with a name, topic, and optional scope to an organization, department, or team.
-            //
-            Database.Table conversationChannelTable = database.AddTable("ConversationChannel");
-            conversationChannelTable.comment = @"This table extends a Conversation record to be a named Channel.  It is part of the Foundation's Messaging system.
-
-A channel is a persistent, named conversation that users can browse and join.  It links to the base Conversation record 
-and adds channel-specific fields like name, topic, and privacy.";
-
-            conversationChannelTable.minimumReadPermissionLevel = 50;
-            conversationChannelTable.minimumWritePermissionLevel = 50;
-            conversationChannelTable.adminAccessNeededToWrite = true;
-            conversationChannelTable.AddIdField();
-            conversationChannelTable.AddMultiTenantSupport();
-            conversationChannelTable.AddForeignKeyField("conversationId", conversationTable, false).AddScriptComments("The base conversation record that this channel extends.");
-            conversationChannelTable.AddString250Field("name", false).AddScriptComments("The display name for the channel.");
-            conversationChannelTable.AddString1000Field("topic", true).AddScriptComments("The current topic or description of the channel.  Can be changed over time.");
-            conversationChannelTable.AddBoolField("isPrivate", false, false).AddScriptComments("Whether or not this channel is private.  Private channels are invitation-only and do not appear in the channel browser.");
-            conversationChannelTable.AddBoolField("isPinned", false, false).AddScriptComments("Whether or not this channel is pinned in the UI.  Pinned channels appear at the top of the channel list.");
-
-            conversationChannelTable.AddVersionControl();
-            conversationChannelTable.AddControlFields();
-
-            Database.Table.Index conversationChannelIdActiveDeletedIndex = conversationChannelTable.CreateIndex("I_ConversationChannel_id_active_deleted");
-            conversationChannelIdActiveDeletedIndex.AddField("id");
-            conversationChannelIdActiveDeletedIndex.AddField("active");
-            conversationChannelIdActiveDeletedIndex.AddField("deleted");
 
 
 
@@ -1555,6 +1569,8 @@ When connectionCount drops to 0, the user is considered offline.";
 
             // Index to quickly look up presence by user
             userPresenceTable.CreateIndexForFields(new List<string> { "userId", "active", "deleted" });
+
         }
+
     }
 }

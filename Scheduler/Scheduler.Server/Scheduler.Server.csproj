@@ -77,6 +77,7 @@
     <ProjectReference Include="..\..\SchedulerDatabase\SchedulerDatabase.csproj" />
     <ProjectReference Include="..\..\SchedulerServices\SchedulerServices.csproj" />
     <ProjectReference Include="..\Scheduler.Client\Scheduler.Client.esproj" />
+    <ProjectReference Include="..\..\Foundation.IndexedDB\Foundation.IndexedDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>

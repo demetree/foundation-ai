@@ -90,7 +90,7 @@
         </div>
         <div class="fm-tag-list">
           <div class="fm-tag-sidebar-item" *ngFor="let doc of favoriteDocuments"
-               (click)="navigateToFolder(doc.documentFolderId); selectDocument(doc)">
+               (click)="navigateToFolder(doc.documentFolderId ?? null); selectDocument(doc)">
             <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
                [style.color]="fileManagerService.getFileColor(doc.mimeType)" style="font-size:0.75rem"></i>
             <span class="fm-tag-sidebar-name">{{ doc.fileName }}</span>
@@ -133,11 +133,31 @@
         </div>
       </div>
 
+      <!-- Activity sidebar -->
+      <div class="fm-sidebar-section" *ngIf="!sidebarCollapsed">
+        <div class="fm-sidebar-header">
+          <span class="fm-sidebar-title">Activity</span>
+        </div>
+        <div class="fm-tag-list">
+          <div class="fm-tag-sidebar-item" (click)="toggleActivity()" [class.active]="showActivity">
+            <i class="fa-solid fa-clock-rotate-left me-2" style="color: var(--sch-text-muted)"></i>
+            <span class="fm-tag-sidebar-name">Recent Activity</span>
+          </div>
+        </div>
+      </div>
+
       <div class="fm-sidebar-footer" *ngIf="!sidebarCollapsed">
         <div class="fm-storage-usage" *ngIf="storageUsage">
-          <i class="fa-solid fa-hard-drive me-1"></i>
-          <span>{{ fileManagerService.formatFileSize(storageUsage.totalBytes) }}</span>
-          <span class="text-muted ms-1">({{ storageUsage.documentCount }} files)</span>
+          <div class="fm-storage-label">
+            <i class="fa-solid fa-hard-drive me-1"></i>
+            <span>{{ fileManagerService.formatFileSize(storageUsage.totalBytes) }} / {{ fileManagerService.formatFileSize(storageUsage.quotaBytes) }}</span>
+            <span class="text-muted ms-1">({{ storageUsage.documentCount }} files)</span>
+          </div>
+          <div class="fm-storage-bar">
+            <div class="fm-storage-fill"
+                 [style.width.%]="storagePercentage"
+                 [style.background-color]="storageBarColor"></div>
+          </div>
         </div>
         <button class="btn btn-sm btn-outline-primary w-100 mb-2" (click)="showNewFolderDialog()">
           <i class="fa-solid fa-folder-plus me-1"></i> New Folder
@@ -152,6 +172,17 @@
          (dragenter)="onDragEnter($event)"
          (dragleave)="onDragLeave($event)"
          (drop)="onDrop($event)">
+
+      <!-- Upload progress bar -->
+      <div class="fm-upload-progress" *ngIf="isUploading">
+        <div class="fm-upload-progress-inner">
+          <div class="fm-upload-progress-bar" [style.width.%]="uploadProgress"></div>
+        </div>
+        <div class="fm-upload-progress-text">
+          <span>{{ uploadPhase }}</span>
+          <span>{{ uploadProgress }}%</span>
+        </div>
+      </div>
 
       <!-- Action bar -->
       <div class="fm-action-bar" *ngIf="!showTrash">
@@ -318,6 +349,38 @@
         </div>
       </div>
 
+      <!-- ─── Activity Feed ────────────────────────────────────── -->
+      <div class="fm-activity-view" *ngIf="showActivity">
+        <div class="fm-trash-header">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary" (click)="showActivity = false">
+              <i class="fa-solid fa-arrow-left me-1"></i> Back
+            </button>
+            <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Recent Activity</h6>
+          </div>
+        </div>
+
+        <div class="fm-trash-empty" *ngIf="activityItems.length === 0">
+          <i class="fa-solid fa-clock-rotate-left fa-3x mb-3" style="color: var(--sch-text-muted)"></i>
+          <p class="text-muted">No recent activity</p>
+        </div>
+
+        <div class="fm-activity-list" *ngIf="activityItems.length > 0">
+          <div class="fm-activity-item" *ngFor="let item of activityItems">
+            <div class="fm-activity-dot"></div>
+            <div class="fm-activity-content">
+              <div class="fm-activity-title">
+                {{ item.documentName || 'Document #' + item.documentId }}
+                <span class="text-muted" *ngIf="item.versionNumber > 1">v{{ item.versionNumber }}</span>
+              </div>
+              <div class="fm-activity-meta">
+                {{ item.timeStamp | date:'short' }} · {{ item.userName || 'User #' + item.userId }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Search mode indicator -->
       <div class="fm-search-indicator" *ngIf="isSearching && !showTrash">
         <i class="fa-solid fa-magnifying-glass me-2"></i>
@@ -355,7 +418,11 @@
           </button>
 
           <div class="fm-file-card-icon">
-            <i class="fa-solid" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
+            <img *ngIf="thumbnailUrls.has(doc.id)" class="fm-thumbnail"
+                 [src]="thumbnailUrls.get(doc.id)" loading="lazy"
+                 (error)="$any($event.target).style.display='none'" />
+            <i *ngIf="!thumbnailUrls.has(doc.id)" class="fa-solid"
+               [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
                [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
           </div>
           <div class="fm-file-card-name" [title]="doc.fileName">{{ doc.fileName }}</div>
@@ -452,14 +519,14 @@
         <!-- Preview area -->
         <div class="fm-detail-preview">
           <!-- Image preview -->
-          <img *ngIf="isImagePreviewable(selectedDocument.mimeType)"
-               [src]="getPreviewUrl(selectedDocument)"
+          <img *ngIf="isImagePreviewable(selectedDocument.mimeType) && previewBlobUrl"
+               [src]="previewBlobUrl"
                [alt]="selectedDocument.fileName"
                class="fm-preview-image" />
 
           <!-- PDF preview -->
-          <iframe *ngIf="isPdfPreviewable(selectedDocument.mimeType)"
-                  [src]="getSafePreviewUrl(selectedDocument)"
+          <iframe *ngIf="isPdfPreviewable(selectedDocument.mimeType) && safePreviewBlobUrl"
+                  [src]="safePreviewBlobUrl"
                   class="fm-preview-pdf"
                   frameborder="0"></iframe>
 

@@ -133,6 +133,10 @@ namespace Foundation.Scheduler
                 // Register File Storage Service (for Document Manager / File Manager feature)
                 builder.Services.AddScoped<global::Scheduler.Server.Services.IFileStorageService, global::Scheduler.Server.Services.SqlFileStorageService>();
 
+                // Register Chunk Buffer Service for chunked file uploads (uses Foundation.IndexedDB for durable buffering)
+                builder.Services.AddSingleton(new global::Scheduler.Server.Services.ChunkBufferService(
+                    Path.Combine(builder.Environment.ContentRootPath, "ChunkBuffer")));
+
                 // Register Volunteer Communications Services
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerNotificationService>();
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerHubService>();

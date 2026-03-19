@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using Foundation.Imaging.Pdf.TrueType;
 
 namespace Foundation.Imaging.Pdf
 {
@@ -39,6 +40,11 @@ namespace Foundation.Imaging.Pdf
         internal readonly List<PdfObject> Objects = new List<PdfObject>();
         internal int NextObjectId => Objects.Count + 1;
 
+        // Font support
+        private readonly FontRegistry _fontRegistry = new FontRegistry();
+        private readonly List<FontDescriptor> _fontDescriptors = new List<FontDescriptor>();
+        internal IReadOnlyList<FontDescriptor> FontDescriptors => _fontDescriptors;
+
         public SimplePdfDocument(string title, string author)
         {
             _title = title ?? "";
@@ -53,8 +59,138 @@ namespace Foundation.Imaging.Pdf
             return page;
         }
 
+        /// <summary>
+        /// Register a TrueType font for use with DrawTextUnicode.
+        /// Call this before drawing any text with the font.
+        /// </summary>
+        /// <param name="name">Friendly name to refer to the font (e.g. "MyFont").</param>
+        /// <param name="fontData">Raw bytes of the .ttf or .otf file.</param>
+        /// <param name="isBold">Whether to use the bold weight variant.</param>
+        public void RegisterFont(string name, byte[] fontData, bool isBold = false)
+        {
+            var embedded = _fontRegistry.Register(name, fontData, isBold);
+            _fontDescriptors.Add(new FontDescriptor(embedded));
+        }
+
+        /// <summary>
+        /// Register a TrueType font from a file path.
+        /// </summary>
+        public void RegisterFont(string name, string filePath, bool isBold = false)
+        {
+            RegisterFont(name, File.ReadAllBytes(filePath), isBold);
+        }
+
+        internal FontRegistry FontRegistry => _fontRegistry;
+        internal FontDescriptor GetFontDescriptor(string name)
+        {
+            foreach (var fd in _fontDescriptors)
+            {
+                if (fd.EmbeddedFont.Name == name) return fd;
+            }
+            return null;
+        }
+
         internal int GetPageIndex(SimplePdfPage page) => _pages.IndexOf(page);
         internal int GetTotalPages() => _pages.Count;
+
+        internal void GetFontObjectIds(string fontName, out int fontId, out int fontDescId, out int toUnicodeId)
+        {
+            foreach (var fd in _fontDescriptors)
+            {
+                if (fd.EmbeddedFont.Name == fontName)
+                {
+                    fontId = fd.FontObjectId;
+                    fontDescId = fd.FontDescriptorId;
+                    toUnicodeId = fd.ToUnicodeId;
+                    return;
+                }
+            }
+            fontId = fontDescId = toUnicodeId = 0;
+        }
+
+        internal void BuildFontSubsets()
+        {
+            foreach (var fd in _fontDescriptors)
+                fd.BuildSubset();
+        }
+
+        internal void WriteFontObjects(PdfStreamWriter writer)
+        {
+            foreach (var fd in _fontDescriptors)
+            {
+                var touniMap = BuildToUnicodeMap(fd.EmbeddedFont.Name);
+                byte[] touniBytes = Encoding.ASCII.GetBytes(touniMap);
+                byte[] touniCompressed;
+                using (var ms = new MemoryStream())
+                {
+                    using (var zs = new ZLibStream(ms, CompressionLevel.Fastest, leaveOpen: true))
+                        zs.Write(touniBytes, 0, touniBytes.Length);
+                    touniCompressed = ms.ToArray();
+                }
+
+                var src = fd.EmbeddedFont.SourceFont;
+                int uw = src.UnitsPerEm;
+                double f = 1000.0 / uw;
+
+                WriteObj(writer, fd.FontDescriptorId,
+                    $"<< /Type /FontDescriptor /FontName /{fd.BaseFont} " +
+                    $"/Flags 4 /FontBBox [{(int)(src.XMin * f)} {(int)(src.YMin * f)} {(int)(src.XMax * f)} {(int)(src.YMax * f)}] " +
+                    $"/ItalicAngle 0 /Ascent {(int)(src.Ascender * f)} " +
+                    $"/Descent {(int)(src.Descender * f)} " +
+                    $"/CapHeight {(int)(src.Ascender * f)} " +
+                    $"/StemV {(fd.IsBold ? 120 : 80)} " +
+                    $"/FontFile{(fd.IsCFF ? "2" : "3")} {fd.FontObjectId} 0 R >>");
+
+                string subtype = fd.IsCFF ? "/Type1" : "/TrueType";
+                string encoding = fd.IsCFF ? "/WinAnsiEncoding" : "/Identity-H";
+                WriteObj(writer, fd.FontObjectId,
+                    $"<< /Type /Font /Subtype {subtype} /BaseFont /{fd.BaseFont} " +
+                    $"/FirstChar 0 /LastChar 255 " +
+                    $"/FontDescriptor {fd.FontDescriptorId} 0 R " +
+                    $"/Encoding {encoding} /ToUnicode {fd.ToUnicodeId} 0 R >>");
+
+                WriteStreamObj(writer, fd.ToUnicodeId,
+                    $"<< /Length {touniCompressed.Length} /Filter /FlateDecode >>",
+                    touniCompressed, touniBytes.Length);
+
+                byte[] subset = fd.GetSubsetData();
+                if (subset != null && subset.Length > 0)
+                {
+                    WriteStreamObj(writer, fd.FontObjectId,
+                        $"<< /Length {subset.Length} /Filter /FlateDecode >>",
+                        subset, subset.Length);
+                }
+            }
+        }
+
+        private string BuildToUnicodeMap(string fontName)
+        {
+            var seen = new HashSet<(int unicode, int glyphIdx)>();
+            var uniqueGlyphs = new List<(int unicode, int glyphIdx)>();
+            foreach (var page in _pages)
+            {
+                if (page.TryGetGlyphTracker(fontName, out var tracker))
+                {
+                    foreach (var g in tracker.UsedGlyphs)
+                    {
+                        if (seen.Add(g))
+                            uniqueGlyphs.Add(g);
+                    }
+                }
+            }
+
+            if (uniqueGlyphs.Count == 0)
+                return "beginbfchar\nendbfchar\n";
+
+            var sb = new StringBuilder();
+            sb.AppendLine("beginbfchar");
+            for (int i = 0; i < uniqueGlyphs.Count; i++)
+            {
+                sb.AppendLine($"<{i + 1:X4}> <{uniqueGlyphs[i].unicode:X}>");
+            }
+            sb.Append("endbfchar\n");
+            return sb.ToString();
+        }
 
 
         /// <summary>Serialize the entire PDF document to bytes.</summary>
@@ -92,15 +228,26 @@ namespace Foundation.Imaging.Pdf
             // ── Info (obj 3) ──
             int infoId = AllocId();
 
-            // ── Fonts ──
+            // ── Built-in Fonts ──
             int fontHelveticaId = AllocId();
             int fontHelveticaBoldId = AllocId();
+
+            // ── Embedded font object IDs ──
+            foreach (var fd in _fontDescriptors)
+            {
+                fd.FontObjectId = AllocId();
+                fd.FontDescriptorId = AllocId();
+                fd.ToUnicodeId = AllocId();
+            }
 
             // ── Finalize pages (allocate image objects, build content streams) ──
             foreach (var page in _pages)
             {
                 page.Prepare(pagesId, fontHelveticaId, fontHelveticaBoldId);
             }
+
+            // ── Build font subsets now that all glyph usage is known ──
+            BuildFontSubsets();
 
             // ── Write objects ──
 
@@ -123,13 +270,16 @@ namespace Foundation.Imaging.Pdf
                 $"<< /Title ({PdfEscape(_title)}) /Author ({PdfEscape(_author)}) " +
                 $"/Creator (Foundation.Imaging) /Producer (SimplePdf) >>");
 
-            // Fonts
+            // Built-in Fonts
             WriteObj(writer, fontHelveticaId,
                 "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica " +
                 "/Encoding /WinAnsiEncoding >>");
             WriteObj(writer, fontHelveticaBoldId,
                 "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold " +
                 "/Encoding /WinAnsiEncoding >>");
+
+            // Embedded fonts
+            WriteFontObjects(writer);
 
             // Page objects + content streams + images
             foreach (var page in _pages)
@@ -237,6 +387,9 @@ namespace Foundation.Imaging.Pdf
         private byte _pageNumberR, _pageNumberG, _pageNumberB;
         private double _pageNumberMargin;
         private bool _pageNumberRight;
+
+        // Embedded font glyph tracking: fontName → GlyphTracker
+        private readonly Dictionary<string, GlyphTracker> _glyphTrackers = new Dictionary<string, GlyphTracker>();
 
         internal SimplePdfPage(SimplePdfDocument doc, double width, double height)
         {
@@ -531,6 +684,138 @@ namespace Foundation.Imaging.Pdf
 
 
         /// <summary>
+        /// Draw Unicode text using an embedded TrueType font registered via RegisterFont().
+        /// Uses Identity-H encoding — glyph indices are assigned sequentially per page.
+        /// </summary>
+        public double DrawTextUnicode(string text, string fontName, double fontSize,
+            double x, double y, byte r, byte g, byte b, byte a = 255)
+        {
+            if (string.IsNullOrEmpty(text)) return y;
+
+            if (!_glyphTrackers.TryGetValue(fontName, out var tracker))
+            {
+                var fd = _doc.GetFontDescriptor(fontName);
+                if (fd == null)
+                    throw new InvalidOperationException($"Font '{fontName}' is not registered. Call RegisterFont() first.");
+                tracker = new GlyphTracker(fontName, fd.EmbeddedFont);
+                _glyphTrackers[fontName] = tracker;
+            }
+
+            double py = Height - y;
+            double lineH = fontSize * 1.2;
+            double curY = y;
+
+            _stream.AppendLine("BT");
+            int fdIdx = 3;
+            for (int fi = 0; fi < _doc.FontDescriptors.Count; fi++)
+            {
+                if (_doc.FontDescriptors[fi].EmbeddedFont.Name == fontName)
+                {
+                    fdIdx = fi + 3;
+                    break;
+                }
+            }
+            _stream.AppendLine($"/F{fdIdx} {F(fontSize)} Tf");
+            _stream.AppendLine($"{F(r / 255.0)} {F(g / 255.0)} {F(b / 255.0)} rg");
+
+            string[] paras = text.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+            foreach (string para in paras)
+            {
+                if (para.Length == 0)
+                {
+                    curY += lineH;
+                    py = Height - curY;
+                    continue;
+                }
+
+                string[] words = para.Split(' ');
+                string line = "";
+                foreach (string word in words)
+                {
+                    string test = line.Length == 0 ? word : line + " " + word;
+                    if (tracker.Font.MeasureText(test, fontSize) > 8000)
+                    {
+                        if (line.Length > 0)
+                        {
+                            WriteUnicodeLine(line, tracker, x, py);
+                            curY += lineH;
+                            py = Height - curY;
+                            line = word;
+                        }
+                        else
+                        {
+                            WriteUnicodeLine(word, tracker, x, py);
+                            curY += lineH;
+                            py = Height - curY;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        line = test;
+                    }
+                }
+                if (line.Length > 0)
+                {
+                    WriteUnicodeLine(line, tracker, x, py);
+                    curY += lineH;
+                    py = Height - curY;
+                }
+            }
+            _stream.AppendLine("ET");
+            return curY;
+        }
+
+        private void WriteUnicodeLine(string text, GlyphTracker tracker, double x, double y)
+        {
+            tracker.RecordTextRun(text);
+
+            _stream.AppendLine($"{F(x)} {F(y)} Td");
+            _stream.Append("[");
+
+            int i = 0;
+            bool first = true;
+            while (i < text.Length)
+            {
+                int cp = text[i];
+                if (char.IsHighSurrogate((char)cp) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                {
+                    cp = char.ConvertToUtf32(text[i], text[i + 1]);
+                    i += 2;
+                }
+                else
+                {
+                    i++;
+                }
+                int gi = tracker.Font.GetGlyphIndex(cp);
+                int subsetIdx = tracker.RecordGlyphUsage(gi);
+                if (!first) _stream.Append(" ");
+                first = false;
+                if (subsetIdx > 0)
+                    _stream.Append(subsetIdx.ToString());
+                else
+                    _stream.Append("0");
+            }
+            _stream.Append("] TJ");
+        }
+
+        /// <summary>
+        /// Measure the width of Unicode text in a registered embedded font.
+        /// </summary>
+        public double MeasureTextUnicode(string text, string fontName, double fontSize)
+        {
+            var fd = _doc.GetFontDescriptor(fontName);
+            return fd?.EmbeddedFont.MeasureText(text, fontSize) ?? 0;
+        }
+
+        /// <summary>
+        /// Expose glyph tracker to the document for building ToUnicode maps.
+        /// </summary>
+        internal bool TryGetGlyphTracker(string fontName, out GlyphTracker tracker)
+            => _glyphTrackers.TryGetValue(fontName, out tracker);
+
+
+        /// <summary>
         /// Draw a table starting at the given position. Returns the y position after the table.
         /// </summary>
         /// <param name="columns">Column widths from left to right. Must sum to the intended table width.</param>
@@ -820,7 +1105,19 @@ namespace Foundation.Imaging.Pdf
             }
 
             // ── Page object ──
-            string resources = $"<< /Font << /F1 {_fontHelveticaId} 0 R /F2 {_fontBoldId} 0 R >>";
+            StringBuilder fontEntries = new StringBuilder();
+            fontEntries.Append($"/F1 {_fontHelveticaId} 0 R /F2 {_fontBoldId} 0 R");
+            int fdIdx = 3;
+            foreach (var fd in _doc.FontDescriptors)
+            {
+                if (_glyphTrackers.ContainsKey(fd.EmbeddedFont.Name))
+                {
+                    fontEntries.Append($" /F{fdIdx} {fd.FontObjectId} 0 R");
+                }
+                fdIdx++;
+            }
+
+            string resources = $"<< /Font << {fontEntries} >>";
             if (_images.Count > 0)
                 resources += $" /XObject << {xobjectEntries} >>";
             resources += " >>";
@@ -1177,6 +1474,56 @@ namespace Foundation.Imaging.Pdf
         public void WriteBytes(byte[] data)
         {
             _stream.Write(data, 0, data.Length);
+        }
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════
+    //  GlyphTracker — tracks per-page glyph usage for embedded fonts
+    // ═══════════════════════════════════════════════════════════════
+
+    internal class GlyphTracker
+    {
+        private readonly EmbeddedFont _embeddedFont;
+        private readonly List<(int unicode, int glyphIdx)> _usedGlyphs = new List<(int, int)>();
+        private readonly Dictionary<int, int> _glyphIdxToSubsetIdx = new Dictionary<int, int>();
+
+        public GlyphTracker(string fontName, EmbeddedFont embeddedFont)
+        {
+            _embeddedFont = embeddedFont;
+        }
+
+        public List<(int unicode, int glyphIdx)> UsedGlyphs => _usedGlyphs;
+        public EmbeddedFont Font => _embeddedFont;
+
+        public int RecordGlyphUsage(int glyphIndex)
+        {
+            return glyphIndex != 0 && _glyphIdxToSubsetIdx.TryGetValue(glyphIndex, out int idx) ? idx : 0;
+        }
+
+        public void RecordTextRun(string text)
+        {
+            int i = 0;
+            while (i < text.Length)
+            {
+                int cp = text[i];
+                if (char.IsHighSurrogate((char)cp) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
+                {
+                    cp = char.ConvertToUtf32(text[i], text[i + 1]);
+                    i += 2;
+                }
+                else
+                {
+                    i++;
+                }
+                int gi = _embeddedFont.SourceFont.GetGlyphIndex(cp);
+                if (gi > 0 && !_glyphIdxToSubsetIdx.ContainsKey(gi))
+                {
+                    _glyphIdxToSubsetIdx[gi] = _usedGlyphs.Count + 1;
+                    _usedGlyphs.Add((cp, gi));
+                    _embeddedFont.RecordGlyphUsage(cp);
+                }
+            }
         }
     }
 }

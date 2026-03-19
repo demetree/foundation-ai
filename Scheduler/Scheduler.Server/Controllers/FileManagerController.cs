@@ -20,8 +20,10 @@ using Foundation.Security;
 using Foundation.Security.Database;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Scheduler.Server.Services;
+using Foundation.Imaging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -41,21 +43,29 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
         public const int WRITE_PERMISSION_LEVEL_REQUIRED = 1;
 
+        /// <summary>
+        /// Default storage quota per tenant: 5 GB.
+        /// </summary>
+        public const long DEFAULT_QUOTA_BYTES = 5L * 1024 * 1024 * 1024;
+
         private readonly SchedulerContext _db;
         private readonly IFileStorageService _fileStorage;
         private readonly ILogger<FileManagerController> _logger;
         private readonly IHubContext<FileManagerHub, IFileManagerHubClient> _hub;
+        private readonly ChunkBufferService _chunkBuffer;
 
         public FileManagerController(
             SchedulerContext db,
             IFileStorageService fileStorage,
             ILogger<FileManagerController> logger,
-            IHubContext<FileManagerHub, IFileManagerHubClient> hub) : base("Scheduler", "FileManager")
+            IHubContext<FileManagerHub, IFileManagerHubClient> hub,
+            ChunkBufferService chunkBuffer) : base("Scheduler", "FileManager")
         {
             _db = db;
             _fileStorage = fileStorage;
             _logger = logger;
             _hub = hub;
+            _chunkBuffer = chunkBuffer;
         }
 
         /// <summary>
@@ -167,6 +177,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 DocumentFolder created = await _fileStorage.CreateFolderAsync(folder, securityUser.id);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Created folder '{created.name}'", securityUser.accountName);
+                await BroadcastFolderChangedAsync(tenantGuid, new { action = "created", folderId = created.id });
 
                 return Ok(created.ToOutputDTO());
             }
@@ -201,6 +212,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 DocumentFolder updated = await _fileStorage.UpdateFolderAsync(folder, securityUser.id);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Updated folder '{updated.name}'", securityUser.accountName);
+                await BroadcastFolderChangedAsync(tenantGuid, new { action = "updated", folderId = updated.id });
 
                 return Ok(updated.ToOutputDTO());
             }
@@ -232,6 +244,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 await _fileStorage.DeleteFolderAsync(folderId, tenantGuid, securityUser.id, cascade);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, $"Deleted folder {folderId} (cascade={cascade})", securityUser.accountName);
+                await BroadcastFolderChangedAsync(tenantGuid, new { action = "deleted", folderId });
 
                 return Ok();
             }
@@ -322,15 +335,24 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     return BadRequest("No files provided.");
                 }
 
+                // Quota check — reject if upload would exceed limit
+                var (usedBytes, _) = await _fileStorage.GetStorageUsageAsync(tenantGuid);
+                long incomingBytes = files.Sum(f => f.Length);
+                if (usedBytes + incomingBytes > DEFAULT_QUOTA_BYTES)
+                {
+                    string usedMb = (usedBytes / (1024.0 * 1024)).ToString("F1");
+                    string quotaMb = (DEFAULT_QUOTA_BYTES / (1024.0 * 1024)).ToString("F0");
+                    return BadRequest($"Storage quota exceeded. Used: {usedMb} MB / {quotaMb} MB. Upload size: {(incomingBytes / (1024.0 * 1024)):F1} MB.");
+                }
+
                 List<Document.DocumentDTO> uploadedResults = new List<Document.DocumentDTO>();
 
                 foreach (IFormFile file in files)
                 {
-                    byte[] fileBytes;
-                    using (MemoryStream ms = new MemoryStream())
+                    byte[] fileBytes = new byte[file.Length];
+                    using (var stream = file.OpenReadStream())
                     {
-                        await file.CopyToAsync(ms);
-                        fileBytes = ms.ToArray();
+                        await stream.ReadExactlyAsync(fileBytes, 0, (int)file.Length);
                     }
 
                     Document document = new Document
@@ -385,6 +407,244 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         }
 
 
+        // ═══════════════════════════════════════════════════════════════
+        // CHUNKED UPLOAD ENDPOINTS
+        // ═══════════════════════════════════════════════════════════════
+
+
+        /// <summary>
+        /// Initiates a chunked upload session.
+        /// Returns sessionId and recommended chunkSize.
+        /// </summary>
+        [Route("api/FileManager/Upload/Init")]
+        [HttpPost]
+        public async Task<IActionResult> InitChunkedUpload(
+            [FromQuery] long fileSizeBytes,
+            [FromQuery] string fileName)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                // Quota pre-check
+                var (usedBytes, _) = await _fileStorage.GetStorageUsageAsync(tenantGuid);
+                if (usedBytes + fileSizeBytes > DEFAULT_QUOTA_BYTES)
+                {
+                    return BadRequest("Storage quota would be exceeded by this upload.");
+                }
+
+                string sessionId = await _chunkBuffer.InitSessionAsync();
+                int totalChunks = (int)Math.Ceiling((double)fileSizeBytes / ChunkBufferService.DEFAULT_CHUNK_SIZE);
+
+                _logger.LogInformation("Chunked upload session {SessionId} initiated for '{FileName}' ({Size} bytes, {Chunks} chunks).",
+                    sessionId, fileName, fileSizeBytes, totalChunks);
+
+                return Ok(new
+                {
+                    sessionId,
+                    chunkSize = ChunkBufferService.DEFAULT_CHUNK_SIZE,
+                    totalChunks
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error initiating chunked upload.");
+                return StatusCode(500, "Error initiating upload session.");
+            }
+        }
+
+
+        /// <summary>
+        /// Receives a single chunk for a chunked upload session.
+        /// </summary>
+        [Route("api/FileManager/Upload/Chunk")]
+        [HttpPost]
+        [RequestSizeLimit(8 * 1024 * 1024)] // Allow up to 8MB per chunk request
+        public async Task<IActionResult> UploadChunk(
+            [FromQuery] string sessionId,
+            [FromQuery] int chunkIndex,
+            [FromQuery] string chunkHash)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                if (!_chunkBuffer.HasSession(sessionId))
+                {
+                    return BadRequest("Invalid or expired upload session.");
+                }
+
+                IFormFileCollection files = Request.Form.Files;
+                if (files == null || files.Count == 0)
+                {
+                    return BadRequest("No chunk data provided.");
+                }
+
+                byte[] chunkData;
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    await files[0].CopyToAsync(ms);
+                    chunkData = ms.ToArray();
+                }
+
+                bool accepted = await _chunkBuffer.AddChunkAsync(sessionId, chunkIndex, chunkData, chunkHash);
+
+                if (!accepted)
+                {
+                    return BadRequest($"Chunk {chunkIndex} integrity check failed. Expected hash: {chunkHash}.");
+                }
+
+                long receivedCount = await _chunkBuffer.GetChunkCountAsync(sessionId);
+
+                return Ok(new { chunkIndex, received = receivedCount, verified = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error receiving chunk {ChunkIndex} for session {SessionId}.", chunkIndex, sessionId);
+                return StatusCode(500, "Error receiving chunk.");
+            }
+        }
+
+
+        /// <summary>
+        /// Completes a chunked upload — assembles chunks, verifies total hash, saves document.
+        /// </summary>
+        [Route("api/FileManager/Upload/Complete")]
+        [HttpPost]
+        public async Task<IActionResult> CompleteChunkedUpload(
+            [FromQuery] string sessionId,
+            [FromQuery] string totalHash,
+            [FromQuery] int? folderId = null,
+            [FromQuery] int? documentTypeId = null,
+            [FromQuery] int? scheduledEventId = null,
+            [FromQuery] int? contactId = null,
+            [FromQuery] int? clientId = null,
+            [FromQuery] int? resourceId = null,
+            [FromQuery] int? crewId = null,
+            [FromQuery] int? schedulingTargetId = null,
+            [FromQuery] int? financialTransactionId = null,
+            [FromQuery] int? officeId = null,
+            [FromQuery] int? campaignId = null,
+            [FromQuery] int? householdId = null,
+            [FromQuery] int? constituentId = null,
+            [FromQuery] int? tributeId = null,
+            [FromQuery] int? volunteerProfileId = null,
+            [FromQuery] string fileName = null,
+            [FromQuery] string mimeType = null)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                if (!_chunkBuffer.HasSession(sessionId))
+                {
+                    return BadRequest("Invalid or expired upload session.");
+                }
+
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                // Assemble all chunks and verify total hash
+                var (fileBytes, verified) = await _chunkBuffer.AssembleAsync(sessionId, totalHash);
+
+                if (!verified)
+                {
+                    _chunkBuffer.CleanupSession(sessionId);
+                    return BadRequest("Total file integrity check failed. The file may have been corrupted during transmission.");
+                }
+
+                // Quota re-check (in case other uploads completed while this one was chunking)
+                var (usedBytes, _) = await _fileStorage.GetStorageUsageAsync(tenantGuid);
+                if (usedBytes + fileBytes.Length > DEFAULT_QUOTA_BYTES)
+                {
+                    _chunkBuffer.CleanupSession(sessionId);
+                    return BadRequest("Storage quota exceeded.");
+                }
+
+                // Save document
+                Document document = new Document
+                {
+                    tenantGuid = tenantGuid,
+                    name = Path.GetFileNameWithoutExtension(fileName ?? "upload"),
+                    fileName = fileName ?? "upload",
+                    mimeType = mimeType ?? "application/octet-stream",
+                    fileSizeBytes = fileBytes.Length,
+                    fileDataFileName = fileName ?? "upload",
+                    fileDataSize = fileBytes.Length,
+                    fileDataData = fileBytes,
+                    fileDataMimeType = mimeType ?? "application/octet-stream",
+                    documentFolderId = folderId,
+                    documentTypeId = documentTypeId,
+                    uploadedBy = securityUser.accountName,
+                    scheduledEventId = scheduledEventId,
+                    contactId = contactId,
+                    clientId = clientId,
+                    resourceId = resourceId,
+                    crewId = crewId,
+                    schedulingTargetId = schedulingTargetId,
+                    financialTransactionId = financialTransactionId,
+                    officeId = officeId,
+                    campaignId = campaignId,
+                    householdId = householdId,
+                    constituentId = constituentId,
+                    tributeId = tributeId,
+                    volunteerProfileId = volunteerProfileId
+                };
+
+                Document saved = await _fileStorage.UploadDocumentAsync(document, securityUser.id);
+
+                _chunkBuffer.CleanupSession(sessionId);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+                    $"Uploaded document '{fileName}' via chunked upload ({fileBytes.Length} bytes)",
+                    securityUser.accountName);
+
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "uploaded", count = 1, folderId });
+
+                _logger.LogInformation("Chunked upload session {SessionId} completed. Document {DocumentId} saved.",
+                    sessionId, saved.id);
+
+                return Ok(saved.ToDTO());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error completing chunked upload for session {SessionId}.", sessionId);
+                _chunkBuffer.CleanupSession(sessionId);
+                return StatusCode(500, "Error completing upload.");
+            }
+        }
+
+
+        /// <summary>
+        /// Cancels / cleans up an upload session.
+        /// </summary>
+        [Route("api/FileManager/Upload/{sessionId}")]
+        [HttpDelete]
+        public async Task<IActionResult> CancelChunkedUpload(string sessionId)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            _chunkBuffer.CleanupSession(sessionId);
+            _logger.LogInformation("Chunked upload session {SessionId} cancelled.", sessionId);
+            return Ok(new { cancelled = true, sessionId });
+        }
+
+
         /// <summary>
         /// Downloads a document's binary content.
         /// </summary>
@@ -414,12 +674,58 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     return NotFound("Document has no file content.");
                 }
 
-                return File(document.fileDataData, document.mimeType ?? "application/octet-stream", document.fileName);
+                var stream = new MemoryStream(document.fileDataData);
+                return File(stream, document.mimeType ?? "application/octet-stream", document.fileName, enableRangeProcessing: true);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error downloading document {DocumentId}.", documentId);
                 return StatusCode(500, "Error downloading document.");
+            }
+        }
+
+
+        /// <summary>
+        /// Returns an 80×80 PNG thumbnail for a document (if it's a supported image format).
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/Thumbnail")]
+        [HttpGet]
+        public async Task<IActionResult> GetThumbnail(int documentId)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+                Document document = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+
+                if (document == null || document.fileDataData == null)
+                {
+                    return NotFound();
+                }
+
+                if (!ThumbnailGenerator.IsSupportedFormat(document.mimeType))
+                {
+                    return NotFound("Thumbnail not supported for this file type.");
+                }
+
+                byte[] thumbnail = ThumbnailGenerator.GenerateThumbnail(document.fileDataData, document.mimeType, 80);
+
+                if (thumbnail == null)
+                {
+                    return NotFound("Could not generate thumbnail.");
+                }
+
+                return File(thumbnail, "image/png");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating thumbnail for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error generating thumbnail.");
             }
         }
 
@@ -609,6 +915,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
                 await _fileStorage.RestoreDocumentAsync(documentId, tenantGuid, securityUser.id);
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "restored", documentId });
 
                 return Ok(new { message = "Document restored." });
             }
@@ -767,6 +1074,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
                     $"Uploaded new version (v{saved.versionNumber}) for document {documentId}",
                     securityUser.accountName);
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "newVersion", documentId, versionNumber = saved.versionNumber });
 
                 return Ok(saved.ToDTO());
             }
@@ -800,12 +1108,84 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
                 var (totalBytes, documentCount) = await _fileStorage.GetStorageUsageAsync(tenantGuid);
 
-                return Ok(new { totalBytes, documentCount });
+                return Ok(new { totalBytes, documentCount, quotaBytes = DEFAULT_QUOTA_BYTES });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving storage usage.");
                 return StatusCode(500, "Error retrieving storage usage.");
+            }
+        }
+
+
+        /// <summary>
+        /// Returns recent document activity for the current tenant.
+        /// </summary>
+        [Route("api/FileManager/Activity")]
+        [HttpGet]
+        public async Task<IActionResult> GetRecentActivity([FromQuery] int count = 50)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                var activity = await _db.DocumentChangeHistories
+                    .Where(h => h.tenantGuid == tenantGuid)
+                    .OrderByDescending(h => h.timeStamp)
+                    .Take(Math.Min(count, 100))
+                    .Select(h => new
+                    {
+                        h.id,
+                        h.documentId,
+                        documentName = h.document != null ? h.document.name : null,
+                        h.versionNumber,
+                        h.timeStamp,
+                        h.userId,
+                        h.data
+                    })
+                    .ToListAsync();
+
+                // Resolve user IDs to display names via Foundation's ChangeHistory multi-tenant user resolution.
+                // This uses the same pattern as DocumentsController.GetDocumentAuditHistory — the Foundation
+                // ChangeHistoryMultiTenant class joins SecurityTenantUsers → SecurityUser with a built-in cache.
+                var userIds = activity.Select(a => a.userId).Distinct().ToList();
+                var userNameMap = new Dictionary<int, string>();
+                foreach (var uid in userIds)
+                {
+                    var changeHistoryUser = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(uid, tenantGuid);
+                    if (changeHistoryUser != null)
+                    {
+                        string displayName = !string.IsNullOrWhiteSpace(changeHistoryUser.firstName) || !string.IsNullOrWhiteSpace(changeHistoryUser.lastName)
+                            ? $"{changeHistoryUser.firstName} {changeHistoryUser.lastName}".Trim()
+                            : changeHistoryUser.userName ?? $"User #{uid}";
+                        userNameMap[uid] = displayName;
+                    }
+                }
+
+                var enriched = activity.Select(a => new
+                {
+                    a.id,
+                    a.documentId,
+                    a.documentName,
+                    a.versionNumber,
+                    a.timeStamp,
+                    a.userId,
+                    userName = userNameMap.GetValueOrDefault(a.userId, $"User #{a.userId}"),
+                    a.data
+                });
+
+                return Ok(enriched);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving recent activity.");
+                return StatusCode(500, "Error retrieving activity.");
             }
         }
 
@@ -904,6 +1284,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Document updated = await _fileStorage.UpdateDocumentMetadataAsync(document, securityUser.id);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Updated document '{updated.name}'", securityUser.accountName);
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "updated", documentId = updated.id });
 
                 return Ok(updated.ToDTO());
             }
@@ -937,6 +1318,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
                     $"Moved document {documentId} to folder {targetFolderId?.ToString() ?? "root"}",
                     securityUser.accountName);
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "moved", documentId, targetFolderId });
 
                 return Ok();
             }
@@ -968,6 +1350,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 await _fileStorage.DeleteDocumentAsync(documentId, tenantGuid, securityUser.id);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, $"Deleted document {documentId}", securityUser.accountName);
+                await BroadcastDocumentDeletedAsync(tenantGuid, new { action = "deleted", documentId });
 
                 return Ok();
             }

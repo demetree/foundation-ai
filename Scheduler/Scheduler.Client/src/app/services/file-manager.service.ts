@@ -8,8 +8,8 @@
 //
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { AlertService } from './alert.service';
 import { AuthService } from './auth.service';
 import { SecureEndpointBase } from './secure-endpoint-base.service';
@@ -39,6 +39,17 @@ export interface FolderDTO {
     children?: FolderDTO[];
     level?: number;
     expanded?: boolean;
+}
+
+export interface ActivityItem {
+    id: number;
+    documentId: number;
+    documentName: string | null;
+    versionNumber: number;
+    timeStamp: string;
+    userId: number;
+    userName: string | null;
+    data: string | null;
 }
 
 export interface DocumentDTO {
@@ -235,6 +246,153 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
+
+    // ─── Chunked Upload (Enterprise) ────────────────────────────────
+
+    /**
+     * Upload a single file using chunked upload with SHA-256 integrity verification.
+     * Use this for files > 4MB. Supports per-chunk retry and progress tracking.
+     */
+    async uploadDocumentChunked(
+        file: File,
+        options: UploadOptions = {},
+        onProgress?: (pct: number, phase: string) => void
+    ): Promise<DocumentDTO> {
+
+        // 1. Compute total file SHA-256
+        onProgress?.(0, 'Hashing file...');
+        const totalHash = await this.computeSha256(file);
+
+        // 2. Init session
+        onProgress?.(0, 'Initialising upload...');
+        const initResp = await fetch(
+            `${this.base}/Upload/Init?fileSizeBytes=${file.size}&fileName=${encodeURIComponent(file.name)}`,
+            { method: 'POST', headers: { 'Authorization': 'Bearer ' + this.authService.accessToken } }
+        );
+        if (!initResp.ok) {
+            const err = await initResp.text();
+            throw new Error(err || 'Failed to init upload session.');
+        }
+        const { sessionId, chunkSize, totalChunks } = await initResp.json();
+
+        // 3. Upload chunks sequentially with retry
+        try {
+            for (let i = 0; i < totalChunks; i++) {
+                const start = i * chunkSize;
+                const end = Math.min(start + chunkSize, file.size);
+                const slice = file.slice(start, end);
+                const chunkBytes = await slice.arrayBuffer();
+                const chunkHash = await this.computeSha256Bytes(chunkBytes);
+
+                let success = false;
+                for (let attempt = 0; attempt < 3; attempt++) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('chunk', new Blob([chunkBytes]), 'chunk');
+
+                        const resp = await fetch(
+                            `${this.base}/Upload/Chunk?sessionId=${sessionId}&chunkIndex=${i}&chunkHash=${chunkHash}`,
+                            {
+                                method: 'POST',
+                                headers: { 'Authorization': 'Bearer ' + this.authService.accessToken },
+                                body: formData
+                            }
+                        );
+
+                        if (resp.ok) {
+                            success = true;
+                            break;
+                        }
+
+                        // If integrity check failed, data was corrupt — retry
+                        const errorText = await resp.text();
+                        console.warn(`Chunk ${i} attempt ${attempt + 1} failed: ${errorText}`);
+                    } catch (networkErr) {
+                        console.warn(`Chunk ${i} attempt ${attempt + 1} network error:`, networkErr);
+                        // Wait before retry (exponential backoff: 1s, 2s, 4s)
+                        if (attempt < 2) {
+                            await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt)));
+                        }
+                    }
+                }
+
+                if (!success) {
+                    // Cancel the session on failure
+                    await fetch(`${this.base}/Upload/${sessionId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + this.authService.accessToken }
+                    }).catch(() => {});
+                    throw new Error(`Upload failed: chunk ${i} could not be delivered after 3 attempts.`);
+                }
+
+                onProgress?.(Math.round(((i + 1) / totalChunks) * 90), `Uploading chunk ${i + 1}/${totalChunks}...`);
+            }
+
+            // 4. Complete — assemble + verify + save
+            onProgress?.(90, 'Assembling file...');
+            let completeUrl = `${this.base}/Upload/Complete?sessionId=${sessionId}&totalHash=${totalHash}`;
+            completeUrl += `&fileName=${encodeURIComponent(file.name)}&mimeType=${encodeURIComponent(file.type || 'application/octet-stream')}`;
+            if (options.folderId != null) completeUrl += `&folderId=${options.folderId}`;
+            if (options.documentTypeId != null) completeUrl += `&documentTypeId=${options.documentTypeId}`;
+            if (options.scheduledEventId != null) completeUrl += `&scheduledEventId=${options.scheduledEventId}`;
+            if (options.contactId != null) completeUrl += `&contactId=${options.contactId}`;
+            if (options.clientId != null) completeUrl += `&clientId=${options.clientId}`;
+            if (options.resourceId != null) completeUrl += `&resourceId=${options.resourceId}`;
+            if (options.crewId != null) completeUrl += `&crewId=${options.crewId}`;
+            if (options.schedulingTargetId != null) completeUrl += `&schedulingTargetId=${options.schedulingTargetId}`;
+            if (options.financialTransactionId != null) completeUrl += `&financialTransactionId=${options.financialTransactionId}`;
+            if (options.officeId != null) completeUrl += `&officeId=${options.officeId}`;
+
+            const completeResp = await fetch(completeUrl, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + this.authService.accessToken }
+            });
+
+            if (!completeResp.ok) {
+                const err = await completeResp.text();
+                throw new Error(err || 'Failed to complete upload.');
+            }
+
+            onProgress?.(100, 'Complete');
+            return await completeResp.json();
+
+        } catch (err) {
+            // Best-effort cleanup
+            await fetch(`${this.base}/Upload/${sessionId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + this.authService.accessToken }
+            }).catch(() => {});
+            throw err;
+        }
+    }
+
+    /**
+     * Compute SHA-256 hash of a File object.
+     */
+    private async computeSha256(file: File): Promise<string> {
+        const buffer = await file.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        return this.bufferToHex(hashBuffer);
+    }
+
+    /**
+     * Compute SHA-256 hash of a Uint8Array.
+     */
+    private async computeSha256Bytes(data: ArrayBuffer): Promise<string> {
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        return this.bufferToHex(hashBuffer);
+    }
+
+    /**
+     * Convert an ArrayBuffer to a lowercase hex string.
+     */
+    private bufferToHex(buffer: ArrayBuffer): string {
+        return Array.from(new Uint8Array(buffer))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+    }
+
+
     downloadDocumentUrl(documentId: number): string {
         return `${this.base}/Documents/${documentId}/Download`;
     }
@@ -334,10 +492,19 @@ export class FileManagerService extends SecureEndpointBase {
     }
 
 
+    // ─── Activity Feed ──────────────────────────────────────────────
+
+    getRecentActivity(count: number = 50): Observable<ActivityItem[]> {
+        return this.http.get<ActivityItem[]>(`${this.base}/Activity?count=${count}`, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getRecentActivity(count)))
+        );
+    }
+
+
     // ─── Storage Quota ───────────────────────────────────────────────
 
-    getStorageUsage(): Observable<{ totalBytes: number; documentCount: number }> {
-        return this.http.get<{ totalBytes: number; documentCount: number }>(`${this.base}/Storage`, { headers: this.authHeaders() }).pipe(
+    getStorageUsage(): Observable<{ totalBytes: number; documentCount: number; quotaBytes: number }> {
+        return this.http.get<{ totalBytes: number; documentCount: number; quotaBytes: number }>(`${this.base}/Storage`, { headers: this.authHeaders() }).pipe(
             catchError((error: any) => this.handleError(error, () => this.getStorageUsage()))
         );
     }
@@ -430,6 +597,26 @@ export class FileManagerService extends SecureEndpointBase {
     /**
      * Returns a human-readable file size string.
      */
+    /**
+     * Returns the thumbnail endpoint URL for a document.
+     */
+    getThumbnailUrl(documentId: number): string {
+        return `${this.base}/Documents/${documentId}/Thumbnail`;
+    }
+
+    /**
+     * Fetches a thumbnail with auth headers, returns blob URL for <img> binding.
+     */
+    fetchThumbnailBlob(documentId: number): Observable<string> {
+        return this.http.get(`${this.base}/Documents/${documentId}/Thumbnail`, {
+            headers: this.authHeaders(),
+            responseType: 'blob'
+        }).pipe(
+            map((blob: Blob) => URL.createObjectURL(blob)),
+            catchError(() => of(''))
+        );
+    }
+
     formatFileSize(bytes: number): string {
         if (bytes === 0) return '0 B';
         const k = 1024;

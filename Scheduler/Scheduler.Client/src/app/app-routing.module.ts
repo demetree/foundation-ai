@@ -1,5 +1,5 @@
 import { NgModule, Injectable } from '@angular/core';
-import { RouterModule, Routes, DefaultUrlSerializer, UrlSerializer, UrlTree, TitleStrategy } from '@angular/router';
+import { RouterModule, Routes, DefaultUrlSerializer, UrlSerializer, UrlTree, UrlSegment, UrlMatchResult, TitleStrategy } from '@angular/router';
 
 
 import { UnsavedChangesGuard } from './guards/unsaved-changes.guard';
@@ -633,6 +633,23 @@ const routes: Routes = [
   //
   { path: 'documents', component: DocumentCustomListingComponent, canActivate: [AuthGuard], title: 'Documents' },
   { path: 'filemanager', component: FileManagerComponent, canActivate: [AuthGuard], title: 'File Manager' },
+  {
+      matcher: (url: UrlSegment[]): UrlMatchResult | null => {
+          // Match any URL that starts with 'filemanager/' and has at least one more segment
+          if (url.length >= 2 && url[0].path.toLowerCase() === 'filemanager') {
+              return {
+                  consumed: url,
+                  posParams: {
+                      folderPath: new UrlSegment(url.slice(1).map(s => s.path).join('/'), {})
+                  }
+              };
+          }
+          return null;
+      },
+      component: FileManagerComponent,
+      canActivate: [AuthGuard],
+      title: 'File Manager'
+  },
 
 
   { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },

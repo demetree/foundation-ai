@@ -90,6 +90,7 @@ export class DocumentQueryParameters {
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
+    excludeBinaryData: boolean | null | undefined = null;
     anyStringContains: string | null | undefined = null;
 }
 

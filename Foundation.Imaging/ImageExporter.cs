@@ -38,6 +38,24 @@ namespace Foundation.Imaging
 
 
         // ────────────────────────────────────────────────────────
+        // JPEG
+        // ────────────────────────────────────────────────────────
+
+        public static void SaveToJpeg(byte[] rgbaPixels, int width, int height, string outputPath, int quality = 85)
+        {
+            EnsureDirectory(outputPath);
+            byte[] data = ToJpegBytes(rgbaPixels, width, height, quality);
+            File.WriteAllBytes(outputPath, data);
+        }
+
+        public static byte[] ToJpegBytes(byte[] rgbaPixels, int width, int height, int quality = 85)
+        {
+            byte[] rgb = RgbaToRgb(rgbaPixels);
+            return JpegEncoder.Encode(rgb, width, height, quality);
+        }
+
+
+        // ────────────────────────────────────────────────────────
         // WebP  (outputs PNG — lossless, universally supported)
         // ────────────────────────────────────────────────────────
 
@@ -67,6 +85,19 @@ namespace Foundation.Imaging
         // ────────────────────────────────────────────────────────
         // Helpers
         // ────────────────────────────────────────────────────────
+
+        private static byte[] RgbaToRgb(byte[] rgba)
+        {
+            int n = rgba.Length / 4;
+            var rgb = new byte[n * 3];
+            for (int i = 0, j = 0; i < rgba.Length; i += 4, j += 3)
+            {
+                rgb[j]     = rgba[i];
+                rgb[j + 1] = rgba[i + 1];
+                rgb[j + 2] = rgba[i + 2];
+            }
+            return rgb;
+        }
 
         private static void EnsureDirectory(string outputPath)
         {

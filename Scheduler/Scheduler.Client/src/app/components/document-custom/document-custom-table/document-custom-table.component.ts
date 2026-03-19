@@ -122,7 +122,8 @@ export class DocumentCustomTableComponent implements OnInit, OnChanges {
     const documentQueryParams = {
         ...this.queryParams,
         anyStringContains: this.filterText || undefined,
-        includeRelations: true
+        includeRelations: true,
+        excludeBinaryData: true
     };
 
     this.documentService.GetDocumentList(documentQueryParams).subscribe({

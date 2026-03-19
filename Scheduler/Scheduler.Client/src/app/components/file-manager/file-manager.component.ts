@@ -7,13 +7,15 @@
 // documents and folders.  Uses FileManagerService for all API calls.
 //
 import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { forkJoin, Subscription } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
-import { FileManagerService, FolderDTO, DocumentDTO, DocumentTagDTO, UploadOptions } from '../../services/file-manager.service';
+import { FileManagerService, FolderDTO, DocumentDTO, DocumentTagDTO, UploadOptions, ActivityItem } from '../../services/file-manager.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 import { FileManagerSignalrService } from '../../services/filemanager-signalr.service';
+import { UserSettingsService } from '../../services/user-settings.service';
 
 
 @Component({
@@ -110,16 +112,35 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     trashDocuments: any[] = [];
     trashCount = 0;
 
+    // Activity feed
+    showActivity = false;
+    activityItems: ActivityItem[] = [];
+
+    // Upload progress
+    isUploading = false;
+    uploadProgress = 0;
+    uploadPhase = '';
+
     // Version history
     showVersionHistory = false;
     documentVersions: any[] = [];
     @ViewChild('versionUploadInput') versionUploadInput!: ElementRef<HTMLInputElement>;
 
     // Storage quota
-    storageUsage: { totalBytes: number; documentCount: number } | null = null;
+    storageUsage: { totalBytes: number; documentCount: number; quotaBytes: number } | null = null;
 
-    // Favorites (localStorage-based — upgrade to server-side DocumentFavorite table later)
+    // Favorites (server-persisted via UserSettingsService)
     favoriteDocIds: Set<number> = new Set();
+
+    // Pending folder path to resolve once folders are loaded
+    private pendingFolderPath: string[] | null = null;
+
+    // Authenticated thumbnail blob URLs
+    thumbnailUrls: Map<number, string> = new Map();
+
+    // Authenticated preview blob URL for the detail panel
+    previewBlobUrl: string | null = null;
+    safePreviewBlobUrl: SafeResourceUrl | null = null;
 
 
     constructor(
@@ -127,11 +148,32 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         private alertService: AlertService,
         private confirmationService: ConfirmationService,
         private sanitizer: DomSanitizer,
-        private fmSignalr: FileManagerSignalrService
+        private fmSignalr: FileManagerSignalrService,
+        private userSettings: UserSettingsService,
+        private route: ActivatedRoute,
+        private router: Router
     ) {}
 
 
     ngOnInit(): void {
+        // Read folder path from route params (set by UrlMatcher) or parse from URL
+        // e.g. /filemanager/Reports/2024 → folderPath = 'reports/2024' (lowercased by UrlSerializer)
+        const folderPathParam = this.route.snapshot.paramMap.get('folderPath');
+        if (folderPathParam) {
+            const segments = folderPathParam.split('/').filter(s => s.length > 0).map(s => decodeURIComponent(s));
+            if (segments.length > 0) {
+                this.pendingFolderPath = segments;
+            }
+        }
+
+        // Fallback: support legacy ?folderId= query param
+        if (!this.pendingFolderPath) {
+            const folderParam = this.route.snapshot.queryParamMap.get('folderId');
+            if (folderParam) {
+                this.currentFolderId = parseInt(folderParam, 10) || null;
+            }
+        }
+
         this.loadFolders();
         this.loadDocuments();
         this.loadTags();
@@ -172,6 +214,17 @@ export class FileManagerComponent implements OnInit, OnDestroy {
             next: (folders) => {
                 this.allFolders = folders.filter(f => !f.deleted);
                 this.folderTree = this.fileManagerService.buildFolderTree([...this.allFolders]);
+
+                // If we have a pending folder path from the URL, resolve it now that folders are loaded
+                if (this.pendingFolderPath) {
+                    const resolvedId = this.resolveFolderFromPath(this.pendingFolderPath);
+                    this.pendingFolderPath = null;
+                    if (resolvedId !== null) {
+                        this.currentFolderId = resolvedId;
+                        this.loadDocuments(); // reload for the resolved folder
+                    }
+                }
+
                 this.updateChildFolders();
                 this.updateBreadcrumbs();
             },
@@ -190,6 +243,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
                 this.isLoading = false;
                 this.loadDocumentTags();
                 this.clearSelection();
+                this.loadThumbnails();
             },
             error: (err) => {
                 console.error('Error loading documents', err);
@@ -197,6 +251,22 @@ export class FileManagerComponent implements OnInit, OnDestroy {
                 this.isLoading = false;
             }
         });
+    }
+
+    /** Fetches authenticated thumbnail blob URLs for image documents. */
+    private loadThumbnails(): void {
+        // Revoke old blob URLs to prevent memory leaks
+        this.thumbnailUrls.forEach(url => { if (url) URL.revokeObjectURL(url); });
+        this.thumbnailUrls.clear();
+
+        const imageDocs = this.documents.filter(d => d.mimeType === 'image/png');
+        for (const doc of imageDocs) {
+            this.fileManagerService.fetchThumbnailBlob(doc.id).subscribe(url => {
+                if (url) {
+                    this.thumbnailUrls.set(doc.id, url);
+                }
+            });
+        }
     }
 
     refreshCurrentView(): void {
@@ -218,6 +288,11 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.updateChildFolders();
         this.updateBreadcrumbs();
         this.expandToFolder(folderId);
+
+        // Update URL to use folder name path segments for human-readable persistence
+        const folderPath = this.buildFolderPath(folderId);
+        const newUrl = folderPath ? `/filemanager/${folderPath}` : '/filemanager';
+        this.router.navigateByUrl(newUrl, { replaceUrl: true });
     }
 
     private updateChildFolders(): void {
@@ -243,6 +318,54 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         }
 
         this.breadcrumbs = crumbs;
+    }
+
+    /**
+     * Builds a URL path from breadcrumbs for a given folder.
+     * e.g. folder "2024" inside "Reports" → "Reports/2024"
+     */
+    private buildFolderPath(folderId: number | null): string {
+        if (folderId == null) return '';
+
+        const segments: string[] = [];
+        let id: number | null | undefined = folderId;
+
+        while (id != null) {
+            const folder = this.allFolders.find(f => f.id === id);
+            if (!folder) break;
+            segments.unshift(encodeURIComponent(folder.name));
+            id = folder.parentDocumentFolderId;
+        }
+
+        return segments.join('/');
+    }
+
+    /**
+     * Resolves a folder ID from an array of URL path segments by walking the folder tree.
+     * Uses case-insensitive matching since LowerCaseUrlSerializer lowercases URLs.
+     * e.g. ['reports', '2024'] → finds "Reports" (root) → finds "2024" (child) → returns its id
+     */
+    private resolveFolderFromPath(segments: string[]): number | null {
+        let parentId: number | null = null;
+
+        for (const segment of segments) {
+            const decodedSegment = segment.toLowerCase();
+            const match = this.allFolders.find(f =>
+                f.name.toLowerCase() === decodedSegment &&
+                (parentId === null
+                    ? f.parentDocumentFolderId == null
+                    : f.parentDocumentFolderId === parentId)
+            );
+
+            if (!match) {
+                // Path segment didn't match any folder — return what we have so far
+                return parentId;
+            }
+
+            parentId = match.id;
+        }
+
+        return parentId;
     }
 
     /** Expands the tree path to the given folder so it's visible. */
@@ -285,6 +408,27 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
         if (newSelection) {
             this.selectedDocumentTags = this.documentTagsMap.get(newSelection.id) || [];
+
+            // Load authenticated preview blob URL for images and PDFs
+            if (this.isImagePreviewable(newSelection.mimeType) || this.isPdfPreviewable(newSelection.mimeType)) {
+                this.fileManagerService.downloadDocument(newSelection.id).subscribe({
+                    next: (blob) => {
+                        // Revoke any previous preview blob URL
+                        if (this.previewBlobUrl) {
+                            URL.revokeObjectURL(this.previewBlobUrl);
+                        }
+                        this.previewBlobUrl = URL.createObjectURL(blob);
+                        this.safePreviewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewBlobUrl);
+                    },
+                    error: () => {
+                        this.previewBlobUrl = null;
+                        this.safePreviewBlobUrl = null;
+                    }
+                });
+            } else {
+                this.previewBlobUrl = null;
+                this.safePreviewBlobUrl = null;
+            }
 
             // Load text preview content if applicable
             if (this.isTextPreviewable(newSelection.mimeType)) {
@@ -389,6 +533,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     toggleTrash(): void {
         this.showTrash = !this.showTrash;
         if (this.showTrash) {
+            this.showActivity = false;
             this.selectedDocument = null;
             this.fileManagerService.getTrash().subscribe({
                 next: (docs) => {
@@ -397,6 +542,20 @@ export class FileManagerComponent implements OnInit, OnDestroy {
                 }
             });
         }
+    }
+
+    toggleActivity(): void {
+        this.showActivity = !this.showActivity;
+        if (this.showActivity) {
+            this.showTrash = false;
+            this.loadActivity();
+        }
+    }
+
+    loadActivity(): void {
+        this.fileManagerService.getRecentActivity().subscribe({
+            next: (items) => { this.activityItems = items; }
+        });
     }
 
     restoreFromTrash(doc: any): void {
@@ -504,20 +663,38 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         });
     }
 
+    get storagePercentage(): number {
+        if (!this.storageUsage || !this.storageUsage.quotaBytes) return 0;
+        return Math.min(100, (this.storageUsage.totalBytes / this.storageUsage.quotaBytes) * 100);
+    }
+
+    get storageBarColor(): string {
+        const pct = this.storagePercentage;
+        if (pct >= 95) return '#dc3545';  // red
+        if (pct >= 80) return '#ffc107';  // yellow
+        return '#198754';                 // green
+    }
+
 
     // ─── Favorites ──────────────────────────────────────────────────
 
     loadFavorites(): void {
-        try {
-            const stored = localStorage.getItem('fm-favorites');
-            this.favoriteDocIds = new Set(stored ? JSON.parse(stored) : []);
-        } catch {
-            this.favoriteDocIds = new Set();
-        }
+        this.userSettings.getStringSetting('fm-favorites').subscribe({
+            next: (stored) => {
+                try {
+                    this.favoriteDocIds = new Set(stored ? JSON.parse(stored) : []);
+                } catch {
+                    this.favoriteDocIds = new Set();
+                }
+            },
+            error: () => {
+                this.favoriteDocIds = new Set();
+            }
+        });
     }
 
     saveFavorites(): void {
-        localStorage.setItem('fm-favorites', JSON.stringify([...this.favoriteDocIds]));
+        this.userSettings.setStringSetting('fm-favorites', JSON.stringify([...this.favoriteDocIds])).subscribe();
     }
 
     toggleFavorite(docId: number): void {
@@ -583,21 +760,71 @@ export class FileManagerComponent implements OnInit, OnDestroy {
             folderId: this.currentFolderId
         };
 
+        // Auto-select chunked upload for large files (> 4MB)
+        const CHUNK_THRESHOLD = 4 * 1024 * 1024;
+        const largeFiles = files.filter(f => f.size > CHUNK_THRESHOLD);
+        const smallFiles = files.filter(f => f.size <= CHUNK_THRESHOLD);
+
         this.isLoading = true;
-        this.fileManagerService.uploadDocuments(files, options).subscribe({
-            next: (uploaded) => {
-                const count = uploaded.length;
-                this.alertService.showMessage('Uploaded',
-                    `${count} file${count !== 1 ? 's' : ''} uploaded successfully.`,
-                    MessageSeverity.success);
-                this.loadDocuments();
-            },
-            error: (err) => {
-                console.error('Upload failed', err);
-                this.alertService.showMessage('Error', 'Upload failed.', MessageSeverity.error);
-                this.isLoading = false;
-            }
-        });
+
+        // Upload large files via chunked pipeline
+        if (largeFiles.length > 0) {
+            this.isUploading = true;
+            this.uploadProgress = 0;
+            this.uploadPhase = 'Starting upload...';
+
+            const uploadNext = async (index: number): Promise<void> => {
+                if (index >= largeFiles.length) {
+                    this.isUploading = false;
+                    this.loadDocuments();
+                    this.loadStorageUsage();
+                    return;
+                }
+
+                try {
+                    await this.fileManagerService.uploadDocumentChunked(
+                        largeFiles[index],
+                        options,
+                        (pct, phase) => {
+                            this.uploadProgress = pct;
+                            this.uploadPhase = `[${index + 1}/${largeFiles.length}] ${phase}`;
+                        }
+                    );
+                    this.alertService.showMessage('Uploaded',
+                        `"${largeFiles[index].name}" uploaded successfully.`,
+                        MessageSeverity.success);
+                    await uploadNext(index + 1);
+                } catch (err: any) {
+                    console.error('Chunked upload failed', err);
+                    this.alertService.showMessage('Error',
+                        `Upload of "${largeFiles[index].name}" failed: ${err.message || 'Unknown error'}`,
+                        MessageSeverity.error);
+                    this.isUploading = false;
+                    this.isLoading = false;
+                }
+            };
+
+            uploadNext(0);
+        }
+
+        // Upload small files via standard single-shot
+        if (smallFiles.length > 0) {
+            this.fileManagerService.uploadDocuments(smallFiles, options).subscribe({
+                next: (uploaded) => {
+                    const count = uploaded.length;
+                    this.alertService.showMessage('Uploaded',
+                        `${count} file${count !== 1 ? 's' : ''} uploaded successfully.`,
+                        MessageSeverity.success);
+                    this.loadDocuments();
+                    this.loadStorageUsage();
+                },
+                error: (err) => {
+                    console.error('Upload failed', err);
+                    this.alertService.showMessage('Error', 'Upload failed.', MessageSeverity.error);
+                    this.isLoading = false;
+                }
+            });
+        }
     }
 
     //

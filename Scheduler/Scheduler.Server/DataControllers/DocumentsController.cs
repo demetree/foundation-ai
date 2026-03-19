@@ -113,6 +113,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? pageNumber = null,
 			string anyStringContains = null,
 			bool includeRelations = true,
+			bool excludeBinaryData = false,
 			CancellationToken cancellationToken = default)
 		{
 			StartAuditEventClock();
@@ -567,7 +568,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
 
-			if (diskBasedBinaryStorageMode == true)
+			if (diskBasedBinaryStorageMode == true && excludeBinaryData == false)
 			{
 				var tasks = materialized.Select(async document =>
 				{
@@ -583,6 +584,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 				// Run tasks concurrently and await their completion
 				await Task.WhenAll(tasks);
+			}
+
+			// When excludeBinaryData is requested, ensure no binary content is serialized
+			if (excludeBinaryData == true)
+			{
+				foreach (var document in materialized)
+				{
+					document.fileDataData = null;
+				}
 			}
 
 			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "Scheduler.Document Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "Scheduler.Document Entity list was read.  Returning " + materialized.Count + " rows of data.");

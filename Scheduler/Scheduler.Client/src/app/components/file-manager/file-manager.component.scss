@@ -423,6 +423,13 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   margin-bottom: 8px;
 }
 
+.fm-thumbnail {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
 .fm-file-card-name {
   font-size: 0.8rem;
   font-weight: 500;
@@ -1396,14 +1403,33 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
 // ─── Storage Quota ───────────────────────────────────────────────
 .fm-storage-usage {
-  display: flex;
-  align-items: center;
   font-size: 0.75rem;
   padding: 6px 8px;
   margin-bottom: 8px;
   border-radius: 6px;
   background: var(--sch-surface-subtle);
   color: var(--sch-text-primary);
+}
+
+.fm-storage-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.fm-storage-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sch-border-color, #333);
+  overflow: hidden;
+}
+
+.fm-storage-fill {
+  height: 100%;
+  border-radius: 3px;
+  min-width: 4px;
+  background: #198754;
+  transition: width 0.4s ease, background-color 0.3s ease;
 }
 
 
@@ -1424,4 +1450,80 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   &.active {
     color: #f59e0b;
   }
+}
+
+// ─── Activity Feed ───────────────────────────────────────────────
+.fm-activity-view {
+  padding: 0 12px;
+}
+
+.fm-activity-list {
+  padding: 8px 0 8px 12px;
+  border-left: 2px solid var(--sch-border-color, #333);
+  margin-left: 6px;
+}
+
+.fm-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  position: relative;
+}
+
+.fm-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sch-primary, #6366f1);
+  flex-shrink: 0;
+  margin-top: 5px;
+  margin-left: -16px;
+}
+
+.fm-activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-activity-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--sch-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-activity-meta {
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+}
+
+// ─── Upload Progress ─────────────────────────────────────────────
+.fm-upload-progress {
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--sch-border-color, #333);
+}
+
+.fm-upload-progress-inner {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sch-input-bg, #1a1a2e);
+  overflow: hidden;
+}
+
+.fm-upload-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #6366f1, #818cf8);
+  transition: width 0.3s ease;
+}
+
+.fm-upload-progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+  margin-top: 4px;
 }
