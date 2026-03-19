@@ -47,6 +47,7 @@ export class FileManagerComponent implements OnInit {
     sidebarCollapsed = false;
     isLoading = false;
     isDragOver = false;
+    private dragEnterCount = 0;
 
     // Search
     searchQuery = '';
@@ -299,22 +300,41 @@ export class FileManagerComponent implements OnInit {
         });
     }
 
-    // Drag & drop
+    //
+    // Drag & drop — uses a counter to handle nested dragenter/dragleave events
+    // from child elements.  The overlay is always in the DOM (CSS class toggle)
+    // to prevent the *ngIf DOM insertion/removal flicker loop.
+    //
     onDragOver(event: DragEvent): void {
         event.preventDefault();
         event.stopPropagation();
+    }
+
+
+    onDragEnter(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.dragEnterCount++;
         this.isDragOver = true;
     }
+
 
     onDragLeave(event: DragEvent): void {
         event.preventDefault();
         event.stopPropagation();
-        this.isDragOver = false;
+        this.dragEnterCount--;
+
+        if (this.dragEnterCount <= 0) {
+            this.dragEnterCount = 0;
+            this.isDragOver = false;
+        }
     }
+
 
     onDrop(event: DragEvent): void {
         event.preventDefault();
         event.stopPropagation();
+        this.dragEnterCount = 0;
         this.isDragOver = false;
 
         if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {

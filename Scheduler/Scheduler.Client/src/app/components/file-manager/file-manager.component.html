@@ -5,45 +5,54 @@
 
   Explorer-like file manager with folder tree, document grid, search bar,
   upload (drag-and-drop), context menus, and breadcrumbs.
+
+  Uses the standard page-container + premium-header pattern for consistency
+  with other Scheduler components.
 -->
 
-<div class="file-manager-container" id="file-manager-container">
+<div class="page-container" id="file-manager-container">
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       TOOLBAR
+       PREMIUM HEADER (standard gradient card)
        ═══════════════════════════════════════════════════════════════════ -->
-  <div class="fm-toolbar">
-    <div class="fm-toolbar-left">
-      <h5 class="fm-title mb-0">
-        <i class="fa-solid fa-folder-tree me-2"></i> File Manager
-      </h5>
-    </div>
+  <div class="card mb-0 header-card premium-header shadow-lg border-0">
+    <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
+      <div class="header-left">
+        <!-- Title -->
+        <div class="text-white">
+          <h3 class="page-title mb-0 fw-bold text-shadow">
+            <i class="fa-solid fa-folder-tree me-2"></i>File Manager
+          </h3>
+          <small class="text-white-50">Browse and manage documents</small>
+        </div>
+      </div>
 
-    <div class="fm-toolbar-center">
-      <!-- Breadcrumbs -->
-      <nav class="fm-breadcrumbs" aria-label="Folder navigation">
-        <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId">
-          <i class="fa-solid fa-house-chimney"></i>
-          <span class="ms-1">Root</span>
-        </a>
-        <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
-          <i class="fa-solid fa-chevron-right fm-crumb-sep"></i>
-          <a (click)="navigateToFolder(crumb.id)" class="fm-crumb" [class.active]="last">
-            {{ crumb.name }}
-          </a>
-        </ng-container>
-      </nav>
-    </div>
+      <div class="header-right">
+        <!-- Count badge -->
+        <span class="badge badge-glass mx-2">
+          {{ documents.length }} file{{ documents.length !== 1 ? 's' : '' }}
+          <span *ngIf="childFolders.length > 0 && !isSearching">,
+            {{ childFolders.length }} folder{{ childFolders.length !== 1 ? 's' : '' }}
+          </span>
+          <span *ngIf="isSearching"> result{{ documents.length !== 1 ? 's' : '' }}</span>
+        </span>
 
-    <div class="fm-toolbar-right">
-      <!-- Search -->
-      <div class="fm-search-wrapper">
-        <i class="fa-solid fa-magnifying-glass fm-search-icon"></i>
-        <input type="text" class="fm-search-input" placeholder="Search files…"
-               [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-               (input)="onSearchInputChange()" id="fm-search-input" />
-        <button *ngIf="searchQuery" class="fm-search-clear" (click)="clearSearch()" title="Clear search">
-          <i class="fa-solid fa-xmark"></i>
+        <!-- Search Input -->
+        <div class="search-bar me-2 position-relative">
+          <i class="fa fa-search search-icon text-white-50"></i>
+          <input type="text" class="form-control search-input glass-input"
+                 placeholder="Search files…"
+                 [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                 (input)="onSearchInputChange()" id="fm-search-input" />
+          <button *ngIf="searchQuery" class="clear-search btn text-white"
+                  (click)="clearSearch()" title="Clear search">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Upload Button -->
+        <button class="btn btn-sm btn-glass" (click)="triggerUpload()">
+          <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload
         </button>
       </div>
     </div>
@@ -92,30 +101,33 @@
     <!-- ─── RIGHT: File Grid / Content ─────────────────────────── -->
     <div class="fm-content"
          (dragover)="onDragOver($event)"
+         (dragenter)="onDragEnter($event)"
          (dragleave)="onDragLeave($event)"
-         (drop)="onDrop($event)"
-         [class.drag-active]="isDragOver">
+         (drop)="onDrop($event)">
 
       <!-- Action bar -->
       <div class="fm-action-bar">
-        <button class="btn btn-sm btn-primary" (click)="triggerUpload()">
-          <i class="fa-solid fa-cloud-arrow-up me-1"></i> Upload
-        </button>
-        <button class="btn btn-sm btn-outline-secondary ms-2" (click)="showNewFolderDialog()">
-          <i class="fa-solid fa-folder-plus me-1"></i> New Folder
-        </button>
-        <button class="btn btn-sm btn-outline-secondary ms-2" (click)="refreshCurrentView()">
-          <i class="fa-solid fa-arrows-rotate me-1"></i> Refresh
-        </button>
+        <!-- Breadcrumbs -->
+        <nav class="fm-breadcrumbs" aria-label="Folder navigation">
+          <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId">
+            <i class="fa-solid fa-house-chimney"></i>
+            <span class="ms-1">Root</span>
+          </a>
+          <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+            <i class="fa-solid fa-chevron-right fm-crumb-sep"></i>
+            <a (click)="navigateToFolder(crumb.id)" class="fm-crumb" [class.active]="last">
+              {{ crumb.name }}
+            </a>
+          </ng-container>
+        </nav>
 
-        <div class="ms-auto d-flex align-items-center">
-          <span class="text-muted small me-3" *ngIf="!isSearching">
-            {{ documents.length }} file{{ documents.length !== 1 ? 's' : '' }}
-            <span *ngIf="childFolders.length > 0">, {{ childFolders.length }} folder{{ childFolders.length !== 1 ? 's' : '' }}</span>
-          </span>
-          <span class="text-muted small me-3" *ngIf="isSearching">
-            {{ documents.length }} result{{ documents.length !== 1 ? 's' : '' }}
-          </span>
+        <div class="ms-auto d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-secondary" (click)="showNewFolderDialog()">
+            <i class="fa-solid fa-folder-plus me-1"></i> New Folder
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="refreshCurrentView()">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
 
           <!-- View toggle -->
           <div class="btn-group btn-group-sm">
@@ -131,8 +143,8 @@
         </div>
       </div>
 
-      <!-- Drop zone overlay -->
-      <div class="fm-drop-overlay" *ngIf="isDragOver">
+      <!-- Drop zone overlay — always in DOM, toggled via CSS class to prevent flicker -->
+      <div class="fm-drop-overlay" [class.active]="isDragOver">
         <div class="fm-drop-overlay-inner">
           <i class="fa-solid fa-cloud-arrow-up fa-3x mb-2"></i>
           <p class="mb-0">Drop files here to upload</p>
@@ -181,9 +193,9 @@
 
         <!-- Empty state -->
         <div class="fm-empty" *ngIf="documents.length === 0 && childFolders.length === 0">
-          <i class="fa-solid fa-folder-open fa-3x mb-3 text-muted"></i>
-          <p class="text-muted">This folder is empty</p>
-          <p class="text-muted small">Drag and drop files here, or click Upload</p>
+          <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
+          <p>This folder is empty</p>
+          <p class="small">Drag and drop files here, or click Upload</p>
         </div>
       </div>
 
@@ -211,9 +223,9 @@
                    [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
               </td>
               <td>{{ doc.fileName }}</td>
-              <td class="text-muted">{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }}</td>
-              <td class="text-muted">{{ doc.uploadedDate | date:'short' }}</td>
-              <td class="text-muted text-truncate" style="max-width: 120px;" [title]="doc.mimeType">
+              <td>{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }}</td>
+              <td>{{ doc.uploadedDate | date:'short' }}</td>
+              <td class="text-truncate" style="max-width: 120px;" [title]="doc.mimeType">
                 {{ doc.mimeType | slice:0:20 }}
               </td>
             </tr>
@@ -222,9 +234,9 @@
 
         <!-- Empty state for list view -->
         <div class="fm-empty" *ngIf="documents.length === 0 && childFolders.length === 0">
-          <i class="fa-solid fa-folder-open fa-3x mb-3 text-muted"></i>
-          <p class="text-muted">This folder is empty</p>
-          <p class="text-muted small">Drag and drop files here, or click Upload</p>
+          <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
+          <p>This folder is empty</p>
+          <p class="small">Drag and drop files here, or click Upload</p>
         </div>
       </div>
 
@@ -236,7 +248,7 @@
     <div class="fm-detail-panel" *ngIf="selectedDocument" [@slidePanel]>
       <div class="fm-detail-header">
         <h6 class="mb-0 text-truncate" [title]="selectedDocument.fileName">{{ selectedDocument.fileName }}</h6>
-        <button class="btn-close btn-close-white btn-sm ms-2" (click)="selectedDocument = null"></button>
+        <button class="btn-close btn-sm ms-2" (click)="selectedDocument = null"></button>
       </div>
 
       <div class="fm-detail-body">
@@ -326,7 +338,7 @@
   <div class="fm-modal" *ngIf="showNewFolderModal">
     <div class="fm-modal-header">
       <h6 class="mb-0">{{ editingFolder ? 'Rename Folder' : 'New Folder' }}</h6>
-      <button class="btn-close btn-close-white btn-sm" (click)="showNewFolderModal = false"></button>
+      <button class="btn-close btn-sm" (click)="showNewFolderModal = false"></button>
     </div>
     <div class="fm-modal-body">
       <input type="text" class="form-control" placeholder="Folder name" [(ngModel)]="newFolderName"
@@ -347,7 +359,7 @@
   <div class="fm-modal" *ngIf="showRenameDocModal">
     <div class="fm-modal-header">
       <h6 class="mb-0">Rename Document</h6>
-      <button class="btn-close btn-close-white btn-sm" (click)="showRenameDocModal = false"></button>
+      <button class="btn-close btn-sm" (click)="showRenameDocModal = false"></button>
     </div>
     <div class="fm-modal-body">
       <input type="text" class="form-control" placeholder="Document name" [(ngModel)]="renameDocName"

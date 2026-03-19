@@ -3,197 +3,188 @@
  *
  * AI-Developed — This file was significantly developed with AI assistance.
  *
- * Premium, Explorer-like styling for the File Manager component.
- * Uses a dark header, light content area, with glassmorphism and subtle animations.
+ * Explorer-like styling for the File Manager component.
+ * Uses the --sch-* theme system for full theme compatibility.
  */
 
 // ─── Variables ──────────────────────────────────────────────────────
 $sidebar-width: 260px;
 $sidebar-collapsed-width: 40px;
 $detail-panel-width: 300px;
-$toolbar-height: 54px;
-$action-bar-height: 44px;
-$accent: #4a90d9;
-$accent-hover: #3a7bc8;
-$folder-gold: #f0ad4e;
-$bg-sidebar: #1e2530;
-$bg-sidebar-hover: #2a3340;
-$bg-content: #f8f9fa;
-$bg-toolbar: #212a36;
-$border-subtle: rgba(255,255,255,0.08);
-$card-bg: #ffffff;
-$card-shadow: 0 1px 3px rgba(0,0,0,0.08);
-$card-hover-shadow: 0 4px 12px rgba(0,0,0,0.12);
 $transition-fast: 0.15s ease;
 $transition-normal: 0.25s ease;
+
+// File Manager gradient — purple/indigo to distinguish from other components
+$gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
 
 // ─── Host ───────────────────────────────────────────────────────────
 :host {
   display: block;
-  height: calc(100vh - 56px); // Account for app header
+  height: calc(100vh - 56px);
   overflow: hidden;
 }
 
-// ─── Container ──────────────────────────────────────────────────────
-.file-manager-container {
+
+// ═══════════════════════════════════════════════════════════════════════
+//  PAGE CONTAINER (standard pattern)
+// ═══════════════════════════════════════════════════════════════════════
+.page-container {
+  background-color: var(--sch-bg-deep);
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   height: 100%;
-  position: relative;
-  background: $bg-content;
-}
-
-// ═══════════════════════════════════════════════════════════════════════
-//  TOOLBAR
-// ═══════════════════════════════════════════════════════════════════════
-.fm-toolbar {
-  display: flex;
-  align-items: center;
-  height: $toolbar-height;
-  padding: 0 16px;
-  background: $bg-toolbar;
-  color: #fff;
-  flex-shrink: 0;
-  gap: 16px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.fm-toolbar-left {
-  flex: 0 0 auto;
-}
-
-.fm-toolbar-center {
-  flex: 1;
-  min-width: 0;
   overflow: hidden;
 }
 
-.fm-toolbar-right {
-  flex: 0 0 auto;
-}
-
-.fm-title {
-  font-size: 1rem;
-  font-weight: 600;
-  white-space: nowrap;
-  color: rgba(255,255,255,0.92);
-  letter-spacing: 0.02em;
-
-  i {
-    color: $accent;
-  }
-}
-
-// ─── Breadcrumbs ────────────────────────────────────────────────────
-.fm-breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  overflow-x: auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.fm-crumb {
-  color: rgba(255,255,255,0.6);
-  font-size: 0.82rem;
-  cursor: pointer;
-  white-space: nowrap;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: all $transition-fast;
-
-  &:hover {
-    color: #fff;
-    background: rgba(255,255,255,0.08);
-  }
-
-  &.active {
-    color: #fff;
-    font-weight: 600;
-  }
-}
-
-.fm-crumb-sep {
-  font-size: 0.6rem;
-  color: rgba(255,255,255,0.3);
-}
-
-// ─── Search ─────────────────────────────────────────────────────────
-.fm-search-wrapper {
-  position: relative;
-  width: 240px;
-}
-
-.fm-search-icon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgba(255,255,255,0.4);
-  font-size: 0.8rem;
-}
-
-.fm-search-input {
-  width: 100%;
-  padding: 6px 28px 6px 30px;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 6px;
-  background: rgba(255,255,255,0.06);
-  color: #fff;
-  font-size: 0.82rem;
-  transition: all $transition-fast;
-
-  &::placeholder {
-    color: rgba(255,255,255,0.35);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: $accent;
-    background: rgba(255,255,255,0.1);
-    box-shadow: 0 0 0 2px rgba($accent, 0.2);
-  }
-}
-
-.fm-search-clear {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
-  padding: 2px 4px;
-  font-size: 0.75rem;
-
-  &:hover {
-    color: #fff;
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════════════
-//  MAIN SPLIT
+//  PREMIUM HEADER (standard gradient header card)
+// ═══════════════════════════════════════════════════════════════════════
+.premium-header {
+  background: $gradient-file-manager;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+  margin: 1rem 1rem 0;
+
+  .card-header {
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .header-left,
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .page-title {
+    color: white;
+    font-size: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-white-50 {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+}
+
+
+//
+// Glassmorphism Utilities (scoped to header)
+//
+.btn-glass {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    color: white;
+  }
+}
+
+.badge-glass {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 500;
+  padding: 0.5em 1em;
+  backdrop-filter: blur(5px);
+}
+
+.search-bar {
+  position: relative;
+  min-width: 0;
+  flex: 1 1 220px;
+  max-width: 350px;
+
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 12px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .glass-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding-left: 36px;
+    padding-right: 36px;
+    color: white;
+    height: 38px;
+    font-size: 0.85rem;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    &:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+  }
+
+  .clear-search {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0.7;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  MAIN SPLIT PANEL
 // ═══════════════════════════════════════════════════════════════════════
 .fm-main {
   display: flex;
   flex: 1;
   overflow: hidden;
+  margin: 0.75rem 1rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--sch-border);
+  background: var(--sch-bg-card);
+  box-shadow: var(--sch-shadow-sm);
 }
+
 
 // ─── Sidebar / Folder Tree ──────────────────────────────────────────
 .fm-sidebar {
   width: $sidebar-width;
-  background: $bg-sidebar;
+  background: var(--sch-bg-elevated);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   transition: width $transition-normal;
-  border-right: 1px solid $border-subtle;
+  border-right: 1px solid var(--sch-border);
 
   &.collapsed {
     width: $sidebar-collapsed-width;
@@ -204,8 +195,8 @@ $transition-normal: 0.25s ease;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  border-bottom: 1px solid $border-subtle;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--sch-border);
 }
 
 .fm-sidebar-title {
@@ -213,21 +204,21 @@ $transition-normal: 0.25s ease;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.5);
+  color: var(--sch-text-muted);
 }
 
 .fm-sidebar-toggle {
   background: none;
   border: none;
-  color: rgba(255,255,255,0.5);
+  color: var(--sch-text-muted);
   cursor: pointer;
   padding: 2px 6px;
   border-radius: 4px;
   transition: all $transition-fast;
 
   &:hover {
-    color: #fff;
-    background: rgba(255,255,255,0.08);
+    color: var(--sch-text-primary);
+    background: var(--sch-bg-hover);
   }
 }
 
@@ -235,9 +226,6 @@ $transition-normal: 0.25s ease;
   flex: 1;
   overflow-y: auto;
   padding: 4px 0;
-
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
 
 .fm-folder-node {
@@ -245,20 +233,20 @@ $transition-normal: 0.25s ease;
   align-items: center;
   padding: 6px 12px;
   cursor: pointer;
-  color: rgba(255,255,255,0.78);
+  color: var(--sch-text-secondary);
   font-size: 0.85rem;
   transition: all $transition-fast;
   user-select: none;
 
   &:hover {
-    background: $bg-sidebar-hover;
-    color: #fff;
+    background: var(--sch-bg-hover);
+    color: var(--sch-text-primary);
   }
 
   &.active {
-    background: rgba($accent, 0.18);
-    color: #fff;
-    border-right: 3px solid $accent;
+    background: var(--sch-sidebar-active-bg);
+    color: var(--sch-text-primary);
+    border-right: 3px solid var(--sch-sidebar-active-border);
   }
 }
 
@@ -267,11 +255,11 @@ $transition-normal: 0.25s ease;
   text-align: center;
   margin-right: 4px;
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.4);
+  color: var(--sch-text-muted);
   cursor: pointer;
 
   &:hover {
-    color: #fff;
+    color: var(--sch-text-primary);
   }
 }
 
@@ -293,7 +281,7 @@ $transition-normal: 0.25s ease;
 
 .fm-sidebar-footer {
   padding: 8px 12px;
-  border-top: 1px solid $border-subtle;
+  border-top: 1px solid var(--sch-border);
 }
 
 
@@ -304,18 +292,57 @@ $transition-normal: 0.25s ease;
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  background: $bg-content;
+  background: var(--sch-bg-card);
 }
 
 .fm-action-bar {
   display: flex;
   align-items: center;
-  padding: 6px 16px;
-  height: $action-bar-height;
-  border-bottom: 1px solid #e9ecef;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--sch-border);
   flex-shrink: 0;
-  background: #fff;
+  background: var(--sch-bg-elevated);
 }
+
+
+// ─── Breadcrumbs ────────────────────────────────────────────────────
+.fm-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.fm-crumb {
+  color: var(--sch-text-muted);
+  font-size: 0.82rem;
+  cursor: pointer;
+  white-space: nowrap;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: var(--sch-text-primary);
+    background: var(--sch-bg-hover);
+  }
+
+  &.active {
+    color: var(--sch-text-primary);
+    font-weight: 600;
+  }
+}
+
+.fm-crumb-sep {
+  font-size: 0.6rem;
+  color: var(--sch-text-muted);
+}
+
 
 // ─── Sub-folders row ────────────────────────────────────────────────
 .fm-subfolder-row {
@@ -330,16 +357,16 @@ $transition-normal: 0.25s ease;
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
-  background: $card-bg;
-  border: 1px solid #e9ecef;
+  background: var(--sch-bg-elevated);
+  border: 1px solid var(--sch-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all $transition-fast;
-  box-shadow: $card-shadow;
+  box-shadow: var(--sch-shadow-sm);
 
   &:hover {
-    box-shadow: $card-hover-shadow;
-    border-color: $accent;
+    box-shadow: var(--sch-shadow-md);
+    border-color: var(--sch-primary);
     transform: translateY(-1px);
   }
 }
@@ -351,7 +378,7 @@ $transition-normal: 0.25s ease;
 .fm-subfolder-name {
   font-size: 0.85rem;
   font-weight: 500;
-  color: #333;
+  color: var(--sch-text-primary);
   white-space: nowrap;
 }
 
@@ -372,22 +399,22 @@ $transition-normal: 0.25s ease;
   flex-direction: column;
   align-items: center;
   padding: 16px 10px 10px;
-  background: $card-bg;
-  border: 1px solid #e9ecef;
+  background: var(--sch-bg-elevated);
+  border: 1px solid var(--sch-border);
   border-radius: 10px;
   cursor: pointer;
   transition: all $transition-fast;
-  box-shadow: $card-shadow;
+  box-shadow: var(--sch-shadow-sm);
 
   &:hover {
-    box-shadow: $card-hover-shadow;
-    border-color: #d0d0d0;
+    box-shadow: var(--sch-shadow-md);
+    border-color: var(--sch-border-strong);
     transform: translateY(-2px);
   }
 
   &.selected {
-    border-color: $accent;
-    box-shadow: 0 0 0 2px rgba($accent, 0.2), $card-hover-shadow;
+    border-color: var(--sch-primary);
+    box-shadow: 0 0 0 2px var(--sch-accent-glow), var(--sch-shadow-md);
   }
 }
 
@@ -399,7 +426,7 @@ $transition-normal: 0.25s ease;
 .fm-file-card-name {
   font-size: 0.8rem;
   font-weight: 500;
-  color: #333;
+  color: var(--sch-text-primary);
   text-align: center;
   width: 100%;
   overflow: hidden;
@@ -409,42 +436,22 @@ $transition-normal: 0.25s ease;
 
 .fm-file-card-meta {
   font-size: 0.7rem;
-  color: #999;
+  color: var(--sch-text-muted);
   margin-top: 2px;
 }
+
 
 // ─── List View ──────────────────────────────────────────────────────
 .fm-file-list {
   flex: 1;
   overflow-y: auto;
 
-  .table {
-    margin-bottom: 0;
-
-    thead th {
-      position: sticky;
-      top: 0;
-      background: #fff;
-      border-top: none;
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #6c757d;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      z-index: 1;
-    }
-
-    tbody td {
-      font-size: 0.85rem;
-      vertical-align: middle;
-    }
-  }
-
   .fm-file-row {
     cursor: pointer;
     transition: background $transition-fast;
   }
 }
+
 
 // ─── Empty state ────────────────────────────────────────────────────
 .fm-empty {
@@ -454,16 +461,19 @@ $transition-normal: 0.25s ease;
   justify-content: center;
   padding: 60px 20px;
   grid-column: 1 / -1;
+  color: var(--sch-text-muted);
 }
+
 
 // ─── Search indicator ───────────────────────────────────────────────
 .fm-search-indicator {
   padding: 8px 16px;
-  background: #eef4ff;
-  border-bottom: 1px solid #d4e3f9;
+  background: var(--sch-accent-glow-soft);
+  border-bottom: 1px solid var(--sch-border);
   font-size: 0.85rem;
-  color: #456;
+  color: var(--sch-text-secondary);
 }
+
 
 // ─── Loading ────────────────────────────────────────────────────────
 .fm-loading {
@@ -474,23 +484,35 @@ $transition-normal: 0.25s ease;
   flex: 1;
 }
 
+
 // ─── Drag/Drop ──────────────────────────────────────────────────────
+// The overlay is always in the DOM; visibility is toggled via class to prevent
+// the dragenter/dragleave flicker that occurs with *ngIf DOM insertion.
 .fm-drop-overlay {
   position: absolute;
-  inset: $action-bar-height 0 0 0;
+  inset: 0;
   z-index: 50;
-  background: rgba($accent, 0.06);
-  border: 3px dashed $accent;
+  background: var(--sch-accent-glow);
+  border: 3px dashed var(--sch-primary);
   border-radius: 8px;
   margin: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .fm-drop-overlay-inner {
   text-align: center;
-  color: $accent;
+  color: var(--sch-primary);
   animation: pulse-drop 1.5s ease-in-out infinite;
 
   i {
@@ -507,12 +529,12 @@ $transition-normal: 0.25s ease;
 // ─── Detail Panel ───────────────────────────────────────────────────
 .fm-detail-panel {
   width: $detail-panel-width;
-  background: $bg-sidebar;
-  color: #fff;
+  background: var(--sch-bg-elevated);
+  color: var(--sch-text-primary);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border-left: 1px solid $border-subtle;
+  border-left: 1px solid var(--sch-border);
   overflow-y: auto;
 }
 
@@ -521,7 +543,11 @@ $transition-normal: 0.25s ease;
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  border-bottom: 1px solid $border-subtle;
+  border-bottom: 1px solid var(--sch-border);
+
+  .btn-close {
+    filter: var(--sch-close-btn-filter);
+  }
 }
 
 .fm-detail-body {
@@ -534,7 +560,7 @@ $transition-normal: 0.25s ease;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(255,255,255,0.04);
+  background: var(--sch-surface-subtle);
   border-radius: 8px;
   margin-bottom: 16px;
 }
@@ -547,18 +573,18 @@ $transition-normal: 0.25s ease;
   display: flex;
   justify-content: space-between;
   padding: 5px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid var(--sch-border);
   font-size: 0.8rem;
 }
 
 .fm-prop-label {
-  color: rgba(255,255,255,0.5);
+  color: var(--sch-text-muted);
   flex-shrink: 0;
   margin-right: 12px;
 }
 
 .fm-prop-value {
-  color: rgba(255,255,255,0.9);
+  color: var(--sch-text-primary);
   text-align: right;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -576,10 +602,10 @@ $transition-normal: 0.25s ease;
 .fm-context-menu {
   position: fixed;
   z-index: 9999;
-  background: $bg-sidebar;
-  border: 1px solid rgba(255,255,255,0.12);
+  background: var(--sch-bg-card);
+  border: 1px solid var(--sch-border-strong);
   border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  box-shadow: var(--sch-shadow-lg);
   min-width: 180px;
   overflow: hidden;
 
@@ -591,13 +617,13 @@ $transition-normal: 0.25s ease;
     li {
       padding: 8px 14px;
       font-size: 0.85rem;
-      color: rgba(255,255,255,0.85);
+      color: var(--sch-text-secondary);
       cursor: pointer;
       transition: background $transition-fast;
 
       &:hover {
-        background: rgba($accent, 0.2);
-        color: #fff;
+        background: var(--sch-bg-hover);
+        color: var(--sch-text-primary);
       }
     }
   }
@@ -605,12 +631,12 @@ $transition-normal: 0.25s ease;
 
 
 // ═══════════════════════════════════════════════════════════════════════
-//  MODALS (lightweight inline)
+//  MODALS (themed inline modals)
 // ═══════════════════════════════════════════════════════════════════════
 .fm-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: var(--sch-modal-backdrop);
   z-index: 1050;
   backdrop-filter: blur(2px);
 }
@@ -621,13 +647,13 @@ $transition-normal: 0.25s ease;
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1060;
-  background: $bg-sidebar;
-  border: 1px solid rgba(255,255,255,0.12);
+  background: var(--sch-modal-bg);
+  border: 1px solid var(--sch-border-strong);
   border-radius: 10px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  box-shadow: var(--sch-shadow-lg);
   width: 400px;
   max-width: 90vw;
-  color: #fff;
+  color: var(--sch-text-primary);
 }
 
 .fm-modal-header {
@@ -635,7 +661,11 @@ $transition-normal: 0.25s ease;
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--sch-border);
+
+  .btn-close {
+    filter: var(--sch-close-btn-filter);
+  }
 }
 
 .fm-modal-body {
@@ -646,7 +676,7 @@ $transition-normal: 0.25s ease;
   display: flex;
   justify-content: flex-end;
   padding: 12px 18px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid var(--sch-border);
 }
 
 
@@ -661,8 +691,9 @@ $transition-normal: 0.25s ease;
     }
   }
 
-  .fm-search-wrapper {
-    width: 160px;
+  .search-bar {
+    flex: 1 1 140px;
+    max-width: 200px;
   }
 
   .fm-detail-panel {
@@ -671,12 +702,20 @@ $transition-normal: 0.25s ease;
     top: 0;
     bottom: 0;
     z-index: 100;
-    box-shadow: -4px 0 20px rgba(0,0,0,0.3);
+    box-shadow: var(--sch-shadow-lg);
   }
 
   .fm-file-grid {
     grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
     gap: 8px;
     padding: 10px;
+  }
+
+  .premium-header {
+    margin: 0.5rem 0.5rem 0;
+  }
+
+  .fm-main {
+    margin: 0.5rem;
   }
 }
