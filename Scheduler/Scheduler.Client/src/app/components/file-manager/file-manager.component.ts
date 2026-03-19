@@ -52,6 +52,10 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
     viewMode: 'grid' | 'list' = 'grid';
     sidebarCollapsed = false;
+
+    // Sorting
+    sortField: 'name' | 'size' | 'uploaded' | 'type' = 'name';
+    sortDirection: 'asc' | 'desc' = 'asc';
     isLoading = false;
     isDragOver = false;
     private dragEnterCount = 0;
@@ -180,6 +184,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.loadTrashCount();
         this.loadStorageUsage();
         this.loadFavorites();
+        this.loadSortPreference();
         this.connectSignalR();
     }
 
@@ -1363,6 +1368,83 @@ export class FileManagerComponent implements OnInit, OnDestroy {
                 docTags.some(t => t.id === tagId)
             );
         });
+    }
+
+
+    /** Get the filtered + sorted document list for display in grid and list views. */
+    get sortedDocuments(): DocumentDTO[] {
+        const docs = [...this.filteredDocuments];
+        const direction = this.sortDirection === 'asc' ? 1 : -1;
+
+        docs.sort((a, b) => {
+            let comparison = 0;
+
+            if (this.sortField === 'name') {
+                comparison = (a.fileName || '').localeCompare(b.fileName || '', undefined, { sensitivity: 'base' });
+            } else if (this.sortField === 'size') {
+                comparison = (a.fileSizeBytes || 0) - (b.fileSizeBytes || 0);
+            } else if (this.sortField === 'uploaded') {
+                const dateA = a.uploadedDate ? new Date(a.uploadedDate).getTime() : 0;
+                const dateB = b.uploadedDate ? new Date(b.uploadedDate).getTime() : 0;
+                comparison = dateA - dateB;
+            } else if (this.sortField === 'type') {
+                comparison = (a.mimeType || '').localeCompare(b.mimeType || '', undefined, { sensitivity: 'base' });
+            }
+
+            return comparison * direction;
+        });
+
+        return docs;
+    }
+
+
+    /** Toggle sort by field — same field toggles direction, new field defaults to ascending. */
+    toggleSort(field: 'name' | 'size' | 'uploaded' | 'type'): void {
+        if (this.sortField === field) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            this.sortField = field;
+            this.sortDirection = 'asc';
+        }
+        this.saveSortPreference();
+    }
+
+
+    /** Returns the Font Awesome sort icon class for a given column header. */
+    getSortIcon(field: string): string {
+        if (this.sortField !== field) {
+            return 'fa-sort';
+        }
+        return this.sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+    }
+
+
+    /** Load sort preference from user settings. */
+    private loadSortPreference(): void {
+        this.userSettings.getStringSetting('fm-sort').subscribe({
+            next: (stored) => {
+                if (stored) {
+                    try {
+                        const pref = JSON.parse(stored);
+                        if (pref.field) {
+                            this.sortField = pref.field;
+                        }
+                        if (pref.direction) {
+                            this.sortDirection = pref.direction;
+                        }
+                    } catch {
+                        // Ignore invalid stored preference
+                    }
+                }
+            }
+        });
+    }
+
+
+    /** Save sort preference to user settings. */
+    private saveSortPreference(): void {
+        const pref = JSON.stringify({ field: this.sortField, direction: this.sortDirection });
+        this.userSettings.setStringSetting('fm-sort', pref).subscribe();
     }
 
 

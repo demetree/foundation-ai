@@ -211,6 +211,30 @@
           <button class="btn btn-sm btn-outline-secondary" (click)="showNewFolderDialog()">
             <i class="fa-solid fa-folder-plus me-1"></i> New Folder
           </button>
+
+          <!-- Sort dropdown (grid mode) -->
+          <div class="dropdown" *ngIf="viewMode === 'grid'">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
+                    title="Sort by">
+              <i class="fa-solid fa-arrow-down-short-wide me-1"></i>
+              <span class="d-none d-md-inline">Sort</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><button class="dropdown-item" [class.active]="sortField === 'name'" (click)="toggleSort('name')">
+                <i class="fa-solid me-2" [ngClass]="getSortIcon('name')"></i> Name
+              </button></li>
+              <li><button class="dropdown-item" [class.active]="sortField === 'size'" (click)="toggleSort('size')">
+                <i class="fa-solid me-2" [ngClass]="getSortIcon('size')"></i> Size
+              </button></li>
+              <li><button class="dropdown-item" [class.active]="sortField === 'type'" (click)="toggleSort('type')">
+                <i class="fa-solid me-2" [ngClass]="getSortIcon('type')"></i> Type
+              </button></li>
+              <li><button class="dropdown-item" [class.active]="sortField === 'uploaded'" (click)="toggleSort('uploaded')">
+                <i class="fa-solid me-2" [ngClass]="getSortIcon('uploaded')"></i> Uploaded
+              </button></li>
+            </ul>
+          </div>
+
           <button class="btn btn-sm btn-outline-secondary" (click)="refreshCurrentView()">
             <i class="fa-solid fa-arrows-rotate"></i>
           </button>
@@ -400,7 +424,7 @@
 
       <!-- ─── Grid View (with tag dots #3) ────────────────────── -->
       <div class="fm-file-grid" *ngIf="viewMode === 'grid' && !isLoading && !showTrash">
-        <div class="fm-file-card" *ngFor="let doc of filteredDocuments"
+        <div class="fm-file-card" *ngFor="let doc of sortedDocuments"
              (click)="selectDocument(doc)"
              (dblclick)="downloadFile(doc)"
              (contextmenu)="onDocContextMenu($event, doc)"
@@ -457,14 +481,20 @@
                        (change)="selectAllDocs()" />
               </th>
               <th style="width: 30px;"></th>
-              <th>Name</th>
+              <th class="fm-sort-header" (click)="toggleSort('name')">
+                Name <i class="fa-solid ms-1" [ngClass]="getSortIcon('name')"></i>
+              </th>
               <th style="width: 160px;">Tags</th>
-              <th style="width: 90px;">Size</th>
-              <th style="width: 150px;">Uploaded</th>
+              <th class="fm-sort-header" style="width: 90px;" (click)="toggleSort('size')">
+                Size <i class="fa-solid ms-1" [ngClass]="getSortIcon('size')"></i>
+              </th>
+              <th class="fm-sort-header" style="width: 150px;" (click)="toggleSort('uploaded')">
+                Uploaded <i class="fa-solid ms-1" [ngClass]="getSortIcon('uploaded')"></i>
+              </th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let doc of filteredDocuments"
+            <tr *ngFor="let doc of sortedDocuments"
                 (click)="selectDocument(doc)"
                 (dblclick)="downloadFile(doc)"
                 (contextmenu)="onDocContextMenu($event, doc)"

@@ -460,6 +460,29 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 
+// ─── Sort Headers ───────────────────────────────────────────────────
+.fm-sort-header {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: var(--sch-primary) !important;
+  }
+
+  i {
+    font-size: 0.65rem;
+    color: var(--sch-text-muted);
+    transition: color $transition-fast;
+  }
+
+  &:hover i {
+    color: var(--sch-primary);
+  }
+}
+
+
 // ─── Empty state ────────────────────────────────────────────────────
 .fm-empty {
   display: flex;
