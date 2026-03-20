@@ -65,6 +65,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     selectedDocument: DocumentDTO | null = null;
 
     viewMode: 'grid' | 'list' = 'grid';
+    viewScope: 'folder' | 'flat' = 'folder';
     sidebarCollapsed = false;
 
     // Sidebar accordion collapse states (false = collapsed)
@@ -263,6 +264,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
             }
         }
 
+        this.loadViewScopePreference();
         this.loadFolders();
         this.loadDocuments();
         this.loadTags();
@@ -329,7 +331,12 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
     loadDocuments(): void {
         this.isLoading = true;
-        this.fileManagerService.getDocumentsInFolder(this.currentFolderId).subscribe({
+
+        const source$ = this.viewScope === 'flat'
+            ? this.fileManagerService.getAllDocuments()
+            : this.fileManagerService.getDocumentsInFolder(this.currentFolderId);
+
+        source$.subscribe({
             next: (docs) => {
                 this.documents = docs.filter(d => !d.deleted);
                 this.isLoading = false;
@@ -366,6 +373,46 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.loadFolders();
         this.loadDocuments();
         this.loadTags();
+    }
+
+
+    // ─── View Scope (Folder / Flat) ──────────────────────────────────
+
+    toggleViewScope(): void {
+        this.viewScope = this.viewScope === 'folder' ? 'flat' : 'folder';
+        this.selectedDocument = null;
+        this.clearSelection();
+
+        if (this.viewScope === 'folder') {
+            // Switching back to folder mode — reload for the current folder
+            this.loadDocuments();
+            this.updateChildFolders();
+            this.updateBreadcrumbs();
+        } else {
+            // Switching to flat mode — load all
+            this.loadDocuments();
+        }
+
+        this.saveViewScopePreference();
+    }
+
+    /** Returns the folder name for a document, or 'Root' if at root level. */
+    getFolderName(doc: DocumentDTO): string {
+        if (doc.documentFolderId == null) return 'Root';
+        const folder = this.allFolders.find(f => f.id === doc.documentFolderId);
+        return folder?.name ?? 'Unknown';
+    }
+
+    private loadViewScopePreference(): void {
+        this.userSettings.getStringSetting('fm_viewScope').subscribe(saved => {
+            if (saved === 'flat' || saved === 'folder') {
+                this.viewScope = saved;
+            }
+        });
+    }
+
+    saveViewScopePreference(): void {
+        this.userSettings.setStringSetting('fm_viewScope', this.viewScope).subscribe();
     }
 
 

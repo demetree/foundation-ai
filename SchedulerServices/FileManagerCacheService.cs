@@ -202,6 +202,19 @@ namespace Scheduler.Server.Services
         }
 
 
+        /// <summary>
+        /// Returns ALL documents across all folders for the tenant (metadata only, no binary).
+        /// Used by the file manager's "flat mode". Delegates directly to the storage service
+        /// since this is a different query pattern from per-folder lookups.
+        /// </summary>
+        public async Task<List<Document>> GetAllDocumentsAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var fileStorage = scope.ServiceProvider.GetRequiredService<IFileStorageService>();
+            return await fileStorage.GetAllDocumentsAsync(tenantGuid, ct);
+        }
+
+
         // ═══════════════════════════════════════════════════════════════════════
         //  TAG MAPPING CACHE
         // ═══════════════════════════════════════════════════════════════════════

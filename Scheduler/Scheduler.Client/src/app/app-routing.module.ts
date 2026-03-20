@@ -56,7 +56,6 @@ import { OfficeCustomDetailComponent } from './components/office-custom/office-c
 import { ContactCustomListingComponent } from './components/contact-custom/contact-custom-listing/contact-custom-listing.component';
 import { ContactCustomDetailComponent } from './components/contact-custom/contact-custom-detail/contact-custom-detail.component';
 
-import { DocumentCustomListingComponent } from './components/document-custom/document-custom-listing/document-custom-listing.component';
 import { FileManagerComponent } from './components/file-manager/file-manager.component';
 
 
@@ -629,9 +628,9 @@ const routes: Routes = [
   { path: 'scheduling/rental-agreements', component: RentalAgreementTrackerComponent, canActivate: [AuthGuard], title: 'Rental Agreements' },
 
   //
-  // Document custom routes
+  // Document / File Manager routes
   //
-  { path: 'documents', component: DocumentCustomListingComponent, canActivate: [AuthGuard], title: 'Documents' },
+  { path: 'documents', redirectTo: '/filemanager', pathMatch: 'full' },
   { path: 'filemanager', component: FileManagerComponent, canActivate: [AuthGuard], title: 'File Manager' },
   {
       matcher: (url: UrlSegment[]): UrlMatchResult | null => {

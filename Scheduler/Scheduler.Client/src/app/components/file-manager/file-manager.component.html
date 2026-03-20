@@ -29,7 +29,8 @@
       <div class="header-right">
         <span class="badge badge-glass mx-2">
           {{ filteredDocuments.length }} file{{ filteredDocuments.length !== 1 ? 's' : '' }}
-          <span *ngIf="childFolders.length > 0 && !isSearching">,
+          <span *ngIf="viewScope === 'flat'"> (all folders)</span>
+          <span *ngIf="viewScope === 'folder' && childFolders.length > 0 && !isSearching">,
             {{ childFolders.length }} folder{{ childFolders.length !== 1 ? 's' : '' }}
           </span>
         </span>
@@ -118,7 +119,8 @@
 
       <!-- Action bar -->
       <div class="fm-action-bar" *ngIf="!showTrash">
-        <nav class="fm-breadcrumbs" aria-label="Folder navigation">
+        <!-- Breadcrumbs (hidden in flat mode) -->
+        <nav class="fm-breadcrumbs" aria-label="Folder navigation" *ngIf="viewScope === 'folder'">
           <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId">
             <i class="fa-solid fa-house-chimney"></i>
             <span class="ms-1">Root</span>
@@ -130,6 +132,12 @@
             </a>
           </ng-container>
         </nav>
+        <!-- Flat mode label -->
+        <div class="fm-breadcrumbs" *ngIf="viewScope === 'flat'">
+          <span class="fm-crumb active">
+            <i class="fa-solid fa-layer-group me-1"></i> All Files
+          </span>
+        </div>
 
         <div class="ms-auto d-flex align-items-center gap-2">
           <!-- Select all checkbox -->
@@ -140,7 +148,8 @@
             <label class="form-check-label small" for="fm-select-all">All</label>
           </div>
 
-          <button class="btn btn-sm btn-outline-secondary" (click)="showNewFolderDialog()">
+          <button class="btn btn-sm btn-outline-secondary" (click)="showNewFolderDialog()"
+                  *ngIf="viewScope === 'folder'">
             <i class="fa-solid fa-folder-plus me-1"></i> New Folder
           </button>
 
@@ -171,6 +180,18 @@
           <button class="btn btn-sm btn-outline-secondary" (click)="refreshCurrentView()">
             <i class="fa-solid fa-arrows-rotate"></i>
           </button>
+
+          <!-- View scope toggle (Folders / All Files) -->
+          <div class="btn-group btn-group-sm">
+            <button class="btn" [class.btn-secondary]="viewScope === 'folder'" [class.btn-outline-secondary]="viewScope !== 'folder'"
+                    (click)="viewScope !== 'folder' && toggleViewScope()" title="Browse by folder">
+              <i class="fa-solid fa-folder"></i>
+            </button>
+            <button class="btn" [class.btn-secondary]="viewScope === 'flat'" [class.btn-outline-secondary]="viewScope !== 'flat'"
+                    (click)="viewScope !== 'flat' && toggleViewScope()" title="All files">
+              <i class="fa-solid fa-layer-group"></i>
+            </button>
+          </div>
 
           <div class="btn-group btn-group-sm">
             <button class="btn" [class.btn-secondary]="viewMode === 'grid'" [class.btn-outline-secondary]="viewMode !== 'grid'"
@@ -280,8 +301,8 @@
         <button class="btn btn-sm btn-link ms-2" (click)="clearSearch()">Clear</button>
       </div>
 
-      <!-- Sub-folders -->
-      <div class="fm-subfolder-row" *ngIf="!isSearching && childFolders.length > 0 && !isLoading && !showTrash">
+      <!-- Sub-folders (hidden in flat mode) -->
+      <div class="fm-subfolder-row" *ngIf="viewScope === 'folder' && !isSearching && childFolders.length > 0 && !isLoading && !showTrash">
         <div class="fm-subfolder-card" *ngFor="let folder of childFolders"
              (click)="navigateToFolder(folder.id)"
              (contextmenu)="onFolderContextMenu($event, folder)">
@@ -345,12 +366,13 @@
           </div>
         </div>
 
-        <div class="fm-empty" *ngIf="filteredDocuments.length === 0 && childFolders.length === 0">
+        <div class="fm-empty" *ngIf="filteredDocuments.length === 0 && (viewScope === 'flat' || childFolders.length === 0)">
           <i class="fa-solid fa-folder-open fa-3x mb-3"></i>
-          <p *ngIf="activeTagFilters.size === 0 && !activeEntityLinkFilter">This folder is empty</p>
+          <p *ngIf="activeTagFilters.size === 0 && !activeEntityLinkFilter && viewScope === 'folder'">This folder is empty</p>
+          <p *ngIf="activeTagFilters.size === 0 && !activeEntityLinkFilter && viewScope === 'flat'">No documents found</p>
           <p *ngIf="activeTagFilters.size > 0">No documents match the selected tags</p>
           <p *ngIf="activeEntityLinkFilter && activeTagFilters.size === 0">No documents match the selected entity filter</p>
-          <p class="small" *ngIf="activeTagFilters.size === 0 && !activeEntityLinkFilter">Drag and drop files here, or click Upload</p>
+          <p class="small" *ngIf="activeTagFilters.size === 0 && !activeEntityLinkFilter && viewScope === 'folder'">Drag and drop files here, or click Upload</p>
           <button class="btn btn-sm btn-outline-secondary" *ngIf="activeTagFilters.size > 0"
                   (click)="clearTagFilters()">Clear tag filters</button>
         </div>
@@ -370,6 +392,7 @@
               <th class="fm-sort-header" (click)="toggleSort('name')">
                 Name <i class="fa-solid ms-1" [ngClass]="getSortIcon('name')"></i>
               </th>
+              <th style="width: 120px;" *ngIf="viewScope === 'flat'">Folder</th>
               <th style="width: 160px;">Tags</th>
               <th style="width: 160px;">Linked To</th>
               <th class="fm-sort-header" style="width: 90px;" (click)="toggleSort('size')">
@@ -398,6 +421,11 @@
                    [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
               </td>
               <td>{{ doc.fileName }}</td>
+              <td *ngIf="viewScope === 'flat'">
+                <a class="text-decoration-none" (click)="navigateToFolder(doc.documentFolderId ?? null); viewScope = 'folder'; saveViewScopePreference(); $event.stopPropagation()">
+                  <i class="fa-solid fa-folder me-1" style="font-size: 0.75rem; opacity: 0.6;"></i>{{ getFolderName(doc) }}
+                </a>
+              </td>
               <td>
                 <span class="fm-tag-chip-sm" *ngFor="let tag of getDocTags(doc.id)"
                       [style.background]="tag.color || '#6366f1'">{{ tag.name }}</span>

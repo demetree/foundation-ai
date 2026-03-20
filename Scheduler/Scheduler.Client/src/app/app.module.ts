@@ -288,8 +288,7 @@ import { SchedulingTargetCustomDetailComponent } from './components/scheduling-t
 //
 // Document custom optimizations
 //
-import { DocumentCustomListingComponent } from './components/document-custom/document-custom-listing/document-custom-listing.component';
-import { DocumentCustomTableComponent } from './components/document-custom/document-custom-table/document-custom-table.component';
+
 import { FileManagerComponent } from './components/file-manager/file-manager.component';
 import { FmSidebarComponent } from './components/file-manager/fm-sidebar/fm-sidebar.component';
 import { FmDetailPanelComponent } from './components/file-manager/fm-detail-panel/fm-detail-panel.component';
@@ -1494,8 +1493,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     //
     // Document custom optimizations
     //
-    DocumentCustomListingComponent,
-    DocumentCustomTableComponent,
+
     FileManagerComponent,
     FmSidebarComponent,
     FmDetailPanelComponent,

@@ -62,6 +62,12 @@ namespace Scheduler.Server.Services
         Task<List<Document>> GetDocumentsInFolderAsync(int? folderId, Guid tenantGuid, CancellationToken ct = default);
 
         /// <summary>
+        /// Returns all documents (metadata only — no binary data) across all folders for the tenant.
+        /// Used by the file manager's "flat mode" to display every document in one list.
+        /// </summary>
+        Task<List<Document>> GetAllDocumentsAsync(Guid tenantGuid, CancellationToken ct = default);
+
+        /// <summary>
         /// Returns a single document by ID, including binary content.
         /// </summary>
         Task<Document> GetDocumentByIdAsync(int documentId, Guid tenantGuid, CancellationToken ct = default);

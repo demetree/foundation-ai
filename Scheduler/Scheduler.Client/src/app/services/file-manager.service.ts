@@ -227,6 +227,12 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
+    getAllDocuments(): Observable<DocumentDTO[]> {
+        return this.http.get<DocumentDTO[]>(`${this.base}/Documents/All`, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getAllDocuments()))
+        );
+    }
+
     getDocument(documentId: number): Observable<DocumentDTO> {
         return this.http.get<DocumentDTO>(`${this.base}/Documents/${documentId}`, { headers: this.authHeaders() }).pipe(
             catchError((error: any) => this.handleError(error, () => this.getDocument(documentId)))

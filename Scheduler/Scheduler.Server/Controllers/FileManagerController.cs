@@ -298,6 +298,36 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         /// <summary>
+        /// Returns ALL documents across all folders for the current tenant (metadata only).
+        /// Used by the file manager's "flat mode" to display every document in one list.
+        /// </summary>
+        [Route("api/FileManager/Documents/All")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllDocuments()
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                List<Document> documents = await _cache.GetAllDocumentsAsync(tenantGuid);
+
+                return Ok(Document.ToOutputDTOList(documents));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching all documents.");
+                return StatusCode(500, "Error fetching all documents.");
+            }
+        }
+
+
+        /// <summary>
         /// Uploads one or more documents.  Accepts multipart/form-data with one or more files.
         /// Optional query parameters: folderId, documentTypeId, and entity link IDs.
         /// </summary>

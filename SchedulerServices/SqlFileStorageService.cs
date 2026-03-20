@@ -260,6 +260,102 @@ namespace Scheduler.Server.Services
         }
 
 
+        public async Task<List<Document>> GetAllDocumentsAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            //
+            // Same metadata-only projection as GetDocumentsInFolderAsync
+            // but without the documentFolderId filter — returns ALL documents.
+            //
+            return await _db.Documents
+                .Where(d => d.tenantGuid == tenantGuid && d.deleted == false)
+                .Include(d => d.documentType)
+                .Include(d => d.documentFolder)
+                .Include(d => d.contact)
+                .Include(d => d.resource)
+                .Include(d => d.client)
+                .Include(d => d.office)
+                .Include(d => d.crew)
+                .Include(d => d.schedulingTarget)
+                .Include(d => d.scheduledEvent)
+                .Include(d => d.invoice)
+                .Include(d => d.receipt)
+                .Include(d => d.paymentTransaction)
+                .Include(d => d.volunteerProfile)
+                .Include(d => d.financialTransaction)
+                .Include(d => d.financialOffice)
+                .Include(d => d.campaign)
+                .Include(d => d.household)
+                .Include(d => d.constituent)
+                .Include(d => d.tribute)
+                .OrderBy(d => d.name)
+                .Select(d => new Document {
+                    id = d.id,
+                    tenantGuid = d.tenantGuid,
+                    documentTypeId = d.documentTypeId,
+                    documentFolderId = d.documentFolderId,
+                    name = d.name,
+                    description = d.description,
+                    fileName = d.fileName,
+                    mimeType = d.mimeType,
+                    fileSizeBytes = d.fileSizeBytes,
+                    fileDataFileName = d.fileDataFileName,
+                    fileDataSize = d.fileDataSize,
+                    fileDataMimeType = d.fileDataMimeType,
+                    // fileDataData intentionally excluded
+                    invoiceId = d.invoiceId,
+                    receiptId = d.receiptId,
+                    scheduledEventId = d.scheduledEventId,
+                    financialTransactionId = d.financialTransactionId,
+                    contactId = d.contactId,
+                    resourceId = d.resourceId,
+                    clientId = d.clientId,
+                    officeId = d.officeId,
+                    crewId = d.crewId,
+                    schedulingTargetId = d.schedulingTargetId,
+                    paymentTransactionId = d.paymentTransactionId,
+                    financialOfficeId = d.financialOfficeId,
+                    tenantProfileId = d.tenantProfileId,
+                    campaignId = d.campaignId,
+                    householdId = d.householdId,
+                    constituentId = d.constituentId,
+                    tributeId = d.tributeId,
+                    volunteerProfileId = d.volunteerProfileId,
+                    status = d.status,
+                    statusDate = d.statusDate,
+                    statusChangedBy = d.statusChangedBy,
+                    uploadedDate = d.uploadedDate,
+                    uploadedBy = d.uploadedBy,
+                    notes = d.notes,
+                    versionNumber = d.versionNumber,
+                    objectGuid = d.objectGuid,
+                    active = d.active,
+                    deleted = d.deleted,
+                    // Nav properties for display
+                    documentType = d.documentType,
+                    documentFolder = d.documentFolder,
+                    contact = d.contact,
+                    resource = d.resource,
+                    client = d.client,
+                    office = d.office,
+                    crew = d.crew,
+                    schedulingTarget = d.schedulingTarget,
+                    scheduledEvent = d.scheduledEvent,
+                    invoice = d.invoice,
+                    receipt = d.receipt,
+                    paymentTransaction = d.paymentTransaction,
+                    volunteerProfile = d.volunteerProfile,
+                    financialTransaction = d.financialTransaction,
+                    financialOffice = d.financialOffice,
+                    campaign = d.campaign,
+                    household = d.household,
+                    constituent = d.constituent,
+                    tribute = d.tribute
+                })
+                .ToListAsync(ct)
+                .ConfigureAwait(false);
+        }
+
+
         public async Task<Document> GetDocumentByIdAsync(int documentId, Guid tenantGuid, CancellationToken ct = default)
         {
             //
