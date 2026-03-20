@@ -1161,14 +1161,16 @@ namespace Foundation.Imaging.Pdf
 
         /// <summary>
         /// Get the pixel dimensions of a PNG image from its header.
-        /// Returns (width, height).
+        /// Returns (width, height). Returns (0, 0) if the data is not a valid PNG.
         /// </summary>
         public static (int width, int height) GetPngDimensions(byte[] pngBytes)
         {
             if (pngBytes == null || pngBytes.Length < 24)
                 return (0, 0);
 
-            // PNG IHDR chunk starts at byte 16: width (4 bytes BE), height (4 bytes BE)
+            // Validate PNG signature (first 4 bytes: 0x89 P N G)
+            if (pngBytes[0] != 0x89 || pngBytes[1] != 0x50 || pngBytes[2] != 0x4E || pngBytes[3] != 0x47)
+                return (0, 0);
             int w = (pngBytes[16] << 24) | (pngBytes[17] << 16) | (pngBytes[18] << 8) | pngBytes[19];
             int h = (pngBytes[20] << 24) | (pngBytes[21] << 16) | (pngBytes[22] << 8) | pngBytes[23];
             return (w, h);
@@ -1397,6 +1399,11 @@ namespace Foundation.Imaging.Pdf
         private void WriteJpegImageObject(PdfStreamWriter writer, PageImage img)
         {
             var (imgW, imgH, components) = ParseJpegDimensions(img.JpegData);
+            if (imgW <= 0 || imgH <= 0)
+                throw new InvalidOperationException(
+                    $"Cannot embed JPEG: failed to parse valid dimensions (got {imgW}×{imgH}). " +
+                    "The JPEG data may be corrupt or use an unsupported marker format.");
+
             string colorSpace = components == 1 ? "/DeviceGray" :
                                 components == 4 ? "/DeviceCMYK" : "/DeviceRGB";
 
@@ -1409,11 +1416,19 @@ namespace Foundation.Imaging.Pdf
 
         /// <summary>
         /// Parse JPEG SOF0/SOF2 marker to extract width, height, and component count.
+        /// Returns (0, 0, 3) if parsing fails.
         /// </summary>
         private static (int width, int height, int components) ParseJpegDimensions(byte[] jpeg)
         {
+            if (jpeg == null || jpeg.Length < 4)
+                return (0, 0, 3);
+
+            // Validate JPEG SOI marker (FF D8)
+            if (jpeg[0] != 0xFF || jpeg[1] != 0xD8)
+                return (0, 0, 3);
+
             int pos = 2; // skip SOI marker (FF D8)
-            while (pos < jpeg.Length - 1)
+            while (pos + 1 < jpeg.Length)
             {
                 if (jpeg[pos] != 0xFF) break;
                 byte marker = jpeg[pos + 1];
@@ -1422,6 +1437,7 @@ namespace Foundation.Imaging.Pdf
                 // SOF0 (baseline), SOF1 (extended), SOF2 (progressive)
                 if (marker == 0xC0 || marker == 0xC1 || marker == 0xC2)
                 {
+                    if (pos + 8 > jpeg.Length) break; // not enough data for SOF fields
                     int height = (jpeg[pos + 3] << 8) | jpeg[pos + 4];
                     int width = (jpeg[pos + 5] << 8) | jpeg[pos + 6];
                     int components = jpeg[pos + 7];
@@ -1429,7 +1445,9 @@ namespace Foundation.Imaging.Pdf
                 }
 
                 // Skip this marker segment
+                if (pos + 2 > jpeg.Length) break; // not enough data for segment length
                 int segLen = (jpeg[pos] << 8) | jpeg[pos + 1];
+                if (segLen < 2) break; // invalid segment length
                 pos += segLen;
             }
             return (0, 0, 3); // fallback
@@ -1446,11 +1464,29 @@ namespace Foundation.Imaging.Pdf
         /// </summary>
         private static void DecodePng(byte[] png, out int width, out int height, out byte[] rgba)
         {
+            // ── Validate PNG signature and minimum size ──
+            if (png == null || png.Length < 29) // 8 sig + 4 len + 4 type + 13 IHDR data
+                throw new InvalidOperationException("PNG data is null or too short to contain a valid header.");
+
+            if (png[0] != 0x89 || png[1] != 0x50 || png[2] != 0x4E || png[3] != 0x47)
+                throw new InvalidOperationException("PNG signature not found. Data does not appear to be a valid PNG.");
+
             // IHDR at offset 16
             width = ReadBE32(png, 16);
             height = ReadBE32(png, 20);
             int bitDepth = png[24];
             int colourType = png[25];
+
+            // ── Validate dimensions ──
+            if (width <= 0 || height <= 0)
+                throw new InvalidOperationException($"PNG has invalid dimensions ({width}×{height}).");
+            if (width > 65535 || height > 65535)
+                throw new InvalidOperationException($"PNG dimensions too large ({width}×{height}). Maximum supported is 65535×65535.");
+
+            // ── Validate bit depth ──
+            if (bitDepth != 8)
+                throw new InvalidOperationException(
+                    $"PNG bit depth {bitDepth} is not supported. Only 8-bit PNGs are handled.");
 
             // Determine channels and bytes-per-pixel
             int channels;
@@ -1461,14 +1497,20 @@ namespace Foundation.Imaging.Pdf
                 case 3: channels = 1; break; // indexed (1 byte per pixel = palette index)
                 case 4: channels = 2; break; // grayscale + alpha
                 case 6: channels = 4; break; // RGBA
-                default: channels = 4; break;
+                default:
+                    throw new InvalidOperationException(
+                        $"PNG colour type {colourType} is not supported. Supported types: 0, 2, 3, 4, 6.");
             }
             int bpp = channels * (bitDepth / 8);
 
             // Collect PLTE chunk for indexed colour
             byte[] plteData = null;
             if (colourType == 3)
+            {
                 plteData = ExtractChunkData(png, "PLTE");
+                if (plteData == null || plteData.Length < 3)
+                    throw new InvalidOperationException("PNG colour type 3 (indexed) requires a PLTE chunk, but none was found.");
+            }
 
             // Collect tRNS chunk
             byte[] trnsData = ExtractChunkData(png, "tRNS");
@@ -1477,9 +1519,11 @@ namespace Foundation.Imaging.Pdf
             using (MemoryStream idatStream = new MemoryStream())
             {
                 int pos = 8;
-                while (pos < png.Length)
+                while (pos + 12 <= png.Length) // need at least 4 len + 4 type + 4 CRC
                 {
                     int chunkLen = ReadBE32(png, pos);
+                    if (chunkLen < 0 || pos + 12 + chunkLen > png.Length)
+                        break; // malformed chunk length
                     string chunkType = Encoding.ASCII.GetString(png, pos + 4, 4);
                     if (chunkType == "IDAT")
                     {
@@ -1487,6 +1531,9 @@ namespace Foundation.Imaging.Pdf
                     }
                     pos += 12 + chunkLen;
                 }
+
+                if (idatStream.Length == 0)
+                    throw new InvalidOperationException("No IDAT chunks found in PNG data.");
 
                 // Decompress
                 idatStream.Position = 0;
@@ -1500,6 +1547,11 @@ namespace Foundation.Imaging.Pdf
 
                 // Unfilter scanlines
                 int stride = width * bpp;
+                int expectedScanlineSize = (stride + 1) * height; // +1 for filter byte per row
+                if (rawScanlines.Length < expectedScanlineSize)
+                    throw new InvalidOperationException(
+                        $"PNG decompressed data too short: expected at least {expectedScanlineSize} bytes, got {rawScanlines.Length}.");
+
                 rgba = new byte[width * height * 4];
 
                 byte[] prevRow = new byte[stride];
@@ -1507,7 +1559,10 @@ namespace Foundation.Imaging.Pdf
 
                 for (int y = 0; y < height; y++)
                 {
+                    if (srcPos >= rawScanlines.Length) break;
                     byte filterType = rawScanlines[srcPos++];
+
+                    if (srcPos + stride > rawScanlines.Length) break;
                     byte[] currRow = new byte[stride];
                     Array.Copy(rawScanlines, srcPos, currRow, 0, stride);
 
@@ -1612,10 +1667,13 @@ namespace Foundation.Imaging.Pdf
 
         private static byte[] ExtractChunkData(byte[] png, string chunkName)
         {
+            if (png == null || png.Length < 12) return null;
             int pos = 8;
-            while (pos < png.Length)
+            while (pos + 12 <= png.Length)
             {
                 int chunkLen = ReadBE32(png, pos);
+                if (chunkLen < 0 || pos + 12 + chunkLen > png.Length)
+                    break; // malformed chunk
                 string chunkType = Encoding.ASCII.GetString(png, pos + 4, 4);
                 if (chunkType == chunkName)
                 {
@@ -1642,6 +1700,8 @@ namespace Foundation.Imaging.Pdf
 
         private static int ReadBE32(byte[] data, int offset)
         {
+            if (data == null || offset < 0 || offset + 4 > data.Length)
+                return 0;
             return (data[offset] << 24) | (data[offset + 1] << 16) |
                    (data[offset + 2] << 8) | data[offset + 3];
         }
