@@ -22,6 +22,7 @@
     <ProjectReference Include="..\FoundationCore\Foundation.csproj" />
     <ProjectReference Include="..\SchedulerDatabase\SchedulerDatabase.csproj" />
     <ProjectReference Include="..\SchedulerServices\SchedulerServices.csproj" />
+    <ProjectReference Include="..\Foundation.IndexedDB\Foundation.IndexedDB.csproj" />
   </ItemGroup>
 
 </Project>

@@ -35,8 +35,10 @@ namespace Scheduler.Server.Services
         /// <summary>All non-deleted folders for this tenant, keyed by folder ID.</summary>
         public ConcurrentDictionary<int, DocumentFolder> Folders { get; set; }
 
-        /// <summary>Documents grouped by folder ID. null key = root folder.</summary>
-        public ConcurrentDictionary<int?, List<Document>> DocumentsByFolder { get; set; }
+        /// <summary>Documents grouped by folder ID. null key = root folder.
+        /// Uses Dictionary (not ConcurrentDictionary) because ConcurrentDictionary
+        /// does not support null keys and documentFolderId can be null.</summary>
+        public Dictionary<int?, List<Document>> DocumentsByFolder { get; set; }
 
         /// <summary>All non-deleted tags for this tenant, keyed by tag ID.</summary>
         public ConcurrentDictionary<int, DocumentTag> Tags { get; set; }
@@ -147,35 +149,41 @@ namespace Scheduler.Server.Services
 
         /// <summary>
         /// Returns document metadata (no binary) for a specific folder from cache.
+        /// Documents are loaded per-folder and cached. On cache miss for a specific
+        /// folder, only that folder is loaded from the database.
         /// </summary>
         public async Task<List<Document>> GetDocumentsInFolderAsync(int? folderId, Guid tenantGuid, CancellationToken ct = default)
         {
             var cache = GetOrCreateTenantCache(tenantGuid);
 
-            if (cache.DocumentsByFolder != null && (DateTime.UtcNow - cache.DocumentsLoadedAt) < CacheTtl)
+            // Check if we already have this folder cached and it's fresh
+            if (cache.DocumentsByFolder != null
+                && (DateTime.UtcNow - cache.DocumentsLoadedAt) < CacheTtl
+                && cache.DocumentsByFolder.ContainsKey(folderId))
             {
-                if (cache.DocumentsByFolder.TryGetValue(folderId, out var cached))
-                {
-                    return cached;
-                }
-                return new List<Document>();
+                return cache.DocumentsByFolder[folderId];
             }
 
             await cache.DocumentLock.WaitAsync(ct);
             try
             {
-                if (cache.DocumentsByFolder != null && (DateTime.UtcNow - cache.DocumentsLoadedAt) < CacheTtl)
+                // Double-check after acquiring lock
+                if (cache.DocumentsByFolder != null
+                    && (DateTime.UtcNow - cache.DocumentsLoadedAt) < CacheTtl
+                    && cache.DocumentsByFolder.ContainsKey(folderId))
                 {
-                    if (cache.DocumentsByFolder.TryGetValue(folderId, out var cached))
-                    {
-                        return cached;
-                    }
-                    return new List<Document>();
+                    return cache.DocumentsByFolder[folderId];
                 }
 
-                await LoadDocumentsFromDbAsync(tenantGuid, cache, ct);
+                // If the cache is stale, clear it entirely so we rebuild from scratch
+                if (cache.DocumentsByFolder != null && (DateTime.UtcNow - cache.DocumentsLoadedAt) >= CacheTtl)
+                {
+                    cache.DocumentsByFolder = null;
+                }
 
-                if (cache.DocumentsByFolder.TryGetValue(folderId, out var docs))
+                await LoadDocumentsForFolderFromDbAsync(folderId, tenantGuid, cache, ct);
+
+                if (cache.DocumentsByFolder != null && cache.DocumentsByFolder.TryGetValue(folderId, out var docs))
                 {
                     return docs;
                 }
@@ -395,98 +403,24 @@ namespace Scheduler.Server.Services
             _logger.LogDebug("Loaded {Count} folders into cache for tenant {TenantGuid}.", folders.Count, tenantGuid);
         }
 
-        private async Task LoadDocumentsFromDbAsync(Guid tenantGuid, TenantFileSystemCache cache, CancellationToken ct)
+        /// <summary>
+        /// Loads documents for a single folder from DB using the existing
+        /// IFileStorageService implementation, which already handles the
+        /// Include/Select pattern correctly and excludes binary data.
+        /// </summary>
+        private async Task LoadDocumentsForFolderFromDbAsync(int? folderId, Guid tenantGuid, TenantFileSystemCache cache, CancellationToken ct)
         {
             using var scope = _scopeFactory.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<SchedulerContext>();
+            var fileStorage = scope.ServiceProvider.GetRequiredService<IFileStorageService>();
 
-            //
-            // Load ALL metadata for the tenant in a single query.
-            // Project to exclude fileDataData (binary).
-            // We use .Select() to pick just the columns we need, including
-            // entity link foreign keys and their names (avoiding 17 JOINs by
-            // using conditional sub-selects for names).
-            //
-            var allDocs = await db.Documents
-                .Where(d => d.tenantGuid == tenantGuid && d.deleted == false)
-                .Select(d => new Document
-                {
-                    id = d.id,
-                    tenantGuid = d.tenantGuid,
-                    documentTypeId = d.documentTypeId,
-                    documentFolderId = d.documentFolderId,
-                    name = d.name,
-                    description = d.description,
-                    fileName = d.fileName,
-                    mimeType = d.mimeType,
-                    fileSizeBytes = d.fileSizeBytes,
-                    fileDataFileName = d.fileDataFileName,
-                    fileDataSize = d.fileDataSize,
-                    fileDataMimeType = d.fileDataMimeType,
-                    // fileDataData intentionally excluded — never cached
-                    invoiceId = d.invoiceId,
-                    receiptId = d.receiptId,
-                    scheduledEventId = d.scheduledEventId,
-                    financialTransactionId = d.financialTransactionId,
-                    contactId = d.contactId,
-                    resourceId = d.resourceId,
-                    clientId = d.clientId,
-                    officeId = d.officeId,
-                    crewId = d.crewId,
-                    schedulingTargetId = d.schedulingTargetId,
-                    paymentTransactionId = d.paymentTransactionId,
-                    financialOfficeId = d.financialOfficeId,
-                    tenantProfileId = d.tenantProfileId,
-                    campaignId = d.campaignId,
-                    householdId = d.householdId,
-                    constituentId = d.constituentId,
-                    tributeId = d.tributeId,
-                    volunteerProfileId = d.volunteerProfileId,
-                    status = d.status,
-                    statusDate = d.statusDate,
-                    statusChangedBy = d.statusChangedBy,
-                    uploadedDate = d.uploadedDate,
-                    uploadedBy = d.uploadedBy,
-                    notes = d.notes,
-                    versionNumber = d.versionNumber,
-                    objectGuid = d.objectGuid,
-                    active = d.active,
-                    deleted = d.deleted,
-                    // Entity link nav properties — include only for name resolution
-                    contact = d.contact,
-                    resource = d.resource,
-                    client = d.client,
-                    office = d.office,
-                    crew = d.crew,
-                    schedulingTarget = d.schedulingTarget,
-                    scheduledEvent = d.scheduledEvent,
-                    invoice = d.invoice,
-                    receipt = d.receipt,
-                    paymentTransaction = d.paymentTransaction,
-                    volunteerProfile = d.volunteerProfile,
-                    financialTransaction = d.financialTransaction,
-                    financialOffice = d.financialOffice,
-                    campaign = d.campaign,
-                    household = d.household,
-                    constituent = d.constituent,
-                    tribute = d.tribute,
-                    documentType = d.documentType,
-                    documentFolder = d.documentFolder
-                })
-                .AsNoTracking()
-                .ToListAsync(ct);
+            List<Document> docs = await fileStorage.GetDocumentsInFolderAsync(folderId, tenantGuid, ct);
 
-            // Group by folder
-            var byFolder = new ConcurrentDictionary<int?, List<Document>>();
-            foreach (var group in allDocs.GroupBy(d => d.documentFolderId))
-            {
-                byFolder[group.Key] = group.OrderBy(d => d.name).ToList();
-            }
-
-            cache.DocumentsByFolder = byFolder;
+            cache.DocumentsByFolder ??= new Dictionary<int?, List<Document>>();
+            cache.DocumentsByFolder[folderId] = docs;
             cache.DocumentsLoadedAt = DateTime.UtcNow;
 
-            _logger.LogDebug("Loaded {Count} documents into cache for tenant {TenantGuid}.", allDocs.Count, tenantGuid);
+            _logger.LogDebug("Loaded {Count} documents for folder {FolderId} into cache for tenant {TenantGuid}.",
+                docs.Count, folderId, tenantGuid);
         }
 
         private async Task LoadTagMappingsFromDbAsync(Guid tenantGuid, TenantFileSystemCache cache, CancellationToken ct)
@@ -554,12 +488,15 @@ namespace Scheduler.Server.Services
                             }
                         }
 
+                        // Documents are loaded per-folder on demand, so background
+                        // refresh just clears stale document caches.
                         if (cache.DocumentsByFolder != null && (DateTime.UtcNow - cache.DocumentsLoadedAt) >= CacheTtl)
                         {
                             await cache.DocumentLock.WaitAsync(CancellationToken.None);
                             try
                             {
-                                await LoadDocumentsFromDbAsync(tenantGuid, cache, CancellationToken.None);
+                                cache.DocumentsByFolder = null;
+                                cache.DocumentsLoadedAt = DateTime.MinValue;
                             }
                             finally
                             {

@@ -11,6 +11,8 @@
 // Designed to run behind Cloudflare (e.g., files.k2research.ca) on its own port.
 //
 using Foundation;
+using Foundation.IndexedDB;
+using Foundation.IndexedDB.Dexter;
 using Foundation.Scheduler.Database;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -21,9 +23,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Scheduler.Server.Services;
 using Scheduler.WebDAV.Middleware;
+using Scheduler.WebDAV.Services;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
 
@@ -99,6 +103,31 @@ namespace Scheduler.WebDAV
                 logger.LogInformation("Services have been configured.");
 
 
+                //
+                // Initialize the lock database (Foundation.IndexedDB / SQLite)
+                //
+                string dataPath = Path.Combine(
+                    Path.GetDirectoryName(Assembly.GetEntryAssembly().Location) ?? ".",
+                    "Data");
+
+                Directory.CreateDirectory(dataPath);
+
+                IDBFactory idbFactory = new IDBFactory(dataPath);
+                IDBOpenDBRequest lockDbRequest = await idbFactory.OpenAsync("WebDavLocks", version: 1,
+                    upgradeNeededHandler: async (db, oldVer, newVer) =>
+                    {
+                        await db.CreateObjectStoreAsync("locks",
+                            new ObjectStoreOptions { KeyPath = "Id", AutoIncrement = true });
+                    });
+
+                WebDavLockDatabase lockDb = new WebDavLockDatabase(lockDbRequest.Result);
+                await lockDb.SetupSchemaAsync();
+
+                builder.Services.AddSingleton<WebDavLockDatabase>(lockDb);
+
+                logger.LogInformation("Lock database initialized at {DataPath}.", dataPath);
+
+
                 var app = builder.Build();
 
                 logger.LogInformation("Completed building web application.");
@@ -112,6 +141,22 @@ namespace Scheduler.WebDAV
                 //
                 app.UseMiddleware<BasicAuthMiddleware>();
                 app.UseMiddleware<WebDavMiddleware>();
+
+
+                //
+                // Start expired lock cleanup timer (every 60 seconds)
+                //
+                Timer lockCleanupTimer = new Timer(async _ =>
+                {
+                    try
+                    {
+                        await lockDb.CleanupExpiredLocksAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Error cleaning up expired WebDAV locks.");
+                    }
+                }, null, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(60));
 
 
                 //

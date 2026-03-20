@@ -92,11 +92,32 @@ namespace Scheduler.WebDAV.Handlers
             //
             // Write the response
             //
+            string etag = $"\"{doc.id}-{doc.uploadedDate.Ticks:X}\"";
+
+            // Conditional request support — check If-None-Match
+            string ifNoneMatch = context.Request.Headers["If-None-Match"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(ifNoneMatch) && ifNoneMatch.Trim() == etag)
+            {
+                context.Response.StatusCode = StatusCodes.Status304NotModified;
+                context.Response.Headers["ETag"] = etag;
+                return;
+            }
+
+            // Conditional request support — check If-Modified-Since
+            string ifModifiedSince = context.Request.Headers["If-Modified-Since"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(ifModifiedSince) &&
+                DateTime.TryParse(ifModifiedSince, out DateTime ifModDate) &&
+                doc.uploadedDate.ToUniversalTime() <= ifModDate.ToUniversalTime())
+            {
+                context.Response.StatusCode = StatusCodes.Status304NotModified;
+                context.Response.Headers["ETag"] = etag;
+                return;
+            }
+
             context.Response.StatusCode = StatusCodes.Status200OK;
             context.Response.ContentType = doc.mimeType ?? doc.fileDataMimeType ?? "application/octet-stream";
             context.Response.ContentLength = doc.fileDataData.Length;
-            context.Response.Headers["ETag"] = $"\"{doc.objectGuid:N}\"";
-
+            context.Response.Headers["ETag"] = etag;
             context.Response.Headers["Last-Modified"] = doc.uploadedDate.ToUniversalTime().ToString("R");
 
             await context.Response.Body.WriteAsync(doc.fileDataData, 0, doc.fileDataData.Length, context.RequestAborted);

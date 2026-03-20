@@ -94,9 +94,21 @@ namespace Scheduler.WebDAV.Middleware
                         await CopyHandler.HandleAsync(context, davContext);
                         break;
 
+                    case "LOCK":
+                        await LockHandler.HandleAsync(context, davContext);
+                        break;
+
+                    case "UNLOCK":
+                        await UnlockHandler.HandleAsync(context, davContext);
+                        break;
+
+                    case "PROPPATCH":
+                        await PropPatchHandler.HandleAsync(context, davContext);
+                        break;
+
                     default:
                         context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
-                        context.Response.Headers["Allow"] = "OPTIONS, PROPFIND, GET, HEAD, PUT, DELETE, MKCOL, MOVE, COPY";
+                        context.Response.Headers["Allow"] = "OPTIONS, PROPFIND, PROPPATCH, GET, HEAD, PUT, DELETE, MKCOL, MOVE, COPY, LOCK, UNLOCK";
                         break;
                 }
             }

@@ -63,8 +63,7 @@ namespace Scheduler.WebDAV.Handlers
             context.Response.StatusCode = StatusCodes.Status200OK;
             context.Response.ContentType = doc.mimeType ?? doc.fileDataMimeType ?? "application/octet-stream";
             context.Response.ContentLength = doc.fileSizeBytes;
-            context.Response.Headers["ETag"] = $"\"{doc.objectGuid:N}\"";
-
+            context.Response.Headers["ETag"] = $"\"{doc.id}-{doc.uploadedDate.Ticks:X}\"";
             context.Response.Headers["Last-Modified"] = doc.uploadedDate.ToUniversalTime().ToString("R");
 
             // No body for HEAD

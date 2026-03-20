@@ -231,5 +231,41 @@ namespace Scheduler.WebDAV.Handlers
 
             return "/" + Uri.EscapeDataString(document.fileName ?? document.name);
         }
+
+
+        /// <summary>
+        /// Convenience method that resolves a URL path all the way to a specific Document.
+        /// Combines the common pattern of: resolve path → fetch docs in folder → match by name.
+        /// Returns (document, 0) on success, or (null, statusCode) on failure.
+        /// </summary>
+        public static async Task<(Document document, int statusCode)> ResolveDocumentAsync(
+            string urlPath,
+            Guid tenantGuid,
+            IFileStorageService fileService,
+            System.Threading.CancellationToken ct = default)
+        {
+            ResolvedPath resolved = await ResolveAsync(urlPath, tenantGuid, fileService, ct);
+
+            // Collections are not documents
+            if (resolved.IsCollection && resolved.DocumentName == null)
+                return (null, 405);
+
+            string fileName = resolved.DocumentName;
+
+            if (fileName == null)
+                return (null, 404);
+
+            List<Document> docsInFolder = await fileService.GetDocumentsInFolderAsync(
+                resolved.FolderId, tenantGuid, ct);
+
+            Document doc = docsInFolder.FirstOrDefault(d =>
+                string.Equals(d.fileName, fileName, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(d.name, fileName, StringComparison.OrdinalIgnoreCase));
+
+            if (doc == null)
+                return (null, 404);
+
+            return (doc, 0);
+        }
     }
 }

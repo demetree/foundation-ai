@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
+using Scheduler.WebDAV.Services;
 
 namespace Scheduler.WebDAV.Xml
 {
@@ -116,6 +117,88 @@ namespace Scheduler.WebDAV.Xml
         public static string FormatIso8601(DateTime utcDateTime)
         {
             return utcDateTime.ToUniversalTime().ToString("o");
+        }
+
+
+        /// <summary>
+        /// Builds the supportedlock property element for PROPFIND responses.
+        /// Advertises exclusive and shared write locks.
+        /// </summary>
+        public static XElement SupportedLockProperty()
+        {
+            return new XElement(DAV + "supportedlock",
+                new XElement(DAV + "lockentry",
+                    new XElement(DAV + "lockscope",
+                        new XElement(DAV + "exclusive")),
+                    new XElement(DAV + "locktype",
+                        new XElement(DAV + "write"))),
+                new XElement(DAV + "lockentry",
+                    new XElement(DAV + "lockscope",
+                        new XElement(DAV + "shared")),
+                    new XElement(DAV + "locktype",
+                        new XElement(DAV + "write"))));
+        }
+
+
+        /// <summary>
+        /// Builds a complete DAV:prop response containing lockdiscovery for a LOCK response.
+        /// </summary>
+        public static XDocument LockDiscoveryResponse(WebDavLock lockInfo)
+        {
+            XElement activeLock = BuildActiveLockElement(lockInfo);
+
+            XElement propEl = new XElement(DAV + "prop",
+                new XElement(DAV + "lockdiscovery", activeLock));
+
+            return new XDocument(
+                new XDeclaration("1.0", "utf-8", null),
+                propEl);
+        }
+
+
+        /// <summary>
+        /// Builds a lockdiscovery property element from a list of active locks.
+        /// Used in PROPFIND responses to show current locks on a resource.
+        /// </summary>
+        public static XElement LockDiscoveryProperty(IEnumerable<WebDavLock> activeLocks)
+        {
+            XElement lockDiscovery = new XElement(DAV + "lockdiscovery");
+
+            foreach (WebDavLock lockInfo in activeLocks)
+            {
+                lockDiscovery.Add(BuildActiveLockElement(lockInfo));
+            }
+
+            return lockDiscovery;
+        }
+
+
+        /// <summary>
+        /// Builds a single DAV:activelock element for a lock.
+        /// </summary>
+        private static XElement BuildActiveLockElement(WebDavLock lockInfo)
+        {
+            XElement scopeEl = lockInfo.LockScope == "shared"
+                ? new XElement(DAV + "lockscope", new XElement(DAV + "shared"))
+                : new XElement(DAV + "lockscope", new XElement(DAV + "exclusive"));
+
+            int remainingSeconds = Math.Max(0,
+                (int)(lockInfo.ExpiresAt - DateTime.UtcNow).TotalSeconds);
+
+            return new XElement(DAV + "activelock",
+                scopeEl,
+                new XElement(DAV + "locktype",
+                    new XElement(DAV + "write")),
+                new XElement(DAV + "depth",
+                    lockInfo.Depth == -1 ? "infinity" : lockInfo.Depth.ToString()),
+                new XElement(DAV + "owner",
+                    new XElement(DAV + "href", lockInfo.Owner)),
+                new XElement(DAV + "timeout",
+                    $"Second-{remainingSeconds}"),
+                new XElement(DAV + "locktoken",
+                    new XElement(DAV + "href", lockInfo.LockToken)),
+                new XElement(DAV + "lockroot",
+                    new XElement(DAV + "href", "/")));
         }
     }
 }
