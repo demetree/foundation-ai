@@ -574,6 +574,24 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
+    /**
+     * Fetches tags for multiple documents in a single batch request.
+     * Eliminates the N+1 pattern of calling getTagsForDocument per document.
+     * Returns a map of documentId -> tags.
+     */
+    getTagsForDocumentsBatch(documentIds: number[]): Observable<{ [docId: string]: DocumentTagDTO[] }> {
+        if (!documentIds || documentIds.length === 0) {
+            return of({});
+        }
+        const idsParam = documentIds.join(',');
+        return this.http.get<{ [docId: string]: DocumentTagDTO[] }>(
+            `${this.base}/Documents/Tags/Batch?documentIds=${idsParam}`,
+            { headers: this.authHeaders() }
+        ).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getTagsForDocumentsBatch(documentIds)))
+        );
+    }
+
 
     // ─── Utility ─────────────────────────────────────────────────────
 

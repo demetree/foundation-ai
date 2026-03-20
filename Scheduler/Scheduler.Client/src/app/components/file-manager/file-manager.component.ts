@@ -1360,13 +1360,9 @@ export class FileManagerComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const requests: { [key: string]: any } = {};
-        for (const doc of this.documents) {
-            requests[doc.id.toString()] = this.fileManagerService.getTagsForDocument(doc.id);
-        }
-
-        forkJoin(requests).subscribe({
-            next: (results: any) => {
+        const docIds = this.documents.map(d => d.id);
+        this.fileManagerService.getTagsForDocumentsBatch(docIds).subscribe({
+            next: (results: { [docId: string]: any[] }) => {
                 this.documentTagsMap.clear();
                 for (const docId of Object.keys(results)) {
                     this.documentTagsMap.set(parseInt(docId, 10), results[docId]);

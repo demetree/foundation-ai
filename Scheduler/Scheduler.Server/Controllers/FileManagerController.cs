@@ -53,19 +53,22 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         private readonly ILogger<FileManagerController> _logger;
         private readonly IHubContext<FileManagerHub, IFileManagerHubClient> _hub;
         private readonly ChunkBufferService _chunkBuffer;
+        private readonly FileManagerCacheService _cache;
 
         public FileManagerController(
             SchedulerContext db,
             IFileStorageService fileStorage,
             ILogger<FileManagerController> logger,
             IHubContext<FileManagerHub, IFileManagerHubClient> hub,
-            ChunkBufferService chunkBuffer) : base("Scheduler", "FileManager")
+            ChunkBufferService chunkBuffer,
+            FileManagerCacheService cache) : base("Scheduler", "FileManager")
         {
             _db = db;
             _fileStorage = fileStorage;
             _logger = logger;
             _hub = hub;
             _chunkBuffer = chunkBuffer;
+            _cache = cache;
         }
 
         /// <summary>
@@ -108,7 +111,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
-                List<DocumentFolder> folders = await _fileStorage.GetFoldersAsync(tenantGuid);
+                List<DocumentFolder> folders = await _cache.GetFoldersAsync(tenantGuid);
 
                 return Ok(DocumentFolder.ToOutputDTOList(folders));
             }
@@ -137,7 +140,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
-                DocumentFolder folder = await _fileStorage.GetFolderByIdAsync(folderId, tenantGuid);
+                DocumentFolder folder = await _cache.GetFolderByIdAsync(folderId, tenantGuid);
 
                 if (folder == null)
                 {
@@ -175,6 +178,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 folder.tenantGuid = tenantGuid;
 
                 DocumentFolder created = await _fileStorage.CreateFolderAsync(folder, securityUser.id);
+                _cache.InvalidateFolders(tenantGuid);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Created folder '{created.name}'", securityUser.accountName);
                 await BroadcastFolderChangedAsync(tenantGuid, new { action = "created", folderId = created.id });
@@ -210,6 +214,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 folder.tenantGuid = tenantGuid;
 
                 DocumentFolder updated = await _fileStorage.UpdateFolderAsync(folder, securityUser.id);
+                _cache.InvalidateFolders(tenantGuid);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Updated folder '{updated.name}'", securityUser.accountName);
                 await BroadcastFolderChangedAsync(tenantGuid, new { action = "updated", folderId = updated.id });
@@ -242,6 +247,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 await _fileStorage.DeleteFolderAsync(folderId, tenantGuid, securityUser.id, cascade);
+                _cache.InvalidateFolders(tenantGuid);
+                if (cascade) _cache.InvalidateDocuments(tenantGuid);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, $"Deleted folder {folderId} (cascade={cascade})", securityUser.accountName);
                 await BroadcastFolderChangedAsync(tenantGuid, new { action = "deleted", folderId });
@@ -278,13 +285,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
-                List<Document> documents = await _fileStorage.GetDocumentsInFolderAsync(folderId, tenantGuid);
+                List<Document> documents = await _cache.GetDocumentsInFolderAsync(folderId, tenantGuid);
 
-                //
-                // Use ToOutputDTOList() to include entity link nav properties
-                // so the file manager can display linked entity names.
-                // Binary data is already excluded by the service layer.
-                //
                 return Ok(Document.ToOutputDTOList(documents));
             }
             catch (Exception ex)
@@ -395,7 +397,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     $"Uploaded {uploadedResults.Count} document(s) to folder {folderId?.ToString() ?? "root"}",
                     securityUser.accountName);
 
-                // Broadcast real-time update
+                // Broadcast real-time update + invalidate cache
+                _cache.InvalidateDocuments(tenantGuid);
                 await BroadcastDocumentChangedAsync(tenantGuid, new { action = "uploaded", count = uploadedResults.Count, folderId });
 
                 return Ok(uploadedResults);
@@ -612,6 +615,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     $"Uploaded document '{fileName}' via chunked upload ({fileBytes.Length} bytes)",
                     securityUser.accountName);
 
+                _cache.InvalidateDocuments(tenantGuid);
                 await BroadcastDocumentChangedAsync(tenantGuid, new { action = "uploaded", count = 1, folderId });
 
                 _logger.LogInformation("Chunked upload session {SessionId} completed. Document {DocumentId} saved.",
@@ -702,6 +706,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             {
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                // Cache-first: return cached thumbnail if available
+                byte[] cached = _cache.GetThumbnail(documentId, tenantGuid);
+                if (cached != null)
+                {
+                    return File(cached, "image/png");
+                }
+
+                // Cache miss: load from DB, generate, and cache
                 Document document = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
 
                 if (document == null || document.fileDataData == null)
@@ -720,6 +733,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 {
                     return NotFound("Could not generate thumbnail.");
                 }
+
+                // Store in cache for future requests
+                _cache.StoreThumbnail(documentId, tenantGuid, thumbnail);
 
                 return File(thumbnail, "image/png");
             }
@@ -916,6 +932,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
                 await _fileStorage.RestoreDocumentAsync(documentId, tenantGuid, securityUser.id);
+                _cache.InvalidateDocuments(tenantGuid);
                 await BroadcastDocumentChangedAsync(tenantGuid, new { action = "restored", documentId });
 
                 return Ok(new { message = "Document restored." });
@@ -1075,6 +1092,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
                     $"Uploaded new version (v{saved.versionNumber}) for document {documentId}",
                     securityUser.accountName);
+                _cache.InvalidateDocuments(tenantGuid);
+                _cache.InvalidateThumbnail(documentId, tenantGuid);
                 await BroadcastDocumentChangedAsync(tenantGuid, new { action = "newVersion", documentId, versionNumber = saved.versionNumber });
 
                 return Ok(saved.ToDTO());
@@ -1284,6 +1303,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 Document updated = await _fileStorage.UpdateDocumentMetadataAsync(document, securityUser.id);
 
+                _cache.InvalidateDocuments(tenantGuid);
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, $"Updated document '{updated.name}'", securityUser.accountName);
                 await BroadcastDocumentChangedAsync(tenantGuid, new { action = "updated", documentId = updated.id });
 
@@ -1315,6 +1335,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 await _fileStorage.MoveDocumentAsync(documentId, targetFolderId, tenantGuid, securityUser.id);
+                _cache.InvalidateDocuments(tenantGuid);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
                     $"Moved document {documentId} to folder {targetFolderId?.ToString() ?? "root"}",
@@ -1349,6 +1370,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 await _fileStorage.DeleteDocumentAsync(documentId, tenantGuid, securityUser.id);
+                _cache.InvalidateDocuments(tenantGuid);
+                _cache.InvalidateThumbnail(documentId, tenantGuid);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.Miscellaneous, $"Deleted document {documentId}", securityUser.accountName);
                 await BroadcastDocumentDeletedAsync(tenantGuid, new { action = "deleted", documentId });
@@ -1418,7 +1441,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
-                List<DocumentTag> tags = await _fileStorage.GetTagsAsync(tenantGuid);
+                List<DocumentTag> tags = await _cache.GetTagsAsync(tenantGuid);
 
                 return Ok(DocumentTag.ToDTOList(tags));
             }
@@ -1451,6 +1474,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 tag.tenantGuid = tenantGuid;
 
                 DocumentTag created = await _fileStorage.CreateTagAsync(tag, securityUser.id);
+                _cache.InvalidateTagMappings(tenantGuid);
 
                 return Ok(created.ToDTO());
             }
@@ -1483,6 +1507,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 tag.tenantGuid = tenantGuid;
 
                 DocumentTag updated = await _fileStorage.UpdateTagAsync(tag, securityUser.id);
+                _cache.InvalidateTagMappings(tenantGuid);
 
                 return Ok(updated.ToDTO());
             }
@@ -1512,6 +1537,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 await _fileStorage.DeleteTagAsync(tagId, tenantGuid, securityUser.id);
+                _cache.InvalidateTagMappings(tenantGuid);
 
                 return Ok();
             }
@@ -1541,6 +1567,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 await _fileStorage.AddTagToDocumentAsync(documentId, tagId, tenantGuid, securityUser.id);
+                _cache.InvalidateTagMappings(tenantGuid);
 
                 return Ok();
             }
@@ -1570,6 +1597,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 await _fileStorage.RemoveTagFromDocumentAsync(documentId, tagId, tenantGuid, securityUser.id);
+                _cache.InvalidateTagMappings(tenantGuid);
 
                 return Ok();
             }
@@ -1606,6 +1634,51 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             {
                 _logger.LogError(ex, "Error fetching tags for document {DocumentId}.", documentId);
                 return StatusCode(500, "Error fetching tags.");
+            }
+        }
+
+
+        /// <summary>
+        /// Returns tag mappings for multiple documents in a single request.
+        /// Eliminates the N+1 pattern where the client fetches tags per-document.
+        /// </summary>
+        [Route("api/FileManager/Documents/Tags/Batch")]
+        [HttpGet]
+        public async Task<IActionResult> GetTagsForDocumentsBatch([FromQuery] string documentIds)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                if (string.IsNullOrWhiteSpace(documentIds))
+                {
+                    return Ok(new Dictionary<string, object>());
+                }
+
+                int[] ids = documentIds.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => int.TryParse(s.Trim(), out int val) ? val : -1)
+                    .Where(id => id > 0)
+                    .ToArray();
+
+                Dictionary<int, List<DocumentTag>> tagMap = await _cache.GetTagsForDocumentsAsync(ids, tenantGuid);
+
+                // Convert to serializable format
+                var result = tagMap.ToDictionary(
+                    kvp => kvp.Key.ToString(),
+                    kvp => DocumentTag.ToDTOList(kvp.Value) as object);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching batch tags.");
+                return StatusCode(500, "Error fetching batch tags.");
             }
         }
     }

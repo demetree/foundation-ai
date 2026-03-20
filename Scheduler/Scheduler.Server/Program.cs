@@ -137,6 +137,9 @@ namespace Foundation.Scheduler
                 builder.Services.AddSingleton(new global::Scheduler.Server.Services.ChunkBufferService(
                     Path.Combine(builder.Environment.ContentRootPath, "ChunkBuffer")));
 
+                // Register File Manager Cache Service (per-tenant in-memory cache for folders, documents, tags, thumbnails)
+                builder.Services.AddSingleton<global::Scheduler.Server.Services.FileManagerCacheService>();
+
                 // Register Volunteer Communications Services
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerNotificationService>();
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerHubService>();
