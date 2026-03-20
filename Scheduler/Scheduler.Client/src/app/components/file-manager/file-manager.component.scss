@@ -1475,16 +1475,37 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   }
 }
 
-// ─── Activity Feed ───────────────────────────────────────────────
-.fm-activity-view {
-  padding: 0 12px;
+// ─── Activity Panel (slide-over) ─────────────────────────────────
+.fm-activity-panel {
+  width: $detail-panel-width;
+  background: var(--sch-bg-elevated);
+  color: var(--sch-text-primary);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-left: 1px solid var(--sch-border);
+  overflow-y: auto;
 }
 
-.fm-activity-list {
+.fm-activity-panel-body {
+  padding: 16px 14px;
+  flex: 1;
+}
+
+.fm-activity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.fm-activity-timeline {
   padding: 8px 0 8px 12px;
   border-left: 2px solid var(--sch-border-color, #333);
   margin-left: 6px;
 }
+
 
 .fm-activity-item {
   display: flex;

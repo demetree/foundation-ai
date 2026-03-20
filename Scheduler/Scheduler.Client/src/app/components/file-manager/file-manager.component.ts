@@ -443,6 +443,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         const newSelection = this.selectedDocument?.id === doc.id ? null : doc;
         this.selectedDocument = newSelection;
         this.showTagDropdown = false;
+        this.showActivity = false;  // Close activity panel when selecting a document
         this.textPreviewContent = null;
 
         if (newSelection) {
@@ -587,13 +588,15 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.showActivity = !this.showActivity;
         if (this.showActivity) {
             this.showTrash = false;
+            this.selectedDocument = null;  // Close detail panel when activity opens
             this.loadActivity();
         }
     }
 
     loadActivity(): void {
         this.fileManagerService.getRecentActivity().subscribe({
-            next: (items) => { this.activityItems = items; }
+            next: (items) => { this.activityItems = items; },
+            error: () => { this.activityItems = []; }
         });
     }
 
