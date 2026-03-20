@@ -1,0 +1,153 @@
+<!--
+  fm-sidebar.component.html
+
+  AI-Developed — This file was developed with AI assistance.
+
+  File Manager sidebar — folder tree, favorites/tags/entity-links accordions,
+  quick-nav toolbar (trash/activity), storage usage bar, new folder button.
+-->
+<div class="fm-sidebar-header">
+  <span *ngIf="!sidebarCollapsed" class="fm-sidebar-title">Folders</span>
+  <button class="fm-sidebar-toggle" (click)="toggleSidebarCollapse.emit()"
+          [title]="sidebarCollapsed ? 'Show folders' : 'Hide folders'">
+    <i class="fa-solid" [ngClass]="sidebarCollapsed ? 'fa-angle-right' : 'fa-angle-left'"></i>
+  </button>
+</div>
+
+<div class="fm-folder-tree" *ngIf="!sidebarCollapsed">
+  <div class="fm-folder-node" [class.active]="!currentFolderId && !isSearching"
+       (click)="navigateToFolder.emit(null)"
+       (contextmenu)="onFolderContextMenu($event, null)">
+    <i class="fa-solid fa-house-chimney fm-folder-icon"></i>
+    <span class="fm-folder-name">Root</span>
+  </div>
+
+  <ng-container *ngFor="let folder of folderTree">
+    <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: folder }"></ng-container>
+  </ng-container>
+</div>
+
+<!-- ─── Sidebar Accordion: Favorites ─────────────────────────── -->
+<div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed && favoriteDocuments.length > 0">
+  <div class="fm-accordion-header" (click)="toggleFavoritesAccordion.emit()">
+    <i class="fa-solid fa-chevron-right fm-accordion-chevron"
+       [class.open]="sidebarFavoritesOpen"></i>
+    <i class="fa-solid fa-star me-1" style="color:#f59e0b; font-size:0.7rem"></i>
+    <span class="fm-accordion-title">Favorites</span>
+    <span class="fm-accordion-badge" *ngIf="!sidebarFavoritesOpen">{{ favoriteDocuments.length }}</span>
+  </div>
+  <div class="fm-accordion-body" *ngIf="sidebarFavoritesOpen">
+    <div class="fm-tag-sidebar-item" *ngFor="let doc of favoriteDocuments"
+         (click)="selectFavoriteDoc.emit(doc)">
+      <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
+         [style.color]="fileManagerService.getFileColor(doc.mimeType)" style="font-size:0.75rem"></i>
+      <span class="fm-tag-sidebar-name">{{ doc.fileName }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Sidebar Accordion: Tags ─────────────────────────────── -->
+<div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed">
+  <div class="fm-accordion-header" (click)="toggleTagsAccordion.emit()">
+    <i class="fa-solid fa-chevron-right fm-accordion-chevron"
+       [class.open]="sidebarTagsOpen"></i>
+    <span class="fm-accordion-title">Tags</span>
+    <span class="fm-accordion-badge" *ngIf="!sidebarTagsOpen && allTags.length > 0">{{ allTags.length }}</span>
+    <button class="fm-sidebar-toggle ms-auto" (click)="openTagManager.emit($event); $event.stopPropagation()" title="Manage tags">
+      <i class="fa-solid fa-gear"></i>
+    </button>
+  </div>
+  <div class="fm-accordion-body" *ngIf="sidebarTagsOpen">
+    <div class="fm-tag-sidebar-item" *ngFor="let tag of allTags"
+         (click)="toggleTagFilter.emit(tag)"
+         [class.active]="isTagFilterActive(tag.id)">
+      <span class="fm-tag-dot" [style.background]="tag.color || '#6366f1'"></span>
+      <span class="fm-tag-sidebar-name">{{ tag.name }}</span>
+      <span class="fm-tag-count" *ngIf="tagCounts.get(tag.id)">{{ tagCounts.get(tag.id) }}</span>
+    </div>
+    <div class="fm-tag-sidebar-empty" *ngIf="allTags.length === 0" (click)="openTagManager.emit($event)">
+      <i class="fa-solid fa-plus-circle me-1"></i> Create your first tag
+    </div>
+  </div>
+</div>
+
+<!-- ─── Sidebar Accordion: Entity Links ─────────────────────── -->
+<div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed && activeEntityLinkTypes.length > 0">
+  <div class="fm-accordion-header" (click)="toggleLinksAccordion.emit()">
+    <i class="fa-solid fa-chevron-right fm-accordion-chevron"
+       [class.open]="sidebarLinksOpen"></i>
+    <i class="fa-solid fa-link me-1" style="font-size:0.7rem"></i>
+    <span class="fm-accordion-title">Entity Links</span>
+    <span class="fm-accordion-badge" *ngIf="!sidebarLinksOpen">{{ activeEntityLinkTypes.length }}</span>
+    <button class="fm-sidebar-toggle ms-auto" *ngIf="activeEntityLinkFilter"
+            (click)="clearEntityLinkFilter.emit(); $event.stopPropagation()" title="Clear filter">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+  <div class="fm-accordion-body" *ngIf="sidebarLinksOpen">
+    <div class="fm-tag-sidebar-item" *ngFor="let linkType of activeEntityLinkTypes"
+         (click)="toggleEntityLinkFilter.emit(linkType.fk)"
+         [class.active]="activeEntityLinkFilter === linkType.fk">
+      <i class="fa-solid me-2" [ngClass]="linkType.icon" [style.color]="linkType.color"></i>
+      <span class="fm-tag-sidebar-name">{{ linkType.label }}</span>
+      <span class="fm-tag-count">{{ linkType.count }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Quick Nav: Trash & Activity (compact icon row) ───── -->
+<div class="fm-quick-nav" *ngIf="!sidebarCollapsed">
+  <button class="fm-quick-nav-btn" (click)="toggleTrash.emit()"
+          [class.active]="showTrash" title="Trash">
+    <i class="fa-solid fa-trash"></i>
+    <span class="fm-quick-nav-badge" *ngIf="trashCount > 0">{{ trashCount }}</span>
+  </button>
+  <button class="fm-quick-nav-btn" (click)="toggleActivity.emit()"
+          [class.active]="showActivity" title="Recent Activity">
+    <i class="fa-solid fa-clock-rotate-left"></i>
+  </button>
+</div>
+
+<div class="fm-sidebar-footer" *ngIf="!sidebarCollapsed">
+  <div class="fm-storage-usage" *ngIf="storageUsage">
+    <div class="fm-storage-label">
+      <i class="fa-solid fa-hard-drive me-1"></i>
+      <span>{{ fileManagerService.formatFileSize(storageUsage.totalBytes) }} / {{ fileManagerService.formatFileSize(storageUsage.quotaBytes) }}</span>
+      <span class="text-muted ms-1">({{ storageUsage.documentCount }} files)</span>
+    </div>
+    <div class="fm-storage-bar">
+      <div class="fm-storage-fill"
+           [style.width.%]="storagePercentage"
+           [style.background-color]="storageBarColor"></div>
+    </div>
+  </div>
+  <button class="btn btn-sm btn-outline-primary w-100 mb-2" (click)="showNewFolderDialog.emit()">
+    <i class="fa-solid fa-folder-plus me-1"></i> New Folder
+  </button>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     RECURSIVE FOLDER TREE TEMPLATE
+     ═══════════════════════════════════════════════════════════════════ -->
+<ng-template #folderNodeTpl let-folder>
+  <div class="fm-folder-node"
+       [class.active]="currentFolderId === folder.id"
+       [style.paddingLeft.px]="16 + (folder.level || 0) * 16"
+       (click)="navigateToFolder.emit(folder.id)"
+       (contextmenu)="onFolderContextMenu($event, folder)">
+    <i *ngIf="folder.children && folder.children.length > 0"
+       class="fa-solid fm-tree-arrow"
+       [ngClass]="folder.expanded ? 'fa-caret-down' : 'fa-caret-right'"
+       (click)="toggleFolderExpand($event, folder)"></i>
+    <span *ngIf="!folder.children || folder.children.length === 0" class="fm-tree-arrow-spacer"></span>
+    <i class="fa-solid fm-folder-icon" [ngClass]="folder.expanded && folder.children?.length ? 'fa-folder-open' : 'fa-folder'"
+       [style.color]="folder.color || '#f0ad4e'"></i>
+    <span class="fm-folder-name">{{ folder.name }}</span>
+  </div>
+  <ng-container *ngIf="folder.expanded && folder.children">
+    <ng-container *ngFor="let child of folder.children">
+      <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: child }"></ng-container>
+    </ng-container>
+  </ng-container>
+</ng-template>

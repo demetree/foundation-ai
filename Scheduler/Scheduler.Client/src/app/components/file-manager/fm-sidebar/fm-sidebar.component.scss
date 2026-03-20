@@ -1,0 +1,312 @@
+/*
+ * fm-sidebar.component.scss
+ *
+ * AI-Developed — This file was developed with AI assistance.
+ *
+ * Styles for the file manager sidebar — folder tree, accordion sections,
+ * quick-nav toolbar, and storage usage bar.
+ */
+
+$transition-fast: 0.15s ease;
+$transition-normal: 0.25s ease;
+
+
+// ─── Sidebar Header / Toggle ────────────────────────────────────────
+.fm-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--sch-border);
+}
+
+.fm-sidebar-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--sch-text-muted);
+}
+
+.fm-sidebar-toggle {
+  background: none;
+  border: none;
+  color: var(--sch-text-muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: var(--sch-text-primary);
+    background: var(--sch-bg-hover);
+  }
+}
+
+
+// ─── Folder Tree ────────────────────────────────────────────────────
+.fm-folder-tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.fm-folder-node {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--sch-text-secondary);
+  font-size: 0.85rem;
+  transition: all $transition-fast;
+  user-select: none;
+
+  &:hover {
+    background: var(--sch-bg-hover);
+    color: var(--sch-text-primary);
+  }
+
+  &.active {
+    background: var(--sch-sidebar-active-bg);
+    color: var(--sch-text-primary);
+    border-right: 3px solid var(--sch-sidebar-active-border);
+  }
+}
+
+.fm-tree-arrow {
+  width: 14px;
+  text-align: center;
+  margin-right: 4px;
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--sch-text-primary);
+  }
+}
+
+.fm-tree-arrow-spacer {
+  width: 14px;
+  margin-right: 4px;
+}
+
+.fm-folder-icon {
+  margin-right: 8px;
+  font-size: 0.9rem;
+}
+
+.fm-folder-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+// ─── Sidebar Footer ────────────────────────────────────────────────
+.fm-sidebar-footer {
+  padding: 8px 12px;
+  border-top: 1px solid var(--sch-border);
+}
+
+
+// ─── Accordion Sections ─────────────────────────────────────────────
+.fm-sidebar-accordion {
+  border-top: 1px solid var(--sch-border);
+}
+
+.fm-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-hover);
+  }
+}
+
+.fm-accordion-chevron {
+  font-size: 0.55rem;
+  color: var(--sch-text-muted);
+  transition: transform 0.2s ease;
+  width: 10px;
+  flex-shrink: 0;
+
+  &.open {
+    transform: rotate(90deg);
+  }
+}
+
+.fm-accordion-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sch-text-muted);
+}
+
+.fm-accordion-badge {
+  font-size: 0.65rem;
+  background: var(--sch-bg-hover);
+  border-radius: 8px;
+  padding: 0 5px;
+  color: var(--sch-text-muted);
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.fm-accordion-body {
+  padding: 0 8px 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+
+// ─── Tag/Link Sidebar Items ─────────────────────────────────────────
+.fm-tag-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--sch-text-primary);
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+
+  &.active {
+    background: rgba(99, 102, 241, 0.15);
+    font-weight: 600;
+  }
+}
+
+.fm-tag-sidebar-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-tag-count {
+  font-size: 0.7rem;
+  background: var(--sch-bg-elevated);
+  border-radius: 8px;
+  padding: 0 6px;
+  color: var(--sch-text-muted);
+  min-width: 20px;
+  text-align: center;
+}
+
+.fm-tag-sidebar-empty {
+  padding: 8px;
+  font-size: 0.78rem;
+  color: var(--sch-primary);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background $transition-fast;
+  text-align: center;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+}
+
+.fm-tag-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+
+// ─── Quick Nav (Trash / Activity icon row) ──────────────────────────
+.fm-quick-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--sch-border);
+}
+
+.fm-quick-nav-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sch-text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-hover);
+    color: var(--sch-text-primary);
+  }
+
+  &.active {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--sch-primary);
+  }
+}
+
+.fm-quick-nav-badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  font-size: 0.55rem;
+  background: var(--sch-primary);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0 4px;
+  min-width: 14px;
+  text-align: center;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+
+// ─── Storage Quota ──────────────────────────────────────────────────
+.fm-storage-usage {
+  font-size: 0.75rem;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  background: var(--sch-surface-subtle);
+  color: var(--sch-text-primary);
+}
+
+.fm-storage-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.fm-storage-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sch-border-color, #333);
+  overflow: hidden;
+}
+
+.fm-storage-fill {
+  height: 100%;
+  border-radius: 3px;
+  min-width: 4px;
+  background: #198754;
+  transition: width 0.4s ease, background-color 0.3s ease;
+}

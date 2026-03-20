@@ -1,0 +1,78 @@
+/*
+ * fm-activity-panel.component.scss
+ *
+ * AI-Developed — This file was developed with AI assistance.
+ *
+ * Styles for the activity timeline slide-over panel.
+ */
+
+$transition-fast: 0.15s ease;
+
+// Reuse the detail header styling
+.fm-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--sch-border);
+
+  .btn-close {
+    filter: var(--sch-close-btn-filter);
+  }
+}
+
+.fm-activity-panel-body {
+  padding: 16px 14px;
+  flex: 1;
+}
+
+.fm-activity-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.fm-activity-timeline {
+  padding: 8px 0 8px 12px;
+  border-left: 2px solid var(--sch-border-color, #333);
+  margin-left: 6px;
+}
+
+.fm-activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 6px 0;
+  position: relative;
+}
+
+.fm-activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sch-primary, #6366f1);
+  flex-shrink: 0;
+  margin-top: 5px;
+  margin-left: -16px;
+}
+
+.fm-activity-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.fm-activity-title {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--sch-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fm-activity-meta {
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+}

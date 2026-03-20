@@ -1,0 +1,33 @@
+<!--
+  fm-activity-panel.component.html
+
+  AI-Developed — This file was developed with AI assistance.
+
+  Recent activity timeline slide-over panel.
+-->
+<div class="fm-detail-header">
+  <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Recent Activity</h6>
+  <button class="btn-close btn-sm" (click)="close.emit()"></button>
+</div>
+
+<div class="fm-activity-panel-body">
+  <div class="fm-activity-empty" *ngIf="activityItems.length === 0">
+    <i class="fa-solid fa-clock-rotate-left fa-3x mb-3" style="color: var(--sch-text-muted)"></i>
+    <p class="text-muted mb-0">No recent activity</p>
+  </div>
+
+  <div class="fm-activity-timeline" *ngIf="activityItems.length > 0">
+    <div class="fm-activity-item" *ngFor="let item of activityItems">
+      <div class="fm-activity-dot"></div>
+      <div class="fm-activity-content">
+        <div class="fm-activity-title">
+          {{ item.documentName || 'Document #' + item.documentId }}
+          <span class="text-muted" *ngIf="item.versionNumber > 1">v{{ item.versionNumber }}</span>
+        </div>
+        <div class="fm-activity-meta">
+          {{ item.timeStamp | date:'short' }} · {{ item.userName || 'User #' + item.userId }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

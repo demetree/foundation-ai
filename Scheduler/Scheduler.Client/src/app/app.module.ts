@@ -291,6 +291,11 @@ import { SchedulingTargetCustomDetailComponent } from './components/scheduling-t
 import { DocumentCustomListingComponent } from './components/document-custom/document-custom-listing/document-custom-listing.component';
 import { DocumentCustomTableComponent } from './components/document-custom/document-custom-table/document-custom-table.component';
 import { FileManagerComponent } from './components/file-manager/file-manager.component';
+import { FmSidebarComponent } from './components/file-manager/fm-sidebar/fm-sidebar.component';
+import { FmDetailPanelComponent } from './components/file-manager/fm-detail-panel/fm-detail-panel.component';
+import { FmTrashViewComponent } from './components/file-manager/fm-trash-view/fm-trash-view.component';
+import { FmActivityPanelComponent } from './components/file-manager/fm-activity-panel/fm-activity-panel.component';
+import { FmTagManagerModalComponent } from './components/file-manager/fm-tag-manager-modal/fm-tag-manager-modal.component';
 
 
 //
@@ -1492,6 +1497,11 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     DocumentCustomListingComponent,
     DocumentCustomTableComponent,
     FileManagerComponent,
+    FmSidebarComponent,
+    FmDetailPanelComponent,
+    FmTrashViewComponent,
+    FmActivityPanelComponent,
+    FmTagManagerModalComponent,
 
 
     //

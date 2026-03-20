@@ -59,128 +59,43 @@
        ═══════════════════════════════════════════════════════════════════ -->
   <div class="fm-main">
 
-    <!-- ─── LEFT: Folder Tree + Tag Section ───────────────────── -->
-    <div class="fm-sidebar" [class.collapsed]="sidebarCollapsed">
-      <div class="fm-sidebar-header">
-        <span *ngIf="!sidebarCollapsed" class="fm-sidebar-title">Folders</span>
-        <button class="fm-sidebar-toggle" (click)="sidebarCollapsed = !sidebarCollapsed"
-                [title]="sidebarCollapsed ? 'Show folders' : 'Hide folders'">
-          <i class="fa-solid" [ngClass]="sidebarCollapsed ? 'fa-angle-right' : 'fa-angle-left'"></i>
-        </button>
-      </div>
-
-      <div class="fm-folder-tree" *ngIf="!sidebarCollapsed">
-        <div class="fm-folder-node" [class.active]="!currentFolderId && !isSearching"
-             (click)="navigateToFolder(null)"
-             (contextmenu)="onFolderContextMenu($event, null)">
-          <i class="fa-solid fa-house-chimney fm-folder-icon"></i>
-          <span class="fm-folder-name">Root</span>
-        </div>
-
-        <ng-container *ngFor="let folder of folderTree">
-          <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: folder }"></ng-container>
-        </ng-container>
-      </div>
-
-      <!-- ─── Sidebar Accordion: Favorites ─────────────────────── -->
-      <div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed && favoriteDocuments.length > 0">
-        <div class="fm-accordion-header" (click)="sidebarFavoritesOpen = !sidebarFavoritesOpen">
-          <i class="fa-solid fa-chevron-right fm-accordion-chevron"
-             [class.open]="sidebarFavoritesOpen"></i>
-          <i class="fa-solid fa-star me-1" style="color:#f59e0b; font-size:0.7rem"></i>
-          <span class="fm-accordion-title">Favorites</span>
-          <span class="fm-accordion-badge" *ngIf="!sidebarFavoritesOpen">{{ favoriteDocuments.length }}</span>
-        </div>
-        <div class="fm-accordion-body" *ngIf="sidebarFavoritesOpen">
-          <div class="fm-tag-sidebar-item" *ngFor="let doc of favoriteDocuments"
-               (click)="navigateToFolder(doc.documentFolderId ?? null); selectDocument(doc)">
-            <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
-               [style.color]="fileManagerService.getFileColor(doc.mimeType)" style="font-size:0.75rem"></i>
-            <span class="fm-tag-sidebar-name">{{ doc.fileName }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ─── Sidebar Accordion: Tags ─────────────────────────── -->
-      <div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed">
-        <div class="fm-accordion-header" (click)="sidebarTagsOpen = !sidebarTagsOpen">
-          <i class="fa-solid fa-chevron-right fm-accordion-chevron"
-             [class.open]="sidebarTagsOpen"></i>
-          <span class="fm-accordion-title">Tags</span>
-          <span class="fm-accordion-badge" *ngIf="!sidebarTagsOpen && allTags.length > 0">{{ allTags.length }}</span>
-          <button class="fm-sidebar-toggle ms-auto" (click)="openTagManager($event); $event.stopPropagation()" title="Manage tags">
-            <i class="fa-solid fa-gear"></i>
-          </button>
-        </div>
-        <div class="fm-accordion-body" *ngIf="sidebarTagsOpen">
-          <div class="fm-tag-sidebar-item" *ngFor="let tag of allTags"
-               (click)="toggleTagFilter(tag)"
-               [class.active]="isTagFilterActive(tag.id)">
-            <span class="fm-tag-dot" [style.background]="tag.color || '#6366f1'"></span>
-            <span class="fm-tag-sidebar-name">{{ tag.name }}</span>
-            <span class="fm-tag-count" *ngIf="tagCounts.get(tag.id)">{{ tagCounts.get(tag.id) }}</span>
-          </div>
-          <div class="fm-tag-sidebar-empty" *ngIf="allTags.length === 0" (click)="openTagManager($event)">
-            <i class="fa-solid fa-plus-circle me-1"></i> Create your first tag
-          </div>
-        </div>
-      </div>
-
-      <!-- ─── Sidebar Accordion: Entity Links ─────────────────── -->
-      <div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed && activeEntityLinkTypes.length > 0">
-        <div class="fm-accordion-header" (click)="sidebarLinksOpen = !sidebarLinksOpen">
-          <i class="fa-solid fa-chevron-right fm-accordion-chevron"
-             [class.open]="sidebarLinksOpen"></i>
-          <i class="fa-solid fa-link me-1" style="font-size:0.7rem"></i>
-          <span class="fm-accordion-title">Entity Links</span>
-          <span class="fm-accordion-badge" *ngIf="!sidebarLinksOpen">{{ activeEntityLinkTypes.length }}</span>
-          <button class="fm-sidebar-toggle ms-auto" *ngIf="activeEntityLinkFilter"
-                  (click)="clearEntityLinkFilter(); $event.stopPropagation()" title="Clear filter">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-        <div class="fm-accordion-body" *ngIf="sidebarLinksOpen">
-          <div class="fm-tag-sidebar-item" *ngFor="let linkType of activeEntityLinkTypes"
-               (click)="toggleEntityLinkFilter(linkType.fk)"
-               [class.active]="activeEntityLinkFilter === linkType.fk">
-            <i class="fa-solid me-2" [ngClass]="linkType.icon" [style.color]="linkType.color"></i>
-            <span class="fm-tag-sidebar-name">{{ linkType.label }}</span>
-            <span class="fm-tag-count">{{ linkType.count }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ─── Quick Nav: Trash & Activity (compact icon row) ─── -->
-      <div class="fm-quick-nav" *ngIf="!sidebarCollapsed">
-        <button class="fm-quick-nav-btn" (click)="toggleTrash()"
-                [class.active]="showTrash" title="Trash">
-          <i class="fa-solid fa-trash"></i>
-          <span class="fm-quick-nav-badge" *ngIf="trashCount > 0">{{ trashCount }}</span>
-        </button>
-        <button class="fm-quick-nav-btn" (click)="toggleActivity()"
-                [class.active]="showActivity" title="Recent Activity">
-          <i class="fa-solid fa-clock-rotate-left"></i>
-        </button>
-      </div>
-
-      <div class="fm-sidebar-footer" *ngIf="!sidebarCollapsed">
-        <div class="fm-storage-usage" *ngIf="storageUsage">
-          <div class="fm-storage-label">
-            <i class="fa-solid fa-hard-drive me-1"></i>
-            <span>{{ fileManagerService.formatFileSize(storageUsage.totalBytes) }} / {{ fileManagerService.formatFileSize(storageUsage.quotaBytes) }}</span>
-            <span class="text-muted ms-1">({{ storageUsage.documentCount }} files)</span>
-          </div>
-          <div class="fm-storage-bar">
-            <div class="fm-storage-fill"
-                 [style.width.%]="storagePercentage"
-                 [style.background-color]="storageBarColor"></div>
-          </div>
-        </div>
-        <button class="btn btn-sm btn-outline-primary w-100 mb-2" (click)="showNewFolderDialog()">
-          <i class="fa-solid fa-folder-plus me-1"></i> New Folder
-        </button>
-      </div>
-    </div>
+    <!-- ─── LEFT: Sidebar (child component) ───────────── -->
+    <fm-sidebar class="fm-sidebar" [class.collapsed]="sidebarCollapsed"
+                [folderTree]="folderTree"
+                [allFolders]="allFolders"
+                [currentFolderId]="currentFolderId"
+                [isSearching]="isSearching"
+                [sidebarCollapsed]="sidebarCollapsed"
+                [sidebarFavoritesOpen]="sidebarFavoritesOpen"
+                [sidebarTagsOpen]="sidebarTagsOpen"
+                [sidebarLinksOpen]="sidebarLinksOpen"
+                [favoriteDocuments]="favoriteDocuments"
+                [allTags]="allTags"
+                [tagCounts]="tagCounts"
+                [activeTagFilters]="activeTagFilters"
+                [activeEntityLinkTypes]="activeEntityLinkTypes"
+                [activeEntityLinkFilter]="activeEntityLinkFilter"
+                [trashCount]="trashCount"
+                [showTrash]="showTrash"
+                [showActivity]="showActivity"
+                [storageUsage]="storageUsage"
+                [storagePercentage]="storagePercentage"
+                [storageBarColor]="storageBarColor"
+                (navigateToFolder)="navigateToFolder($event)"
+                (toggleSidebarCollapse)="sidebarCollapsed = !sidebarCollapsed"
+                (toggleFavoritesAccordion)="sidebarFavoritesOpen = !sidebarFavoritesOpen"
+                (toggleTagsAccordion)="sidebarTagsOpen = !sidebarTagsOpen"
+                (toggleLinksAccordion)="sidebarLinksOpen = !sidebarLinksOpen"
+                (toggleTagFilter)="toggleTagFilter($event)"
+                (clearEntityLinkFilter)="clearEntityLinkFilter()"
+                (toggleEntityLinkFilter)="toggleEntityLinkFilter($event)"
+                (toggleTrash)="toggleTrash()"
+                (toggleActivity)="toggleActivity()"
+                (openTagManager)="openTagManager($event)"
+                (showNewFolderDialog)="showNewFolderDialog()"
+                (folderContextMenu)="onFolderContextMenu($event.event, $event.folder)"
+                (selectFavoriteDoc)="navigateToFolder($event.documentFolderId ?? null); selectDocument($event)">
+    </fm-sidebar>
 
 
     <!-- ─── RIGHT: File Grid / Content ─────────────────────────── -->
@@ -349,47 +264,14 @@
         </div>
       </div>
 
-      <!-- ─── Trash View ────────────────────────────────────── -->
-      <div class="fm-trash-view" *ngIf="showTrash">
-        <div class="fm-trash-header">
-          <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary" (click)="showTrash = false">
-              <i class="fa-solid fa-arrow-left me-1"></i> Back
-            </button>
-            <h6 class="mb-0"><i class="fa-solid fa-trash me-2"></i>Trash ({{ trashDocuments.length }})</h6>
-          </div>
-          <button class="btn btn-sm btn-outline-danger" *ngIf="trashDocuments.length > 0"
-                  (click)="emptyTrash()">
-            <i class="fa-solid fa-broom me-1"></i> Empty Trash
-          </button>
-        </div>
-
-        <div class="fm-trash-empty" *ngIf="trashDocuments.length === 0">
-          <i class="fa-solid fa-recycle fa-3x mb-3" style="color: var(--sch-text-muted)"></i>
-          <p class="text-muted">Trash is empty</p>
-        </div>
-
-        <div class="fm-trash-list" *ngIf="trashDocuments.length > 0">
-          <div class="fm-trash-item" *ngFor="let doc of trashDocuments">
-            <div class="fm-trash-item-info">
-              <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
-                 [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
-              <div class="fm-trash-item-details">
-                <span class="fm-trash-item-name">{{ doc.fileName }}</span>
-                <span class="fm-trash-item-meta">{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }} · Deleted {{ doc.uploadedDate | date:'short' }}</span>
-              </div>
-            </div>
-            <div class="fm-trash-item-actions">
-              <button class="btn btn-sm btn-outline-success" title="Restore" (click)="restoreFromTrash(doc)">
-                <i class="fa-solid fa-rotate-left"></i>
-              </button>
-              <button class="btn btn-sm btn-outline-danger ms-1" title="Delete permanently" (click)="permanentDeleteFromTrash(doc)">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <!-- ─── Trash View (child component) ────────────── -->
+      <fm-trash-view *ngIf="showTrash"
+                     [trashDocuments]="trashDocuments"
+                     (close)="showTrash = false"
+                     (restore)="restoreFromTrash($event)"
+                     (permanentDelete)="permanentDeleteFromTrash($event)"
+                     (emptyTrash)="emptyTrash()">
+      </fm-trash-view>
 
       <!-- Search mode indicator -->
       <div class="fm-search-indicator" *ngIf="isSearching && !showTrash">
@@ -552,261 +434,50 @@
     <!-- end fm-content -->
 
 
-    <!-- ─── RIGHT DETAIL PANEL (#1: Tags section) ──────────────── -->
-    <div class="fm-detail-panel" *ngIf="selectedDocument" [@slidePanel]>
-      <div class="fm-detail-header">
-        <h6 class="mb-0 text-truncate" [title]="selectedDocument.fileName">{{ selectedDocument.fileName }}</h6>
-        <div class="d-flex align-items-center gap-1">
-          <button class="fm-favorite-btn" [class.active]="isFavorite(selectedDocument.id)"
-                  (click)="toggleFavorite(selectedDocument.id)" title="Toggle favorite">
-            <i class="fa-star" [ngClass]="isFavorite(selectedDocument.id) ? 'fa-solid' : 'fa-regular'"></i>
-          </button>
-          <button class="btn-close btn-sm" (click)="selectedDocument = null"></button>
-        </div>
-      </div>
-
-      <div class="fm-detail-body">
-        <!-- Preview area -->
-        <div class="fm-detail-preview">
-          <!-- Image preview -->
-          <img *ngIf="isImagePreviewable(selectedDocument.mimeType) && previewBlobUrl"
-               [src]="previewBlobUrl"
-               [alt]="selectedDocument.fileName"
-               class="fm-preview-image" />
-
-          <!-- PDF preview -->
-          <iframe *ngIf="isPdfPreviewable(selectedDocument.mimeType) && safePreviewBlobUrl"
-                  [src]="safePreviewBlobUrl"
-                  class="fm-preview-pdf"
-                  frameborder="0"></iframe>
-
-          <!-- Text/code preview -->
-          <pre *ngIf="isTextPreviewable(selectedDocument.mimeType) && textPreviewContent"
-               class="fm-preview-text">{{ textPreviewContent }}</pre>
-
-          <!-- Fallback icon for non-previewable types -->
-          <i *ngIf="!isPreviewable(selectedDocument.mimeType)"
-             class="fa-solid fa-4x"
-             [ngClass]="fileManagerService.getFileIcon(selectedDocument.mimeType)"
-             [style.color]="fileManagerService.getFileColor(selectedDocument.mimeType)"></i>
-        </div>
-
-        <!-- ─── Tags Section (#1) ───────────────────────────── -->
-        <div class="fm-detail-tags">
-          <div class="fm-detail-tags-header">
-            <span class="fm-prop-label"><i class="fa-solid fa-tags me-1"></i> Tags</span>
-            <button class="btn btn-sm btn-link p-0" (click)="toggleTagDropdown($event)">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </div>
-
-          <!-- Current tags as chips -->
-          <div class="fm-tag-chips">
-            <span class="fm-tag-chip" *ngFor="let tag of selectedDocumentTags"
-                  [style.background]="tag.color || '#6366f1'">
-              {{ tag.name }}
-              <button class="fm-tag-chip-remove" (click)="removeTagFromSelectedDoc(tag); $event.stopPropagation()">×</button>
-            </span>
-            <span class="fm-tag-empty" *ngIf="selectedDocumentTags.length === 0">No tags assigned</span>
-          </div>
-
-          <!-- Add tag dropdown -->
-          <div class="fm-tag-dropdown" *ngIf="showTagDropdown" (click)="$event.stopPropagation()">
-            <div class="fm-tag-dropdown-item" *ngFor="let tag of unassignedTags"
-                 (click)="addTagToSelectedDoc(tag)">
-              <span class="fm-tag-dot" [style.background]="tag.color || '#6366f1'"></span>
-              {{ tag.name }}
-            </div>
-            <div class="fm-tag-dropdown-empty" *ngIf="unassignedTags.length === 0">
-              All tags assigned
-            </div>
-          </div>
-        </div>
-
-        <!-- ─── Entity Links Section ──────────────────────────── -->
-        <div class="fm-detail-tags">
-          <div class="fm-detail-tags-header">
-            <span class="fm-prop-label"><i class="fa-solid fa-link me-1"></i> Entity Links</span>
-            <button class="btn btn-sm btn-link p-0" (click)="toggleAddEntityLinkDropdown($event)"
-                    title="Link to entity">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </div>
-
-          <!-- Current links -->
-          <div class="fm-entity-link-list" *ngIf="getEntityLinks(selectedDocument).length > 0">
-            <div class="fm-entity-link-item" *ngFor="let link of getEntityLinks(selectedDocument)">
-              <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
-              <div class="fm-entity-link-info">
-                <span class="fm-entity-link-label">{{ link.label }}</span>
-                <a *ngIf="link.route" [routerLink]="link.route" class="fm-entity-link-name">{{ link.name }}</a>
-                <span *ngIf="!link.route" class="fm-entity-link-name">{{ link.name }}</span>
-              </div>
-              <button class="fm-entity-link-remove" title="Remove link"
-                      (click)="removeEntityLink(selectedDocument!, link.fk)">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-          </div>
-          <span class="fm-tag-empty" *ngIf="getEntityLinks(selectedDocument).length === 0 && !showAddEntityLinkDropdown">No entity links</span>
-
-          <!-- Add entity link dropdown (two-step) -->
-          <div class="fm-entity-add-dropdown" *ngIf="showAddEntityLinkDropdown" (click)="$event.stopPropagation()">
-
-            <!-- Step 1: Entity type picker -->
-            <ng-container *ngIf="!addLinkSelectedType">
-              <div class="fm-entity-type-item" *ngFor="let etype of linkableEntityTypes"
-                   (click)="selectEntityTypeForLink(etype)">
-                <i class="fa-solid" [ngClass]="etype.icon" [style.color]="etype.color"></i>
-                <span>{{ etype.label }}</span>
-              </div>
-              <div class="fm-entity-add-empty" *ngIf="linkableEntityTypes.length === 0">
-                All entity types are already linked
-              </div>
-            </ng-container>
-
-            <!-- Step 2: Search + select entity -->
-            <ng-container *ngIf="addLinkSelectedType">
-              <div class="fm-entity-search-header">
-                <button class="fm-entity-search-back" (click)="cancelAddEntityLink()" title="Back to types">
-                  <i class="fa-solid fa-arrow-left"></i>
-                </button>
-                <i class="fa-solid" [ngClass]="addLinkSelectedType.icon" [style.color]="addLinkSelectedType.color"></i>
-                <span class="fm-entity-search-type-label">{{ addLinkSelectedType.label }}</span>
-              </div>
-
-              <div class="fm-entity-search-input-wrap">
-                <input type="text" class="form-control form-control-sm"
-                       placeholder="Search {{ addLinkSelectedType.label }}s…"
-                       [(ngModel)]="addLinkSearchQuery"
-                       (keyup.enter)="searchEntitiesForLink()"
-                       (input)="searchEntitiesForLink()"
-                       autofocus />
-              </div>
-
-              <div class="fm-entity-search-results">
-                <div class="fm-entity-search-loading" *ngIf="addLinkSearching">
-                  <div class="spinner-border spinner-border-sm text-primary"></div>
-                </div>
-                <div class="fm-entity-search-item" *ngFor="let result of addLinkSearchResults"
-                     (mousedown)="assignEntityLink(result.id); $event.preventDefault()">
-                  <i class="fa-solid" [ngClass]="addLinkSelectedType.icon"
-                     [style.color]="addLinkSelectedType.color" style="font-size: 0.7rem"></i>
-                  <span>{{ result.name }}</span>
-                </div>
-                <div class="fm-entity-add-empty"
-                     *ngIf="!addLinkSearching && addLinkSearchResults.length === 0 && addLinkSearchQuery.trim().length > 0">
-                  No results found
-                </div>
-              </div>
-            </ng-container>
-          </div>
-        </div>
-
-        <!-- Properties -->
-        <div class="fm-detail-props">
-          <div class="fm-prop-row">
-            <span class="fm-prop-label">Name</span>
-            <span class="fm-prop-value">{{ selectedDocument.name }}</span>
-          </div>
-          <div class="fm-prop-row">
-            <span class="fm-prop-label">File Name</span>
-            <span class="fm-prop-value">{{ selectedDocument.fileName }}</span>
-          </div>
-          <div class="fm-prop-row">
-            <span class="fm-prop-label">Size</span>
-            <span class="fm-prop-value">{{ fileManagerService.formatFileSize(selectedDocument.fileSizeBytes) }}</span>
-          </div>
-          <div class="fm-prop-row">
-            <span class="fm-prop-label">Type</span>
-            <span class="fm-prop-value">{{ selectedDocument.mimeType }}</span>
-          </div>
-          <div class="fm-prop-row">
-            <span class="fm-prop-label">Uploaded</span>
-            <span class="fm-prop-value">{{ selectedDocument.uploadedDate | date:'medium' }}</span>
-          </div>
-          <div class="fm-prop-row" *ngIf="selectedDocument.uploadedBy">
-            <span class="fm-prop-label">By</span>
-            <span class="fm-prop-value">{{ selectedDocument.uploadedBy }}</span>
-          </div>
-          <div class="fm-prop-row" *ngIf="selectedDocument.description">
-            <span class="fm-prop-label">Description</span>
-            <span class="fm-prop-value">{{ selectedDocument.description }}</span>
-          </div>
-        </div>
-
-        <!-- Version History -->
-        <div class="fm-detail-versions">
-          <div class="fm-detail-tags-header">
-            <span class="fm-prop-label" (click)="toggleVersionHistory()" style="cursor:pointer">
-              <i class="fa-solid fa-clock-rotate-left me-1"></i>
-              Versions ({{ documentVersions.length }})
-              <i class="fa-solid ms-1" [ngClass]="showVersionHistory ? 'fa-chevron-up' : 'fa-chevron-down'" style="font-size:0.65rem"></i>
-            </span>
-            <button class="btn btn-sm btn-link p-0" (click)="uploadNewVersionFile()" title="Upload new version">
-              <i class="fa-solid fa-upload"></i>
-            </button>
-          </div>
-
-          <div class="fm-version-list" *ngIf="showVersionHistory && documentVersions.length > 0">
-            <div class="fm-version-item" *ngFor="let ver of documentVersions" [class.active]="ver.id === selectedDocument!.id">
-              <div class="fm-version-info">
-                <span class="fm-version-label">v{{ ver.versionNumber }}</span>
-                <span class="fm-version-meta">{{ ver.uploadedBy }} · {{ ver.uploadedDate | date:'short' }}</span>
-              </div>
-              <div class="fm-version-actions">
-                <button class="btn btn-sm btn-link p-0 me-2" title="Download this version" (click)="downloadFile(ver)">
-                  <i class="fa-solid fa-download"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <input type="file" #versionUploadInput style="display:none" (change)="onVersionFileSelected($event)" />
-        </div>
-
-        <!-- Actions -->
-        <div class="fm-detail-actions">
-          <button class="btn btn-sm btn-primary w-100 mb-2" (click)="downloadFile(selectedDocument)">
-            <i class="fa-solid fa-download me-1"></i> Download
-          </button>
-          <button class="btn btn-sm btn-outline-danger w-100" (click)="deleteFile(selectedDocument)">
-            <i class="fa-solid fa-trash me-1"></i> Delete
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- ─── RIGHT DETAIL PANEL (child component) ──────────────── -->
+    <fm-detail-panel class="fm-detail-panel" *ngIf="selectedDocument" [@slidePanel]
+                     [selectedDocument]="selectedDocument"
+                     [previewBlobUrl]="previewBlobUrl"
+                     [safePreviewBlobUrl]="safePreviewBlobUrl"
+                     [textPreviewContent]="textPreviewContent"
+                     [isFavorite]="isFavorite(selectedDocument.id)"
+                     [selectedDocumentTags]="selectedDocumentTags"
+                     [unassignedTags]="unassignedTags"
+                     [showTagDropdown]="showTagDropdown"
+                     [entityLinks]="getEntityLinks(selectedDocument)"
+                     [showAddEntityLinkDropdown]="showAddEntityLinkDropdown"
+                     [linkableEntityTypes]="linkableEntityTypes"
+                     [addLinkSelectedType]="addLinkSelectedType"
+                     [addLinkSearchQuery]="addLinkSearchQuery"
+                     [addLinkSearchResults]="addLinkSearchResults"
+                     [addLinkSearching]="addLinkSearching"
+                     [documentVersions]="documentVersions"
+                     [showVersionHistory]="showVersionHistory"
+                     (close)="selectedDocument = null"
+                     (download)="downloadFile($event)"
+                     (delete)="deleteFile($event)"
+                     (toggleFavorite)="toggleFavorite($event)"
+                     (addTag)="addTagToSelectedDoc($event)"
+                     (removeTag)="removeTagFromSelectedDoc($event)"
+                     (toggleTagDropdownEvent)="toggleTagDropdown($event)"
+                     (toggleAddEntityLink)="toggleAddEntityLinkDropdown($event)"
+                     (selectEntityType)="selectEntityTypeForLink($event)"
+                     (searchEntities)="searchEntitiesForLink()"
+                     (assignEntityLink)="assignEntityLink($event)"
+                     (cancelAddEntityLink)="cancelAddEntityLink()"
+                     (removeEntityLink)="removeEntityLink($event.doc, $event.fkField)"
+                     (addLinkSearchQueryChange)="addLinkSearchQuery = $event"
+                     (toggleVersionHistoryEvent)="toggleVersionHistory()"
+                     (uploadNewVersion)="uploadNewVersionFile()"
+                     (versionFileSelected)="onVersionFileSelected($event)">
+    </fm-detail-panel>
 
 
-    <!-- ─── RIGHT ACTIVITY PANEL (slide-over) ───────────────── -->
-    <div class="fm-activity-panel" *ngIf="showActivity" [@slidePanel]>
-      <div class="fm-detail-header">
-        <h6 class="mb-0"><i class="fa-solid fa-clock-rotate-left me-2"></i>Recent Activity</h6>
-        <button class="btn-close btn-sm" (click)="showActivity = false"></button>
-      </div>
-
-      <div class="fm-activity-panel-body">
-        <div class="fm-activity-empty" *ngIf="activityItems.length === 0">
-          <i class="fa-solid fa-clock-rotate-left fa-3x mb-3" style="color: var(--sch-text-muted)"></i>
-          <p class="text-muted mb-0">No recent activity</p>
-        </div>
-
-        <div class="fm-activity-timeline" *ngIf="activityItems.length > 0">
-          <div class="fm-activity-item" *ngFor="let item of activityItems">
-            <div class="fm-activity-dot"></div>
-            <div class="fm-activity-content">
-              <div class="fm-activity-title">
-                {{ item.documentName || 'Document #' + item.documentId }}
-                <span class="text-muted" *ngIf="item.versionNumber > 1">v{{ item.versionNumber }}</span>
-              </div>
-              <div class="fm-activity-meta">
-                {{ item.timeStamp | date:'short' }} · {{ item.userName || 'User #' + item.userId }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- ─── RIGHT ACTIVITY PANEL (child component, slide-over) ── -->
+    <fm-activity-panel class="fm-activity-panel" *ngIf="showActivity" [@slidePanel]
+                       [activityItems]="activityItems"
+                       (close)="showActivity = false">
+    </fm-activity-panel>
 
   </div>
   <!-- end fm-main -->
@@ -877,95 +548,19 @@
 
 
   <!-- ═══════════════════════════════════════════════════════════════════
-       TAG MANAGER MODAL (#4)
+       TAG MANAGER MODAL (child component)
        ═══════════════════════════════════════════════════════════════════ -->
-  <div class="fm-modal-backdrop" *ngIf="showTagManagerModal" (click)="showTagManagerModal = false"></div>
-  <div class="fm-modal fm-modal-wide" *ngIf="showTagManagerModal">
-    <div class="fm-modal-header">
-      <h6 class="mb-0"><i class="fa-solid fa-tags me-2"></i>Manage Tags</h6>
-      <button class="btn-close btn-sm" (click)="showTagManagerModal = false"></button>
-    </div>
-    <div class="fm-modal-body fm-tag-manager">
-      <!-- Existing tags -->
-      <div class="fm-tag-mgr-list">
-        <div class="fm-tag-mgr-row" *ngFor="let tag of allTags">
-          <ng-container *ngIf="editingTagId !== tag.id">
-            <span class="fm-tag-dot-lg" [style.background]="tag.color || '#6366f1'"></span>
-            <span class="fm-tag-mgr-name">{{ tag.name }}</span>
-            <span class="fm-tag-mgr-count">{{ tagCounts.get(tag.id) || 0 }} docs</span>
-            <button class="btn btn-sm btn-link p-0 ms-auto" (click)="startEditTag(tag, $event)" title="Edit">
-              <i class="fa-solid fa-pen-to-square"></i>
-            </button>
-            <button class="btn btn-sm btn-link text-danger p-0 ms-2" (click)="deleteExistingTag(tag)" title="Delete">
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </ng-container>
-
-          <!-- Inline edit mode -->
-          <ng-container *ngIf="editingTagId === tag.id">
-            <div class="fm-tag-mgr-edit">
-              <div class="fm-tag-color-picker">
-                <span class="fm-tag-color-option" *ngFor="let c of tagColorOptions"
-                      [style.background]="c"
-                      [class.active]="editingTagColor === c"
-                      (click)="editingTagColor = c"></span>
-              </div>
-              <input type="text" class="form-control form-control-sm" [(ngModel)]="editingTagName"
-                     (keyup.enter)="saveEditTag(tag)" />
-              <div class="d-flex gap-1 mt-1">
-                <button class="btn btn-sm btn-primary flex-grow-1" (click)="saveEditTag(tag)">Save</button>
-                <button class="btn btn-sm btn-secondary" (click)="cancelEditTag()">Cancel</button>
-              </div>
-            </div>
-          </ng-container>
-        </div>
-      </div>
-
-      <!-- Create new tag -->
-      <div class="fm-tag-mgr-create">
-        <div class="fm-tag-color-picker mb-2">
-          <span class="fm-tag-color-option" *ngFor="let c of tagColorOptions"
-                [style.background]="c"
-                [class.active]="newTagColor === c"
-                (click)="newTagColor = c"></span>
-        </div>
-        <div class="d-flex gap-2">
-          <input type="text" class="form-control form-control-sm" placeholder="New tag name…"
-                 [(ngModel)]="newTagName" (keyup.enter)="createNewTag()" />
-          <button class="btn btn-sm btn-primary" (click)="createNewTag()" [disabled]="!newTagName.trim()">
-            <i class="fa-solid fa-plus me-1"></i>Add
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <fm-tag-manager-modal
+    [visible]="showTagManagerModal"
+    [allTags]="allTags"
+    [tagCounts]="tagCounts"
+    [tagColorOptions]="tagColorOptions"
+    (close)="showTagManagerModal = false"
+    (createTag)="createNewTag($event)"
+    (updateTag)="saveEditTag($event)"
+    (deleteTag)="deleteExistingTag($event)">
+  </fm-tag-manager-modal>
 
   <!-- Hidden file input -->
   <input type="file" #fileUploadInput multiple (change)="onFilesSelected($event)" style="display: none;" />
 </div>
-
-
-<!-- ═══════════════════════════════════════════════════════════════════
-     RECURSIVE FOLDER TREE TEMPLATE
-     ═══════════════════════════════════════════════════════════════════ -->
-<ng-template #folderNodeTpl let-folder>
-  <div class="fm-folder-node"
-       [class.active]="currentFolderId === folder.id"
-       [style.paddingLeft.px]="16 + (folder.level || 0) * 16"
-       (click)="navigateToFolder(folder.id)"
-       (contextmenu)="onFolderContextMenu($event, folder)">
-    <i *ngIf="folder.children && folder.children.length > 0"
-       class="fa-solid fm-tree-arrow"
-       [ngClass]="folder.expanded ? 'fa-caret-down' : 'fa-caret-right'"
-       (click)="toggleFolderExpand($event, folder)"></i>
-    <span *ngIf="!folder.children || folder.children.length === 0" class="fm-tree-arrow-spacer"></span>
-    <i class="fa-solid fm-folder-icon" [ngClass]="folder.expanded && folder.children?.length ? 'fa-folder-open' : 'fa-folder'"
-       [style.color]="folder.color || '#f0ad4e'"></i>
-    <span class="fm-folder-name">{{ folder.name }}</span>
-  </div>
-  <ng-container *ngIf="folder.expanded && folder.children">
-    <ng-container *ngFor="let child of folder.children">
-      <ng-container *ngTemplateOutlet="folderNodeTpl; context: { $implicit: child }"></ng-container>
-    </ng-container>
-  </ng-container>
-</ng-template>

@@ -1,0 +1,130 @@
+/*
+ * fm-tag-manager-modal.component.scss
+ *
+ * AI-Developed — This file was developed with AI assistance.
+ *
+ * Styles for the tag management modal.
+ */
+
+$transition-fast: 0.15s ease;
+
+// ─── Modal Shell ─────────────────────────────────────────────────────
+.fm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--sch-modal-backdrop);
+  z-index: 1050;
+  backdrop-filter: blur(2px);
+}
+
+.fm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1060;
+  background: var(--sch-modal-bg);
+  border: 1px solid var(--sch-border-strong);
+  border-radius: 10px;
+  box-shadow: var(--sch-shadow-lg);
+  width: 400px;
+  max-width: 90vw;
+  color: var(--sch-text-primary);
+}
+
+.fm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--sch-border);
+
+  .btn-close {
+    filter: var(--sch-close-btn-filter);
+  }
+}
+
+.fm-modal-body {
+  padding: 18px;
+}
+
+.fm-modal-wide {
+  max-width: 520px;
+}
+
+// ─── Tag Manager Content ─────────────────────────────────────────────
+.fm-tag-manager {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.fm-tag-mgr-list {
+  margin-bottom: 16px;
+}
+
+.fm-tag-mgr-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+}
+
+.fm-tag-dot-lg {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.fm-tag-mgr-name {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--sch-text-primary);
+}
+
+.fm-tag-mgr-count {
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+}
+
+.fm-tag-mgr-edit {
+  flex: 1;
+  padding: 4px 0;
+}
+
+.fm-tag-mgr-create {
+  border-top: 1px solid var(--sch-border);
+  padding-top: 12px;
+}
+
+.fm-tag-color-picker {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.fm-tag-color-option {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all $transition-fast;
+
+  &:hover {
+    transform: scale(1.15);
+  }
+
+  &.active {
+    border-color: var(--sch-text-primary);
+    box-shadow: 0 0 0 2px var(--sch-bg-card), 0 0 0 4px var(--sch-text-primary);
+  }
+}

@@ -1683,18 +1683,16 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.editingTagId = null;
     }
 
-    createNewTag(): void {
-        if (!this.newTagName.trim()) return;
+    createNewTag(event: { name: string; color: string }): void {
+        if (!event.name.trim()) return;
 
         this.fileManagerService.createTag({
-            name: this.newTagName.trim(),
-            color: this.newTagColor,
+            name: event.name.trim(),
+            color: event.color,
             sequence: this.allTags.length
         } as any).subscribe({
             next: (created) => {
                 this.allTags = [...this.allTags, created];
-                this.newTagName = '';
-                this.newTagColor = '#6366f1';
                 this.alertService.showMessage('Created', `Tag "${created.name}" created.`, MessageSeverity.success);
             },
             error: (err) => {
@@ -1711,16 +1709,15 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.editingTagColor = tag.color || '#6366f1';
     }
 
-    saveEditTag(tag: DocumentTagDTO): void {
+    saveEditTag(event: { tag: DocumentTagDTO; name: string; color: string }): void {
         this.fileManagerService.updateTag({
-            ...tag,
-            name: this.editingTagName.trim(),
-            color: this.editingTagColor
+            ...event.tag,
+            name: event.name.trim(),
+            color: event.color
         }).subscribe({
             next: (updated) => {
                 const idx = this.allTags.findIndex(t => t.id === updated.id);
                 if (idx >= 0) this.allTags[idx] = updated;
-                this.editingTagId = null;
                 this.loadDocumentTags(); // Refresh cached tags
                 this.alertService.showMessage('Updated', `Tag "${updated.name}" updated.`, MessageSeverity.success);
             },

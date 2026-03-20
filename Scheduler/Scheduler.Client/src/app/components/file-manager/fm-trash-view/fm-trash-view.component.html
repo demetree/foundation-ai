@@ -1,0 +1,45 @@
+<!--
+  fm-trash-view.component.html
+
+  AI-Developed — This file was developed with AI assistance.
+
+  Trash / recycle bin view with restore and permanent delete actions.
+-->
+<div class="fm-trash-header">
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn btn-sm btn-outline-secondary" (click)="close.emit()">
+      <i class="fa-solid fa-arrow-left me-1"></i> Back
+    </button>
+    <h6 class="mb-0"><i class="fa-solid fa-trash me-2"></i>Trash ({{ trashDocuments.length }})</h6>
+  </div>
+  <button class="btn btn-sm btn-outline-danger" *ngIf="trashDocuments.length > 0"
+          (click)="emptyTrash.emit()">
+    <i class="fa-solid fa-broom me-1"></i> Empty Trash
+  </button>
+</div>
+
+<div class="fm-trash-empty" *ngIf="trashDocuments.length === 0">
+  <i class="fa-solid fa-recycle fa-3x mb-3" style="color: var(--sch-text-muted)"></i>
+  <p class="text-muted">Trash is empty</p>
+</div>
+
+<div class="fm-trash-list" *ngIf="trashDocuments.length > 0">
+  <div class="fm-trash-item" *ngFor="let doc of trashDocuments">
+    <div class="fm-trash-item-info">
+      <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
+         [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
+      <div class="fm-trash-item-details">
+        <span class="fm-trash-item-name">{{ doc.fileName }}</span>
+        <span class="fm-trash-item-meta">{{ fileManagerService.formatFileSize(doc.fileSizeBytes) }} · Deleted {{ doc.uploadedDate | date:'short' }}</span>
+      </div>
+    </div>
+    <div class="fm-trash-item-actions">
+      <button class="btn btn-sm btn-outline-success" title="Restore" (click)="restore.emit(doc)">
+        <i class="fa-solid fa-rotate-left"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger ms-1" title="Delete permanently" (click)="permanentDelete.emit(doc)">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+</div>

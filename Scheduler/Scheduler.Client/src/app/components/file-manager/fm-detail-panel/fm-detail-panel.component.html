@@ -1,0 +1,229 @@
+<!--
+  fm-detail-panel.component.html
+
+  AI-Developed — This file was developed with AI assistance.
+
+  Document detail panel — preview, tags, entity links, properties,
+  version history, download/delete actions.
+-->
+<div class="fm-detail-header">
+  <h6 class="mb-0 text-truncate" [title]="selectedDocument!.fileName">{{ selectedDocument!.fileName }}</h6>
+  <div class="d-flex align-items-center gap-1">
+    <button class="fm-favorite-btn" [class.active]="isFavorite"
+            (click)="toggleFavorite.emit(selectedDocument!.id)" title="Toggle favorite">
+      <i class="fa-star" [ngClass]="isFavorite ? 'fa-solid' : 'fa-regular'"></i>
+    </button>
+    <button class="btn-close btn-sm" (click)="close.emit()"></button>
+  </div>
+</div>
+
+<div class="fm-detail-body">
+  <!-- Preview area -->
+  <div class="fm-detail-preview">
+    <!-- Image preview -->
+    <img *ngIf="isImagePreviewable(selectedDocument!.mimeType) && previewBlobUrl"
+         [src]="previewBlobUrl"
+         [alt]="selectedDocument!.fileName"
+         class="fm-preview-image" />
+
+    <!-- PDF preview -->
+    <iframe *ngIf="isPdfPreviewable(selectedDocument!.mimeType) && safePreviewBlobUrl"
+            [src]="safePreviewBlobUrl"
+            class="fm-preview-pdf"
+            frameborder="0"></iframe>
+
+    <!-- Text/code preview -->
+    <pre *ngIf="isTextPreviewable(selectedDocument!.mimeType) && textPreviewContent"
+         class="fm-preview-text">{{ textPreviewContent }}</pre>
+
+    <!-- Fallback icon for non-previewable types -->
+    <i *ngIf="!isPreviewable(selectedDocument!.mimeType)"
+       class="fa-solid fa-4x"
+       [ngClass]="fileManagerService.getFileIcon(selectedDocument!.mimeType)"
+       [style.color]="fileManagerService.getFileColor(selectedDocument!.mimeType)"></i>
+  </div>
+
+  <!-- ─── Tags Section ───────────────────────────────────── -->
+  <div class="fm-detail-tags">
+    <div class="fm-detail-tags-header">
+      <span class="fm-prop-label"><i class="fa-solid fa-tags me-1"></i> Tags</span>
+      <button class="btn btn-sm btn-link p-0" (click)="toggleTagDropdownEvent.emit($event)">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </div>
+
+    <!-- Current tags as chips -->
+    <div class="fm-tag-chips">
+      <span class="fm-tag-chip" *ngFor="let tag of selectedDocumentTags"
+            [style.background]="tag.color || '#6366f1'">
+        {{ tag.name }}
+        <button class="fm-tag-chip-remove" (click)="removeTag.emit(tag); $event.stopPropagation()">×</button>
+      </span>
+      <span class="fm-tag-empty" *ngIf="selectedDocumentTags.length === 0">No tags assigned</span>
+    </div>
+
+    <!-- Add tag dropdown -->
+    <div class="fm-tag-dropdown" *ngIf="showTagDropdown" (click)="$event.stopPropagation()">
+      <div class="fm-tag-dropdown-item" *ngFor="let tag of unassignedTags"
+           (click)="addTag.emit(tag)">
+        <span class="fm-tag-dot" [style.background]="tag.color || '#6366f1'"></span>
+        {{ tag.name }}
+      </div>
+      <div class="fm-tag-dropdown-empty" *ngIf="unassignedTags.length === 0">
+        All tags assigned
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Entity Links Section ──────────────────────────── -->
+  <div class="fm-detail-tags">
+    <div class="fm-detail-tags-header">
+      <span class="fm-prop-label"><i class="fa-solid fa-link me-1"></i> Entity Links</span>
+      <button class="btn btn-sm btn-link p-0" (click)="toggleAddEntityLink.emit($event)"
+              title="Link to entity">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </div>
+
+    <!-- Current links -->
+    <div class="fm-entity-link-list" *ngIf="entityLinks.length > 0">
+      <div class="fm-entity-link-item" *ngFor="let link of entityLinks">
+        <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
+        <div class="fm-entity-link-info">
+          <span class="fm-entity-link-label">{{ link.label }}</span>
+          <a *ngIf="link.route" [routerLink]="link.route" class="fm-entity-link-name">{{ link.name }}</a>
+          <span *ngIf="!link.route" class="fm-entity-link-name">{{ link.name }}</span>
+        </div>
+        <button class="fm-entity-link-remove" title="Remove link"
+                (click)="removeEntityLink.emit({ doc: selectedDocument!, fkField: link.fk })">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <span class="fm-tag-empty" *ngIf="entityLinks.length === 0 && !showAddEntityLinkDropdown">No entity links</span>
+
+    <!-- Add entity link dropdown (two-step) -->
+    <div class="fm-entity-add-dropdown" *ngIf="showAddEntityLinkDropdown" (click)="$event.stopPropagation()">
+
+      <!-- Step 1: Entity type picker -->
+      <ng-container *ngIf="!addLinkSelectedType">
+        <div class="fm-entity-type-item" *ngFor="let etype of linkableEntityTypes"
+             (click)="selectEntityType.emit(etype)">
+          <i class="fa-solid" [ngClass]="etype.icon" [style.color]="etype.color"></i>
+          <span>{{ etype.label }}</span>
+        </div>
+        <div class="fm-entity-add-empty" *ngIf="linkableEntityTypes.length === 0">
+          All entity types are already linked
+        </div>
+      </ng-container>
+
+      <!-- Step 2: Search + select entity -->
+      <ng-container *ngIf="addLinkSelectedType">
+        <div class="fm-entity-search-header">
+          <button class="fm-entity-search-back" (click)="cancelAddEntityLink.emit()" title="Back to types">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <i class="fa-solid" [ngClass]="addLinkSelectedType.icon" [style.color]="addLinkSelectedType.color"></i>
+          <span class="fm-entity-search-type-label">{{ addLinkSelectedType.label }}</span>
+        </div>
+
+        <div class="fm-entity-search-input-wrap">
+          <input type="text" class="form-control form-control-sm"
+                 placeholder="Search {{ addLinkSelectedType.label }}s…"
+                 [ngModel]="addLinkSearchQuery"
+                 (ngModelChange)="onSearchQueryChange($event)"
+                 (keyup.enter)="searchEntities.emit()"
+                 autofocus />
+        </div>
+
+        <div class="fm-entity-search-results">
+          <div class="fm-entity-search-loading" *ngIf="addLinkSearching">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+          </div>
+          <div class="fm-entity-search-item" *ngFor="let result of addLinkSearchResults"
+               (mousedown)="assignEntityLink.emit(result.id); $event.preventDefault()">
+            <i class="fa-solid" [ngClass]="addLinkSelectedType.icon"
+               [style.color]="addLinkSelectedType.color" style="font-size: 0.7rem"></i>
+            <span>{{ result.name }}</span>
+          </div>
+          <div class="fm-entity-add-empty"
+               *ngIf="!addLinkSearching && addLinkSearchResults.length === 0 && addLinkSearchQuery.trim().length > 0">
+            No results found
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Properties -->
+  <div class="fm-detail-props">
+    <div class="fm-prop-row">
+      <span class="fm-prop-label">Name</span>
+      <span class="fm-prop-value">{{ selectedDocument!.name }}</span>
+    </div>
+    <div class="fm-prop-row">
+      <span class="fm-prop-label">File Name</span>
+      <span class="fm-prop-value">{{ selectedDocument!.fileName }}</span>
+    </div>
+    <div class="fm-prop-row">
+      <span class="fm-prop-label">Size</span>
+      <span class="fm-prop-value">{{ fileManagerService.formatFileSize(selectedDocument!.fileSizeBytes) }}</span>
+    </div>
+    <div class="fm-prop-row">
+      <span class="fm-prop-label">Type</span>
+      <span class="fm-prop-value">{{ selectedDocument!.mimeType }}</span>
+    </div>
+    <div class="fm-prop-row">
+      <span class="fm-prop-label">Uploaded</span>
+      <span class="fm-prop-value">{{ selectedDocument!.uploadedDate | date:'medium' }}</span>
+    </div>
+    <div class="fm-prop-row" *ngIf="selectedDocument!.uploadedBy">
+      <span class="fm-prop-label">By</span>
+      <span class="fm-prop-value">{{ selectedDocument!.uploadedBy }}</span>
+    </div>
+    <div class="fm-prop-row" *ngIf="selectedDocument!.description">
+      <span class="fm-prop-label">Description</span>
+      <span class="fm-prop-value">{{ selectedDocument!.description }}</span>
+    </div>
+  </div>
+
+  <!-- Version History -->
+  <div class="fm-detail-versions">
+    <div class="fm-detail-tags-header">
+      <span class="fm-prop-label" (click)="toggleVersionHistoryEvent.emit()" style="cursor:pointer">
+        <i class="fa-solid fa-clock-rotate-left me-1"></i>
+        Versions ({{ documentVersions.length }})
+        <i class="fa-solid ms-1" [ngClass]="showVersionHistory ? 'fa-chevron-up' : 'fa-chevron-down'" style="font-size:0.65rem"></i>
+      </span>
+      <button class="btn btn-sm btn-link p-0" (click)="onUploadNewVersion()" title="Upload new version">
+        <i class="fa-solid fa-upload"></i>
+      </button>
+    </div>
+
+    <div class="fm-version-list" *ngIf="showVersionHistory && documentVersions.length > 0">
+      <div class="fm-version-item" *ngFor="let ver of documentVersions" [class.active]="ver.id === selectedDocument!.id">
+        <div class="fm-version-info">
+          <span class="fm-version-label">v{{ ver.versionNumber }}</span>
+          <span class="fm-version-meta">{{ ver.uploadedBy }} · {{ ver.uploadedDate | date:'short' }}</span>
+        </div>
+        <div class="fm-version-actions">
+          <button class="btn btn-sm btn-link p-0 me-2" title="Download this version" (click)="download.emit(ver)">
+            <i class="fa-solid fa-download"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <input type="file" #versionUploadInput style="display:none" (change)="onVersionFileSelected($event)" />
+  </div>
+
+  <!-- Actions -->
+  <div class="fm-detail-actions">
+    <button class="btn btn-sm btn-primary w-100 mb-2" (click)="download.emit(selectedDocument!)">
+      <i class="fa-solid fa-download me-1"></i> Download
+    </button>
+    <button class="btn btn-sm btn-outline-danger w-100" (click)="delete.emit(selectedDocument!)">
+      <i class="fa-solid fa-trash me-1"></i> Delete
+    </button>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+<!--
+  fm-tag-manager-modal.component.html
+
+  AI-Developed — This file was developed with AI assistance.
+
+  Tag management modal — create, edit, delete document tags.
+-->
+<ng-container *ngIf="visible">
+  <div class="fm-modal-backdrop" (click)="close.emit()"></div>
+  <div class="fm-modal fm-modal-wide">
+    <div class="fm-modal-header">
+      <h6 class="mb-0"><i class="fa-solid fa-tags me-2"></i>Manage Tags</h6>
+      <button class="btn-close btn-sm" (click)="close.emit()"></button>
+    </div>
+    <div class="fm-modal-body fm-tag-manager">
+      <!-- Existing tags -->
+      <div class="fm-tag-mgr-list">
+        <div class="fm-tag-mgr-row" *ngFor="let tag of allTags">
+          <ng-container *ngIf="editingTagId !== tag.id">
+            <span class="fm-tag-dot-lg" [style.background]="tag.color || '#6366f1'"></span>
+            <span class="fm-tag-mgr-name">{{ tag.name }}</span>
+            <span class="fm-tag-mgr-count">{{ tagCounts.get(tag.id) || 0 }} docs</span>
+            <button class="btn btn-sm btn-link p-0 ms-auto" (click)="startEditTag(tag, $event)" title="Edit">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="btn btn-sm btn-link text-danger p-0 ms-2" (click)="deleteTag.emit(tag)" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </ng-container>
+
+          <!-- Inline edit mode -->
+          <ng-container *ngIf="editingTagId === tag.id">
+            <div class="fm-tag-mgr-edit">
+              <div class="fm-tag-color-picker">
+                <span class="fm-tag-color-option" *ngFor="let c of tagColorOptions"
+                      [style.background]="c"
+                      [class.active]="editingTagColor === c"
+                      (click)="editingTagColor = c"></span>
+              </div>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="editingTagName"
+                     (keyup.enter)="saveEditTag(tag)" />
+              <div class="d-flex gap-1 mt-1">
+                <button class="btn btn-sm btn-primary flex-grow-1" (click)="saveEditTag(tag)">Save</button>
+                <button class="btn btn-sm btn-secondary" (click)="cancelEditTag()">Cancel</button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Create new tag -->
+      <div class="fm-tag-mgr-create">
+        <div class="fm-tag-color-picker mb-2">
+          <span class="fm-tag-color-option" *ngFor="let c of tagColorOptions"
+                [style.background]="c"
+                [class.active]="newTagColor === c"
+                (click)="newTagColor = c"></span>
+        </div>
+        <div class="d-flex gap-2">
+          <input type="text" class="form-control form-control-sm" placeholder="New tag name…"
+                 [(ngModel)]="newTagName" (keyup.enter)="onCreateTag()" />
+          <button class="btn btn-sm btn-primary" (click)="onCreateTag()" [disabled]="!newTagName.trim()">
+            <i class="fa-solid fa-plus me-1"></i>Add
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

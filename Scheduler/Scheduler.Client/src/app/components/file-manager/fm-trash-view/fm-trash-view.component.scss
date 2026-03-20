@@ -1,0 +1,83 @@
+/*
+ * fm-trash-view.component.scss
+ *
+ * AI-Developed — This file was developed with AI assistance.
+ *
+ * Styles for the trash / recycle bin view.
+ */
+
+$transition-fast: 0.15s ease;
+
+:host {
+  display: block;
+  padding: 8px;
+}
+
+.fm-trash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px 16px;
+}
+
+.fm-trash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 16px;
+}
+
+.fm-trash-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.fm-trash-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--sch-surface-subtle);
+  border: 1px solid var(--sch-border);
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-surface);
+  }
+}
+
+.fm-trash-item-info {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.fm-trash-item-details {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.fm-trash-item-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--sch-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fm-trash-item-meta {
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+}
+
+.fm-trash-item-actions {
+  display: flex;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
