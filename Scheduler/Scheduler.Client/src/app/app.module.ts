@@ -70,7 +70,7 @@ import { OverviewComponent } from './components/overview/overview.component';
 import { OverviewManagerTabComponent } from './components/overview/overview-manager-tab/overview-manager-tab.component';
 import { OverviewDispatcherTabComponent } from './components/overview/overview-dispatcher-tab/overview-dispatcher-tab.component';
 import { OverviewSchedulerTabComponent } from './components/overview/overview-scheduler-tab/overview-scheduler-tab.component';
-import { OverviewCoordinatorTabComponent } from './components/overview/overview-coordinator-tab/overview-Coordinator-tab.component';
+import { OverviewCoordinatorTabComponent } from './components/overview/overview-coordinator-tab/overview-coordinator-tab.component';
 
 import { HeaderComponent } from './components/header/header.component';
 import { SidebarComponent } from './components/sidebar/sidebar.component';

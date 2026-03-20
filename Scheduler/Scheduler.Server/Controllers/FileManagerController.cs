@@ -1287,7 +1287,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 await BroadcastDocumentChangedAsync(tenantGuid,
                     new { action = "contentSaved", documentId, versionNumber = saved.versionNumber });
 
-                return Ok(Document.ToOutputDTO(saved));
+                //return Ok(Document.ToOutputDTO(saved));
+                return Ok(saved.ToOutputDTO());
             }
             catch (Exception ex)
             {
@@ -1356,7 +1357,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 var lambda = System.Linq.Expressions.Expression.Lambda<Func<Document, bool>>(eq, param);
 
                 // Find the most recent text/markdown document linked to this entity
-                Document doc = await _db.Document
+                Document doc = await _db.Documents
                     .Where(d => d.tenantGuid == tenantGuid && d.active == true && d.deleted != true)
                     .Where(d => d.mimeType == "text/markdown")
                     .Where(lambda)
@@ -1396,7 +1397,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 // Ensure _Notes folder exists
-                DocumentFolder notesFolder = await _db.DocumentFolder
+                DocumentFolder notesFolder = await _db.DocumentFolders
                     .FirstOrDefaultAsync(f => f.tenantGuid == tenantGuid && f.name == "_Notes" && f.active == true);
 
                 if (notesFolder == null)
@@ -1411,7 +1412,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                         active = true,
                         deleted = false
                     };
-                    _db.DocumentFolder.Add(notesFolder);
+                    _db.DocumentFolders.Add(notesFolder);
                     await _db.SaveChangesAsync();
                     _cache.InvalidateFolders(tenantGuid);
                 }
@@ -1492,7 +1493,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 var eq = System.Linq.Expressions.Expression.Equal(prop, val);
                 var lambda = System.Linq.Expressions.Expression.Lambda<Func<Document, bool>>(eq, param);
 
-                Document existing = await _db.Document
+                Document existing = await _db.Documents
                     .Where(d => d.tenantGuid == tenantGuid && d.active == true && d.deleted != true)
                     .Where(d => d.mimeType == "text/markdown")
                     .Where(lambda)

@@ -17,9 +17,9 @@
                         <dt class="col-sm-5 text-muted">Status</dt>
                         <dd class="col-sm-7">
                             <span class="badge rounded-pill" *ngIf="group.volunteerStatus"
-                                [style.background-color]="group.volunteerStatus?.color || '#6c757d'"
+                                [style.background-color]="group.volunteerStatus.color || '#6c757d'"
                                 [style.color]="'white'">
-                                {{ group.volunteerStatus?.name }}
+                                {{ group.volunteerStatus.name }}
                             </span>
                             <span *ngIf="!group.volunteerStatus" class="text-muted">—</span>
                         </dd>
@@ -28,7 +28,7 @@
                         <dd class="col-sm-7">{{ group.office?.name || '—' }}</dd>
 
                         <dt class="col-sm-5 text-muted">Max Members</dt>
-                        <dd class="col-sm-7">{{ group.maxMembers ?? '—' }}</dd>
+                        <dd class="col-sm-7">{{ group.maxMembers || '—' }}</dd>
 
                         <dt class="col-sm-5 text-muted">Color</dt>
                         <dd class="col-sm-7">

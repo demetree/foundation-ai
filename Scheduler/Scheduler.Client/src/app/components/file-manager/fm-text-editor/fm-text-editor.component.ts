@@ -53,8 +53,8 @@ export class FmTextEditorComponent implements OnInit, OnDestroy {
     isLoadingVersions = false;
 
     // Undo/redo stacks
-    private undoStack: string[] = [];
-    private redoStack: string[] = [];
+    undoStack: string[] = [];
+    redoStack: string[] = [];
     private lastSnapshot = '';
 
     // Cursor position

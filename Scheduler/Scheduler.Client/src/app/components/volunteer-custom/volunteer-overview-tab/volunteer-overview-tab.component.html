@@ -17,9 +17,9 @@
                         <dt class="col-sm-5 text-muted">Status</dt>
                         <dd class="col-sm-7">
                             <span class="badge rounded-pill" *ngIf="volunteer.volunteerStatus"
-                                [style.background-color]="volunteer.volunteerStatus?.color || '#6c757d'"
+                                [style.background-color]="volunteer.volunteerStatus.color || '#6c757d'"
                                 [style.color]="'white'">
-                                {{ volunteer.volunteerStatus?.name }}
+                                {{ volunteer.volunteerStatus.name }}
                             </span>
                             <span *ngIf="!volunteer.volunteerStatus" class="text-muted">—</span>
                         </dd>

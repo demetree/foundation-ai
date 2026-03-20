@@ -105,7 +105,7 @@
                 <div class="week-grid">
                     <div *ngFor="let dow of [1,2,3,4,5,6,7]" class="week-day-col">
                         <div class="day-header" [style.border-bottom-color]="dayColors[dow]">
-                            {{daysOfWeek[dow]?.substring(0,3)}}</div>
+                            {{daysOfWeek[dow].substring(0,3)}}</div>
                         <div class="day-slots">
                             <ng-container *ngFor="let d of days">
                                 <div *ngIf="d.dayOfWeek === dow" class="day-slot"

@@ -531,7 +531,7 @@ export class FileManagerService extends SecureEndpointBase {
 
     // ─── Scratchpad (Entity Notes) ──────────────────────────────────
 
-    getScratchpad(entityType: string, entityId: number): Observable<DocumentDTO | null> {
+    getScratchpad(entityType: string, entityId: number | bigint): Observable<DocumentDTO | null> {
         return this.http.get<DocumentDTO>(
             `${this.base}/Scratchpad/${entityType}/${entityId}`,
             { headers: this.authHeaders() }
@@ -543,7 +543,7 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
-    createScratchpad(entityType: string, entityId: number, entityName: string): Observable<DocumentDTO> {
+    createScratchpad(entityType: string, entityId: number | bigint, entityName: string): Observable<DocumentDTO> {
         let params = new HttpParams();
         if (entityName) params = params.set('entityName', entityName);
         return this.http.post<DocumentDTO>(
@@ -555,7 +555,7 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
-    archiveScratchpad(entityType: string, entityId: number, entityName: string): Observable<DocumentDTO> {
+    archiveScratchpad(entityType: string, entityId: number | bigint, entityName: string): Observable<DocumentDTO> {
         let params = new HttpParams();
         if (entityName) params = params.set('entityName', entityName);
         return this.http.post<DocumentDTO>(

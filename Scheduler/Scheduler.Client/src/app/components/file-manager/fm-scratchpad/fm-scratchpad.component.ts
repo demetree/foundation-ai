@@ -20,7 +20,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 export class FmScratchpadComponent implements OnInit, OnChanges {
 
     @Input() entityType!: string;
-    @Input() entityId!: number;
+    @Input() entityId!: number | bigint;
     @Input() entityName = '';
 
     /** null = loading, undefined = no scratchpad yet */

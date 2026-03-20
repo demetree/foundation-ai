@@ -334,9 +334,9 @@
           <i class="fa-solid fa-pencil me-1"></i> Notes
         </button>
         <ng-template ngbNavContent>
-          <div *ngIf="schedulingTarget">
-            <fm-scratchpad [entityType]="'SchedulingTarget'" [entityId]="schedulingTarget!.id"
-                           [entityName]="schedulingTarget!.name || ''"></fm-scratchpad>
+          <div *ngIf="schedulingTargetData">
+            <fm-scratchpad [entityType]="'SchedulingTarget'" [entityId]="schedulingTargetData!.id"
+                           [entityName]="schedulingTargetData!.name || ''"></fm-scratchpad>
           </div>
         </ng-template>
       </li>
