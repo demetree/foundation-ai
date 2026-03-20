@@ -972,7 +972,117 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 
-// ─── Sidebar Tag Section (#6) ────────────────────────────────────────
+// ─── Sidebar Accordion Sections ─────────────────────────────────────
+
+.fm-sidebar-accordion {
+  border-top: 1px solid var(--sch-border);
+}
+
+.fm-accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-hover);
+  }
+}
+
+.fm-accordion-chevron {
+  font-size: 0.55rem;
+  color: var(--sch-text-muted);
+  transition: transform 0.2s ease;
+  width: 10px;
+  flex-shrink: 0;
+
+  &.open {
+    transform: rotate(90deg);
+  }
+}
+
+.fm-accordion-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sch-text-muted);
+}
+
+.fm-accordion-badge {
+  font-size: 0.65rem;
+  background: var(--sch-bg-hover);
+  border-radius: 8px;
+  padding: 0 5px;
+  color: var(--sch-text-muted);
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.fm-accordion-body {
+  padding: 0 8px 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+
+// ─── Quick Nav (Trash / Activity icon row) ──────────────────────────
+
+.fm-quick-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--sch-border);
+}
+
+.fm-quick-nav-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sch-text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-hover);
+    color: var(--sch-text-primary);
+  }
+
+  &.active {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--sch-primary);
+  }
+}
+
+.fm-quick-nav-badge {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  font-size: 0.55rem;
+  background: var(--sch-primary);
+  color: #fff;
+  border-radius: 6px;
+  padding: 0 4px;
+  min-width: 14px;
+  text-align: center;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
+
+// ─── Legacy Tag Section (kept for backward compatibility) ───────────
 
 .fm-tag-section {
   border-top: 1px solid var(--sch-border);

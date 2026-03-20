@@ -55,136 +55,135 @@ namespace Scheduler.Server.Services
         /// </summary>
         public byte[] GenerateReceiptPdf(ReceiptPdfData data)
         {
-            using (var doc = new SimplePdfDocument($"Receipt {data.ReceiptNumber}", data.TenantName))
+            SimplePdfDocument doc = new SimplePdfDocument($"Receipt {data.ReceiptNumber}", data.TenantName);
+            
+            var page = doc.AddPage(PAGE_WIDTH, PAGE_HEIGHT);
+            double y = MARGIN_TOP;
+
+            //
+            // ── Header band ──
+            //
+            page.FillRect(0, 0, PAGE_WIDTH, 80, HEADER_R, HEADER_G, HEADER_B);
+            page.DrawText("RECEIPT", SimplePdfFont.Bold, TITLE_SIZE,
+                MARGIN_LEFT, 35, 255, 255, 255);
+
+            page.DrawText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE,
+                PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE),
+                30, 255, 255, 255);
+
+            string tenantAddr = BuildAddress(data.TenantAddress1, data.TenantCity);
+            if (tenantAddr.Length > 0)
             {
-                var page = doc.AddPage(PAGE_WIDTH, PAGE_HEIGHT);
-                double y = MARGIN_TOP;
+                page.DrawText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE,
+                    PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE),
+                    48, 200, 200, 200);
+            }
 
-                //
-                // ── Header band ──
-                //
-                page.FillRect(0, 0, PAGE_WIDTH, 80, HEADER_R, HEADER_G, HEADER_B);
-                page.DrawText("RECEIPT", SimplePdfFont.Bold, TITLE_SIZE,
-                    MARGIN_LEFT, 35, 255, 255, 255);
+            if (!string.IsNullOrEmpty(data.TenantPhone))
+            {
+                page.DrawText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE,
+                    PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE),
+                    60, 200, 200, 200);
+            }
 
-                page.DrawText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE,
-                    PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE),
-                    30, 255, 255, 255);
+            y = 110;
 
-                string tenantAddr = BuildAddress(data.TenantAddress1, data.TenantCity);
-                if (tenantAddr.Length > 0)
+            //
+            // ── Receipt details ──
+            //
+            y = DrawLabelValue(page, "Receipt #:", data.ReceiptNumber, MARGIN_LEFT, y);
+            y = DrawLabelValue(page, "Date:", FormatDate(data.ReceiptDate), MARGIN_LEFT, y);
+
+            if (!string.IsNullOrEmpty(data.PaymentMethod))
+            {
+                y = DrawLabelValue(page, "Payment Method:", data.PaymentMethod, MARGIN_LEFT, y);
+            }
+
+            y += 10;
+
+            //
+            // ── Accent line ──
+            //
+            page.DrawLine(MARGIN_LEFT, y, PAGE_WIDTH - MARGIN_RIGHT, y, ACCENT_R, ACCENT_G, ACCENT_B, 2);
+            y += 20;
+
+            //
+            // ── Received from ──
+            //
+            if (!string.IsNullOrEmpty(data.ClientName) || !string.IsNullOrEmpty(data.ContactName))
+            {
+                page.DrawText("RECEIVED FROM", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, ACCENT_R, ACCENT_G, ACCENT_B);
+                y += 16;
+
+                if (!string.IsNullOrEmpty(data.ClientName))
                 {
-                    page.DrawText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE,
-                        PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE),
-                        48, 200, 200, 200);
+                    page.DrawText(data.ClientName, SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
+                    y += 14;
                 }
 
-                if (!string.IsNullOrEmpty(data.TenantPhone))
+                if (!string.IsNullOrEmpty(data.ContactName))
                 {
-                    page.DrawText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE,
-                        PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE),
-                        60, 200, 200, 200);
-                }
-
-                y = 110;
-
-                //
-                // ── Receipt details ──
-                //
-                y = DrawLabelValue(page, "Receipt #:", data.ReceiptNumber, MARGIN_LEFT, y);
-                y = DrawLabelValue(page, "Date:", FormatDate(data.ReceiptDate), MARGIN_LEFT, y);
-
-                if (!string.IsNullOrEmpty(data.PaymentMethod))
-                {
-                    y = DrawLabelValue(page, "Payment Method:", data.PaymentMethod, MARGIN_LEFT, y);
+                    page.DrawText(data.ContactName, SimplePdfFont.Regular, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
+                    y += 14;
                 }
 
                 y += 10;
-
-                //
-                // ── Accent line ──
-                //
-                page.DrawLine(MARGIN_LEFT, y, PAGE_WIDTH - MARGIN_RIGHT, y, ACCENT_R, ACCENT_G, ACCENT_B, 2);
-                y += 20;
-
-                //
-                // ── Received from ──
-                //
-                if (!string.IsNullOrEmpty(data.ClientName) || !string.IsNullOrEmpty(data.ContactName))
-                {
-                    page.DrawText("RECEIVED FROM", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, ACCENT_R, ACCENT_G, ACCENT_B);
-                    y += 16;
-
-                    if (!string.IsNullOrEmpty(data.ClientName))
-                    {
-                        page.DrawText(data.ClientName, SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
-                        y += 14;
-                    }
-
-                    if (!string.IsNullOrEmpty(data.ContactName))
-                    {
-                        page.DrawText(data.ContactName, SimplePdfFont.Regular, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
-                        y += 14;
-                    }
-
-                    y += 10;
-                }
-
-                //
-                // ── Amount block ──
-                //
-                page.FillRoundedRect(MARGIN_LEFT, y, CONTENT_WIDTH, 70, 8,
-                    245, 245, 245);
-
-                page.DrawText("AMOUNT RECEIVED", SimplePdfFont.Bold, BODY_SIZE,
-                    MARGIN_LEFT + 20, y + 22, LIGHT_R, LIGHT_G, LIGHT_B);
-
-                string amountStr = FormatMoney(data.Amount);
-                page.DrawText(amountStr, SimplePdfFont.Bold, AMOUNT_SIZE,
-                    MARGIN_LEFT + 20, y + 52, ACCENT_R, ACCENT_G, ACCENT_B);
-
-                y += 90;
-
-                //
-                // ── Description ──
-                //
-                if (!string.IsNullOrEmpty(data.Description))
-                {
-                    page.DrawText("FOR", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, ACCENT_R, ACCENT_G, ACCENT_B);
-                    y += 16;
-                    page.DrawText(data.Description, SimplePdfFont.Regular, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
-                    y += 20;
-                }
-
-                //
-                // ── Invoice reference ──
-                //
-                if (!string.IsNullOrEmpty(data.InvoiceNumber))
-                {
-                    y = DrawLabelValue(page, "Invoice Reference:", data.InvoiceNumber, MARGIN_LEFT, y);
-                }
-
-                //
-                // ── Notes ──
-                //
-                if (!string.IsNullOrEmpty(data.Notes))
-                {
-                    y += 10;
-                    page.DrawText("Notes:", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
-                    y += 14;
-                    page.DrawText(data.Notes, SimplePdfFont.Regular, SMALL_SIZE, MARGIN_LEFT, y, LIGHT_R, LIGHT_G, LIGHT_B);
-                }
-
-                //
-                // ── Footer ──
-                //
-                page.DrawLine(MARGIN_LEFT, PAGE_HEIGHT - 50, PAGE_WIDTH - MARGIN_RIGHT, PAGE_HEIGHT - 50, LINE_R, LINE_G, LINE_B);
-                page.DrawTextCentered("Thank you for your payment",
-                    SimplePdfFont.Regular, SMALL_SIZE,
-                    MARGIN_LEFT, PAGE_HEIGHT - 38, CONTENT_WIDTH, LIGHT_R, LIGHT_G, LIGHT_B);
-
-                return doc.Save();
             }
+
+            //
+            // ── Amount block ──
+            //
+            page.FillRoundedRect(MARGIN_LEFT, y, CONTENT_WIDTH, 70, 8,
+                245, 245, 245);
+
+            page.DrawText("AMOUNT RECEIVED", SimplePdfFont.Bold, BODY_SIZE,
+                MARGIN_LEFT + 20, y + 22, LIGHT_R, LIGHT_G, LIGHT_B);
+
+            string amountStr = FormatMoney(data.Amount);
+            page.DrawText(amountStr, SimplePdfFont.Bold, AMOUNT_SIZE,
+                MARGIN_LEFT + 20, y + 52, ACCENT_R, ACCENT_G, ACCENT_B);
+
+            y += 90;
+
+            //
+            // ── Description ──
+            //
+            if (!string.IsNullOrEmpty(data.Description))
+            {
+                page.DrawText("FOR", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, ACCENT_R, ACCENT_G, ACCENT_B);
+                y += 16;
+                page.DrawText(data.Description, SimplePdfFont.Regular, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
+                y += 20;
+            }
+
+            //
+            // ── Invoice reference ──
+            //
+            if (!string.IsNullOrEmpty(data.InvoiceNumber))
+            {
+                y = DrawLabelValue(page, "Invoice Reference:", data.InvoiceNumber, MARGIN_LEFT, y);
+            }
+
+            //
+            // ── Notes ──
+            //
+            if (!string.IsNullOrEmpty(data.Notes))
+            {
+                y += 10;
+                page.DrawText("Notes:", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
+                y += 14;
+                page.DrawText(data.Notes, SimplePdfFont.Regular, SMALL_SIZE, MARGIN_LEFT, y, LIGHT_R, LIGHT_G, LIGHT_B);
+            }
+
+            //
+            // ── Footer ──
+            //
+            page.DrawLine(MARGIN_LEFT, PAGE_HEIGHT - 50, PAGE_WIDTH - MARGIN_RIGHT, PAGE_HEIGHT - 50, LINE_R, LINE_G, LINE_B);
+            page.DrawTextCentered("Thank you for your payment",
+                SimplePdfFont.Regular, SMALL_SIZE,
+                MARGIN_LEFT, PAGE_HEIGHT - 38, CONTENT_WIDTH, LIGHT_R, LIGHT_G, LIGHT_B);
+
+            return doc.Save();
         }
 
 

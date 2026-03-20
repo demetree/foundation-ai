@@ -67,6 +67,11 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     viewMode: 'grid' | 'list' = 'grid';
     sidebarCollapsed = false;
 
+    // Sidebar accordion collapse states (false = collapsed)
+    sidebarFavoritesOpen = false;
+    sidebarTagsOpen = false;
+    sidebarLinksOpen = false;
+
     // Sorting
     sortField: 'name' | 'size' | 'uploaded' | 'type' = 'name';
     sortDirection: 'asc' | 'desc' = 'asc';

@@ -32,8 +32,6 @@ namespace Foundation.Web.Utility
             controllers.Add(typeof(UserFiltersController));             // Foundation security user filters
             controllers.Add(typeof(ResetPasswordController));
             controllers.Add(typeof(NewUserController));
-
-            
         }
 
 

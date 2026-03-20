@@ -82,13 +82,16 @@
         </ng-container>
       </div>
 
-      <!-- ─── Sidebar Tag Section (#6) ──────────────────────────── -->
-      <!-- Favorites section -->
-      <div class="fm-tag-section" *ngIf="!sidebarCollapsed && favoriteDocuments.length > 0">
-        <div class="fm-sidebar-header">
-          <span class="fm-sidebar-title"><i class="fa-solid fa-star me-1" style="color:#f59e0b"></i> Favorites</span>
+      <!-- ─── Sidebar Accordion: Favorites ─────────────────────── -->
+      <div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed && favoriteDocuments.length > 0">
+        <div class="fm-accordion-header" (click)="sidebarFavoritesOpen = !sidebarFavoritesOpen">
+          <i class="fa-solid fa-chevron-right fm-accordion-chevron"
+             [class.open]="sidebarFavoritesOpen"></i>
+          <i class="fa-solid fa-star me-1" style="color:#f59e0b; font-size:0.7rem"></i>
+          <span class="fm-accordion-title">Favorites</span>
+          <span class="fm-accordion-badge" *ngIf="!sidebarFavoritesOpen">{{ favoriteDocuments.length }}</span>
         </div>
-        <div class="fm-tag-list">
+        <div class="fm-accordion-body" *ngIf="sidebarFavoritesOpen">
           <div class="fm-tag-sidebar-item" *ngFor="let doc of favoriteDocuments"
                (click)="navigateToFolder(doc.documentFolderId ?? null); selectDocument(doc)">
             <i class="fa-solid me-2" [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
@@ -98,14 +101,18 @@
         </div>
       </div>
 
-      <div class="fm-tag-section" *ngIf="!sidebarCollapsed">
-        <div class="fm-sidebar-header">
-          <span class="fm-sidebar-title">Tags</span>
-          <button class="fm-sidebar-toggle" (click)="openTagManager($event)" title="Manage tags">
+      <!-- ─── Sidebar Accordion: Tags ─────────────────────────── -->
+      <div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed">
+        <div class="fm-accordion-header" (click)="sidebarTagsOpen = !sidebarTagsOpen">
+          <i class="fa-solid fa-chevron-right fm-accordion-chevron"
+             [class.open]="sidebarTagsOpen"></i>
+          <span class="fm-accordion-title">Tags</span>
+          <span class="fm-accordion-badge" *ngIf="!sidebarTagsOpen && allTags.length > 0">{{ allTags.length }}</span>
+          <button class="fm-sidebar-toggle ms-auto" (click)="openTagManager($event); $event.stopPropagation()" title="Manage tags">
             <i class="fa-solid fa-gear"></i>
           </button>
         </div>
-        <div class="fm-tag-list">
+        <div class="fm-accordion-body" *ngIf="sidebarTagsOpen">
           <div class="fm-tag-sidebar-item" *ngFor="let tag of allTags"
                (click)="toggleTagFilter(tag)"
                [class.active]="isTagFilterActive(tag.id)">
@@ -119,15 +126,20 @@
         </div>
       </div>
 
-      <!-- ─── Sidebar Entity Links Section ─────────────────────── -->
-      <div class="fm-tag-section" *ngIf="!sidebarCollapsed && activeEntityLinkTypes.length > 0">
-        <div class="fm-sidebar-header">
-          <span class="fm-sidebar-title"><i class="fa-solid fa-link me-1"></i> Entity Links</span>
-          <button class="fm-sidebar-toggle" *ngIf="activeEntityLinkFilter" (click)="clearEntityLinkFilter()" title="Clear filter">
+      <!-- ─── Sidebar Accordion: Entity Links ─────────────────── -->
+      <div class="fm-sidebar-accordion" *ngIf="!sidebarCollapsed && activeEntityLinkTypes.length > 0">
+        <div class="fm-accordion-header" (click)="sidebarLinksOpen = !sidebarLinksOpen">
+          <i class="fa-solid fa-chevron-right fm-accordion-chevron"
+             [class.open]="sidebarLinksOpen"></i>
+          <i class="fa-solid fa-link me-1" style="font-size:0.7rem"></i>
+          <span class="fm-accordion-title">Entity Links</span>
+          <span class="fm-accordion-badge" *ngIf="!sidebarLinksOpen">{{ activeEntityLinkTypes.length }}</span>
+          <button class="fm-sidebar-toggle ms-auto" *ngIf="activeEntityLinkFilter"
+                  (click)="clearEntityLinkFilter(); $event.stopPropagation()" title="Clear filter">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
-        <div class="fm-tag-list">
+        <div class="fm-accordion-body" *ngIf="sidebarLinksOpen">
           <div class="fm-tag-sidebar-item" *ngFor="let linkType of activeEntityLinkTypes"
                (click)="toggleEntityLinkFilter(linkType.fk)"
                [class.active]="activeEntityLinkFilter === linkType.fk">
@@ -138,31 +150,17 @@
         </div>
       </div>
 
-      <!-- Trash section -->
-      <div class="fm-trash-section" *ngIf="!sidebarCollapsed">
-        <div class="fm-sidebar-header">
-          <span class="fm-sidebar-title">Trash</span>
-        </div>
-        <div class="fm-tag-list">
-          <div class="fm-tag-sidebar-item" (click)="toggleTrash()" [class.active]="showTrash">
-            <i class="fa-solid fa-trash me-2" style="color: var(--sch-text-muted)"></i>
-            <span class="fm-tag-sidebar-name">Deleted Files</span>
-            <span class="fm-tag-count" *ngIf="trashCount > 0">{{ trashCount }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activity sidebar -->
-      <div class="fm-sidebar-section" *ngIf="!sidebarCollapsed">
-        <div class="fm-sidebar-header">
-          <span class="fm-sidebar-title">Activity</span>
-        </div>
-        <div class="fm-tag-list">
-          <div class="fm-tag-sidebar-item" (click)="toggleActivity()" [class.active]="showActivity">
-            <i class="fa-solid fa-clock-rotate-left me-2" style="color: var(--sch-text-muted)"></i>
-            <span class="fm-tag-sidebar-name">Recent Activity</span>
-          </div>
-        </div>
+      <!-- ─── Quick Nav: Trash & Activity (compact icon row) ─── -->
+      <div class="fm-quick-nav" *ngIf="!sidebarCollapsed">
+        <button class="fm-quick-nav-btn" (click)="toggleTrash()"
+                [class.active]="showTrash" title="Trash">
+          <i class="fa-solid fa-trash"></i>
+          <span class="fm-quick-nav-badge" *ngIf="trashCount > 0">{{ trashCount }}</span>
+        </button>
+        <button class="fm-quick-nav-btn" (click)="toggleActivity()"
+                [class.active]="showActivity" title="Recent Activity">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </button>
       </div>
 
       <div class="fm-sidebar-footer" *ngIf="!sidebarCollapsed">

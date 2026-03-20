@@ -56,167 +56,167 @@ namespace Scheduler.Server.Services
         /// </summary>
         public byte[] GenerateInvoicePdf(InvoicePdfData data)
         {
-            using (var doc = new SimplePdfDocument($"Invoice {data.InvoiceNumber}", data.TenantName))
+            SimplePdfDocument doc = new SimplePdfDocument($"Invoice {data.InvoiceNumber}", data.TenantName);
+            
+            var page = doc.AddPage(PAGE_WIDTH, PAGE_HEIGHT);
+            double y = MARGIN_TOP;
+
+            //
+            // ── Header band ──
+            //
+            page.FillRect(0, 0, PAGE_WIDTH, 80, HEADER_R, HEADER_G, HEADER_B);
+            page.DrawText("INVOICE", SimplePdfFont.Bold, TITLE_SIZE,
+                MARGIN_LEFT, 35, 255, 255, 255);
+
+            page.DrawText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE,
+                PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE),
+                30, 255, 255, 255);
+
+            string tenantAddr = BuildTenantAddress(data);
+            if (tenantAddr.Length > 0)
             {
-                var page = doc.AddPage(PAGE_WIDTH, PAGE_HEIGHT);
-                double y = MARGIN_TOP;
-
-                //
-                // ── Header band ──
-                //
-                page.FillRect(0, 0, PAGE_WIDTH, 80, HEADER_R, HEADER_G, HEADER_B);
-                page.DrawText("INVOICE", SimplePdfFont.Bold, TITLE_SIZE,
-                    MARGIN_LEFT, 35, 255, 255, 255);
-
-                page.DrawText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE,
-                    PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantName ?? "", SimplePdfFont.Bold, HEADING_SIZE),
-                    30, 255, 255, 255);
-
-                string tenantAddr = BuildTenantAddress(data);
-                if (tenantAddr.Length > 0)
-                {
-                    page.DrawText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE,
-                        PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE),
-                        48, 200, 200, 200);
-                }
-
-                if (!string.IsNullOrEmpty(data.TenantPhone))
-                {
-                    page.DrawText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE,
-                        PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE),
-                        60, 200, 200, 200);
-                }
-
-                y = 100;
-
-                //
-                // ── Invoice details (left) + Bill To (right) ──
-                //
-                y = DrawLabelValue(page, "Invoice #:", data.InvoiceNumber, MARGIN_LEFT, y);
-                y = DrawLabelValue(page, "Date:", FormatDate(data.InvoiceDate), MARGIN_LEFT, y);
-                y = DrawLabelValue(page, "Due Date:", FormatDate(data.DueDate), MARGIN_LEFT, y);
-
-                if (!string.IsNullOrEmpty(data.Status))
-                {
-                    y = DrawLabelValue(page, "Status:", data.Status, MARGIN_LEFT, y);
-                }
-
-                // Bill To (right side)
-                double rightX = PAGE_WIDTH / 2 + 20;
-                double billToY = 100;
-
-                page.DrawText("BILL TO", SimplePdfFont.Bold, BODY_SIZE, rightX, billToY, ACCENT_R, ACCENT_G, ACCENT_B);
-                billToY += 16;
-
-                if (!string.IsNullOrEmpty(data.ClientName))
-                {
-                    page.DrawText(data.ClientName, SimplePdfFont.Bold, BODY_SIZE, rightX, billToY, TEXT_R, TEXT_G, TEXT_B);
-                    billToY += 14;
-                }
-
-                if (!string.IsNullOrEmpty(data.ContactName))
-                {
-                    page.DrawText(data.ContactName, SimplePdfFont.Regular, BODY_SIZE, rightX, billToY, TEXT_R, TEXT_G, TEXT_B);
-                    billToY += 14;
-                }
-
-                y = Math.Max(y, billToY) + 10;
-
-                //
-                // ── Accent line ──
-                //
-                page.DrawLine(MARGIN_LEFT, y, PAGE_WIDTH - MARGIN_RIGHT, y, ACCENT_R, ACCENT_G, ACCENT_B, 2);
-                y += 15;
-
-                //
-                // ── Line item table ──
-                //
-                double colDesc = MARGIN_LEFT;
-                double colQty = MARGIN_LEFT + CONTENT_WIDTH * 0.50;
-                double colPrice = MARGIN_LEFT + CONTENT_WIDTH * 0.62;
-                double colTax = MARGIN_LEFT + CONTENT_WIDTH * 0.76;
-                double colTotal = MARGIN_LEFT + CONTENT_WIDTH * 0.88;
-
-                // Table header
-                page.FillRect(MARGIN_LEFT, y - 2, CONTENT_WIDTH, 16,
-                    TABLE_HEADER_R, TABLE_HEADER_G, TABLE_HEADER_B);
-
-                page.DrawText("Description", SimplePdfFont.Bold, SMALL_SIZE, colDesc + 4, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                page.DrawText("Qty", SimplePdfFont.Bold, SMALL_SIZE, colQty, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                page.DrawText("Unit Price", SimplePdfFont.Bold, SMALL_SIZE, colPrice, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                page.DrawText("Tax", SimplePdfFont.Bold, SMALL_SIZE, colTax, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                page.DrawText("Total", SimplePdfFont.Bold, SMALL_SIZE, colTotal, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                y += 18;
-
-                // Line items
-                if (data.LineItems != null)
-                {
-                    bool altRow = false;
-                    foreach (var item in data.LineItems)
-                    {
-                        if (altRow)
-                        {
-                            page.FillRect(MARGIN_LEFT, y - 2, CONTENT_WIDTH, 16, 248, 248, 248);
-                        }
-
-                        string desc = item.Description ?? "";
-                        if (desc.Length > 60) { desc = desc.Substring(0, 57) + "..."; }
-
-                        page.DrawText(desc, SimplePdfFont.Regular, SMALL_SIZE, colDesc + 4, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                        page.DrawText(FormatNumber(item.Quantity), SimplePdfFont.Regular, SMALL_SIZE, colQty, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                        page.DrawText(FormatMoney(item.UnitPrice), SimplePdfFont.Regular, SMALL_SIZE, colPrice, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                        page.DrawText(FormatMoney(item.TaxAmount), SimplePdfFont.Regular, SMALL_SIZE, colTax, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                        page.DrawText(FormatMoney(item.TotalAmount), SimplePdfFont.Regular, SMALL_SIZE, colTotal, y + 10, TEXT_R, TEXT_G, TEXT_B);
-                        y += 16;
-                        altRow = !altRow;
-                    }
-                }
-
-                // Table bottom line
-                page.DrawLine(MARGIN_LEFT, y + 2, PAGE_WIDTH - MARGIN_RIGHT, y + 2, LINE_R, LINE_G, LINE_B);
-                y += 15;
-
-                //
-                // ── Totals ──
-                //
-                double totalsX = colTax - 30;
-                y = DrawTotalLine(page, "Subtotal:", FormatMoney(data.Subtotal), totalsX, colTotal, y);
-                y = DrawTotalLine(page, "Tax:", FormatMoney(data.TaxAmount), totalsX, colTotal, y);
-
-                page.DrawLine(totalsX, y, PAGE_WIDTH - MARGIN_RIGHT, y, ACCENT_R, ACCENT_G, ACCENT_B, 1);
-                y += 4;
-
-                page.DrawText("TOTAL:", SimplePdfFont.Bold, HEADING_SIZE, totalsX, y + 12, TEXT_R, TEXT_G, TEXT_B);
-                page.DrawText(FormatMoney(data.TotalAmount), SimplePdfFont.Bold, HEADING_SIZE, colTotal, y + 12, ACCENT_R, ACCENT_G, ACCENT_B);
-                y += 20;
-
-                if (data.AmountPaid > 0)
-                {
-                    y = DrawTotalLine(page, "Amount Paid:", FormatMoney(data.AmountPaid), totalsX, colTotal, y);
-                    y = DrawTotalLine(page, "Balance Due:", FormatMoney(data.TotalAmount - data.AmountPaid), totalsX, colTotal, y);
-                }
-
-                //
-                // ── Notes ──
-                //
-                if (!string.IsNullOrEmpty(data.Notes))
-                {
-                    y += 20;
-                    page.DrawText("Notes:", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
-                    y += 14;
-                    page.DrawText(data.Notes, SimplePdfFont.Regular, SMALL_SIZE, MARGIN_LEFT, y, LIGHT_R, LIGHT_G, LIGHT_B);
-                }
-
-                //
-                // ── Footer ──
-                //
-                page.DrawLine(MARGIN_LEFT, PAGE_HEIGHT - 50, PAGE_WIDTH - MARGIN_RIGHT, PAGE_HEIGHT - 50, LINE_R, LINE_G, LINE_B);
-                page.DrawTextCentered("Thank you for your business",
-                    SimplePdfFont.Regular, SMALL_SIZE,
-                    MARGIN_LEFT, PAGE_HEIGHT - 38, CONTENT_WIDTH, LIGHT_R, LIGHT_G, LIGHT_B);
-
-                return doc.Save();
+                page.DrawText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE,
+                    PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(tenantAddr, SimplePdfFont.Regular, SMALL_SIZE),
+                    48, 200, 200, 200);
             }
+
+            if (!string.IsNullOrEmpty(data.TenantPhone))
+            {
+                page.DrawText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE,
+                    PAGE_WIDTH - MARGIN_RIGHT - page.MeasureText(data.TenantPhone, SimplePdfFont.Regular, SMALL_SIZE),
+                    60, 200, 200, 200);
+            }
+
+            y = 100;
+
+            //
+            // ── Invoice details (left) + Bill To (right) ──
+            //
+            y = DrawLabelValue(page, "Invoice #:", data.InvoiceNumber, MARGIN_LEFT, y);
+            y = DrawLabelValue(page, "Date:", FormatDate(data.InvoiceDate), MARGIN_LEFT, y);
+            y = DrawLabelValue(page, "Due Date:", FormatDate(data.DueDate), MARGIN_LEFT, y);
+
+            if (!string.IsNullOrEmpty(data.Status))
+            {
+                y = DrawLabelValue(page, "Status:", data.Status, MARGIN_LEFT, y);
+            }
+
+            // Bill To (right side)
+            double rightX = PAGE_WIDTH / 2 + 20;
+            double billToY = 100;
+
+            page.DrawText("BILL TO", SimplePdfFont.Bold, BODY_SIZE, rightX, billToY, ACCENT_R, ACCENT_G, ACCENT_B);
+            billToY += 16;
+
+            if (!string.IsNullOrEmpty(data.ClientName))
+            {
+                page.DrawText(data.ClientName, SimplePdfFont.Bold, BODY_SIZE, rightX, billToY, TEXT_R, TEXT_G, TEXT_B);
+                billToY += 14;
+            }
+
+            if (!string.IsNullOrEmpty(data.ContactName))
+            {
+                page.DrawText(data.ContactName, SimplePdfFont.Regular, BODY_SIZE, rightX, billToY, TEXT_R, TEXT_G, TEXT_B);
+                billToY += 14;
+            }
+
+            y = Math.Max(y, billToY) + 10;
+
+            //
+            // ── Accent line ──
+            //
+            page.DrawLine(MARGIN_LEFT, y, PAGE_WIDTH - MARGIN_RIGHT, y, ACCENT_R, ACCENT_G, ACCENT_B, 2);
+            y += 15;
+
+            //
+            // ── Line item table ──
+            //
+            double colDesc = MARGIN_LEFT;
+            double colQty = MARGIN_LEFT + CONTENT_WIDTH * 0.50;
+            double colPrice = MARGIN_LEFT + CONTENT_WIDTH * 0.62;
+            double colTax = MARGIN_LEFT + CONTENT_WIDTH * 0.76;
+            double colTotal = MARGIN_LEFT + CONTENT_WIDTH * 0.88;
+
+            // Table header
+            page.FillRect(MARGIN_LEFT, y - 2, CONTENT_WIDTH, 16,
+                TABLE_HEADER_R, TABLE_HEADER_G, TABLE_HEADER_B);
+
+            page.DrawText("Description", SimplePdfFont.Bold, SMALL_SIZE, colDesc + 4, y + 10, TEXT_R, TEXT_G, TEXT_B);
+            page.DrawText("Qty", SimplePdfFont.Bold, SMALL_SIZE, colQty, y + 10, TEXT_R, TEXT_G, TEXT_B);
+            page.DrawText("Unit Price", SimplePdfFont.Bold, SMALL_SIZE, colPrice, y + 10, TEXT_R, TEXT_G, TEXT_B);
+            page.DrawText("Tax", SimplePdfFont.Bold, SMALL_SIZE, colTax, y + 10, TEXT_R, TEXT_G, TEXT_B);
+            page.DrawText("Total", SimplePdfFont.Bold, SMALL_SIZE, colTotal, y + 10, TEXT_R, TEXT_G, TEXT_B);
+            y += 18;
+
+            // Line items
+            if (data.LineItems != null)
+            {
+                bool altRow = false;
+                foreach (var item in data.LineItems)
+                {
+                    if (altRow)
+                    {
+                        page.FillRect(MARGIN_LEFT, y - 2, CONTENT_WIDTH, 16, 248, 248, 248);
+                    }
+
+                    string desc = item.Description ?? "";
+                    if (desc.Length > 60) { desc = desc.Substring(0, 57) + "..."; }
+
+                    page.DrawText(desc, SimplePdfFont.Regular, SMALL_SIZE, colDesc + 4, y + 10, TEXT_R, TEXT_G, TEXT_B);
+                    page.DrawText(FormatNumber(item.Quantity), SimplePdfFont.Regular, SMALL_SIZE, colQty, y + 10, TEXT_R, TEXT_G, TEXT_B);
+                    page.DrawText(FormatMoney(item.UnitPrice), SimplePdfFont.Regular, SMALL_SIZE, colPrice, y + 10, TEXT_R, TEXT_G, TEXT_B);
+                    page.DrawText(FormatMoney(item.TaxAmount), SimplePdfFont.Regular, SMALL_SIZE, colTax, y + 10, TEXT_R, TEXT_G, TEXT_B);
+                    page.DrawText(FormatMoney(item.TotalAmount), SimplePdfFont.Regular, SMALL_SIZE, colTotal, y + 10, TEXT_R, TEXT_G, TEXT_B);
+                    y += 16;
+                    altRow = !altRow;
+                }
+            }
+
+            // Table bottom line
+            page.DrawLine(MARGIN_LEFT, y + 2, PAGE_WIDTH - MARGIN_RIGHT, y + 2, LINE_R, LINE_G, LINE_B);
+            y += 15;
+
+            //
+            // ── Totals ──
+            //
+            double totalsX = colTax - 30;
+            y = DrawTotalLine(page, "Subtotal:", FormatMoney(data.Subtotal), totalsX, colTotal, y);
+            y = DrawTotalLine(page, "Tax:", FormatMoney(data.TaxAmount), totalsX, colTotal, y);
+
+            page.DrawLine(totalsX, y, PAGE_WIDTH - MARGIN_RIGHT, y, ACCENT_R, ACCENT_G, ACCENT_B, 1);
+            y += 4;
+
+            page.DrawText("TOTAL:", SimplePdfFont.Bold, HEADING_SIZE, totalsX, y + 12, TEXT_R, TEXT_G, TEXT_B);
+            page.DrawText(FormatMoney(data.TotalAmount), SimplePdfFont.Bold, HEADING_SIZE, colTotal, y + 12, ACCENT_R, ACCENT_G, ACCENT_B);
+            y += 20;
+
+            if (data.AmountPaid > 0)
+            {
+                y = DrawTotalLine(page, "Amount Paid:", FormatMoney(data.AmountPaid), totalsX, colTotal, y);
+                y = DrawTotalLine(page, "Balance Due:", FormatMoney(data.TotalAmount - data.AmountPaid), totalsX, colTotal, y);
+            }
+
+            //
+            // ── Notes ──
+            //
+            if (!string.IsNullOrEmpty(data.Notes))
+            {
+                y += 20;
+                page.DrawText("Notes:", SimplePdfFont.Bold, BODY_SIZE, MARGIN_LEFT, y, TEXT_R, TEXT_G, TEXT_B);
+                y += 14;
+                page.DrawText(data.Notes, SimplePdfFont.Regular, SMALL_SIZE, MARGIN_LEFT, y, LIGHT_R, LIGHT_G, LIGHT_B);
+            }
+
+            //
+            // ── Footer ──
+            //
+            page.DrawLine(MARGIN_LEFT, PAGE_HEIGHT - 50, PAGE_WIDTH - MARGIN_RIGHT, PAGE_HEIGHT - 50, LINE_R, LINE_G, LINE_B);
+            page.DrawTextCentered("Thank you for your business",
+                SimplePdfFont.Regular, SMALL_SIZE,
+                MARGIN_LEFT, PAGE_HEIGHT - 38, CONTENT_WIDTH, LIGHT_R, LIGHT_G, LIGHT_B);
+
+            return doc.Save();
+            
         }
 
 

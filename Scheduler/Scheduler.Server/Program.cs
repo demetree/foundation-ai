@@ -203,6 +203,7 @@ namespace Foundation.Scheduler
                 // Add the essential Foundation controllers for basic user login and config features
                 //
                 Foundation.Web.Utility.StartupBasics.AddFoundationEssentialWebAPIControllers(controllers);
+                Foundation.Web.Utility.StartupBasics.AddFoundationAdvancedWebAPIControllers(controllers, true, true);           // Tenant Settings, System Settings
 
                 //
                 // Allow this sytem to be monitored
