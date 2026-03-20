@@ -396,6 +396,8 @@ import { DocumentDocumentTagService } from './scheduler-data-services/document-d
 import { DocumentDocumentTagChangeHistoryService } from './scheduler-data-services/document-document-tag-change-history.service';
 import { DocumentFolderService } from './scheduler-data-services/document-folder.service';
 import { DocumentFolderChangeHistoryService } from './scheduler-data-services/document-folder-change-history.service';
+import { DocumentShareLinkService } from './scheduler-data-services/document-share-link.service';
+import { DocumentShareLinkChangeHistoryService } from './scheduler-data-services/document-share-link-change-history.service';
 import { DocumentTagService } from './scheduler-data-services/document-tag.service';
 import { DocumentTagChangeHistoryService } from './scheduler-data-services/document-tag-change-history.service';
 import { DocumentTypeService } from './scheduler-data-services/document-type.service';
@@ -754,6 +756,14 @@ import { DocumentFolderChangeHistoryListingComponent } from './scheduler-data-co
 import { DocumentFolderChangeHistoryAddEditComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-add-edit/document-folder-change-history-add-edit.component';
 import { DocumentFolderChangeHistoryDetailComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-detail/document-folder-change-history-detail.component';
 import { DocumentFolderChangeHistoryTableComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-table/document-folder-change-history-table.component';
+import { DocumentShareLinkListingComponent } from './scheduler-data-components/document-share-link/document-share-link-listing/document-share-link-listing.component';
+import { DocumentShareLinkAddEditComponent } from './scheduler-data-components/document-share-link/document-share-link-add-edit/document-share-link-add-edit.component';
+import { DocumentShareLinkDetailComponent } from './scheduler-data-components/document-share-link/document-share-link-detail/document-share-link-detail.component';
+import { DocumentShareLinkTableComponent } from './scheduler-data-components/document-share-link/document-share-link-table/document-share-link-table.component';
+import { DocumentShareLinkChangeHistoryListingComponent } from './scheduler-data-components/document-share-link-change-history/document-share-link-change-history-listing/document-share-link-change-history-listing.component';
+import { DocumentShareLinkChangeHistoryAddEditComponent } from './scheduler-data-components/document-share-link-change-history/document-share-link-change-history-add-edit/document-share-link-change-history-add-edit.component';
+import { DocumentShareLinkChangeHistoryDetailComponent } from './scheduler-data-components/document-share-link-change-history/document-share-link-change-history-detail/document-share-link-change-history-detail.component';
+import { DocumentShareLinkChangeHistoryTableComponent } from './scheduler-data-components/document-share-link-change-history/document-share-link-change-history-table/document-share-link-change-history-table.component';
 import { DocumentTagListingComponent } from './scheduler-data-components/document-tag/document-tag-listing/document-tag-listing.component';
 import { DocumentTagAddEditComponent } from './scheduler-data-components/document-tag/document-tag-add-edit/document-tag-add-edit.component';
 import { DocumentTagDetailComponent } from './scheduler-data-components/document-tag/document-tag-detail/document-tag-detail.component';
@@ -1737,6 +1747,14 @@ DocumentFolderChangeHistoryListingComponent,
 DocumentFolderChangeHistoryAddEditComponent,
 DocumentFolderChangeHistoryDetailComponent,
 DocumentFolderChangeHistoryTableComponent,
+DocumentShareLinkListingComponent,
+DocumentShareLinkAddEditComponent,
+DocumentShareLinkDetailComponent,
+DocumentShareLinkTableComponent,
+DocumentShareLinkChangeHistoryListingComponent,
+DocumentShareLinkChangeHistoryAddEditComponent,
+DocumentShareLinkChangeHistoryDetailComponent,
+DocumentShareLinkChangeHistoryTableComponent,
 DocumentTagListingComponent,
 DocumentTagAddEditComponent,
 DocumentTagDetailComponent,
@@ -2372,6 +2390,8 @@ DocumentDocumentTagService,
 DocumentDocumentTagChangeHistoryService,
 DocumentFolderService,
 DocumentFolderChangeHistoryService,
+DocumentShareLinkService,
+DocumentShareLinkChangeHistoryService,
 DocumentTagService,
 DocumentTagChangeHistoryService,
 DocumentTypeService,

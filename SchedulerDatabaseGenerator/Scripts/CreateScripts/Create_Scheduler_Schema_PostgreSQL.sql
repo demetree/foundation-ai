@@ -24,6 +24,8 @@ CREATE SCHEMA "Scheduler"
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
 -- DROP TABLE "Scheduler"."EventResourceAssignmentChangeHistory"
 -- DROP TABLE "Scheduler"."EventResourceAssignment"
+-- DROP TABLE "Scheduler"."DocumentShareLinkChangeHistory"
+-- DROP TABLE "Scheduler"."DocumentShareLink"
 -- DROP TABLE "Scheduler"."DocumentDocumentTagChangeHistory"
 -- DROP TABLE "Scheduler"."DocumentDocumentTag"
 -- DROP TABLE "Scheduler"."DocumentChangeHistory"
@@ -204,6 +206,8 @@ CREATE SCHEMA "Scheduler"
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "EventResourceAssignment" DISABLE
+-- ALTER INDEX ALL ON "DocumentShareLinkChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "DocumentShareLink" DISABLE
 -- ALTER INDEX ALL ON "DocumentDocumentTagChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "DocumentDocumentTag" DISABLE
 -- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
@@ -384,6 +388,8 @@ CREATE SCHEMA "Scheduler"
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "EventResourceAssignment" REBUILD
+-- ALTER INDEX ALL ON "DocumentShareLinkChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "DocumentShareLink" REBUILD
 -- ALTER INDEX ALL ON "DocumentDocumentTagChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "DocumentDocumentTag" REBUILD
 -- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
@@ -8638,6 +8644,90 @@ CREATE INDEX "I_DocumentDocumentTagChangeHistory_tenantGuid_userId" ON "Schedule
 
 -- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,documentDocumentTagId fields.
 CREATE INDEX "I_DocumentDocumentTagChangeHistory_tenantGuid_documentDocumentT" ON "Scheduler"."DocumentDocumentTagChangeHistory" ("tenantGuid", "documentDocumentTagId") INCLUDE ( versionNumber, timeStamp, userId )
+;
+
+
+/*
+====================================================================================================
+ DOCUMENT SHARE LINK (Public File Sharing)
+ Enables sharing documents with external users via GUID-based public URLs.
+ Each link has a unique token used in the public download URL (e.g., /share/{token}).
+ Supports optional password protection (bcrypt hash), expiry dates, and download limits.
+
+ DESIGN NOTE: The token field is a GUID that serves as the public-facing identifier.
+ It is separate from objectGuid (which is the internal entity identifier used by the
+ Foundation framework).  A unique index on token ensures fast lookups for public requests.
+ ====================================================================================================
+*/
+CREATE TABLE "Scheduler"."DocumentShareLink"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"documentId" INT NOT NULL,		-- The document this share link provides access to.
+	"token" VARCHAR(50) NOT NULL,		-- Public-facing GUID token used in the share URL. Separate from objectGuid.
+	"passwordHash" VARCHAR(250) NULL,		-- Optional bcrypt hash of the password required to access the download.
+	"expiresAt" TIMESTAMP NULL,		-- Optional expiry date (UTC). NULL = never expires.
+	"maxDownloads" INT NULL,		-- Optional download limit. NULL = unlimited downloads.
+	"downloadCount" INT NOT NULL DEFAULT 0,		-- Number of times the file has been downloaded via this link.
+	"createdBy" VARCHAR(250) NOT NULL,		-- User who created the share link.
+	"createdDate" TIMESTAMP NOT NULL,		-- When the share link was created (UTC).
+	"versionNumber" INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	"active" BOOLEAN NOT NULL DEFAULT true,		-- Active from a business perspective flag.
+	"deleted" BOOLEAN NOT NULL DEFAULT false,		-- Soft deletion flag.
+	CONSTRAINT "documentId" FOREIGN KEY ("documentId") REFERENCES "Scheduler"."Document"("id")		-- Foreign key to the Document table.
+);
+-- Index on the DocumentShareLink table's tenantGuid field.
+CREATE INDEX "I_DocumentShareLink_tenantGuid" ON "Scheduler"."DocumentShareLink" ("tenantGuid")
+;
+
+-- Index on the DocumentShareLink table's tenantGuid,documentId fields.
+CREATE INDEX "I_DocumentShareLink_tenantGuid_documentId" ON "Scheduler"."DocumentShareLink" ("tenantGuid", "documentId")
+;
+
+-- Index on the DocumentShareLink table's tenantGuid,active fields.
+CREATE INDEX "I_DocumentShareLink_tenantGuid_active" ON "Scheduler"."DocumentShareLink" ("tenantGuid", "active")
+;
+
+-- Index on the DocumentShareLink table's tenantGuid,deleted fields.
+CREATE INDEX "I_DocumentShareLink_tenantGuid_deleted" ON "Scheduler"."DocumentShareLink" ("tenantGuid", "deleted")
+;
+
+-- Index on the DocumentShareLink table's token field.
+CREATE INDEX "I_DocumentShareLink_token" ON "Scheduler"."DocumentShareLink" ("token")
+;
+
+
+-- The change history for records from the DocumentShareLink table.
+CREATE TABLE "Scheduler"."DocumentShareLinkChangeHistory"
+(
+	"id" SERIAL PRIMARY KEY NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	"documentShareLinkId" INT NOT NULL,		-- Link to the DocumentShareLink table.
+	"versionNumber" INT NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" TIMESTAMP NOT NULL,		-- The time that the record version was created.
+	"userId" INT NOT NULL,
+	"data" TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	CONSTRAINT "documentShareLinkId" FOREIGN KEY ("documentShareLinkId") REFERENCES "Scheduler"."DocumentShareLink"("id")		-- Foreign key to the DocumentShareLink table.
+);
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid field.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid" ON "Scheduler"."DocumentShareLinkChangeHistory" ("tenantGuid")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid_versionNumber" ON "Scheduler"."DocumentShareLinkChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid_timeStamp" ON "Scheduler"."DocumentShareLinkChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid_userId" ON "Scheduler"."DocumentShareLinkChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,documentShareLinkId fields.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid_documentShareLinkId" ON "Scheduler"."DocumentShareLinkChangeHistory" ("tenantGuid", "documentShareLinkId") INCLUDE ( versionNumber, timeStamp, userId )
 ;
 
 

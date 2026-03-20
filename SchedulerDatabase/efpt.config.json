@@ -244,6 +244,14 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[DocumentShareLink]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[DocumentShareLinkChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[DocumentTag]",
          "ObjectType": 0
       },

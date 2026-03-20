@@ -38,6 +38,7 @@ import { TributeData } from './tribute.service';
 import { VolunteerProfileData } from './volunteer-profile.service';
 import { DocumentChangeHistoryService, DocumentChangeHistoryData } from './document-change-history.service';
 import { DocumentDocumentTagService, DocumentDocumentTagData } from './document-document-tag.service';
+import { DocumentShareLinkService, DocumentShareLinkData } from './document-share-link.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -90,7 +91,6 @@ export class DocumentQueryParameters {
     pageSize: bigint | number | null | undefined = null;
     pageNumber: bigint | number | null | undefined = null;
     includeRelations: boolean | null | undefined = null;
-    excludeBinaryData: boolean | null | undefined = null;
     anyStringContains: string | null | undefined = null;
 }
 
@@ -278,6 +278,11 @@ export class DocumentData {
     private _documentDocumentTagsSubject = new BehaviorSubject<DocumentDocumentTagData[] | null>(null);
 
                 
+    private _documentShareLinks: DocumentShareLinkData[] | null = null;
+    private _documentShareLinksPromise: Promise<DocumentShareLinkData[]> | null  = null;
+    private _documentShareLinksSubject = new BehaviorSubject<DocumentShareLinkData[] | null>(null);
+
+                
 
 
     //
@@ -344,6 +349,31 @@ export class DocumentData {
 
 
 
+    public DocumentShareLinks$ = this._documentShareLinksSubject.asObservable().pipe(
+
+        // Trigger load on first subscription if not already loaded
+        tap(() => {
+          if (this._documentShareLinks === null && this._documentShareLinksPromise === null) {
+            this.loadDocumentShareLinks(); // Private method to start fetch
+          }
+        }),
+        shareReplay(1) // Cache last emit
+    );
+
+
+    private _documentShareLinksCount$: Observable<bigint | number> | null = null;
+    public get DocumentShareLinksCount$(): Observable<bigint | number> {
+        if (this._documentShareLinksCount$ === null) {
+            this._documentShareLinksCount$ = DocumentShareLinkService.Instance.GetDocumentShareLinksRowCount({documentId: this.id,
+              active: true,
+              deleted: false
+            });
+        }
+        return this._documentShareLinksCount$;
+    }
+
+
+
 
   //
   // Full reload — refreshes the entire object and clears all lazy caches 
@@ -391,6 +421,11 @@ export class DocumentData {
      this._documentDocumentTagsPromise = null;
      this._documentDocumentTagsSubject.next(null);
      this._documentDocumentTagsCount$ = null;
+
+     this._documentShareLinks = null;
+     this._documentShareLinksPromise = null;
+     this._documentShareLinksSubject.next(null);
+     this._documentShareLinksCount$ = null;
 
      this._currentVersionInfo = null;
      this._currentVersionInfoPromise = null;
@@ -531,6 +566,71 @@ export class DocumentData {
     }
 
 
+    /**
+     *
+     * Gets the DocumentShareLinks for this Document.
+     *
+     * If already loaded, returns cached array.
+     *
+     * If not, fetches from server and caches the result.
+     * 
+     * Usage in components:
+     *   this.document.DocumentShareLinks.then(documents => { ... })
+     *   or
+     *   await this.document.documents
+     *
+    */
+    public get DocumentShareLinks(): Promise<DocumentShareLinkData[]> {
+        if (this._documentShareLinks !== null) {
+            return Promise.resolve(this._documentShareLinks);
+        }
+
+        if (this._documentShareLinksPromise !== null) {
+            return this._documentShareLinksPromise;
+        }
+
+        // Start the load
+        this.loadDocumentShareLinks();
+
+        return this._documentShareLinksPromise!;
+    }
+
+
+
+    private loadDocumentShareLinks(): void {
+
+        this._documentShareLinksPromise = lastValueFrom(
+            DocumentService.Instance.GetDocumentShareLinksForDocument(this.id)
+        )
+        .then(DocumentShareLinks => {
+            this._documentShareLinks = DocumentShareLinks ?? [];
+            this._documentShareLinksSubject.next(this._documentShareLinks);
+            return this._documentShareLinks;
+         })
+        .catch(err => {
+            this._documentShareLinks = [];
+            this._documentShareLinksSubject.next(this._documentShareLinks);
+            throw err;
+        })
+        .finally(() => {
+            this._documentShareLinksPromise = null; // Allow retry if needed
+        });
+    }
+
+    /**
+     * Clears the cached DocumentShareLink. Call after mutations to force refresh.
+     */
+    public ClearDocumentShareLinksCache(): void {
+        this._documentShareLinks = null;
+        this._documentShareLinksPromise = null;
+        this._documentShareLinksSubject.next(this._documentShareLinks);      // Emit to observable
+    }
+
+    public get HasDocumentShareLinks(): Promise<boolean> {
+        return this.DocumentShareLinks.then(documentShareLinks => documentShareLinks.length > 0);
+    }
+
+
 
 
     //
@@ -611,6 +711,7 @@ export class DocumentService extends SecureEndpointBase {
         private utilityService: UtilityService,
         private documentChangeHistoryService: DocumentChangeHistoryService,
         private documentDocumentTagService: DocumentDocumentTagService,
+        private documentShareLinkService: DocumentShareLinkService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -1124,6 +1225,16 @@ export class DocumentService extends SecureEndpointBase {
     }
 
 
+    public GetDocumentShareLinksForDocument(documentId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<DocumentShareLinkData[]> {
+        return this.documentShareLinkService.GetDocumentShareLinkList({
+            documentId: documentId,
+            active: active,
+            deleted: deleted,
+            includeRelations: true
+        });
+    }
+
+
  /**
    *
    * Revives a plain object from the server into a full DocumentData instance.
@@ -1167,6 +1278,10 @@ export class DocumentService extends SecureEndpointBase {
     (revived as any)._documentDocumentTagsPromise = null;
     (revived as any)._documentDocumentTagsSubject = new BehaviorSubject<DocumentDocumentTagData[] | null>(null);
 
+    (revived as any)._documentShareLinks = null;
+    (revived as any)._documentShareLinksPromise = null;
+    (revived as any)._documentShareLinksSubject = new BehaviorSubject<DocumentShareLinkData[] | null>(null);
+
 
     //
     // Re-attach ALL public observables with their lazy-load tap() triggers
@@ -1201,6 +1316,18 @@ export class DocumentService extends SecureEndpointBase {
       );
 
     (revived as any)._documentDocumentTagsCount$ = null;
+
+
+    (revived as any).DocumentShareLinks$ = (revived as any)._documentShareLinksSubject.asObservable().pipe(
+        tap(() => {
+              if ((revived as any)._documentShareLinks === null && (revived as any)._documentShareLinksPromise === null) {
+                (revived as any).loadDocumentShareLinks();        // Need to cast to any to invoke private load method
+              }
+        }),
+        shareReplay(1)
+      );
+
+    (revived as any)._documentShareLinksCount$ = null;
 
 
 

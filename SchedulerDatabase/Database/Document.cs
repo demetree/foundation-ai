@@ -93,6 +93,8 @@ public partial class Document
 
     public virtual ICollection<DocumentDocumentTag> DocumentDocumentTags { get; set; } = new List<DocumentDocumentTag>();
 
+    public virtual ICollection<DocumentShareLink> DocumentShareLinks { get; set; } = new List<DocumentShareLink>();
+
     public virtual Campaign campaign { get; set; }
 
     public virtual Client client { get; set; }

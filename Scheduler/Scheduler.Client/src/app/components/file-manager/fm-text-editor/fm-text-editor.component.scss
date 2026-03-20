@@ -2,7 +2,7 @@
  * fm-text-editor.component.scss
  *
  * Styles for the in-app Markdown text editor.
- * Uses the application's glassmorphism design system.
+ * Uses Bootstrap CSS custom properties for theme-awareness.
  */
 
 .fm-text-editor {
@@ -12,8 +12,8 @@
     min-height: 400px;
     border-radius: 8px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
 }
 
 
@@ -24,8 +24,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.04);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bs-tertiary-bg);
+    border-bottom: 1px solid var(--bs-border-color);
     flex-shrink: 0;
 
     .toolbar-left,
@@ -37,15 +37,14 @@
 }
 
 .btn-glass-subtle {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(4px);
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-secondary-color);
+    border: 1px solid var(--bs-border-color);
     transition: all 0.15s ease;
 
     &:hover:not(:disabled) {
-        background: rgba(255, 255, 255, 0.12);
-        color: white;
+        background: var(--bs-secondary-bg);
+        color: var(--bs-emphasis-color);
     }
 
     &:disabled {
@@ -55,13 +54,13 @@
 }
 
 .btn-glass-accent {
-    background: rgba(99, 179, 237, 0.2);
-    color: #90cdf4;
-    border: 1px solid rgba(99, 179, 237, 0.3);
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    color: var(--bs-primary);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
 
     &:hover {
-        background: rgba(99, 179, 237, 0.3);
-        color: white;
+        background: rgba(var(--bs-primary-rgb), 0.25);
+        color: var(--bs-emphasis-color);
     }
 }
 
@@ -70,8 +69,8 @@
     align-items: center;
     padding: 2px 8px;
     border-radius: 10px;
-    background: rgba(246, 173, 85, 0.15);
-    color: #f6ad55;
+    background: rgba(var(--bs-warning-rgb), 0.15);
+    color: var(--bs-warning);
     font-size: 0.75rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -93,7 +92,7 @@
 
     &.with-preview .editor-pane {
         width: 50%;
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        border-right: 1px solid var(--bs-border-color);
     }
 
     &.with-versions .editor-pane {
@@ -114,7 +113,7 @@
     border: none;
     outline: none;
     background: transparent;
-    color: rgba(255, 255, 255, 0.92);
+    color: var(--bs-body-color);
     font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
     font-size: 0.875rem;
     line-height: 1.65;
@@ -124,7 +123,7 @@
     word-wrap: break-word;
 
     &::placeholder {
-        color: rgba(255, 255, 255, 0.25);
+        color: var(--bs-tertiary-color);
         font-style: italic;
     }
 
@@ -137,7 +136,7 @@
 .fm-text-editor.read-only {
     .editor-textarea {
         cursor: default;
-        color: rgba(255, 255, 255, 0.75);
+        color: var(--bs-secondary-color);
     }
 }
 
@@ -155,11 +154,11 @@
     padding: 6px 12px;
     font-size: 0.75rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--bs-tertiary-color);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
     flex-shrink: 0;
 }
 
@@ -167,61 +166,62 @@
     flex: 1;
     overflow-y: auto;
     padding: 16px 20px;
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--bs-body-color);
     font-size: 0.875rem;
     line-height: 1.7;
 
     h1, h2, h3, h4, h5, h6 {
-        color: white;
+        color: var(--bs-emphasis-color);
         margin-top: 1.2em;
         margin-bottom: 0.5em;
         font-weight: 600;
     }
 
-    h1 { font-size: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.3em; }
-    h2 { font-size: 1.3rem; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.2em; }
+    h1 { font-size: 1.5rem; border-bottom: 1px solid var(--bs-border-color); padding-bottom: 0.3em; }
+    h2 { font-size: 1.3rem; border-bottom: 1px solid var(--bs-border-color-translucent); padding-bottom: 0.2em; }
     h3 { font-size: 1.1rem; }
 
     code {
-        background: rgba(255, 255, 255, 0.08);
+        background: var(--bs-tertiary-bg);
         padding: 0.15em 0.4em;
         border-radius: 3px;
         font-size: 0.85em;
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
-        color: #e2e8f0;
+        color: var(--bs-code-color);
     }
 
     pre {
-        background: rgba(0, 0, 0, 0.3);
+        background: var(--bs-tertiary-bg);
         border-radius: 6px;
         padding: 12px 16px;
         overflow-x: auto;
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        border: 1px solid var(--bs-border-color);
 
         code {
             background: none;
             padding: 0;
             border-radius: 0;
+            color: var(--bs-body-color);
         }
     }
 
     blockquote {
-        border-left: 3px solid rgba(99, 179, 237, 0.5);
+        border-left: 3px solid var(--bs-primary);
         padding-left: 12px;
         margin-left: 0;
-        color: rgba(255, 255, 255, 0.7);
+        color: var(--bs-secondary-color);
         font-style: italic;
     }
 
     a {
-        color: #63b3ed;
+        color: var(--bs-link-color);
         text-decoration: none;
-        &:hover { text-decoration: underline; }
+        &:hover { text-decoration: underline; color: var(--bs-link-hover-color); }
     }
 
     hr {
         border: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid var(--bs-border-color);
         margin: 1.5em 0;
     }
 
@@ -242,8 +242,8 @@
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.02);
+    border-left: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
     overflow: hidden;
 }
 
@@ -251,10 +251,10 @@
     padding: 6px 12px;
     font-size: 0.75rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--bs-tertiary-color);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--bs-border-color);
     flex-shrink: 0;
 }
 
@@ -268,24 +268,24 @@
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--bs-border-color-translucent);
     cursor: default;
     transition: background 0.15s ease;
 
     &:hover {
-        background: rgba(255, 255, 255, 0.04);
+        background: var(--bs-secondary-bg);
     }
 
     &.active {
-        background: rgba(99, 179, 237, 0.1);
-        border-left: 3px solid #63b3ed;
+        background: rgba(var(--bs-primary-rgb), 0.1);
+        border-left: 3px solid var(--bs-primary);
     }
 }
 
 .version-number {
     font-weight: 600;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--bs-body-color);
     min-width: 28px;
 }
 
@@ -297,11 +297,11 @@
 }
 
 .version-date {
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--bs-secondary-color);
 }
 
 .version-user {
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--bs-tertiary-color);
 }
 
 
@@ -312,10 +312,10 @@
     align-items: center;
     gap: 16px;
     padding: 3px 12px;
-    background: rgba(255, 255, 255, 0.03);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--bs-tertiary-bg);
+    border-top: 1px solid var(--bs-border-color);
     font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--bs-tertiary-color);
     flex-shrink: 0;
 
     .status-item {
@@ -333,4 +333,111 @@
     justify-content: center;
     flex: 1;
     min-height: 200px;
+}
+
+
+// ─── Markdown Help Pane ──────────────────────────────────────────────
+
+.help-pane {
+    width: 280px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg);
+    overflow: hidden;
+}
+
+.help-header {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--bs-border-color);
+    flex-shrink: 0;
+}
+
+.help-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 14px;
+}
+
+.help-section {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--bs-border-color-translucent);
+
+    &:last-of-type {
+        border-bottom: none;
+        margin-bottom: 8px;
+    }
+}
+
+.help-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 5px;
+}
+
+.help-example {
+    font-size: 0.78rem;
+    line-height: 1.8;
+    color: var(--bs-body-color);
+
+    code {
+        background: var(--bs-body-bg);
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        font-size: 0.74rem;
+        color: var(--bs-code-color, #d63384);
+        border: 1px solid var(--bs-border-color-translucent);
+    }
+
+    code.inline-sample {
+        background: var(--bs-secondary-bg);
+        color: var(--bs-body-color);
+    }
+
+    strong, em {
+        color: var(--bs-emphasis-color);
+    }
+}
+
+.help-kbd {
+    display: inline-block;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 4px;
+    padding: 0 5px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.68rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: var(--bs-body-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    margin-right: 4px;
+    min-width: 20px;
+    text-align: center;
+}
+
+.help-tip {
+    background: rgba(var(--bs-info-rgb), 0.1);
+    border: 1px solid rgba(var(--bs-info-rgb), 0.2);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.74rem;
+    color: var(--bs-body-color);
+    line-height: 1.5;
+    margin-top: 4px;
+
+    i {
+        color: var(--bs-info);
+    }
 }

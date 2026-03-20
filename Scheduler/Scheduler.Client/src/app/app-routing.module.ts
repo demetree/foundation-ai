@@ -245,6 +245,10 @@ import { DocumentFolderListingComponent } from './scheduler-data-components/docu
 import { DocumentFolderDetailComponent } from './scheduler-data-components/document-folder/document-folder-detail/document-folder-detail.component';
 import { DocumentFolderChangeHistoryListingComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-listing/document-folder-change-history-listing.component';
 import { DocumentFolderChangeHistoryDetailComponent } from './scheduler-data-components/document-folder-change-history/document-folder-change-history-detail/document-folder-change-history-detail.component';
+import { DocumentShareLinkListingComponent } from './scheduler-data-components/document-share-link/document-share-link-listing/document-share-link-listing.component';
+import { DocumentShareLinkDetailComponent } from './scheduler-data-components/document-share-link/document-share-link-detail/document-share-link-detail.component';
+import { DocumentShareLinkChangeHistoryListingComponent } from './scheduler-data-components/document-share-link-change-history/document-share-link-change-history-listing/document-share-link-change-history-listing.component';
+import { DocumentShareLinkChangeHistoryDetailComponent } from './scheduler-data-components/document-share-link-change-history/document-share-link-change-history-detail/document-share-link-change-history-detail.component';
 import { DocumentTagListingComponent } from './scheduler-data-components/document-tag/document-tag-listing/document-tag-listing.component';
 import { DocumentTagDetailComponent } from './scheduler-data-components/document-tag/document-tag-detail/document-tag-detail.component';
 import { DocumentTagChangeHistoryListingComponent } from './scheduler-data-components/document-tag-change-history/document-tag-change-history-listing/document-tag-change-history-listing.component';
@@ -628,10 +632,10 @@ const routes: Routes = [
   { path: 'scheduling/rental-agreements', component: RentalAgreementTrackerComponent, canActivate: [AuthGuard], title: 'Rental Agreements' },
 
   //
-  // Document / File Manager routes
+  // Document routes
   //
   { path: 'documents', redirectTo: '/filemanager', pathMatch: 'full' },
-  { path: 'filemanager', component: FileManagerComponent, canActivate: [AuthGuard], title: 'File Manager' },
+  { path: 'filemanager', component: FileManagerComponent, canActivate: [AuthGuard], title: 'Documents' },
   {
       matcher: (url: UrlSegment[]): UrlMatchResult | null => {
           // Match any URL that starts with 'filemanager/' and has at least one more segment
@@ -647,7 +651,7 @@ const routes: Routes = [
       },
       component: FileManagerComponent,
       canActivate: [AuthGuard],
-      title: 'File Manager'
+      title: 'Documents'
   },
 
 
@@ -944,6 +948,16 @@ const routes: Routes = [
   {path: 'documentfolderchangehistories/:documentFolderChangeHistoryId', component: DocumentFolderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Folder Change History' },
   {path: 'documentfolderchangehistory/:documentFolderChangeHistoryId', component: DocumentFolderChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Folder Change History' },
   {path: 'documentfolderchangehistory',  redirectTo: 'documentfolderchangehistories'},
+  {path: 'documentsharelinks', component: DocumentShareLinkListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Share Links' },
+  {path: 'documentsharelinks/new', component: DocumentShareLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Share Link' },
+  {path: 'documentsharelinks/:documentShareLinkId', component: DocumentShareLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Share Link' },
+  {path: 'documentsharelink/:documentShareLinkId', component: DocumentShareLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Share Link' },
+  {path: 'documentsharelink',  redirectTo: 'documentsharelinks'},
+  {path: 'documentsharelinkchangehistories', component: DocumentShareLinkChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Share Link Change Histories' },
+  {path: 'documentsharelinkchangehistories/new', component: DocumentShareLinkChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Share Link Change History' },
+  {path: 'documentsharelinkchangehistories/:documentShareLinkChangeHistoryId', component: DocumentShareLinkChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Share Link Change History' },
+  {path: 'documentsharelinkchangehistory/:documentShareLinkChangeHistoryId', component: DocumentShareLinkChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Share Link Change History' },
+  {path: 'documentsharelinkchangehistory',  redirectTo: 'documentsharelinkchangehistories'},
   {path: 'documenttags', component: DocumentTagListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Document Tags' },
   {path: 'documenttags/new', component: DocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Document Tag' },
   {path: 'documenttags/:documentTagId', component: DocumentTagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Document Tag' },

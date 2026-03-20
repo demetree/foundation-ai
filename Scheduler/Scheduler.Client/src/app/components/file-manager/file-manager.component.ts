@@ -17,6 +17,7 @@ import { FileManagerService, FolderDTO, DocumentDTO, DocumentTagDTO, UploadOptio
 import { ConfirmationService } from '../../services/confirmation-service';
 import { FileManagerSignalrService } from '../../services/filemanager-signalr.service';
 import { UserSettingsService } from '../../services/user-settings.service';
+import { AuthService } from '../../services/auth.service';
 
 // Auto-generated data services for entity link lookups
 import { ContactService } from '../../scheduler-data-services/contact.service';
@@ -97,6 +98,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     // Context menus
     showDocContext = false;
     showFolderContext = false;
+    showBgContext = false;
     contextX = 0;
     contextY = 0;
     contextDocument: DocumentDTO | null = null;
@@ -112,6 +114,10 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     showRenameDocModal = false;
     renameDocName = '';
     renamingDocument: DocumentDTO | null = null;
+
+    // New text file dialog
+    showNewTextFileModal = false;
+    newTextFileName = '';
 
     // ─── Tags ────────────────────────────────────────────────────────
     allTags: DocumentTagDTO[] = [];
@@ -243,10 +249,15 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         private sanitizer: DomSanitizer,
         private fmSignalr: FileManagerSignalrService,
         private userSettings: UserSettingsService,
+        private authService: AuthService,
         private route: ActivatedRoute,
         private router: Router,
         private ngZone: NgZone
     ) {}
+
+    get isAdmin(): boolean {
+        return this.authService.isSchedulerAdministrator;
+    }
 
 
     ngOnInit(): void {
@@ -443,10 +454,13 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     closeTextEditor(): void {
         this.editingDocumentId = null;
         this.editingDocumentName = '';
+        this.loadDocuments();
     }
 
     onEditorSaved(doc: DocumentDTO): void {
-        // Refresh document list to reflect the new version
+        if (this.selectedDocument && this.selectedDocument.id === doc.id) {
+            this.selectedDocument.versionNumber = doc.versionNumber;
+        }
         this.loadDocuments();
     }
 
@@ -827,6 +841,22 @@ export class FileManagerComponent implements OnInit, OnDestroy {
             }
         });
         input.value = '';
+    }
+
+    onRollbackVersion(event: { documentId: number; versionNumber: number }): void {
+        if (!confirm(`Restore version ${event.versionNumber}? A new version will be created from the v${event.versionNumber} snapshot.`)) {
+            return;
+        }
+        this.fileManagerService.rollbackVersion(event.documentId, event.versionNumber).subscribe({
+            next: () => {
+                this.alertService.showMessage('Restored', `Document restored to version ${event.versionNumber}.`, MessageSeverity.success);
+                this.loadVersionHistory(event.documentId);
+                this.loadDocuments();
+            },
+            error: () => {
+                this.alertService.showMessage('Error', 'Could not restore version. You may need admin privileges.', MessageSeverity.error);
+            }
+        });
     }
 
 
@@ -1499,7 +1529,9 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
     onDocContextMenu(event: MouseEvent, doc: DocumentDTO): void {
         event.preventDefault();
+        event.stopPropagation();
         this.showFolderContext = false;
+        this.showBgContext = false;
         this.contextDocument = doc;
         this.contextX = event.clientX;
         this.contextY = event.clientY;
@@ -1508,17 +1540,29 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
     onFolderContextMenu(event: MouseEvent, folder: FolderDTO | null): void {
         event.preventDefault();
+        event.stopPropagation();
         this.showDocContext = false;
+        this.showBgContext = false;
         this.contextFolder = folder;
         this.contextX = event.clientX;
         this.contextY = event.clientY;
         this.showFolderContext = true;
     }
 
+    onBgContextMenu(event: MouseEvent): void {
+        event.preventDefault();
+        this.showDocContext = false;
+        this.showFolderContext = false;
+        this.contextX = event.clientX;
+        this.contextY = event.clientY;
+        this.showBgContext = true;
+    }
+
     @HostListener('document:click')
     onDocumentClick(): void {
         this.showDocContext = false;
         this.showFolderContext = false;
+        this.showBgContext = false;
         this.showBulkTagDropdown = false;
         this.showSortDropdown = false;
         if (this.showAddEntityLinkDropdown) {
@@ -2153,5 +2197,44 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.addLinkSearchQuery = '';
         this.addLinkSearchResults = [];
         this.addLinkSearching = false;
+    }
+
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  TEXT EDITOR — New File + Smart Double-Click
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /** Smart double-click handler: text files open in editor, others download. */
+    onDocumentDoubleClick(doc: DocumentDTO): void {
+        if (this.isTextFile(doc)) {
+            this.openTextEditor(doc);
+        } else {
+            this.downloadFile(doc);
+        }
+    }
+
+    /** Shows the "New Text File" dialog. */
+    showNewTextFileDialog(): void {
+        this.newTextFileName = '';
+        this.showNewTextFileModal = true;
+    }
+
+    /** Creates a new text file and opens it in the editor. */
+    confirmNewTextFile(): void {
+        const name = this.newTextFileName.trim();
+        if (!name) return;
+
+        this.showNewTextFileModal = false;
+        this.fileManagerService.createTextDocument(name, this.currentFolderId).subscribe({
+            next: (doc) => {
+                this.alertService.showMessage('Created', `"${doc.fileName}" created.`, MessageSeverity.success);
+                this.loadDocuments();
+                this.openTextEditor(doc);
+            },
+            error: (err) => {
+                console.error('Error creating text file', err);
+                this.alertService.showMessage('Error', 'Could not create text file.', MessageSeverity.error);
+            }
+        });
     }
 }

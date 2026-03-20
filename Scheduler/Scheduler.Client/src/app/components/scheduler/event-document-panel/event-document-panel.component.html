@@ -38,11 +38,18 @@
     <!-- Document Cards -->
     <div class="doc-card" *ngFor="let doc of documents">
       <div class="doc-card-left">
-        <div class="doc-type-indicator" [style.background-color]="getDocumentTypeColor(doc)">
-          <i class="fa-solid" [ngClass]="getFileIcon(doc.mimeType)"></i>
+        <div class="doc-type-indicator" [class.has-thumbnail]="thumbnailUrls.has(doc.id)"
+             [style.background-color]="thumbnailUrls.has(doc.id) ? 'transparent' : getDocumentTypeColor(doc)">
+          <img *ngIf="thumbnailUrls.has(doc.id)" [src]="thumbnailUrls.get(doc.id)"
+               class="doc-thumbnail" loading="lazy"
+               (error)="$any($event.target).style.display='none'" />
+          <i *ngIf="!thumbnailUrls.has(doc.id)" class="fa-solid" [ngClass]="getFileIcon(doc.mimeType)"></i>
         </div>
         <div class="doc-info">
-          <div class="doc-name">{{ doc.name }}</div>
+          <div class="doc-name">
+            {{ doc.name }}
+            <span class="badge doc-version-badge" *ngIf="doc.versionNumber > 1">v{{ doc.versionNumber }}</span>
+          </div>
           <div class="doc-meta">
             <span class="doc-type-label" [style.color]="getDocumentTypeColor(doc)">
               {{ getDocumentTypeName(doc) }}
@@ -74,6 +81,14 @@
 
         <!-- Actions -->
         <div class="doc-actions">
+          <button class="btn btn-sm btn-action" (click)="openTextEditor(doc)"
+            *ngIf="isTextFile(doc)" title="Edit">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </button>
+          <button class="btn btn-sm btn-action" (click)="openInDocuments(doc)"
+            title="Open in Documents">
+            <i class="fa-solid fa-up-right-from-square"></i>
+          </button>
           <button class="btn btn-sm btn-action" (click)="openPreview(doc)"
             *ngIf="isPreviewable(doc)" title="Preview">
             <i class="fa-solid fa-eye"></i>
@@ -178,6 +193,25 @@
           <i class="fa-solid fa-download me-1"></i> Download
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Text Editor Overlay ── -->
+  <div class="editor-overlay" *ngIf="editingDocumentId">
+    <div class="editor-header">
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary" (click)="closeTextEditor()">
+          <i class="fa-solid fa-arrow-left me-1"></i> Back
+        </button>
+        <i class="fa-solid fa-file-lines" style="color: var(--sch-primary, #6366f1)"></i>
+        <span class="fw-semibold">{{ editingDocumentName }}</span>
+      </div>
+    </div>
+    <div class="editor-body">
+      <fm-text-editor
+        [documentId]="editingDocumentId"
+        (saved)="onEditorSaved($event)">
+      </fm-text-editor>
     </div>
   </div>
 

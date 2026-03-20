@@ -8,6 +8,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
 -- DROP TABLE "EventResourceAssignmentChangeHistory"
 -- DROP TABLE "EventResourceAssignment"
+-- DROP TABLE "DocumentShareLinkChangeHistory"
+-- DROP TABLE "DocumentShareLink"
 -- DROP TABLE "DocumentDocumentTagChangeHistory"
 -- DROP TABLE "DocumentDocumentTag"
 -- DROP TABLE "DocumentChangeHistory"
@@ -188,6 +190,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "EventResourceAssignment" DISABLE
+-- ALTER INDEX ALL ON "DocumentShareLinkChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "DocumentShareLink" DISABLE
 -- ALTER INDEX ALL ON "DocumentDocumentTagChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "DocumentDocumentTag" DISABLE
 -- ALTER INDEX ALL ON "DocumentChangeHistory" DISABLE
@@ -368,6 +372,8 @@ All operational tables include multi-tenant support, versioning where appropriat
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "EventResourceAssignment" REBUILD
+-- ALTER INDEX ALL ON "DocumentShareLinkChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "DocumentShareLink" REBUILD
 -- ALTER INDEX ALL ON "DocumentDocumentTagChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "DocumentDocumentTag" REBUILD
 -- ALTER INDEX ALL ON "DocumentChangeHistory" REBUILD
@@ -8622,6 +8628,90 @@ CREATE INDEX "I_DocumentDocumentTagChangeHistory_tenantGuid_userId" ON "Document
 
 -- Index on the DocumentDocumentTagChangeHistory table's tenantGuid,documentDocumentTagId fields.
 CREATE INDEX "I_DcumntDcumntTgChngHstry_tnntGud_dcumntDcumntTgd" ON "DocumentDocumentTagChangeHistory" ("tenantGuid", "documentDocumentTagId", "versionNumber", "timeStamp", "userId")
+;
+
+
+/*
+====================================================================================================
+ DOCUMENT SHARE LINK (Public File Sharing)
+ Enables sharing documents with external users via GUID-based public URLs.
+ Each link has a unique token used in the public download URL (e.g., /share/{token}).
+ Supports optional password protection (bcrypt hash), expiry dates, and download limits.
+
+ DESIGN NOTE: The token field is a GUID that serves as the public-facing identifier.
+ It is separate from objectGuid (which is the internal entity identifier used by the
+ Foundation framework).  A unique index on token ensures fast lookups for public requests.
+ ====================================================================================================
+*/
+CREATE TABLE "DocumentShareLink"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"documentId" INTEGER NOT NULL,		-- The document this share link provides access to.
+	"token" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- Public-facing GUID token used in the share URL. Separate from objectGuid.
+	"passwordHash" VARCHAR(250) NULL COLLATE NOCASE,		-- Optional bcrypt hash of the password required to access the download.
+	"expiresAt" DATETIME NULL,		-- Optional expiry date (UTC). NULL = never expires.
+	"maxDownloads" INTEGER NULL,		-- Optional download limit. NULL = unlimited downloads.
+	"downloadCount" INTEGER NOT NULL DEFAULT 0,		-- Number of times the file has been downloaded via this link.
+	"createdBy" VARCHAR(250) NOT NULL COLLATE NOCASE,		-- User who created the share link.
+	"createdDate" DATETIME NOT NULL,		-- When the share link was created (UTC).
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("documentId") REFERENCES "Document"("id")		-- Foreign key to the Document table.
+);
+-- Index on the DocumentShareLink table's tenantGuid field.
+CREATE INDEX "I_DocumentShareLink_tenantGuid" ON "DocumentShareLink" ("tenantGuid")
+;
+
+-- Index on the DocumentShareLink table's tenantGuid,documentId fields.
+CREATE INDEX "I_DocumentShareLink_tenantGuid_documentId" ON "DocumentShareLink" ("tenantGuid", "documentId")
+;
+
+-- Index on the DocumentShareLink table's tenantGuid,active fields.
+CREATE INDEX "I_DocumentShareLink_tenantGuid_active" ON "DocumentShareLink" ("tenantGuid", "active")
+;
+
+-- Index on the DocumentShareLink table's tenantGuid,deleted fields.
+CREATE INDEX "I_DocumentShareLink_tenantGuid_deleted" ON "DocumentShareLink" ("tenantGuid", "deleted")
+;
+
+-- Index on the DocumentShareLink table's token field.
+CREATE INDEX "I_DocumentShareLink_token" ON "DocumentShareLink" ("token")
+;
+
+
+-- The change history for records from the DocumentShareLink table.
+CREATE TABLE "DocumentShareLinkChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"documentShareLinkId" INTEGER NOT NULL,		-- Link to the DocumentShareLink table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("documentShareLinkId") REFERENCES "DocumentShareLink"("id")		-- Foreign key to the DocumentShareLink table.
+);
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid field.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid" ON "DocumentShareLinkChangeHistory" ("tenantGuid")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid_versionNumber" ON "DocumentShareLinkChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid_timeStamp" ON "DocumentShareLinkChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_DocumentShareLinkChangeHistory_tenantGuid_userId" ON "DocumentShareLinkChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the DocumentShareLinkChangeHistory table's tenantGuid,documentShareLinkId fields.
+CREATE INDEX "I_DcumntShrLnkChngHstry_tnntGud_dcumntShrLnkd" ON "DocumentShareLinkChangeHistory" ("tenantGuid", "documentShareLinkId", "versionNumber", "timeStamp", "userId")
 ;
 
 

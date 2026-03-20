@@ -4596,6 +4596,45 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             // Prevent duplicate tag assignments on the same document
             documentDocumentTagTable.AddUniqueConstraint("tenantGuid", "documentId", "documentTagId", false);
 
+
+            //
+            // AI-Developed — DocumentShareLink table significantly developed with AI assistance.
+            //
+            // DocumentShareLink — Shareable download links for external users
+            //
+            // Enables document sharing outside the system via GUID-based public URLs.
+            // Supports optional password protection, expiry dates, and download limits.
+            // Used by the file manager "Share" feature as a Dropbox-like sharing mechanism.
+            //
+            Database.Table documentShareLinkTable = database.AddTable("DocumentShareLink");
+            documentShareLinkTable.comment = @"====================================================================================================
+ DOCUMENT SHARE LINK (Public File Sharing)
+ Enables sharing documents with external users via GUID-based public URLs.
+ Each link has a unique token used in the public download URL (e.g., /share/{token}).
+ Supports optional password protection (bcrypt hash), expiry dates, and download limits.
+
+ DESIGN NOTE: The token field is a GUID that serves as the public-facing identifier.
+ It is separate from objectGuid (which is the internal entity identifier used by the
+ Foundation framework).  A unique index on token ensures fast lookups for public requests.
+ ====================================================================================================";
+
+            documentShareLinkTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            documentShareLinkTable.AddIdField();
+            documentShareLinkTable.AddMultiTenantSupport();
+            documentShareLinkTable.AddForeignKeyField(documentTable, false, true).AddScriptComments("The document this share link provides access to.");
+            documentShareLinkTable.AddGuidField("token", false).AddScriptComments("Public-facing GUID token used in the share URL. Separate from objectGuid.");
+            documentShareLinkTable.AddString250Field("passwordHash", true).AddScriptComments("Optional bcrypt hash of the password required to access the download.");
+            documentShareLinkTable.AddDateTimeField("expiresAt", true).AddScriptComments("Optional expiry date (UTC). NULL = never expires.");
+            documentShareLinkTable.AddIntField("maxDownloads", true, null).AddScriptComments("Optional download limit. NULL = unlimited downloads.");
+            documentShareLinkTable.AddIntField("downloadCount", false, 0).AddScriptComments("Number of times the file has been downloaded via this link.");
+            documentShareLinkTable.AddString250Field("createdBy", false).AddScriptComments("User who created the share link.");
+            documentShareLinkTable.AddDateTimeField("createdDate", false).AddScriptComments("When the share link was created (UTC).");
+            documentShareLinkTable.AddVersionControl();
+            documentShareLinkTable.AddControlFields();
+
+            // Unique index on token for fast public-facing lookups
+            documentShareLinkTable.CreateIndexForFields(new List<string> { "token" });
+
             #endregion
 
 

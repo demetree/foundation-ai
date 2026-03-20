@@ -20,9 +20,9 @@
       <div class="header-left">
         <div class="text-white">
           <h3 class="page-title mb-0 fw-bold text-shadow">
-            <i class="fa-solid fa-folder-tree me-2"></i>File Manager
+            <i class="fa-solid fa-folder-tree me-2"></i>Documents
           </h3>
-          <small class="text-white-50">Browse and manage documents</small>
+          <small class="text-white-50">Browse and manage your documents</small>
         </div>
       </div>
 
@@ -151,6 +151,11 @@
           <button class="btn btn-sm btn-outline-secondary" (click)="showNewFolderDialog()"
                   *ngIf="viewScope === 'folder'">
             <i class="fa-solid fa-folder-plus me-1"></i> New Folder
+          </button>
+
+          <button class="btn btn-sm btn-outline-secondary" (click)="showNewTextFileDialog()"
+                  *ngIf="viewScope === 'folder'">
+            <i class="fa-solid fa-file-pen me-1"></i> New Text File
           </button>
 
           <!-- Sort dropdown (grid mode) -->
@@ -312,10 +317,11 @@
       </div>
 
       <!-- ─── Grid View (with tag dots #3) ────────────────────── -->
-      <div class="fm-file-grid" *ngIf="viewMode === 'grid' && !isLoading && !showTrash">
+      <div class="fm-file-grid" *ngIf="viewMode === 'grid' && !isLoading && !showTrash"
+           (contextmenu)="onBgContextMenu($event)">
         <div class="fm-file-card" *ngFor="let doc of sortedDocuments"
              (click)="selectDocument(doc)"
-             (dblclick)="downloadFile(doc)"
+             (dblclick)="onDocumentDoubleClick(doc)"
              (contextmenu)="onDocContextMenu($event, doc)"
              [class.selected]="selectedDocument?.id === doc.id"
              [class.bulk-selected]="isDocSelected(doc.id)">
@@ -379,7 +385,8 @@
       </div>
 
       <!-- ─── List View (with tags column #3) ─────────────────── -->
-      <div class="fm-file-list" *ngIf="viewMode === 'list' && !isLoading && !showTrash">
+      <div class="fm-file-list" *ngIf="viewMode === 'list' && !isLoading && !showTrash"
+           (contextmenu)="onBgContextMenu($event)">
         <table class="table table-sm table-hover mb-0">
           <thead>
             <tr>
@@ -406,7 +413,7 @@
           <tbody>
             <tr *ngFor="let doc of sortedDocuments"
                 (click)="selectDocument(doc)"
-                (dblclick)="downloadFile(doc)"
+                (dblclick)="onDocumentDoubleClick(doc)"
                 (contextmenu)="onDocContextMenu($event, doc)"
                 [class.table-active]="selectedDocument?.id === doc.id"
                 [class.bulk-selected]="isDocSelected(doc.id)"
@@ -481,9 +488,11 @@
                      [addLinkSearching]="addLinkSearching"
                      [documentVersions]="documentVersions"
                      [showVersionHistory]="showVersionHistory"
+                     [isAdmin]="isAdmin"
                      (close)="selectedDocument = null"
                      (download)="downloadFile($event)"
                      (delete)="deleteFile($event)"
+                     (editFile)="openTextEditor($event)"
                      (toggleFavorite)="toggleFavorite($event)"
                      (addTag)="addTagToSelectedDoc($event)"
                      (removeTag)="removeTagFromSelectedDoc($event)"
@@ -497,7 +506,8 @@
                      (addLinkSearchQueryChange)="addLinkSearchQuery = $event"
                      (toggleVersionHistoryEvent)="toggleVersionHistory()"
                      (uploadNewVersion)="uploadNewVersionFile()"
-                     (versionFileSelected)="onVersionFileSelected($event)">
+                     (versionFileSelected)="onVersionFileSelected($event)"
+                     (rollbackVersion)="onRollbackVersion($event)">
     </fm-detail-panel>
 
 
@@ -531,6 +541,17 @@
       <li *ngIf="contextFolder" (click)="downloadFolderZip(contextFolder)"><i class="fa-solid fa-file-zipper me-2"></i> Download Zip</li>
       <li *ngIf="contextFolder" (click)="renameFolder(contextFolder)"><i class="fa-solid fa-pen me-2"></i> Rename</li>
       <li *ngIf="contextFolder" (click)="deleteFolderAction(contextFolder)"><i class="fa-solid fa-trash me-2"></i> Delete</li>
+    </ul>
+  </div>
+
+  <!-- Background context menu (right-click on empty area) -->
+  <div class="fm-context-menu" *ngIf="showBgContext" [style.left.px]="contextX" [style.top.px]="contextY"
+       (mouseleave)="showBgContext = false">
+    <ul>
+      <li *ngIf="viewScope === 'folder'" (click)="showNewFolderDialog(); showBgContext = false"><i class="fa-solid fa-folder-plus me-2"></i> New Folder</li>
+      <li *ngIf="viewScope === 'folder'" (click)="showNewTextFileDialog(); showBgContext = false"><i class="fa-solid fa-file-pen me-2"></i> New Text File</li>
+      <li class="fm-context-divider" *ngIf="viewScope === 'folder'"></li>
+      <li (click)="refreshCurrentView(); showBgContext = false"><i class="fa-solid fa-arrows-rotate me-2"></i> Refresh</li>
     </ul>
   </div>
 
@@ -572,6 +593,29 @@
     <div class="fm-modal-footer">
       <button class="btn btn-sm btn-secondary me-2" (click)="showRenameDocModal = false">Cancel</button>
       <button class="btn btn-sm btn-primary" (click)="confirmRenameDoc()" [disabled]="!renameDocName.trim()">Save</button>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════
+       NEW TEXT FILE DIALOG
+       ═══════════════════════════════════════════════════════════════════ -->
+  <div class="fm-modal-backdrop" *ngIf="showNewTextFileModal" (click)="showNewTextFileModal = false"></div>
+  <div class="fm-modal" *ngIf="showNewTextFileModal">
+    <div class="fm-modal-header">
+      <h6 class="mb-0">New Text File</h6>
+      <button class="btn-close btn-sm" (click)="showNewTextFileModal = false"></button>
+    </div>
+    <div class="fm-modal-body">
+      <input type="text" class="form-control" placeholder="File name (e.g. Meeting Notes)" [(ngModel)]="newTextFileName"
+             (keyup.enter)="confirmNewTextFile()" autofocus id="fm-new-text-file-input" />
+      <small class="text-muted mt-1 d-block">.md extension added automatically if not specified</small>
+    </div>
+    <div class="fm-modal-footer">
+      <button class="btn btn-sm btn-secondary me-2" (click)="showNewTextFileModal = false">Cancel</button>
+      <button class="btn btn-sm btn-primary" (click)="confirmNewTextFile()" [disabled]="!newTextFileName.trim()">
+        Create & Edit
+      </button>
     </div>
   </div>
 

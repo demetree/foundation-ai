@@ -15,15 +15,16 @@
 
 import { Component, OnInit, Input, ViewChild, ElementRef } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 import { lastValueFrom } from 'rxjs';
-import { DocumentService, DocumentData, DocumentSubmitData } from '../../../scheduler-data-services/document.service';
+import { DocumentService, DocumentData } from '../../../scheduler-data-services/document.service';
 import { DocumentTypeService, DocumentTypeData } from '../../../scheduler-data-services/document-type.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
+import { FileManagerService } from '../../../services/file-manager.service';
 
 interface PendingUpload {
   file: File;
-  base64: string;
   documentTypeId: number | bigint | null;
   notes: string;
 }
@@ -64,6 +65,13 @@ export class EventDocumentPanelComponent implements OnInit {
   previewDocument: DocumentData | null = null;
   previewUrl: SafeResourceUrl | null = null;
 
+  // Thumbnail state
+  thumbnailUrls = new Map<number | bigint, string>();
+
+  // Text editor state
+  editingDocumentId: number | null = null;
+  editingDocumentName = '';
+
   // Status options
   readonly statusOptions = ['Uploaded', 'Reviewed', 'Filed'];
 
@@ -73,7 +81,9 @@ export class EventDocumentPanelComponent implements OnInit {
     private documentTypeService: DocumentTypeService,
     private alertService: AlertService,
     private authService: AuthService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private fileManagerService: FileManagerService,
+    private router: Router
   ) {}
 
 
@@ -119,6 +129,52 @@ export class EventDocumentPanelComponent implements OnInit {
     }
 
     this.loading = false;
+    this.loadThumbnails();
+  }
+
+
+  private loadThumbnails(): void {
+    for (const doc of this.documents) {
+      const mime = (doc.mimeType || '').toLowerCase();
+      if (mime.startsWith('image/') || mime === 'application/pdf') {
+        this.fileManagerService.fetchThumbnailBlob(doc.id as number).subscribe(url => {
+          if (url) {
+            this.thumbnailUrls.set(doc.id as number, url);
+          }
+        });
+      }
+    }
+  }
+
+
+  openInDocuments(doc: DocumentData): void {
+    this.router.navigate(['/filemanager'], { queryParams: { docId: doc.id } });
+  }
+
+
+  isTextFile(doc: DocumentData): boolean {
+    const m = (doc.mimeType || '').toLowerCase();
+    return m.startsWith('text/') ||
+      m === 'application/json' ||
+      m === 'application/xml' ||
+      m === 'application/javascript' ||
+      m === 'application/x-yaml';
+  }
+
+  openTextEditor(doc: DocumentData): void {
+    this.editingDocumentId = doc.id as number;
+    this.editingDocumentName = doc.name || doc.fileName || 'Untitled';
+  }
+
+  closeTextEditor(): void {
+    this.editingDocumentId = null;
+    this.editingDocumentName = '';
+  }
+
+  async onEditorSaved(_event: any): Promise<void> {
+    this.closeTextEditor();
+    this.documentService.ClearAllCaches();
+    await this.loadData();
   }
 
 
@@ -175,15 +231,11 @@ export class EventDocumentPanelComponent implements OnInit {
       return;
     }
 
-    // Read as base64
-    const base64 = await this.readFileAsBase64(file);
-
     // Auto-detect document type from filename
     const detectedTypeId = this.detectDocumentType(file.name);
 
     this.pendingUpload = {
       file,
-      base64,
       documentTypeId: detectedTypeId,
       notes: ''
     };
@@ -192,19 +244,6 @@ export class EventDocumentPanelComponent implements OnInit {
   }
 
 
-  private readFileAsBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        // Strip the data:xxx;base64, prefix
-        const result = reader.result as string;
-        const base64 = result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
 
 
   private detectDocumentType(filename: string): number | bigint | null {
@@ -250,34 +289,13 @@ export class EventDocumentPanelComponent implements OnInit {
     this.uploading = true;
 
     try {
-      const submit = new DocumentSubmitData();
-      submit.name = this.pendingUpload.file.name.replace(/\.[^/.]+$/, ''); // filename without extension
-      submit.description = this.pendingUpload.notes || null;
-      submit.fileName = this.pendingUpload.file.name;
-      submit.mimeType = this.pendingUpload.file.type || 'application/octet-stream';
-      submit.fileSizeBytes = this.pendingUpload.file.size;
-      submit.fileDataFileName = this.pendingUpload.file.name;
-      submit.fileDataSize = this.pendingUpload.file.size;
-      submit.fileDataData = this.pendingUpload.base64;
-      submit.fileDataMimeType = this.pendingUpload.file.type || 'application/octet-stream';
-      submit.documentTypeId = this.pendingUpload.documentTypeId as number;
-
-      //
-      // Set the owning entity FK dynamically based on the ownerField input
-      //
-      (submit as any)[this.ownerField] = this.ownerId as number;
-
-      submit.status = 'Uploaded';
-      submit.statusDate = new Date().toISOString();
-      submit.uploadedDate = new Date().toISOString();
-      submit.uploadedBy = this.authService.currentUser?.userName || 'Unknown';
-      submit.notes = this.pendingUpload.notes || null;
-      submit.versionNumber = 0;
-      submit.active = true;
-      submit.deleted = false;
+      const options: any = {
+        documentTypeId: this.pendingUpload.documentTypeId as number
+      };
+      options[this.ownerField] = this.ownerId as number;
 
       await lastValueFrom(
-        this.documentService.PostDocument(submit)
+        this.fileManagerService.uploadDocuments([this.pendingUpload.file], options)
       );
 
       this.alertService.showMessage('Document Uploaded',
@@ -305,14 +323,18 @@ export class EventDocumentPanelComponent implements OnInit {
 
   openPreview(doc: DocumentData): void {
     this.previewDocument = doc;
+    this.previewUrl = null;
 
-    if (doc.fileDataData) {
-      const mimeType = doc.mimeType || 'application/octet-stream';
-      const dataUrl = `data:${mimeType};base64,${doc.fileDataData}`;
-      this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(dataUrl);
-    } else {
-      this.previewUrl = null;
-    }
+    // Stream preview from server instead of inline base64
+    this.fileManagerService.downloadDocument(doc.id as number).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        this.previewUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+      },
+      error: () => {
+        this.previewUrl = null;
+      }
+    });
   }
 
   closePreview(): void {
@@ -339,26 +361,19 @@ export class EventDocumentPanelComponent implements OnInit {
   // -----------------------------------------------------------------------
 
   downloadDocument(doc: DocumentData): void {
-    if (!doc.fileDataData) {
-      this.alertService.showMessage('No Data', 'Document file data is not available.', MessageSeverity.warn);
-      return;
-    }
-
-    const mimeType = doc.mimeType || 'application/octet-stream';
-    const byteCharacters = atob(doc.fileDataData);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: mimeType });
-
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = doc.fileName || 'document';
-    link.click();
-    URL.revokeObjectURL(url);
+    this.fileManagerService.downloadDocument(doc.id as number).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = doc.fileName || 'document';
+        link.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.alertService.showMessage('Error', 'Download failed.', MessageSeverity.error);
+      }
+    });
   }
 
 

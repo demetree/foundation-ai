@@ -113,7 +113,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			int? pageNumber = null,
 			string anyStringContains = null,
 			bool includeRelations = true,
-			bool excludeBinaryData = false,
 			CancellationToken cancellationToken = default)
 		{
 			StartAuditEventClock();
@@ -568,7 +567,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			bool diskBasedBinaryStorageMode = Foundation.Configuration.GetDiskBasedBinaryStorageMode();
 
-			if (diskBasedBinaryStorageMode == true && excludeBinaryData == false)
+			if (diskBasedBinaryStorageMode == true)
 			{
 				var tasks = materialized.Select(async document =>
 				{
@@ -584,15 +583,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 				// Run tasks concurrently and await their completion
 				await Task.WhenAll(tasks);
-			}
-
-			// When excludeBinaryData is requested, ensure no binary content is serialized
-			if (excludeBinaryData == true)
-			{
-				foreach (var document in materialized)
-				{
-					document.fileDataData = null;
-				}
 			}
 
 			await CreateAuditEventAsync(AuditEngine.AuditType.ReadList, userIsAdmin == true ? "Scheduler.Document Entity list was read with Admin privilege.  Returning " + materialized.Count + " rows of data." : "Scheduler.Document Entity list was read.  Returning " + materialized.Count + " rows of data.");
@@ -1643,6 +1633,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					document.fileDataData = null;
 					document.DocumentChangeHistories = null;
 					document.DocumentDocumentTags = null;
+					document.DocumentShareLinks = null;
 					document.campaign = null;
 					document.client = null;
 					document.constituent = null;
@@ -1791,6 +1782,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.fileDataData = null;
 				cloneOfExisting.DocumentChangeHistories = null;
 				cloneOfExisting.DocumentDocumentTags = null;
+				cloneOfExisting.DocumentShareLinks = null;
 				cloneOfExisting.campaign = null;
 				cloneOfExisting.client = null;
 				cloneOfExisting.constituent = null;

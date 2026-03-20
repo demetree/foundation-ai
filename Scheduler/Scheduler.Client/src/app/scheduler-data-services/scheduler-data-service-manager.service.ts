@@ -66,6 +66,8 @@ import {DocumentDocumentTagService} from  './document-document-tag.service';
 import {DocumentDocumentTagChangeHistoryService} from  './document-document-tag-change-history.service';
 import {DocumentFolderService} from  './document-folder.service';
 import {DocumentFolderChangeHistoryService} from  './document-folder-change-history.service';
+import {DocumentShareLinkService} from  './document-share-link.service';
+import {DocumentShareLinkChangeHistoryService} from  './document-share-link-change-history.service';
 import {DocumentTagService} from  './document-tag.service';
 import {DocumentTagChangeHistoryService} from  './document-tag-change-history.service';
 import {DocumentTypeService} from  './document-type.service';
@@ -251,6 +253,8 @@ export class SchedulerDataServiceManagerService  {
               , public documentDocumentTagChangeHistoryService: DocumentDocumentTagChangeHistoryService
               , public documentFolderService: DocumentFolderService
               , public documentFolderChangeHistoryService: DocumentFolderChangeHistoryService
+              , public documentShareLinkService: DocumentShareLinkService
+              , public documentShareLinkChangeHistoryService: DocumentShareLinkChangeHistoryService
               , public documentTagService: DocumentTagService
               , public documentTagChangeHistoryService: DocumentTagChangeHistoryService
               , public documentTypeService: DocumentTypeService
@@ -434,6 +438,8 @@ export class SchedulerDataServiceManagerService  {
         this.documentDocumentTagChangeHistoryService.ClearAllCaches();
         this.documentFolderService.ClearAllCaches();
         this.documentFolderChangeHistoryService.ClearAllCaches();
+        this.documentShareLinkService.ClearAllCaches();
+        this.documentShareLinkChangeHistoryService.ClearAllCaches();
         this.documentTagService.ClearAllCaches();
         this.documentTagChangeHistoryService.ClearAllCaches();
         this.documentTypeService.ClearAllCaches();

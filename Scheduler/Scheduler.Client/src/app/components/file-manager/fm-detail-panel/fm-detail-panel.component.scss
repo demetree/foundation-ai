@@ -478,3 +478,231 @@ a.fm-entity-link-name {
     color: #f59e0b;
   }
 }
+
+
+// ─── Share Link Section ─────────────────────────────────────────────
+.fm-detail-share {
+  border-top: 1px solid var(--sch-border);
+  padding-top: 12px;
+  margin-bottom: 12px;
+}
+
+.fm-share-count {
+  font-size: 0.75rem;
+  color: var(--sch-text-muted);
+}
+
+.fm-share-panel {
+  margin-top: 8px;
+}
+
+.fm-share-create {
+  background: var(--sch-surface-subtle);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.fm-share-create-row {
+  margin-bottom: 8px;
+}
+
+.fm-share-create-options {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fm-share-option {
+  flex: 1;
+
+  label {
+    font-size: 0.7rem;
+    color: var(--sch-text-muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .form-select,
+  .form-control {
+    font-size: 0.8rem;
+  }
+}
+
+.fm-share-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.fm-share-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.fm-share-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--sch-surface-subtle);
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+
+  &.expired,
+  &.exhausted {
+    opacity: 0.55;
+  }
+}
+
+.fm-share-item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.fm-share-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--sch-text-primary);
+
+  .fa-lock {
+    color: var(--sch-primary);
+  }
+}
+
+.fm-share-date {
+  font-weight: 500;
+}
+
+.fm-share-badge {
+  font-size: 0.6rem;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+
+  &.expired {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+
+  &.exhausted {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+  }
+}
+
+.fm-share-item-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 0.7rem;
+  color: var(--sch-text-muted);
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+}
+
+.fm-share-item-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.fm-share-copy-btn,
+.fm-share-revoke-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  transition: all $transition-fast;
+  color: var(--sch-text-muted);
+
+  &:hover {
+    background: var(--sch-bg-hover, var(--sch-surface-subtle));
+    color: var(--sch-text-primary);
+  }
+}
+
+.fm-share-copy-btn .fa-check {
+  color: #22c55e;
+}
+
+.fm-share-revoke-btn:hover {
+  color: var(--sch-danger, #ef4444);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.fm-share-empty {
+  font-size: 0.8rem;
+  color: var(--sch-text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 8px 0;
+}
+
+
+// ─── Email Section ──────────────────────────────────────────────────
+.fm-detail-email {
+  border-top: 1px solid var(--sch-border);
+  padding-top: 12px;
+  margin-bottom: 16px;
+}
+
+.fm-email-form {
+  margin-top: 8px;
+  background: var(--sch-surface-subtle);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.fm-email-field {
+  margin-bottom: 6px;
+
+  .form-control {
+    font-size: 0.8rem;
+  }
+
+  textarea.form-control {
+    resize: none;
+  }
+}
+
+.fm-email-options {
+  margin-bottom: 8px;
+}
+
+.fm-email-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--sch-text-muted);
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+  }
+}
+

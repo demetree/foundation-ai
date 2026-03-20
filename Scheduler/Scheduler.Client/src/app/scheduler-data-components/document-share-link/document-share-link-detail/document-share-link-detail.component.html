@@ -1,0 +1,126 @@
+<div class="container-fluid p-1 m-0 document-share-link-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="document-share-link-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Document Share Link</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Document Share Link' : 'Add Document Share Link'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerDocumentShareLinkReader()">
+                <div class="col m-2 document-share-link-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="documentShareLinkForm" (ngSubmit)="submitForm()" class="document-share-link-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('documentId')">
+                                <label for="DocumentShareLink-documentId" id="label-DocumentShareLink-documentId"><span class="text-danger">*</span>Document</label>
+                                <select id="DocumentShareLink-documentId" formControlName="documentId" class="form-select document-share-link-select" [disabled]="!userIsSchedulerDocumentShareLinkWriter()">
+                                    <option [ngValue]="null">Select Document</option>
+                                    <option *ngFor="let document of documents$ | async" [ngValue]="document.id">{{document.name}}</option>
+                                </select>
+                                <div *ngIf="documentShareLinkForm.get('documentId')?.invalid && documentShareLinkForm.get('documentId')?.touched" class="text-danger">
+                                    Document is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('token')">
+                                <label for="DocumentShareLink-token" id="label-DocumentShareLink-token"><span class="text-danger">*</span>Token</label>
+                                <input type="text" id="DocumentShareLink-token" formControlName="token" placeholder="Enter Token" class="form-control document-share-link-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" aria-labelledby="label-token" />
+                                <div *ngIf="documentShareLinkForm.get('token')?.invalid && documentShareLinkForm.get('token')?.touched" class="text-danger">
+                                    Token is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('passwordHash')">
+                                <label for="DocumentShareLink-passwordHash" id="label-DocumentShareLink-passwordHash">Password Hash</label>
+                                <input type="text" id="DocumentShareLink-passwordHash" formControlName="passwordHash" placeholder="Enter Password Hash" class="form-control document-share-link-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" aria-labelledby="label-passwordHash" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('expiresAt')">
+                                <label for="DocumentShareLink-expiresAt" id="label-DocumentShareLink-expiresAt">Expires At</label>
+                                <input type="datetime-local" id="DocumentShareLink-expiresAt" formControlName="expiresAt" placeholder="Enter Expires At" class="form-control document-share-link-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" aria-labelledby="label-expiresAt" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('maxDownloads')">
+                                <label for="DocumentShareLink-maxDownloads" id="label-DocumentShareLink-maxDownloads">Max Downloads</label>
+                                <input type="number" id="DocumentShareLink-maxDownloads" formControlName="maxDownloads" placeholder="Enter Max Downloads" class="form-control document-share-link-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" aria-labelledby="label-maxDownloads" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('downloadCount')">
+                                <label for="DocumentShareLink-downloadCount" id="label-DocumentShareLink-downloadCount"><span class="text-danger">*</span>Download Count</label>
+                                <input type="number" id="DocumentShareLink-downloadCount" formControlName="downloadCount" placeholder="Enter Download Count" class="form-control document-share-link-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" aria-labelledby="label-downloadCount" />
+                                <div *ngIf="documentShareLinkForm.get('downloadCount')?.invalid && documentShareLinkForm.get('downloadCount')?.touched" class="text-danger">
+                                    Download Count is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('createdBy')">
+                                <label for="DocumentShareLink-createdBy" id="label-DocumentShareLink-createdBy"><span class="text-danger">*</span>Created By</label>
+                                <input type="text" id="DocumentShareLink-createdBy" formControlName="createdBy" placeholder="Enter Created By" class="form-control document-share-link-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" aria-labelledby="label-createdBy" />
+                                <div *ngIf="documentShareLinkForm.get('createdBy')?.invalid && documentShareLinkForm.get('createdBy')?.touched" class="text-danger">
+                                    Created By is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('createdDate')">
+                                <label for="DocumentShareLink-createdDate" id="label-DocumentShareLink-createdDate"><span class="text-danger">*</span>Created Date</label>
+                                <input type="datetime-local" id="DocumentShareLink-createdDate" formControlName="createdDate" placeholder="Enter Created Date" class="form-control document-share-link-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" aria-labelledby="label-createdDate" />
+                                <div *ngIf="documentShareLinkForm.get('createdDate')?.invalid && documentShareLinkForm.get('createdDate')?.touched" class="text-danger">
+                                    Created Date is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="DocumentShareLink-versionNumber" id="label-DocumentShareLink-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="DocumentShareLink-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control document-share-link-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="DocumentShareLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" />
+                                <label for="DocumentShareLink-active" class="form-check-label" id="label-DocumentShareLink-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="DocumentShareLink-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerDocumentShareLinkWriter()" />
+                                <label for="DocumentShareLink-deleted" class="form-check-label" id="label-DocumentShareLink-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="document-share-link-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="documentShareLinkForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Document Share Link">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !documentShareLinkForm.valid || !documentShareLinkForm.dirty || documentShareLinkForm.pristine  || userIsSchedulerDocumentShareLinkWriter() == false " ngbTooltip="Save the Document Share Link changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Document Share Link' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerDocumentShareLinkReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 document-share-link-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="documentShareLinkChangeHistoryService.userIsSchedulerDocumentShareLinkChangeHistoryReader()">
+                            <button ngbNavLink>Document Share Link Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (documentShareLinkData?.DocumentShareLinkChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-document-share-link-change-history-table [queryParams]="{ documentShareLinkId: documentShareLinkData?.id }" [showAddButton]="true" [preSeededData]="{ documentShareLinkId: documentShareLinkData?.id }" [hiddenFields]="['documentShareLinkId']"></app-document-share-link-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -284,6 +284,8 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(DocumentDocumentTagChangeHistoriesController));
                 controllers.Add(typeof(DocumentFoldersController));
                 controllers.Add(typeof(DocumentFolderChangeHistoriesController));
+                controllers.Add(typeof(DocumentShareLinksController));
+                controllers.Add(typeof(DocumentShareLinkChangeHistoriesController));
                 controllers.Add(typeof(DocumentTagsController));
                 controllers.Add(typeof(DocumentTagChangeHistoriesController));
                 controllers.Add(typeof(DocumentTypesController));

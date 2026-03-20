@@ -22,7 +22,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 export class FmTextEditorComponent implements OnInit, OnDestroy {
 
     @Input() documentId!: number;
-    @Input() autoSaveInterval = 60;   // seconds
+    @Input() autoSaveInterval = 10;    // seconds
     @Input() readOnly = false;
 
     @Output() saved = new EventEmitter<DocumentDTO>();
@@ -49,6 +49,7 @@ export class FmTextEditorComponent implements OnInit, OnDestroy {
 
     // Version history
     showVersions = false;
+    showHelp = false;
     versions: any[] = [];
     isLoadingVersions = false;
 
@@ -75,6 +76,10 @@ export class FmTextEditorComponent implements OnInit, OnDestroy {
 
 
     ngOnDestroy(): void {
+        // Auto-save any unsaved changes when leaving (tab switch, navigation, etc.)
+        if (this.isDirty && !this.isSaving && !this.readOnly) {
+            this.save();
+        }
         this.destroy$.next();
         this.destroy$.complete();
         this.clearTimers();

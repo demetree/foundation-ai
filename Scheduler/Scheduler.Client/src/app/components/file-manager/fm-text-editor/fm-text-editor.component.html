@@ -46,6 +46,13 @@
                 (click)="toggleVersionHistory()" title="Version History">
           <i class="fa-solid fa-clock-rotate-left me-1"></i> Versions
         </button>
+
+        <button class="btn btn-sm ms-2"
+                [class.btn-glass-accent]="showHelp"
+                [class.btn-glass-subtle]="!showHelp"
+                (click)="showHelp = !showHelp" title="Markdown Help">
+          <i class="fa-solid fa-circle-question"></i>
+        </button>
       </div>
 
       <div class="toolbar-right">
@@ -109,6 +116,88 @@
               <span class="version-date">{{ v.uploadedDate | date:'short' }}</span>
               <span class="version-user text-muted">{{ v.uploadedBy }}</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Markdown Help panel -->
+      <div *ngIf="showHelp" class="help-pane">
+        <div class="help-header">
+          <i class="fa-solid fa-circle-question me-1"></i> Markdown Guide
+        </div>
+        <div class="help-content">
+          <div class="help-section">
+            <div class="help-label">Headings</div>
+            <div class="help-example">
+              <code># Heading 1</code><br>
+              <code>## Heading 2</code><br>
+              <code>### Heading 3</code>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-label">Text Formatting</div>
+            <div class="help-example">
+              <code>**bold text**</code> → <strong>bold text</strong><br>
+              <code>*italic text*</code> → <em>italic text</em><br>
+              <code>***bold & italic***</code> → <strong><em>bold & italic</em></strong><br>
+              <code>`inline code`</code> → <code class="inline-sample">inline code</code>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-label">Lists</div>
+            <div class="help-example">
+              <code>- Item one</code><br>
+              <code>- Item two</code><br>
+              <code>1. First</code><br>
+              <code>2. Second</code>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-label">Links</div>
+            <div class="help-example">
+              <code>[text](https://url.com)</code>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-label">Code Blocks</div>
+            <div class="help-example">
+              <code>```</code><br>
+              <code>code here</code><br>
+              <code>```</code>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-label">Blockquotes</div>
+            <div class="help-example">
+              <code>> Quoted text</code>
+            </div>
+          </div>
+
+          <div class="help-section">
+            <div class="help-label">Horizontal Rule</div>
+            <div class="help-example">
+              <code>---</code>
+            </div>
+          </div>
+
+          <div class="help-section help-shortcuts">
+            <div class="help-label">Keyboard Shortcuts</div>
+            <div class="help-example">
+              <span class="help-kbd">Ctrl+S</span> Save<br>
+              <span class="help-kbd">Ctrl+Z</span> Undo<br>
+              <span class="help-kbd">Ctrl+Shift+Z</span> Redo<br>
+              <span class="help-kbd">Tab</span> Insert spaces
+            </div>
+          </div>
+
+          <div class="help-tip">
+            <i class="fa-solid fa-lightbulb me-1"></i>
+            Click <strong>Preview</strong> to see how your Markdown renders in real-time.
           </div>
         </div>
       </div>

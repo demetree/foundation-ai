@@ -31,6 +31,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Foundation.Scheduler.Controllers.WebAPI
 {
@@ -1029,6 +1030,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
         /// <summary>
         /// Returns all versions of a document, sorted descending by version number.
+        /// The current state comes from the Document row; previous versions come from
+        /// DocumentChangeHistory (snapshots created by the ChangeHistoryToolset).
         /// </summary>
         [Route("api/FileManager/Documents/{documentId}/Versions")]
         [HttpGet]
@@ -1043,12 +1046,92 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             {
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
-                List<Document> versions = await _fileStorage.GetDocumentVersionsAsync(documentId, tenantGuid);
 
-                return Ok(versions.Select(d => new {
-                    d.id, d.name, d.fileName, d.mimeType, d.fileSizeBytes,
-                    d.uploadedDate, d.uploadedBy, d.versionNumber, d.objectGuid
-                }));
+                // Load the current document (the "latest" version)
+                var current = await _db.Documents
+                    .Where(d => d.id == documentId && d.tenantGuid == tenantGuid)
+                    .Select(d => new {
+                        d.id, d.name, d.fileName, d.mimeType, d.fileSizeBytes,
+                        d.uploadedDate, d.uploadedBy, d.versionNumber, d.objectGuid
+                    })
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync();
+
+                if (current == null)
+                    return NotFound("Document not found.");
+
+                // Load previous versions from change history
+                var history = await _db.Set<DocumentChangeHistory>()
+                    .Where(h => h.documentId == documentId && h.tenantGuid == tenantGuid)
+                    .OrderByDescending(h => h.versionNumber)
+                    .Select(h => new {
+                        h.id,
+                        h.versionNumber,
+                        h.timeStamp,
+                        h.userId,
+                        h.data
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                // Build unified version list: current + history entries
+                var results = new List<object>();
+
+                // Add the current (latest) version
+                results.Add(new {
+                    current.id,
+                    current.name,
+                    current.fileName,
+                    current.mimeType,
+                    current.fileSizeBytes,
+                    current.uploadedDate,
+                    current.uploadedBy,
+                    current.versionNumber,
+                    current.objectGuid,
+                    isCurrent = true
+                });
+
+                // Add each change history snapshot as a previous version
+                foreach (var h in history)
+                {
+                    // The data field contains a JSON snapshot; parse key fields
+                    string uploadedBy = null;
+                    DateTime? uploadedDate = null;
+                    string fileName = null;
+                    long? fileSizeBytes = null;
+
+                    if (!string.IsNullOrEmpty(h.data))
+                    {
+                        try
+                        {
+                            var json = System.Text.Json.JsonDocument.Parse(h.data);
+                            if (json.RootElement.TryGetProperty("uploadedBy", out var ub))
+                                uploadedBy = ub.GetString();
+                            if (json.RootElement.TryGetProperty("uploadedDate", out var ud))
+                                uploadedDate = ud.GetDateTime();
+                            if (json.RootElement.TryGetProperty("fileName", out var fn))
+                                fileName = fn.GetString();
+                            if (json.RootElement.TryGetProperty("fileSizeBytes", out var fs))
+                                fileSizeBytes = fs.GetInt64();
+                        }
+                        catch { /* If JSON parse fails, leave fields null */ }
+                    }
+
+                    results.Add(new {
+                        id = h.id,
+                        name = fileName ?? current.name,
+                        fileName = fileName ?? current.fileName,
+                        mimeType = current.mimeType,
+                        fileSizeBytes = fileSizeBytes ?? 0L,
+                        uploadedDate = uploadedDate ?? h.timeStamp,
+                        uploadedBy = uploadedBy ?? "System",
+                        versionNumber = h.versionNumber,
+                        objectGuid = current.objectGuid,
+                        isCurrent = false
+                    });
+                }
+
+                return Ok(results);
             }
             catch (Exception ex)
             {
@@ -1075,8 +1158,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
-                // Get existing document to copy objectGuid and versionNumber
-                Document existing = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+                //
+                // Load the existing document from the DB context so we can update it in-place.
+                //
+                Document existing = await _db.Documents
+                    .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == false)
+                    .FirstOrDefaultAsync();
+
                 if (existing == null)
                 {
                     return NotFound("Document not found.");
@@ -1096,49 +1184,33 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     fileBytes = ms.ToArray();
                 }
 
-                Document newVersion = new Document
-                {
-                    tenantGuid = tenantGuid,
-                    name = Path.GetFileNameWithoutExtension(file.FileName),
-                    fileName = file.FileName,
-                    mimeType = file.ContentType ?? "application/octet-stream",
-                    fileSizeBytes = file.Length,
-                    fileDataFileName = file.FileName,
-                    fileDataSize = file.Length,
-                    fileDataData = fileBytes,
-                    fileDataMimeType = file.ContentType ?? "application/octet-stream",
-                    documentFolderId = existing.documentFolderId,
-                    documentTypeId = existing.documentTypeId,
-                    uploadedBy = securityUser.accountName,
-                    objectGuid = existing.objectGuid != Guid.Empty ? existing.objectGuid : Guid.NewGuid(),
-                    versionNumber = existing.versionNumber + 1,
+                //
+                // Update the existing document's file content in-place.
+                // The ChangeHistoryToolset will snapshot the old state for version history.
+                //
+                existing.name = Path.GetFileNameWithoutExtension(file.FileName);
+                existing.fileName = file.FileName;
+                existing.mimeType = file.ContentType ?? "application/octet-stream";
+                existing.fileSizeBytes = file.Length;
+                existing.fileDataFileName = file.FileName;
+                existing.fileDataSize = file.Length;
+                existing.fileDataData = fileBytes;
+                existing.fileDataMimeType = file.ContentType ?? "application/octet-stream";
+                existing.uploadedBy = securityUser.accountName;
+                existing.uploadedDate = DateTime.UtcNow;
 
-                    // Preserve entity links
-                    scheduledEventId = existing.scheduledEventId,
-                    contactId = existing.contactId,
-                    clientId = existing.clientId,
-                    resourceId = existing.resourceId,
-                    crewId = existing.crewId,
-                    schedulingTargetId = existing.schedulingTargetId,
-                    financialTransactionId = existing.financialTransactionId,
-                    officeId = existing.officeId,
-                    campaignId = existing.campaignId,
-                    householdId = existing.householdId,
-                    constituentId = existing.constituentId,
-                    tributeId = existing.tributeId,
-                    volunteerProfileId = existing.volunteerProfileId
-                };
+                var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(
+                    _db, securityUser.id, false);
+                await chts.SaveEntityAsync(existing).ConfigureAwait(false);
 
-                Document saved = await _fileStorage.UploadDocumentAsync(newVersion, securityUser.id);
-
-                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-                    $"Uploaded new version (v{saved.versionNumber}) for document {documentId}",
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
+                    $"Uploaded new version (v{existing.versionNumber}) for document {documentId}",
                     securityUser.accountName);
                 _cache.InvalidateDocuments(tenantGuid);
                 _cache.InvalidateThumbnail(documentId, tenantGuid);
-                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "newVersion", documentId, versionNumber = saved.versionNumber });
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "newVersion", documentId, versionNumber = existing.versionNumber });
 
-                return Ok(saved.ToDTO());
+                return Ok(existing.ToDTO());
             }
             catch (Exception ex)
             {
@@ -1225,7 +1297,15 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
-                Document existing = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+                //
+                // Load the existing document from the DB context so we can update it in-place.
+                // This is important — we must use the tracked entity for ChangeHistoryToolset
+                // to properly snapshot the old state before saving.
+                //
+                Document existing = await _db.Documents
+                    .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == false)
+                    .FirstOrDefaultAsync();
+
                 if (existing == null)
                 {
                     return NotFound("Document not found.");
@@ -1239,56 +1319,33 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 byte[] contentBytes = System.Text.Encoding.UTF8.GetBytes(request.Content ?? "");
 
-                Document newVersion = new Document
-                {
-                    tenantGuid = tenantGuid,
-                    name = existing.name,
-                    fileName = existing.fileName,
-                    mimeType = existing.mimeType,
-                    fileSizeBytes = contentBytes.Length,
-                    fileDataFileName = existing.fileDataFileName,
-                    fileDataSize = contentBytes.Length,
-                    fileDataData = contentBytes,
-                    fileDataMimeType = existing.fileDataMimeType,
-                    documentFolderId = existing.documentFolderId,
-                    documentTypeId = existing.documentTypeId,
-                    uploadedBy = securityUser.accountName,
-                    objectGuid = existing.objectGuid != Guid.Empty ? existing.objectGuid : Guid.NewGuid(),
-                    versionNumber = existing.versionNumber + 1,
+                //
+                // Update the existing document's content fields in-place.
+                // The ChangeHistoryToolset will snapshot the old state automatically.
+                //
+                existing.fileDataData = contentBytes;
+                existing.fileDataSize = contentBytes.Length;
+                existing.fileSizeBytes = contentBytes.Length;
+                existing.uploadedBy = securityUser.accountName;
+                existing.uploadedDate = DateTime.UtcNow;
 
-                    // Preserve entity links
-                    scheduledEventId = existing.scheduledEventId,
-                    contactId = existing.contactId,
-                    clientId = existing.clientId,
-                    resourceId = existing.resourceId,
-                    crewId = existing.crewId,
-                    schedulingTargetId = existing.schedulingTargetId,
-                    financialTransactionId = existing.financialTransactionId,
-                    officeId = existing.officeId,
-                    invoiceId = existing.invoiceId,
-                    receiptId = existing.receiptId,
-                    paymentTransactionId = existing.paymentTransactionId,
-                    financialOfficeId = existing.financialOfficeId,
-                    tenantProfileId = existing.tenantProfileId,
-                    campaignId = existing.campaignId,
-                    householdId = existing.householdId,
-                    constituentId = existing.constituentId,
-                    tributeId = existing.tributeId,
-                    volunteerProfileId = existing.volunteerProfileId
-                };
-
-                Document saved = await _fileStorage.UploadDocumentAsync(newVersion, securityUser.id);
+                //
+                // Use ChangeHistoryToolset to save — this creates a DocumentChangeHistory
+                // record with the previous state, providing proper version control.
+                //
+                var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(
+                    _db, securityUser.id, false);
+                await chts.SaveEntityAsync(existing).ConfigureAwait(false);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-                    $"Saved text content as new version (v{saved.versionNumber}) for document {documentId}",
+                    $"Saved text content (v{existing.versionNumber}) for document {documentId}",
                     securityUser.accountName);
                 _cache.InvalidateDocuments(tenantGuid);
 
                 await BroadcastDocumentChangedAsync(tenantGuid,
-                    new { action = "contentSaved", documentId, versionNumber = saved.versionNumber });
+                    new { action = "contentSaved", documentId, versionNumber = existing.versionNumber });
 
-                //return Ok(Document.ToOutputDTO(saved));
-                return Ok(saved.ToOutputDTO());
+                return Ok(existing.ToOutputDTO());
             }
             catch (Exception ex)
             {
@@ -1305,6 +1362,85 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             public string Content { get; set; } = "";
         }
 
+
+        /// <summary>
+        /// Creates a new blank text/markdown document in the specified folder (or root).
+        /// Returns the created document so the client can immediately open it in the editor.
+        /// </summary>
+        [Route("api/FileManager/Documents/CreateTextFile")]
+        [HttpPost]
+        public async Task<IActionResult> CreateTextDocument([FromBody] CreateTextFileRequest request)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                string docName = (request.Name ?? "Untitled").Trim();
+                if (string.IsNullOrWhiteSpace(docName)) docName = "Untitled";
+
+                // Ensure .md extension
+                string fileName = docName;
+                if (!fileName.EndsWith(".md", StringComparison.OrdinalIgnoreCase) &&
+                    !fileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    fileName += ".md";
+                }
+
+                byte[] content = System.Text.Encoding.UTF8.GetBytes($"# {docName}\n\n");
+
+                Document document = new Document
+                {
+                    tenantGuid = tenantGuid,
+                    name = docName,
+                    fileName = fileName,
+                    mimeType = fileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+                        ? "text/plain" : "text/markdown",
+                    fileSizeBytes = content.Length,
+                    fileDataFileName = fileName,
+                    fileDataSize = content.Length,
+                    fileDataData = content,
+                    fileDataMimeType = fileName.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)
+                        ? "text/plain" : "text/markdown",
+                    documentFolderId = request.FolderId,
+                    uploadedBy = securityUser.accountName,
+                    objectGuid = Guid.NewGuid(),
+                    active = true,
+                    deleted = false,
+                    uploadedDate = DateTime.UtcNow
+                };
+
+                var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(
+                    _db, securityUser.id, false);
+                await chts.SaveEntityAsync(document).ConfigureAwait(false);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+                    $"Created text document '{fileName}'",
+                    securityUser.accountName);
+                _cache.InvalidateDocuments(tenantGuid);
+
+                await BroadcastDocumentChangedAsync(tenantGuid,
+                    new { action = "created", documentId = document.id });
+
+                return Ok(document.ToOutputDTO());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating text document.");
+                return StatusCode(500, "Error creating text document.");
+            }
+        }
+
+        public class CreateTextFileRequest
+        {
+            public string Name { get; set; } = "Untitled";
+            public int? FolderId { get; set; }
+        }
 
         // ═══════════════════════════════════════════════════════════════════════
         //  SCRATCHPAD (Entity Notes)
@@ -2110,6 +2246,487 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 _logger.LogError(ex, "Error fetching batch tags.");
                 return StatusCode(500, "Error fetching batch tags.");
             }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  SHARE LINK ENDPOINTS (Authenticated — for managing share links)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Creates a shareable download link for a document.
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/ShareLink")]
+        [HttpPost]
+        public async Task<IActionResult> CreateShareLink(int documentId, [FromBody] CreateShareLinkRequest request)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                // Verify the document exists and belongs to this tenant
+                Document document = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+                if (document == null)
+                {
+                    return NotFound("Document not found.");
+                }
+
+                string passwordHash = null;
+                if (!string.IsNullOrWhiteSpace(request?.Password))
+                {
+                    passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+                }
+
+                var shareLink = new DocumentShareLink
+                {
+                    tenantGuid = tenantGuid,
+                    documentId = documentId,
+                    token = Guid.NewGuid(),
+                    passwordHash = passwordHash,
+                    expiresAt = request?.ExpiresAt,
+                    maxDownloads = request?.MaxDownloads,
+                    downloadCount = 0,
+                    createdBy = securityUser.emailAddress ?? securityUser.accountName,
+                    createdDate = DateTime.UtcNow,
+                    versionNumber = 1,
+                    objectGuid = Guid.NewGuid(),
+                    active = true,
+                    deleted = false
+                };
+
+                _db.DocumentShareLinks.Add(shareLink);
+                await _db.SaveChangesAsync();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Created share link for document '{document.name}' (ID: {documentId})");
+
+                return Ok(shareLink.ToDTO());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating share link for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error creating share link.");
+            }
+        }
+
+
+        /// <summary>
+        /// Lists all share links for a specific document.
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/ShareLinks")]
+        [HttpGet]
+        public async Task<IActionResult> GetShareLinks(int documentId)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                List<DocumentShareLink> links = await _db.DocumentShareLinks
+                    .Where(l => l.tenantGuid == tenantGuid && l.documentId == documentId && !l.deleted)
+                    .OrderByDescending(l => l.createdDate)
+                    .ToListAsync();
+
+                return Ok(DocumentShareLink.ToDTOList(links));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching share links for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error fetching share links.");
+            }
+        }
+
+
+        /// <summary>
+        /// Revokes (soft-deletes) a share link.
+        /// </summary>
+        [Route("api/FileManager/ShareLinks/{linkId}")]
+        [HttpDelete]
+        public async Task<IActionResult> RevokeShareLink(int linkId)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                DocumentShareLink link = await _db.DocumentShareLinks
+                    .FirstOrDefaultAsync(l => l.id == linkId && l.tenantGuid == tenantGuid);
+
+                if (link == null)
+                {
+                    return NotFound("Share link not found.");
+                }
+
+                link.deleted = true;
+                link.active = false;
+                await _db.SaveChangesAsync();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Revoked share link (ID: {linkId}) for document ID {link.documentId}");
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error revoking share link {LinkId}.", linkId);
+                return StatusCode(500, "Error revoking share link.");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  SHARE LINK ENDPOINTS (Public — unauthenticated access)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Returns metadata about a share link (document name, whether password is required, etc.).
+        /// This endpoint is unauthenticated — external users call it to see what they're downloading.
+        /// </summary>
+        [Route("api/Share/{token}")]
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetShareLinkInfo(Guid token)
+        {
+            try
+            {
+                DocumentShareLink link = await _db.DocumentShareLinks
+                    .Include(l => l.document)
+                    .FirstOrDefaultAsync(l => l.token == token && l.active && !l.deleted);
+
+                if (link == null)
+                {
+                    return NotFound("Share link not found or has been revoked.");
+                }
+
+                // Check expiry
+                if (link.expiresAt.HasValue && link.expiresAt.Value < DateTime.UtcNow)
+                {
+                    return BadRequest("This share link has expired.");
+                }
+
+                // Check download limit
+                if (link.maxDownloads.HasValue && link.downloadCount >= link.maxDownloads.Value)
+                {
+                    return BadRequest("This share link has reached its download limit.");
+                }
+
+                return Ok(new
+                {
+                    fileName = link.document?.fileName,
+                    name = link.document?.name,
+                    mimeType = link.document?.mimeType,
+                    fileSizeBytes = link.document?.fileSizeBytes,
+                    requiresPassword = !string.IsNullOrEmpty(link.passwordHash),
+                    expiresAt = link.expiresAt,
+                    maxDownloads = link.maxDownloads,
+                    downloadCount = link.downloadCount
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting share link info for token {Token}.", token);
+                return StatusCode(500, "Error retrieving share link info.");
+            }
+        }
+
+
+        /// <summary>
+        /// Verifies the password for a password-protected share link.
+        /// Returns a short-lived verification token if successful.
+        /// </summary>
+        [Route("api/Share/{token}/Verify")]
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyShareLinkPassword(Guid token, [FromBody] VerifyPasswordRequest request)
+        {
+            try
+            {
+                DocumentShareLink link = await _db.DocumentShareLinks
+                    .FirstOrDefaultAsync(l => l.token == token && l.active && !l.deleted);
+
+                if (link == null)
+                {
+                    return NotFound("Share link not found.");
+                }
+
+                if (string.IsNullOrEmpty(link.passwordHash))
+                {
+                    // No password required — already verified
+                    return Ok(new { verified = true });
+                }
+
+                if (string.IsNullOrWhiteSpace(request?.Password))
+                {
+                    return BadRequest("Password is required.");
+                }
+
+                bool isValid = BCrypt.Net.BCrypt.Verify(request.Password, link.passwordHash);
+
+                if (!isValid)
+                {
+                    return Unauthorized("Invalid password.");
+                }
+
+                return Ok(new { verified = true });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error verifying share link password for token {Token}.", token);
+                return StatusCode(500, "Error verifying password.");
+            }
+        }
+
+
+        /// <summary>
+        /// Downloads the file associated with a share link.
+        /// This endpoint is unauthenticated — validates via token + optional password.
+        /// </summary>
+        [Route("api/Share/{token}/Download")]
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> DownloadSharedFile(Guid token, [FromQuery] string password = null)
+        {
+            try
+            {
+                DocumentShareLink link = await _db.DocumentShareLinks
+                    .Include(l => l.document)
+                    .FirstOrDefaultAsync(l => l.token == token && l.active && !l.deleted);
+
+                if (link == null)
+                {
+                    return NotFound("Share link not found or has been revoked.");
+                }
+
+                // Check expiry
+                if (link.expiresAt.HasValue && link.expiresAt.Value < DateTime.UtcNow)
+                {
+                    return BadRequest("This share link has expired.");
+                }
+
+                // Check download limit
+                if (link.maxDownloads.HasValue && link.downloadCount >= link.maxDownloads.Value)
+                {
+                    return BadRequest("This share link has reached its download limit.");
+                }
+
+                // Check password
+                if (!string.IsNullOrEmpty(link.passwordHash))
+                {
+                    if (string.IsNullOrWhiteSpace(password))
+                    {
+                        return Unauthorized("Password is required.");
+                    }
+
+                    if (!BCrypt.Net.BCrypt.Verify(password, link.passwordHash))
+                    {
+                        return Unauthorized("Invalid password.");
+                    }
+                }
+
+                // Retrieve file data
+                Document document = await _fileStorage.GetDocumentByIdAsync(link.documentId, link.tenantGuid);
+
+                if (document == null || document.fileDataData == null || document.fileDataData.Length == 0)
+                {
+                    return NotFound("Document content not available.");
+                }
+
+                // Increment download count
+                link.downloadCount++;
+                await _db.SaveChangesAsync();
+
+                var stream = new MemoryStream(document.fileDataData);
+                return File(stream, document.mimeType ?? "application/octet-stream", document.fileName, enableRangeProcessing: true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading shared file for token {Token}.", token);
+                return StatusCode(500, "Error downloading shared file.");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  EMAIL ENDPOINTS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Emails a document to a recipient.
+        /// Small files (≤10MB) are sent as attachments; large files get a share link instead.
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/Email")]
+        [HttpPost]
+        public async Task<IActionResult> EmailDocument(int documentId, [FromBody] EmailDocumentRequest request)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                if (string.IsNullOrWhiteSpace(request?.ToEmail))
+                {
+                    return BadRequest("Recipient email is required.");
+                }
+
+                Document document = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+                if (document == null)
+                {
+                    return NotFound("Document not found.");
+                }
+
+                string senderEmail = securityUser.emailAddress;
+                string senderName = $"{securityUser.firstName} {securityUser.lastName}".Trim();
+                if (string.IsNullOrEmpty(senderName)) senderName = securityUser.accountName;
+
+                string subject = request.Subject ?? $"Document: {document.name}";
+                string userMessage = request.Message ?? "";
+
+                const long MAX_ATTACHMENT_BYTES = 10L * 1024 * 1024; // 10MB
+
+                bool sendAsLink = request.SendAsLink == true
+                    || (document.fileDataData != null && document.fileDataData.Length > MAX_ATTACHMENT_BYTES);
+
+                bool success;
+
+                if (sendAsLink)
+                {
+                    // Auto-create a share link (7-day expiry) and embed in email
+                    var shareLink = new DocumentShareLink
+                    {
+                        tenantGuid = tenantGuid,
+                        documentId = documentId,
+                        token = Guid.NewGuid(),
+                        expiresAt = DateTime.UtcNow.AddDays(7),
+                        downloadCount = 0,
+                        createdBy = senderEmail ?? senderName,
+                        createdDate = DateTime.UtcNow,
+                        versionNumber = 1,
+                        objectGuid = Guid.NewGuid(),
+                        active = true,
+                        deleted = false
+                    };
+
+                    _db.DocumentShareLinks.Add(shareLink);
+                    await _db.SaveChangesAsync();
+
+                    // Build download URL (relative — the email template will need the full host)
+                    string baseUrl = $"{Request.Scheme}://{Request.Host}";
+                    string downloadUrl = $"{baseUrl}/api/Share/{shareLink.token}/Download";
+
+                    string htmlBody = BuildEmailHtml(document.name, userMessage, downloadUrl, senderName);
+
+                    success = await Foundation.Services.SendGridEmailService.SendEmailAsync(
+                        senderEmail, senderName, request.ToEmail, subject, htmlBody,
+                        bodyIsHtml: true, includeSignature: false);
+                }
+                else
+                {
+                    // Send as attachment
+                    string base64Data = document.fileDataData != null
+                        ? Convert.ToBase64String(document.fileDataData)
+                        : "";
+
+                    string htmlBody = BuildEmailHtml(document.name, userMessage, null, senderName);
+
+                    success = await Foundation.Services.SendGridEmailService.SendEmailWithAttachmentAsync(
+                        senderEmail, senderName, request.ToEmail, subject, htmlBody,
+                        document.fileName, base64Data, document.mimeType ?? "application/octet-stream",
+                        bodyIsHtml: true, includeSignature: false);
+                }
+
+                if (!success)
+                {
+                    return StatusCode(500, "Failed to send email.");
+                }
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, $"Emailed document '{document.name}' to {request.ToEmail}");
+
+                return Ok(new { sent = true, sentAsLink = sendAsLink });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error emailing document {DocumentId}.", documentId);
+                return StatusCode(500, "Error sending email.");
+            }
+        }
+
+
+        /// <summary>
+        /// Builds a clean HTML email body for document sharing.
+        /// </summary>
+        private static string BuildEmailHtml(string documentName, string userMessage, string downloadUrl, string senderName)
+        {
+            string messageSection = string.IsNullOrWhiteSpace(userMessage)
+                ? ""
+                : $"<p style='font-family: Arial, sans-serif; font-size: 14px;'>{System.Net.WebUtility.HtmlEncode(userMessage)}</p>";
+
+            string linkSection = string.IsNullOrEmpty(downloadUrl)
+                ? "<p style='font-family: Arial, sans-serif; font-size: 14px;'>The document is attached to this email.</p>"
+                : $@"<p style='font-family: Arial, sans-serif; font-size: 14px;'>
+                    You can download the document using the link below:
+                  </p>
+                  <p style='margin: 16px 0;'>
+                    <a href='{downloadUrl}' style='background-color: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-family: Arial, sans-serif; font-size: 14px;'>
+                      Download {System.Net.WebUtility.HtmlEncode(documentName)}
+                    </a>
+                  </p>
+                  <p style='font-family: Arial, sans-serif; font-size: 12px; color: #666;'>
+                    This link expires in 7 days.
+                  </p>";
+
+            return $@"<div style='font-family: Arial, sans-serif; font-size: 14px;'>
+                <p><strong>{System.Net.WebUtility.HtmlEncode(senderName)}</strong> shared a document with you:</p>
+                <p style='font-size: 16px; font-weight: bold;'>{System.Net.WebUtility.HtmlEncode(documentName)}</p>
+                {messageSection}
+                {linkSection}
+            </div>";
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  REQUEST / RESPONSE DTOs
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>DTO for creating a share link.</summary>
+        public class CreateShareLinkRequest
+        {
+            public string Password { get; set; }
+            public DateTime? ExpiresAt { get; set; }
+            public int? MaxDownloads { get; set; }
+        }
+
+        /// <summary>DTO for verifying a share link password.</summary>
+        public class VerifyPasswordRequest
+        {
+            public string Password { get; set; }
+        }
+
+        /// <summary>DTO for emailing a document.</summary>
+        public class EmailDocumentRequest
+        {
+            public string ToEmail { get; set; }
+            public string Subject { get; set; }
+            public string Message { get; set; }
+            public bool? SendAsLink { get; set; }
         }
     }
 }

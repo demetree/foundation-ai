@@ -45,6 +45,7 @@ import { TributeService } from '../../../scheduler-data-services/tribute.service
 import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { DocumentChangeHistoryService } from '../../../scheduler-data-services/document-change-history.service';
 import { DocumentDocumentTagService } from '../../../scheduler-data-services/document-document-tag.service';
+import { DocumentShareLinkService } from '../../../scheduler-data-services/document-share-link.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -195,6 +196,7 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
   public volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
   public documentChangeHistories$ = this.documentChangeHistoryService.GetDocumentChangeHistoryList();
   public documentDocumentTags$ = this.documentDocumentTagService.GetDocumentDocumentTagList();
+  public documentShareLinks$ = this.documentShareLinkService.GetDocumentShareLinkList();
 
   private destroy$ = new Subject<void>();
 
@@ -222,6 +224,7 @@ export class DocumentDetailComponent implements OnInit, CanComponentDeactivate {
     public volunteerProfileService: VolunteerProfileService,
     public documentChangeHistoryService: DocumentChangeHistoryService,
     public documentDocumentTagService: DocumentDocumentTagService,
+    public documentShareLinkService: DocumentShareLinkService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,

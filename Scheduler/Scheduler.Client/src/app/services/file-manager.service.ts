@@ -150,6 +150,35 @@ export interface UploadOptions {
     volunteerProfileId?: number | null;
 }
 
+export interface ShareLinkDTO {
+    id: number;
+    documentId: number;
+    token: string;
+    password?: string;       // Only sent on create (plaintext), never returned from server
+    hasPassword: boolean;    // Read-only indicator from server
+    expiresAt?: string;
+    maxDownloads?: number;
+    downloadCount: number;
+    createdBy: string;
+    createdDate: string;
+    versionNumber: number;
+    objectGuid: string;
+    active?: boolean;
+    deleted?: boolean;
+}
+
+export interface CreateShareLinkRequest {
+    password?: string;
+    expiresAt?: string;
+    maxDownloads?: number;
+}
+
+export interface EmailDocumentRequest {
+    toEmail: string;
+    subject?: string;
+    message?: string;
+    sendAsLink?: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class FileManagerService extends SecureEndpointBase {
@@ -504,6 +533,12 @@ export class FileManagerService extends SecureEndpointBase {
         );
     }
 
+    rollbackVersion(documentId: number, versionNumber: number): Observable<any> {
+        return this.http.put(`/api/Document/Rollback/${documentId}?versionNumber=${versionNumber}`, null, { headers: this.authHeaders() }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.rollbackVersion(documentId, versionNumber)))
+        );
+    }
+
 
     // ─── Text Content (Markdown Editor) ─────────────────────────────
 
@@ -525,6 +560,17 @@ export class FileManagerService extends SecureEndpointBase {
             { headers: this.jsonHeaders() }
         ).pipe(
             catchError((error: any) => this.handleError(error, () => this.saveDocumentContent(documentId, content)))
+        );
+    }
+
+    /** Creates a new blank text/markdown document in the given folder. */
+    createTextDocument(name: string, folderId?: number | null): Observable<DocumentDTO> {
+        return this.http.post<DocumentDTO>(
+            `${this.base}/Documents/CreateTextFile`,
+            { name, folderId },
+            { headers: this.jsonHeaders() }
+        ).pipe(
+            catchError((error: any) => this.handleError(error, () => this.createTextDocument(name, folderId)))
         );
     }
 
@@ -750,5 +796,90 @@ export class FileManagerService extends SecureEndpointBase {
         if (mimeType.startsWith('video/')) return '#2c3e50';
         if (mimeType.startsWith('audio/')) return '#16a085';
         return '#6c757d';
+    }
+
+
+    // ─── Share Link Methods ──────────────────────────────────────────────
+
+    /**
+     * Creates a shareable download link for a document.
+     */
+    createShareLink(documentId: number, request: CreateShareLinkRequest = {}): Observable<ShareLinkDTO> {
+        return this.http.post<ShareLinkDTO>(
+            `${this.base}/Documents/${documentId}/ShareLink`,
+            request,
+            { headers: this.authHeaders() }
+        ).pipe(
+            catchError(err => {
+              this.alertService.showErrorMessage('Share error', 'Failed to create share link.');
+                return throwError(() => err);
+            })
+        );
+    }
+
+    /**
+     * Lists all share links for a document.
+     */
+    getShareLinks(documentId: number): Observable<ShareLinkDTO[]> {
+        return this.http.get<ShareLinkDTO[]>(
+            `${this.base}/Documents/${documentId}/ShareLinks`,
+            { headers: this.authHeaders() }
+        ).pipe(
+          catchError(err => {
+            this.alertService.showErrorMessage('Share error', 'Failed to load share links.');
+                return throwError(() => err);
+            })
+        );
+    }
+
+    /**
+     * Revokes (soft-deletes) a share link.
+     */
+    revokeShareLink(linkId: number): Observable<any> {
+        return this.http.delete(
+            `${this.base}/ShareLinks/${linkId}`,
+            { headers: this.authHeaders() }
+        ).pipe(
+            catchError(err => {
+              this.alertService.showErrorMessage('Share error', 'Failed to revoke share link.');
+                return throwError(() => err);
+            })
+        );
+    }
+
+    /**
+     * Builds the public share link URL from a token.
+     */
+    getShareUrl(token: string): string {
+        return `${window.location.origin}/api/Share/${token}`;
+    }
+
+    /**
+     * Builds the direct download URL for a public share link.
+     */
+    getShareDownloadUrl(token: string, password?: string): string {
+        let url = `${window.location.origin}/api/Share/${token}/Download`;
+        if (password) {
+            url += `?password=${encodeURIComponent(password)}`;
+        }
+        return url;
+    }
+
+    // ─── Email Methods ───────────────────────────────────────────────────
+
+    /**
+     * Emails a document to a recipient.
+     */
+    emailDocument(documentId: number, request: EmailDocumentRequest): Observable<{ sent: boolean; sentAsLink: boolean }> {
+        return this.http.post<{ sent: boolean; sentAsLink: boolean }>(
+            `${this.base}/Documents/${documentId}/Email`,
+            request,
+            { headers: this.authHeaders() }
+        ).pipe(
+            catchError(err => {
+                this.alertService.showErrorMessage('Email error', 'Failed to send email.');
+                return throwError(() => err);
+            })
+        );
     }
 }
