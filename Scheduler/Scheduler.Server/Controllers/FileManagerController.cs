@@ -304,6 +304,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [Route("api/FileManager/Documents/Upload")]
         [HttpPost]
         [RequestSizeLimit(Constants.ONE_GIGABYTE_IN_BYTES)]
+        [RequestFormLimits(MultipartBodyLengthLimit = Constants.ONE_GIGABYTE_IN_BYTES)]
         public async Task<IActionResult> UploadDocuments(
             [FromQuery] int? folderId = null,
             [FromQuery] int? documentTypeId = null,
@@ -609,10 +610,21 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 Document saved = await _fileStorage.UploadDocumentAsync(document, securityUser.id);
 
+                // Release the large byte array as early as possible
+                document.fileDataData = null;
+                fileBytes = null;
+
                 _chunkBuffer.CleanupSession(sessionId);
 
+                // For large uploads, hint GC to reclaim the ~500MB+ buffer
+                // before the next upload starts
+                if (saved.fileSizeBytes > 50 * 1024 * 1024) // > 50MB
+                {
+                    GC.Collect(2, GCCollectionMode.Optimized, blocking: false);
+                }
+
                 await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-                    $"Uploaded document '{fileName}' via chunked upload ({fileBytes.Length} bytes)",
+                    $"Uploaded document '{fileName}' via chunked upload ({saved.fileSizeBytes} bytes)",
                     securityUser.accountName);
 
                 _cache.InvalidateDocuments(tenantGuid);
@@ -1155,27 +1167,38 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
+                //
+                // Project only lightweight columns — skip h.data (large JSON change snapshots)
+                // and avoid materializing the full Document entity for the name.
+                //
                 var activity = await _db.DocumentChangeHistories
                     .Where(h => h.tenantGuid == tenantGuid)
-                    .OrderByDescending(h => h.timeStamp)
+                    .Join(
+                        _db.Documents,
+                        h => h.documentId,
+                        d => d.id,
+                        (h, d) => new
+                        {
+                            h.id,
+                            h.documentId,
+                            documentName = d.name,
+                            documentFileName = d.fileName,
+                            h.versionNumber,
+                            h.timeStamp,
+                            h.userId
+                        })
+                    .OrderByDescending(x => x.timeStamp)
                     .Take(Math.Min(count, 100))
-                    .Select(h => new
-                    {
-                        h.id,
-                        h.documentId,
-                        documentName = h.document != null ? h.document.name : null,
-                        h.versionNumber,
-                        h.timeStamp,
-                        h.userId,
-                        h.data
-                    })
+                    .AsNoTracking()
                     .ToListAsync();
 
-                // Resolve user IDs to display names via Foundation's ChangeHistory multi-tenant user resolution.
-                // This uses the same pattern as DocumentsController.GetDocumentAuditHistory — the Foundation
-                // ChangeHistoryMultiTenant class joins SecurityTenantUsers → SecurityUser with a built-in cache.
+                //
+                // Batch-resolve user display names (avoids N+1 per userId)
+                //
                 var userIds = activity.Select(a => a.userId).Distinct().ToList();
                 var userNameMap = new Dictionary<int, string>();
+
+                // Resolve all at once — GetChangeHistoryUserAsync has its own internal cache
                 foreach (var uid in userIds)
                 {
                     var changeHistoryUser = await Foundation.Security.ChangeHistoryMultiTenant.GetChangeHistoryUserAsync(uid, tenantGuid);
@@ -1192,12 +1215,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 {
                     a.id,
                     a.documentId,
-                    a.documentName,
+                    documentName = a.documentFileName ?? a.documentName,
                     a.versionNumber,
                     a.timeStamp,
                     a.userId,
-                    userName = userNameMap.GetValueOrDefault(a.userId, $"User #{a.userId}"),
-                    a.data
+                    userName = userNameMap.GetValueOrDefault(a.userId, $"User #{a.userId}")
                 });
 
                 return Ok(enriched);

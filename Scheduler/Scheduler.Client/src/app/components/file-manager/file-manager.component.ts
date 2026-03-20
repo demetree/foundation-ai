@@ -6,16 +6,30 @@
 // Main File Manager component — an Explorer-like UI for managing
 // documents and folders.  Uses FileManagerService for all API calls.
 //
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, HostListener, NgZone } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { trigger, transition, style, animate } from '@angular/animations';
-import { forkJoin, Subscription } from 'rxjs';
+import { forkJoin, Observable, Subject, Subscription } from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs/operators';
 import { AlertService, MessageSeverity } from '../../services/alert.service';
 import { FileManagerService, FolderDTO, DocumentDTO, DocumentTagDTO, UploadOptions, ActivityItem } from '../../services/file-manager.service';
 import { ConfirmationService } from '../../services/confirmation-service';
 import { FileManagerSignalrService } from '../../services/filemanager-signalr.service';
 import { UserSettingsService } from '../../services/user-settings.service';
+
+// Auto-generated data services for entity link lookups
+import { ContactService } from '../../scheduler-data-services/contact.service';
+import { ResourceService } from '../../scheduler-data-services/resource.service';
+import { ClientService } from '../../scheduler-data-services/client.service';
+import { OfficeService } from '../../scheduler-data-services/office.service';
+import { CrewService } from '../../scheduler-data-services/crew.service';
+import { SchedulingTargetService } from '../../scheduler-data-services/scheduling-target.service';
+import { ScheduledEventService } from '../../scheduler-data-services/scheduled-event.service';
+import { InvoiceService } from '../../scheduler-data-services/invoice.service';
+import { ReceiptService } from '../../scheduler-data-services/receipt.service';
+import { PaymentTransactionService } from '../../scheduler-data-services/payment-transaction.service';
+import { VolunteerProfileService } from '../../scheduler-data-services/volunteer-profile.service';
 
 
 @Component({
@@ -144,6 +158,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     // Multi-select / bulk
     selectedDocIds: Set<number> = new Set();
     showBulkTagDropdown = false;
+    showSortDropdown = false;
 
     // Trash / recycle bin
     showTrash = false;
@@ -163,6 +178,36 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     showVersionHistory = false;
     documentVersions: any[] = [];
     @ViewChild('versionUploadInput') versionUploadInput!: ElementRef<HTMLInputElement>;
+
+    // ─── Add Entity Link ─────────────────────────────────────────────
+    //
+    // State for the two-step entity link picker:
+    //   Step 1: Choose entity type (Contact, Resource, etc.)
+    //   Step 2: Search + select a specific entity to link
+    //
+    showAddEntityLinkDropdown = false;
+    addLinkSelectedType: typeof this.entityLinkConfig[number] | null = null;
+    addLinkSearchQuery = '';
+    addLinkSearchResults: { id: number | bigint; name: string }[] = [];
+    addLinkSearching = false;
+
+    //
+    // Maps each FK field to the function that returns its BasicListData observable.
+    // Used to dynamically search entities based on the selected entity type.
+    //
+    readonly entityLinkServiceMap: { [fk: string]: (query: string) => Observable<{ id: number | bigint; name: string }[]> } = {
+        'contactId': (q) => ContactService.Instance.GetContactsBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'resourceId': (q) => ResourceService.Instance.GetResourcesBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'clientId': (q) => ClientService.Instance.GetClientsBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'officeId': (q) => OfficeService.Instance.GetOfficesBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'crewId': (q) => CrewService.Instance.GetCrewsBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'schedulingTargetId': (q) => SchedulingTargetService.Instance.GetSchedulingTargetsBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'scheduledEventId': (q) => ScheduledEventService.Instance.GetScheduledEventsBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'invoiceId': (q) => InvoiceService.Instance.GetInvoicesBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'receiptId': (q) => ReceiptService.Instance.GetReceiptsBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'paymentTransactionId': (q) => PaymentTransactionService.Instance.GetPaymentTransactionsBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+        'volunteerProfileId': (q) => VolunteerProfileService.Instance.GetVolunteerProfilesBasicListData({ anyStringContains: q, active: true, deleted: false, pageSize: 20 }),
+    };
 
     // Storage quota
     storageUsage: { totalBytes: number; documentCount: number; quotaBytes: number } | null = null;
@@ -189,7 +234,8 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         private fmSignalr: FileManagerSignalrService,
         private userSettings: UserSettingsService,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private ngZone: NgZone
     ) {}
 
 
@@ -220,11 +266,13 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.loadFavorites();
         this.loadSortPreference();
         this.connectSignalR();
+        this.initEntitySearchPipeline();
     }
 
     ngOnDestroy(): void {
         this.signalrSubscriptions.forEach(s => s.unsubscribe());
         this.fmSignalr.disconnect();
+        this.entitySearchSub?.unsubscribe();
     }
 
     private connectSignalR(): void {
@@ -817,32 +865,42 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
             const uploadNext = async (index: number): Promise<void> => {
                 if (index >= largeFiles.length) {
-                    this.isUploading = false;
-                    this.loadDocuments();
-                    this.loadStorageUsage();
+                    this.ngZone.run(() => {
+                        this.isUploading = false;
+                        this.loadDocuments();
+                        this.loadStorageUsage();
+                    });
                     return;
                 }
 
                 try {
-                    await this.fileManagerService.uploadDocumentChunked(
-                        largeFiles[index],
-                        options,
-                        (pct, phase) => {
-                            this.uploadProgress = pct;
-                            this.uploadPhase = `[${index + 1}/${largeFiles.length}] ${phase}`;
-                        }
+                    await this.ngZone.run(() =>
+                        this.fileManagerService.uploadDocumentChunked(
+                            largeFiles[index],
+                            options,
+                            (pct, phase) => {
+                                this.ngZone.run(() => {
+                                    this.uploadProgress = pct;
+                                    this.uploadPhase = `[${index + 1}/${largeFiles.length}] ${phase}`;
+                                });
+                            }
+                        )
                     );
-                    this.alertService.showMessage('Uploaded',
-                        `"${largeFiles[index].name}" uploaded successfully.`,
-                        MessageSeverity.success);
+                    this.ngZone.run(() => {
+                        this.alertService.showMessage('Uploaded',
+                            `"${largeFiles[index].name}" uploaded successfully.`,
+                            MessageSeverity.success);
+                    });
                     await uploadNext(index + 1);
                 } catch (err: any) {
                     console.error('Chunked upload failed', err);
-                    this.alertService.showMessage('Error',
-                        `Upload of "${largeFiles[index].name}" failed: ${err.message || 'Unknown error'}`,
-                        MessageSeverity.error);
-                    this.isUploading = false;
-                    this.isLoading = false;
+                    this.ngZone.run(() => {
+                        this.alertService.showMessage('Error',
+                            `Upload of "${largeFiles[index].name}" failed: ${err.message || 'Unknown error'}`,
+                            MessageSeverity.error);
+                        this.isUploading = false;
+                        this.isLoading = false;
+                    });
                 }
             };
 
@@ -1019,19 +1077,62 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
             // 3. Upload files per folder
             let filesUploaded = 0;
+            const CHUNK_THRESHOLD = 4 * 1024 * 1024;
+
+            // Helper: upload a batch of files into a target folder,
+            // routing large files through chunked upload automatically.
+            const uploadBatch = async (batchFiles: File[], targetFolderId: number | null): Promise<void> => {
+                const largeFiles = batchFiles.filter(f => f.size > CHUNK_THRESHOLD);
+                const smallFiles = batchFiles.filter(f => f.size <= CHUNK_THRESHOLD);
+
+                // Upload small files via standard multipart
+                if (smallFiles.length > 0) {
+                    await this.fileManagerService.uploadDocuments(smallFiles, {
+                        folderId: targetFolderId
+                    }).toPromise();
+                    filesUploaded += smallFiles.length;
+                }
+
+                // Upload large files via chunked pipeline (one at a time)
+                // Note: uploadDocumentChunked uses raw fetch() which runs outside
+                // Angular's NgZone. We wrap the call in zone.run() so that
+                // state changes between sequential files are properly detected.
+                for (const file of largeFiles) {
+                    this.importProgress = {
+                        phase: 'Uploading files',
+                        current: filesUploaded + 1,
+                        total: totalFiles,
+                        detail: file.name
+                    };
+                    await this.ngZone.run(() =>
+                        this.fileManagerService.uploadDocumentChunked(
+                            file,
+                            { folderId: targetFolderId },
+                            (pct, phase) => {
+                                this.ngZone.run(() => {
+                                    this.importProgress = {
+                                        phase: 'Uploading files',
+                                        current: filesUploaded + 1,
+                                        total: totalFiles,
+                                        detail: `${file.name} — ${phase}`
+                                    };
+                                });
+                            }
+                        )
+                    );
+                    filesUploaded++;
+                }
+            };
 
             // Upload loose files first (into current folder)
             if (looseFiles.length > 0) {
                 this.importProgress = {
                     phase: 'Uploading files',
-                    current: filesUploaded,
+                    current: filesUploaded + 1,
                     total: totalFiles,
                     detail: 'Root files'
                 };
-                await this.fileManagerService.uploadDocuments(looseFiles, {
-                    folderId: this.currentFolderId
-                }).toPromise();
-                filesUploaded += looseFiles.length;
+                await uploadBatch(looseFiles, this.currentFolderId);
             }
 
             // Upload files into their respective folders
@@ -1042,16 +1143,12 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
                 this.importProgress = {
                     phase: 'Uploading files',
-                    current: filesUploaded,
+                    current: filesUploaded + 1,
                     total: totalFiles,
                     detail: entry.path.split('/').pop() || 'files'
                 };
 
-                await this.fileManagerService.uploadDocuments(entry.files, {
-                    folderId: folderId
-                }).toPromise();
-
-                filesUploaded += entry.files.length;
+                await uploadBatch(entry.files, folderId);
             }
 
             // 4. Done
@@ -1336,6 +1433,11 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.showDocContext = false;
         this.showFolderContext = false;
         this.showBulkTagDropdown = false;
+        this.showSortDropdown = false;
+        if (this.showAddEntityLinkDropdown) {
+            this.showAddEntityLinkDropdown = false;
+            this.cancelAddEntityLink();
+        }
     }
 
 
@@ -1832,5 +1934,140 @@ export class FileManagerComponent implements OnInit, OnDestroy {
                 this.alertService.showMessage('Error', 'Could not remove entity link.', MessageSeverity.error);
             }
         });
+    }
+
+
+    // ─── Add Entity Link ─────────────────────────────────────────────
+
+    /** Toggle the entity link type picker dropdown in the detail panel. */
+    toggleAddEntityLinkDropdown(event: Event): void {
+        event.stopPropagation();
+        this.showAddEntityLinkDropdown = !this.showAddEntityLinkDropdown;
+
+        if (!this.showAddEntityLinkDropdown) {
+            this.cancelAddEntityLink();
+        }
+    }
+
+
+    /**
+     * Returns the entity types available for linking (those with a route and a service mapping),
+     * excluding types already linked on the selected document.
+     */
+    get linkableEntityTypes(): typeof this.entityLinkConfig {
+        if (!this.selectedDocument) {
+            return [];
+        }
+
+        return this.entityLinkConfig.filter(c =>
+            c.route != null &&
+            this.entityLinkServiceMap[c.fk] != null &&
+            (this.selectedDocument as any)[c.fk] == null
+        );
+    }
+
+
+    /** Step 1 complete: user picked an entity type. Show the search input. */
+    selectEntityTypeForLink(config: typeof this.entityLinkConfig[number]): void {
+        this.addLinkSelectedType = config;
+        this.addLinkSearchQuery = '';
+        this.addLinkSearchResults = [];
+        this.addLinkSearching = false;
+    }
+
+
+    /** Debounced search subject for entity link lookups. */
+    private entitySearchSubject = new Subject<string>();
+    private entitySearchSub?: Subscription;
+
+    /** Initializes the debounced entity search pipeline. Call once (e.g. in ngOnInit). */
+    private initEntitySearchPipeline(): void {
+        this.entitySearchSub = this.entitySearchSubject.pipe(
+            debounceTime(250),
+            switchMap(query => {
+                if (!this.addLinkSelectedType) {
+                    return [];
+                }
+                const serviceFn = this.entityLinkServiceMap[this.addLinkSelectedType.fk];
+                if (!serviceFn) {
+                    return [];
+                }
+                this.addLinkSearching = true;
+                return serviceFn(query);
+            })
+        ).subscribe({
+            next: (results) => {
+                this.addLinkSearchResults = results as any;
+                this.addLinkSearching = false;
+            },
+            error: (err) => {
+                console.error('Entity search failed', err);
+                this.addLinkSearchResults = [];
+                this.addLinkSearching = false;
+            }
+        });
+    }
+
+    /** Searches for entities of the selected type using the BasicListData endpoint (debounced). */
+    searchEntitiesForLink(): void {
+        if (!this.addLinkSelectedType) {
+            return;
+        }
+        this.entitySearchSubject.next(this.addLinkSearchQuery.trim());
+    }
+
+
+    /**
+     * Step 2 complete: assigns the selected entity to the current document
+     * by setting the FK and saving via updateDocumentMetadata.
+     */
+    assignEntityLink(entityId: number | bigint): void {
+        if (!this.selectedDocument || !this.addLinkSelectedType) {
+            return;
+        }
+
+        const fkField = this.addLinkSelectedType.fk;
+        const label = this.addLinkSelectedType.label;
+
+        const updated: Partial<DocumentDTO> = {
+            id: this.selectedDocument.id,
+            name: this.selectedDocument.name,
+            fileName: this.selectedDocument.fileName,
+            mimeType: this.selectedDocument.mimeType,
+            fileSizeBytes: this.selectedDocument.fileSizeBytes,
+            uploadedDate: this.selectedDocument.uploadedDate,
+            versionNumber: this.selectedDocument.versionNumber,
+            objectGuid: this.selectedDocument.objectGuid,
+            [fkField]: entityId
+        };
+
+        this.fileManagerService.updateDocumentMetadata(updated as DocumentDTO).subscribe({
+            next: () => {
+                this.alertService.showMessage('Linked', `${label} linked to document.`, MessageSeverity.success);
+
+                //
+                // Close the picker and reload the document to get the full
+                // nav property data for display.
+                //
+                this.cancelAddEntityLink();
+                this.showAddEntityLinkDropdown = false;
+
+                // Reload documents to get fresh nav properties
+                this.loadDocuments();
+            },
+            error: (err) => {
+                console.error('Error assigning entity link', err);
+                this.alertService.showMessage('Error', `Could not link ${label}.`, MessageSeverity.error);
+            }
+        });
+    }
+
+
+    /** Resets the add-entity-link state back to step 1. */
+    cancelAddEntityLink(): void {
+        this.addLinkSelectedType = null;
+        this.addLinkSearchQuery = '';
+        this.addLinkSearchResults = [];
+        this.addLinkSearching = false;
     }
 }

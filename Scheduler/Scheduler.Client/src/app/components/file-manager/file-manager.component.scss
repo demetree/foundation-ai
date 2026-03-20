@@ -1754,3 +1754,122 @@ a.fm-entity-link-name {
   }
 }
 
+
+// ─── Add Entity Link Picker (detail panel) ─────────────────────────
+
+.fm-entity-add-dropdown {
+  background: var(--sch-bg-card);
+  border: 1px solid var(--sch-border);
+  border-radius: 8px;
+  box-shadow: var(--sch-shadow);
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 6px;
+}
+
+.fm-entity-type-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--sch-text-primary);
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+
+  i {
+    width: 18px;
+    text-align: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+}
+
+.fm-entity-add-empty {
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  color: var(--sch-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.fm-entity-search-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--sch-border);
+  font-size: 0.8rem;
+
+  i {
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+}
+
+.fm-entity-search-type-label {
+  font-weight: 600;
+  color: var(--sch-text-primary);
+}
+
+.fm-entity-search-back {
+  background: none;
+  border: none;
+  color: var(--sch-text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: var(--sch-text-primary);
+    background: var(--sch-bg-hover);
+  }
+}
+
+.fm-entity-search-input-wrap {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--sch-border);
+
+  .form-control {
+    font-size: 0.8rem;
+  }
+}
+
+.fm-entity-search-results {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.fm-entity-search-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.fm-entity-search-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--sch-text-primary);
+  transition: background $transition-fast;
+
+  &:hover {
+    background: var(--sch-bg-elevated);
+  }
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

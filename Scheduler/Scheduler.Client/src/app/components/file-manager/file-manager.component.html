@@ -232,23 +232,24 @@
           </button>
 
           <!-- Sort dropdown (grid mode) -->
-          <div class="dropdown" *ngIf="viewMode === 'grid'">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"
+          <div class="dropdown" *ngIf="viewMode === 'grid'" (click)="$event.stopPropagation()">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    (click)="showSortDropdown = !showSortDropdown"
                     title="Sort by">
               <i class="fa-solid fa-arrow-down-short-wide me-1"></i>
               <span class="d-none d-md-inline">Sort</span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><button class="dropdown-item" [class.active]="sortField === 'name'" (click)="toggleSort('name')">
+            <ul class="dropdown-menu dropdown-menu-end" [class.show]="showSortDropdown">
+              <li><button class="dropdown-item" [class.active]="sortField === 'name'" (click)="toggleSort('name'); showSortDropdown = false">
                 <i class="fa-solid me-2" [ngClass]="getSortIcon('name')"></i> Name
               </button></li>
-              <li><button class="dropdown-item" [class.active]="sortField === 'size'" (click)="toggleSort('size')">
+              <li><button class="dropdown-item" [class.active]="sortField === 'size'" (click)="toggleSort('size'); showSortDropdown = false">
                 <i class="fa-solid me-2" [ngClass]="getSortIcon('size')"></i> Size
               </button></li>
-              <li><button class="dropdown-item" [class.active]="sortField === 'type'" (click)="toggleSort('type')">
+              <li><button class="dropdown-item" [class.active]="sortField === 'type'" (click)="toggleSort('type'); showSortDropdown = false">
                 <i class="fa-solid me-2" [ngClass]="getSortIcon('type')"></i> Type
               </button></li>
-              <li><button class="dropdown-item" [class.active]="sortField === 'uploaded'" (click)="toggleSort('uploaded')">
+              <li><button class="dropdown-item" [class.active]="sortField === 'uploaded'" (click)="toggleSort('uploaded'); showSortDropdown = false">
                 <i class="fa-solid me-2" [ngClass]="getSortIcon('uploaded')"></i> Uploaded
               </button></li>
             </ul>
@@ -625,11 +626,17 @@
         </div>
 
         <!-- ─── Entity Links Section ──────────────────────────── -->
-        <div class="fm-detail-tags" *ngIf="getEntityLinks(selectedDocument).length > 0">
+        <div class="fm-detail-tags">
           <div class="fm-detail-tags-header">
             <span class="fm-prop-label"><i class="fa-solid fa-link me-1"></i> Entity Links</span>
+            <button class="btn btn-sm btn-link p-0" (click)="toggleAddEntityLinkDropdown($event)"
+                    title="Link to entity">
+              <i class="fa-solid fa-plus"></i>
+            </button>
           </div>
-          <div class="fm-entity-link-list">
+
+          <!-- Current links -->
+          <div class="fm-entity-link-list" *ngIf="getEntityLinks(selectedDocument).length > 0">
             <div class="fm-entity-link-item" *ngFor="let link of getEntityLinks(selectedDocument)">
               <i class="fa-solid" [ngClass]="link.icon" [style.color]="link.color"></i>
               <div class="fm-entity-link-info">
@@ -642,6 +649,59 @@
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
+          </div>
+          <span class="fm-tag-empty" *ngIf="getEntityLinks(selectedDocument).length === 0 && !showAddEntityLinkDropdown">No entity links</span>
+
+          <!-- Add entity link dropdown (two-step) -->
+          <div class="fm-entity-add-dropdown" *ngIf="showAddEntityLinkDropdown" (click)="$event.stopPropagation()">
+
+            <!-- Step 1: Entity type picker -->
+            <ng-container *ngIf="!addLinkSelectedType">
+              <div class="fm-entity-type-item" *ngFor="let etype of linkableEntityTypes"
+                   (click)="selectEntityTypeForLink(etype)">
+                <i class="fa-solid" [ngClass]="etype.icon" [style.color]="etype.color"></i>
+                <span>{{ etype.label }}</span>
+              </div>
+              <div class="fm-entity-add-empty" *ngIf="linkableEntityTypes.length === 0">
+                All entity types are already linked
+              </div>
+            </ng-container>
+
+            <!-- Step 2: Search + select entity -->
+            <ng-container *ngIf="addLinkSelectedType">
+              <div class="fm-entity-search-header">
+                <button class="fm-entity-search-back" (click)="cancelAddEntityLink()" title="Back to types">
+                  <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <i class="fa-solid" [ngClass]="addLinkSelectedType.icon" [style.color]="addLinkSelectedType.color"></i>
+                <span class="fm-entity-search-type-label">{{ addLinkSelectedType.label }}</span>
+              </div>
+
+              <div class="fm-entity-search-input-wrap">
+                <input type="text" class="form-control form-control-sm"
+                       placeholder="Search {{ addLinkSelectedType.label }}s…"
+                       [(ngModel)]="addLinkSearchQuery"
+                       (keyup.enter)="searchEntitiesForLink()"
+                       (input)="searchEntitiesForLink()"
+                       autofocus />
+              </div>
+
+              <div class="fm-entity-search-results">
+                <div class="fm-entity-search-loading" *ngIf="addLinkSearching">
+                  <div class="spinner-border spinner-border-sm text-primary"></div>
+                </div>
+                <div class="fm-entity-search-item" *ngFor="let result of addLinkSearchResults"
+                     (mousedown)="assignEntityLink(result.id); $event.preventDefault()">
+                  <i class="fa-solid" [ngClass]="addLinkSelectedType.icon"
+                     [style.color]="addLinkSelectedType.color" style="font-size: 0.7rem"></i>
+                  <span>{{ result.name }}</span>
+                </div>
+                <div class="fm-entity-add-empty"
+                     *ngIf="!addLinkSearching && addLinkSearchResults.length === 0 && addLinkSearchQuery.trim().length > 0">
+                  No results found
+                </div>
+              </div>
+            </ng-container>
           </div>
         </div>
 

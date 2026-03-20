@@ -408,7 +408,6 @@ namespace Foundation.Imaging
             }
 
             byte[] pdfBytes = _doc.Save();
-            _doc.Dispose();
 
             return new DocumentResult
             {

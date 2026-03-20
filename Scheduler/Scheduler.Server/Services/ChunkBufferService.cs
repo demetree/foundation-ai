@@ -95,6 +95,44 @@ namespace Scheduler.Server.Services
         {
             _dataPath = dataPath;
             Directory.CreateDirectory(_dataPath);
+
+            // Clean up any orphaned sessions from previous crashes
+            CleanupOrphanedSessions();
+        }
+
+
+        /// <summary>
+        /// Cleans up orphaned session directories that were left behind by
+        /// previous server crashes or restarts.
+        /// </summary>
+        private void CleanupOrphanedSessions()
+        {
+            try
+            {
+                foreach (string sessionDir in Directory.GetDirectories(_dataPath))
+                {
+                    try
+                    {
+                        // Clear SQLite connection pools for any .sqlite files in the directory
+                        foreach (string sqliteFile in Directory.GetFiles(sessionDir, "*.sqlite"))
+                        {
+                            string connStr = $"Data Source={sqliteFile}";
+                            using var tempConn = new Microsoft.Data.Sqlite.SqliteConnection(connStr);
+                            Microsoft.Data.Sqlite.SqliteConnection.ClearPool(tempConn);
+                        }
+
+                        Directory.Delete(sessionDir, recursive: true);
+                    }
+                    catch
+                    {
+                        // Best-effort — files may still be locked briefly
+                    }
+                }
+            }
+            catch
+            {
+                // Best-effort — data path may not exist yet
+            }
         }
 
 
@@ -164,20 +202,24 @@ namespace Scheduler.Server.Services
         {
             ChunkDatabase db = GetSession(sessionId);
 
-            // Read all chunks using the Dexter ToListAsync
+            // Read all chunks, ordered by chunk index
             List<UploadChunk> chunks = await db.Chunks.ToListAsync();
-
-            // Order by chunk index and assemble
             chunks = chunks.OrderBy(c => c.ChunkIndex).ToList();
 
+            // Pre-allocate a single output buffer
             int totalSize = chunks.Sum(c => c.Data.Length);
             byte[] assembled = new byte[totalSize];
             int offset = 0;
-            foreach (var chunk in chunks)
+
+            // Copy one chunk at a time, then null out the chunk data
+            // to allow GC to reclaim the chunk bytes as we go
+            for (int i = 0; i < chunks.Count; i++)
             {
-                Buffer.BlockCopy(chunk.Data, 0, assembled, offset, chunk.Data.Length);
-                offset += chunk.Data.Length;
+                Buffer.BlockCopy(chunks[i].Data, 0, assembled, offset, chunks[i].Data.Length);
+                offset += chunks[i].Data.Length;
+                chunks[i].Data = null; // Release chunk data for GC
             }
+            chunks = null; // Release the list itself
 
             // Verify total hash if provided
             bool verified = true;
@@ -193,6 +235,8 @@ namespace Scheduler.Server.Services
 
         /// <summary>
         /// Cleans up a completed or abandoned session.
+        /// Uses Close() instead of Dispose() to clear the SQLite connection pool,
+        /// ensuring file handles are fully released before directory deletion.
         /// </summary>
         public void CleanupSession(string sessionId)
         {
@@ -200,7 +244,8 @@ namespace Scheduler.Server.Services
             {
                 if (_sessions.TryGetValue(sessionId, out ChunkDatabase db))
                 {
-                    db.Dispose();
+                    // Close() clears the SQLite connection pool so files can be deleted
+                    db.IndexedDB.Close();
                     _sessions.Remove(sessionId);
                 }
             }
@@ -261,7 +306,7 @@ namespace Scheduler.Server.Services
             {
                 foreach (var db in _sessions.Values)
                 {
-                    db.Dispose();
+                    db.IndexedDB.Close();
                 }
                 _sessions.Clear();
             }

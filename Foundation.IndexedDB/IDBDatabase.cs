@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -320,10 +321,32 @@ namespace Foundation.IndexedDB
         }
 
 
-        public void Dispose()
+        /// <summary>
+        /// Closes the database, clearing the SQLite connection pool so that
+        /// file handles are fully released.  This is necessary because EF Core's
+        /// SQLite provider pools connections — a simple Dispose() leaves the
+        /// .sqlite file locked until the pool is cleared or the process exits.
+        /// </summary>
+        public void Close()
         {
+            // Grab the connection string before disposing the context
+            string connectionString = _context.Database.GetConnectionString();
+
             _context.Dispose();
             _semaphore.Dispose();
+
+            // Clear the connection pool so file handles are fully released
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                using var tempConn = new SqliteConnection(connectionString);
+                SqliteConnection.ClearPool(tempConn);
+            }
+        }
+
+
+        public void Dispose()
+        {
+            Close();
         }
     }
 

@@ -35,10 +35,9 @@ namespace Scheduler.Server.Services
         /// <summary>All non-deleted folders for this tenant, keyed by folder ID.</summary>
         public ConcurrentDictionary<int, DocumentFolder> Folders { get; set; }
 
-        /// <summary>Documents grouped by folder ID. null key = root folder.
-        /// Uses Dictionary (not ConcurrentDictionary) because ConcurrentDictionary
-        /// does not support null keys and documentFolderId can be null.</summary>
-        public Dictionary<int?, List<Document>> DocumentsByFolder { get; set; }
+        /// <summary>Documents grouped by folder ID. Root folder uses key -1.
+        /// Uses Dictionary with non-nullable int keys to avoid null key issues.</summary>
+        public Dictionary<int, List<Document>> DocumentsByFolder { get; set; }
 
         /// <summary>All non-deleted tags for this tenant, keyed by tag ID.</summary>
         public ConcurrentDictionary<int, DocumentTag> Tags { get; set; }
@@ -81,11 +80,17 @@ namespace Scheduler.Server.Services
         private readonly ILogger<FileManagerCacheService> _logger;
         private Timer _refreshTimer;
 
+        /// <summary>Sentinel key used in DocumentsByFolder for the root folder (null folderId).</summary>
+        private const int ROOT_FOLDER_KEY = -1;
+
         /// <summary>How long cached data is considered fresh before a background refresh.</summary>
         private static readonly TimeSpan CacheTtl = TimeSpan.FromMinutes(5);
 
         /// <summary>Background refresh interval.</summary>
         private static readonly TimeSpan RefreshInterval = TimeSpan.FromMinutes(5);
+
+        /// <summary>Converts a nullable folderId to a dictionary key, using ROOT_FOLDER_KEY for null.</summary>
+        private static int FolderKey(int? folderId) => folderId ?? ROOT_FOLDER_KEY;
 
 
         public FileManagerCacheService(IServiceScopeFactory scopeFactory, ILogger<FileManagerCacheService> logger)
@@ -155,13 +160,14 @@ namespace Scheduler.Server.Services
         public async Task<List<Document>> GetDocumentsInFolderAsync(int? folderId, Guid tenantGuid, CancellationToken ct = default)
         {
             var cache = GetOrCreateTenantCache(tenantGuid);
+            int key = FolderKey(folderId);
 
             // Check if we already have this folder cached and it's fresh
             if (cache.DocumentsByFolder != null
                 && (DateTime.UtcNow - cache.DocumentsLoadedAt) < CacheTtl
-                && cache.DocumentsByFolder.ContainsKey(folderId))
+                && cache.DocumentsByFolder.ContainsKey(key))
             {
-                return cache.DocumentsByFolder[folderId];
+                return cache.DocumentsByFolder[key];
             }
 
             await cache.DocumentLock.WaitAsync(ct);
@@ -170,9 +176,9 @@ namespace Scheduler.Server.Services
                 // Double-check after acquiring lock
                 if (cache.DocumentsByFolder != null
                     && (DateTime.UtcNow - cache.DocumentsLoadedAt) < CacheTtl
-                    && cache.DocumentsByFolder.ContainsKey(folderId))
+                    && cache.DocumentsByFolder.ContainsKey(key))
                 {
-                    return cache.DocumentsByFolder[folderId];
+                    return cache.DocumentsByFolder[key];
                 }
 
                 // If the cache is stale, clear it entirely so we rebuild from scratch
@@ -183,7 +189,7 @@ namespace Scheduler.Server.Services
 
                 await LoadDocumentsForFolderFromDbAsync(folderId, tenantGuid, cache, ct);
 
-                if (cache.DocumentsByFolder != null && cache.DocumentsByFolder.TryGetValue(folderId, out var docs))
+                if (cache.DocumentsByFolder != null && cache.DocumentsByFolder.TryGetValue(key, out var docs))
                 {
                     return docs;
                 }
@@ -415,8 +421,8 @@ namespace Scheduler.Server.Services
 
             List<Document> docs = await fileStorage.GetDocumentsInFolderAsync(folderId, tenantGuid, ct);
 
-            cache.DocumentsByFolder ??= new Dictionary<int?, List<Document>>();
-            cache.DocumentsByFolder[folderId] = docs;
+            cache.DocumentsByFolder ??= new Dictionary<int, List<Document>>();
+            cache.DocumentsByFolder[FolderKey(folderId)] = docs;
             cache.DocumentsLoadedAt = DateTime.UtcNow;
 
             _logger.LogDebug("Loaded {Count} documents for folder {FolderId} into cache for tenant {TenantGuid}.",

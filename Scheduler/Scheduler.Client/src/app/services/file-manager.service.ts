@@ -279,11 +279,7 @@ export class FileManagerService extends SecureEndpointBase {
         onProgress?: (pct: number, phase: string) => void
     ): Promise<DocumentDTO> {
 
-        // 1. Compute total file SHA-256
-        onProgress?.(0, 'Hashing file...');
-        const totalHash = await this.computeSha256(file);
-
-        // 2. Init session
+        // 1. Init session (no full-file hash — each chunk is individually verified)
         onProgress?.(0, 'Initialising upload...');
         const initResp = await fetch(
             `${this.base}/Upload/Init?fileSizeBytes=${file.size}&fileName=${encodeURIComponent(file.name)}`,
@@ -348,9 +344,9 @@ export class FileManagerService extends SecureEndpointBase {
                 onProgress?.(Math.round(((i + 1) / totalChunks) * 90), `Uploading chunk ${i + 1}/${totalChunks}...`);
             }
 
-            // 4. Complete — assemble + verify + save
+            // 4. Complete — assemble + save
             onProgress?.(90, 'Assembling file...');
-            let completeUrl = `${this.base}/Upload/Complete?sessionId=${sessionId}&totalHash=${totalHash}`;
+            let completeUrl = `${this.base}/Upload/Complete?sessionId=${sessionId}`;
             completeUrl += `&fileName=${encodeURIComponent(file.name)}&mimeType=${encodeURIComponent(file.type || 'application/octet-stream')}`;
             if (options.folderId != null) completeUrl += `&folderId=${options.folderId}`;
             if (options.documentTypeId != null) completeUrl += `&documentTypeId=${options.documentTypeId}`;
@@ -384,15 +380,6 @@ export class FileManagerService extends SecureEndpointBase {
             }).catch(() => {});
             throw err;
         }
-    }
-
-    /**
-     * Compute SHA-256 hash of a File object.
-     */
-    private async computeSha256(file: File): Promise<string> {
-        const buffer = await file.arrayBuffer();
-        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-        return this.bufferToHex(hashBuffer);
     }
 
     /**

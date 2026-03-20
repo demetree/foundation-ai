@@ -7,6 +7,7 @@ namespace Foundation.Imaging.Pdf.TrueType
         public int FontObjectId { get; set; }
         public int FontDescriptorId { get; set; }
         public int ToUnicodeId { get; set; }
+        public int FontStreamId { get; set; }
         public string PostScriptName { get; }
         public string BaseFont { get; }
         public bool IsCFF { get; }
@@ -61,7 +62,7 @@ namespace Foundation.Imaging.Pdf.TrueType
                    $"/Descent {(int)(src.Descender * f)} " +
                    $"/CapHeight {(int)(src.Ascender * f)} " +
                    $"/StemV {(IsBold ? 120 : 80)} " +
-                   $"/FontFile{(IsCFF ? "2" : "3")} {fontObjectId} 0 R >>";
+                   $"/FontFile{(IsCFF ? "3" : "2")} {fontObjectId} 0 R >>";
         }
 
         public byte[] GetSubsetData() => _subsetData;
