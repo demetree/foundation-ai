@@ -99,6 +99,13 @@
         <h5 class="mb-3"><i class="fa-solid fa-file-lines me-2"></i>Documents</h5>
         <app-event-document-panel [ownerField]="'receiptId'" [ownerId]="receipt!.id"></app-event-document-panel>
     </div>
+
+    <!-- ═══ Notes (Scratchpad) ═══ -->
+    <div class="mt-4">
+        <h5 class="mb-3"><i class="fa-solid fa-pencil me-2"></i>Notes</h5>
+        <fm-scratchpad [entityType]="'Receipt'" [entityId]="receipt!.id"
+                       [entityName]="receipt!.receiptNumber || ''"></fm-scratchpad>
+    </div>
 </div>
 
 

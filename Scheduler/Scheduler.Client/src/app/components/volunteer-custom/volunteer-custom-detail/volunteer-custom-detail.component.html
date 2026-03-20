@@ -99,6 +99,20 @@
                 </ng-template>
             </li>
 
+      <!-- Volunteer Notes (Scratchpad) -->
+      <li ngbNavItem="notes">
+        <button ngbNavLink>
+          <i class="fa-solid fa-pencil me-1"></i> Notes
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="volunteer">
+            <fm-scratchpad [entityType]="'VolunteerProfile'" [entityId]="volunteer!.id"
+                           [entityName]="volunteer!.resource?.name || ''"></fm-scratchpad>
+          </div>
+        </ng-template>
+      </li>
+
+
             <li ngbNavItem="history">
                 <a ngbNavLink>
                     <i class="fa-solid fa-clock-rotate-left me-1"></i> History

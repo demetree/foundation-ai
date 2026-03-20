@@ -295,6 +295,8 @@ import { FmDetailPanelComponent } from './components/file-manager/fm-detail-pane
 import { FmTrashViewComponent } from './components/file-manager/fm-trash-view/fm-trash-view.component';
 import { FmActivityPanelComponent } from './components/file-manager/fm-activity-panel/fm-activity-panel.component';
 import { FmTagManagerModalComponent } from './components/file-manager/fm-tag-manager-modal/fm-tag-manager-modal.component';
+import { FmTextEditorComponent } from './components/file-manager/fm-text-editor/fm-text-editor.component';
+import { FmScratchpadComponent } from './components/file-manager/fm-scratchpad/fm-scratchpad.component';
 
 
 //
@@ -1500,6 +1502,8 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     FmTrashViewComponent,
     FmActivityPanelComponent,
     FmTagManagerModalComponent,
+    FmTextEditorComponent,
+    FmScratchpadComponent,
 
 
     //

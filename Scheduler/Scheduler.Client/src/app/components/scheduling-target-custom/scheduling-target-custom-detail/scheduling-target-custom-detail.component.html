@@ -328,6 +328,20 @@
                     </ng-template>
                 </li>
 
+      <!-- Target Notes (Scratchpad) -->
+      <li ngbNavItem="notes" *ngIf="isEditMode">
+        <button ngbNavLink>
+          <i class="fa-solid fa-pencil me-1"></i> Notes
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="schedulingTarget">
+            <fm-scratchpad [entityType]="'SchedulingTarget'" [entityId]="schedulingTarget!.id"
+                           [entityName]="schedulingTarget!.name || ''"></fm-scratchpad>
+          </div>
+        </ng-template>
+      </li>
+
+
                 <li ngbNavItem="history" *ngIf="isEditMode">
                     <button ngbNavLink>
                         <i class="fa-solid fa-clock-rotate-left me-1"></i> History

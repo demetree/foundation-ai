@@ -1,0 +1,86 @@
+/*
+ * fm-scratchpad.component.scss
+ *
+ * Styles for the entity notes scratchpad wrapper.
+ */
+
+.fm-scratchpad {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 350px;
+}
+
+
+// ─── Empty State ─────────────────────────────────────────────────────
+
+.scratchpad-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+
+    .empty-icon {
+        font-size: 2.5rem;
+        color: rgba(255, 255, 255, 0.15);
+    }
+}
+
+
+// ─── Header ──────────────────────────────────────────────────────────
+
+.scratchpad-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    flex-shrink: 0;
+
+    .fw-semibold {
+        color: rgba(255, 255, 255, 0.85);
+    }
+}
+
+.btn-glass-subtle {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.78rem;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.12);
+        color: white;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+
+// ─── Editor ──────────────────────────────────────────────────────────
+
+.scratchpad-editor {
+    flex: 1;
+    overflow: hidden;
+
+    fm-text-editor {
+        display: block;
+        height: 100%;
+    }
+}
+
+
+// ─── Loading ─────────────────────────────────────────────────────────
+
+.scratchpad-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}

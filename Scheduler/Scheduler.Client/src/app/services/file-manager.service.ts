@@ -505,6 +505,69 @@ export class FileManagerService extends SecureEndpointBase {
     }
 
 
+    // ─── Text Content (Markdown Editor) ─────────────────────────────
+
+    /** Retrieves a text document's content as a UTF-8 string. */
+    getDocumentContent(documentId: number): Observable<{ content: string; versionNumber: number }> {
+        return this.http.get<{ content: string; versionNumber: number }>(
+            `${this.base}/Documents/${documentId}/Content`,
+            { headers: this.authHeaders() }
+        ).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getDocumentContent(documentId)))
+        );
+    }
+
+    /** Saves text content as a new version of the document. */
+    saveDocumentContent(documentId: number, content: string): Observable<DocumentDTO> {
+        return this.http.put<DocumentDTO>(
+            `${this.base}/Documents/${documentId}/Content`,
+            { content },
+            { headers: this.jsonHeaders() }
+        ).pipe(
+            catchError((error: any) => this.handleError(error, () => this.saveDocumentContent(documentId, content)))
+        );
+    }
+
+
+    // ─── Scratchpad (Entity Notes) ──────────────────────────────────
+
+    getScratchpad(entityType: string, entityId: number): Observable<DocumentDTO | null> {
+        return this.http.get<DocumentDTO>(
+            `${this.base}/Scratchpad/${entityType}/${entityId}`,
+            { headers: this.authHeaders() }
+        ).pipe(
+            catchError((err: any) => {
+                if (err.status === 404) return of(null);
+                return this.handleError(err, () => this.getScratchpad(entityType, entityId));
+            })
+        );
+    }
+
+    createScratchpad(entityType: string, entityId: number, entityName: string): Observable<DocumentDTO> {
+        let params = new HttpParams();
+        if (entityName) params = params.set('entityName', entityName);
+        return this.http.post<DocumentDTO>(
+            `${this.base}/Scratchpad/${entityType}/${entityId}`,
+            null,
+            { headers: this.authHeaders(), params }
+        ).pipe(
+            catchError((err: any) => this.handleError(err, () => this.createScratchpad(entityType, entityId, entityName)))
+        );
+    }
+
+    archiveScratchpad(entityType: string, entityId: number, entityName: string): Observable<DocumentDTO> {
+        let params = new HttpParams();
+        if (entityName) params = params.set('entityName', entityName);
+        return this.http.post<DocumentDTO>(
+            `${this.base}/Scratchpad/${entityType}/${entityId}/Archive`,
+            null,
+            { headers: this.authHeaders(), params }
+        ).pipe(
+            catchError((err: any) => this.handleError(err, () => this.archiveScratchpad(entityType, entityId, entityName)))
+        );
+    }
+
+
     // ─── Activity Feed ──────────────────────────────────────────────
 
     getRecentActivity(count: number = 50): Observable<ActivityItem[]> {

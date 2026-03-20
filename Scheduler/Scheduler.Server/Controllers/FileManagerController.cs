@@ -1149,6 +1149,383 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         // ═══════════════════════════════════════════════════════════════════════
+        //  TEXT CONTENT (for in-app Markdown editor)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Helper: MIME types that the text editor is allowed to open.
+        /// </summary>
+        private static readonly HashSet<string> EditableMimeTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "text/plain", "text/markdown", "text/html", "text/css", "text/csv",
+            "text/xml", "text/javascript", "application/json", "application/xml",
+            "application/javascript"
+        };
+
+        /// <summary>
+        /// Returns a document's content as a UTF-8 string.
+        /// Only works for text-based MIME types.
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/Content")]
+        [HttpGet]
+        public async Task<IActionResult> GetDocumentContent(int documentId)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                Document document = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+                if (document == null)
+                {
+                    return NotFound("Document not found.");
+                }
+
+                // Only serve text-based files
+                string mime = document.mimeType ?? "";
+                if (!EditableMimeTypes.Contains(mime) && !mime.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Document is not a text-based file and cannot be edited.");
+                }
+
+                string content = document.fileDataData != null
+                    ? System.Text.Encoding.UTF8.GetString(document.fileDataData)
+                    : "";
+
+                return Ok(new { content, document.versionNumber });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error reading content for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error reading document content.");
+            }
+        }
+
+
+        /// <summary>
+        /// Saves text content as a new version of the document.
+        /// Creates a version entry in history, preserving the same objectGuid.
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/Content")]
+        [HttpPut]
+        public async Task<IActionResult> SaveDocumentContent(int documentId, [FromBody] SaveContentRequest request)
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                Document existing = await _fileStorage.GetDocumentByIdAsync(documentId, tenantGuid);
+                if (existing == null)
+                {
+                    return NotFound("Document not found.");
+                }
+
+                string mime = existing.mimeType ?? "";
+                if (!EditableMimeTypes.Contains(mime) && !mime.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
+                {
+                    return BadRequest("Document is not a text-based file and cannot be edited.");
+                }
+
+                byte[] contentBytes = System.Text.Encoding.UTF8.GetBytes(request.Content ?? "");
+
+                Document newVersion = new Document
+                {
+                    tenantGuid = tenantGuid,
+                    name = existing.name,
+                    fileName = existing.fileName,
+                    mimeType = existing.mimeType,
+                    fileSizeBytes = contentBytes.Length,
+                    fileDataFileName = existing.fileDataFileName,
+                    fileDataSize = contentBytes.Length,
+                    fileDataData = contentBytes,
+                    fileDataMimeType = existing.fileDataMimeType,
+                    documentFolderId = existing.documentFolderId,
+                    documentTypeId = existing.documentTypeId,
+                    uploadedBy = securityUser.accountName,
+                    objectGuid = existing.objectGuid != Guid.Empty ? existing.objectGuid : Guid.NewGuid(),
+                    versionNumber = existing.versionNumber + 1,
+
+                    // Preserve entity links
+                    scheduledEventId = existing.scheduledEventId,
+                    contactId = existing.contactId,
+                    clientId = existing.clientId,
+                    resourceId = existing.resourceId,
+                    crewId = existing.crewId,
+                    schedulingTargetId = existing.schedulingTargetId,
+                    financialTransactionId = existing.financialTransactionId,
+                    officeId = existing.officeId,
+                    invoiceId = existing.invoiceId,
+                    receiptId = existing.receiptId,
+                    paymentTransactionId = existing.paymentTransactionId,
+                    financialOfficeId = existing.financialOfficeId,
+                    tenantProfileId = existing.tenantProfileId,
+                    campaignId = existing.campaignId,
+                    householdId = existing.householdId,
+                    constituentId = existing.constituentId,
+                    tributeId = existing.tributeId,
+                    volunteerProfileId = existing.volunteerProfileId
+                };
+
+                Document saved = await _fileStorage.UploadDocumentAsync(newVersion, securityUser.id);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
+                    $"Saved text content as new version (v{saved.versionNumber}) for document {documentId}",
+                    securityUser.accountName);
+                _cache.InvalidateDocuments(tenantGuid);
+
+                await BroadcastDocumentChangedAsync(tenantGuid,
+                    new { action = "contentSaved", documentId, versionNumber = saved.versionNumber });
+
+                return Ok(Document.ToOutputDTO(saved));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving content for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error saving document content.");
+            }
+        }
+
+        /// <summary>
+        /// Request body for the SaveDocumentContent endpoint.
+        /// </summary>
+        public class SaveContentRequest
+        {
+            public string Content { get; set; } = "";
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  SCRATCHPAD (Entity Notes)
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Allowed entity types for scratchpad operations.
+        /// Maps entity type name → (FK property name, display term).
+        /// </summary>
+        private static readonly Dictionary<string, (string fkProperty, string display)> ScratchpadEntityMap
+            = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Client"]           = ("clientId",                "Client"),
+            ["Contact"]          = ("contactId",               "Contact"),
+            ["Resource"]         = ("resourceId",              "Resource"),
+            ["Office"]           = ("officeId",                "Office"),
+            ["Crew"]             = ("crewId",                  "Crew"),
+            ["SchedulingTarget"] = ("schedulingTargetId",      "Target"),
+            ["VolunteerProfile"] = ("volunteerProfileId",      "Volunteer"),
+            ["Invoice"]          = ("invoiceId",               "Invoice"),
+            ["Receipt"]          = ("receiptId",               "Receipt"),
+            ["PaymentTransaction"]=("paymentTransactionId",    "Payment"),
+            ["ScheduledEvent"]   = ("scheduledEventId",        "Event"),
+        };
+
+        /// <summary>
+        /// Returns the active scratchpad document for a given entity, or 404 if none exists.
+        /// A scratchpad is a text/markdown document in the _Notes folder linked to the entity.
+        /// </summary>
+        [Route("api/FileManager/Scratchpad/{entityType}/{entityId}")]
+        [HttpGet]
+        public async Task<IActionResult> GetScratchpad(string entityType, int entityId)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+                return Forbid();
+
+            if (!ScratchpadEntityMap.ContainsKey(entityType))
+                return BadRequest($"Unknown entity type: {entityType}");
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                var (fkProp, _) = ScratchpadEntityMap[entityType];
+                var param = System.Linq.Expressions.Expression.Parameter(typeof(Document), "d");
+                var prop = System.Linq.Expressions.Expression.Property(param, fkProp);
+                var val = System.Linq.Expressions.Expression.Constant(entityId, typeof(int?));
+                var eq = System.Linq.Expressions.Expression.Equal(prop, val);
+                var lambda = System.Linq.Expressions.Expression.Lambda<Func<Document, bool>>(eq, param);
+
+                // Find the most recent text/markdown document linked to this entity
+                Document doc = await _db.Document
+                    .Where(d => d.tenantGuid == tenantGuid && d.active == true && d.deleted != true)
+                    .Where(d => d.mimeType == "text/markdown")
+                    .Where(lambda)
+                    .OrderByDescending(d => d.id)
+                    .FirstOrDefaultAsync();
+
+                if (doc == null)
+                    return NotFound();
+
+                return Ok(doc.ToDTO());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting scratchpad for {EntityType}/{EntityId}.", entityType, entityId);
+                return StatusCode(500, "Error retrieving scratchpad.");
+            }
+        }
+
+
+        /// <summary>
+        /// Creates a new scratchpad document for an entity.
+        /// Creates a _Notes system folder if it doesn't exist.
+        /// </summary>
+        [Route("api/FileManager/Scratchpad/{entityType}/{entityId}")]
+        [HttpPost]
+        public async Task<IActionResult> CreateScratchpad(string entityType, int entityId, [FromQuery] string entityName = "")
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+                return Forbid();
+
+            if (!ScratchpadEntityMap.ContainsKey(entityType))
+                return BadRequest($"Unknown entity type: {entityType}");
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                // Ensure _Notes folder exists
+                DocumentFolder notesFolder = await _db.DocumentFolder
+                    .FirstOrDefaultAsync(f => f.tenantGuid == tenantGuid && f.name == "_Notes" && f.active == true);
+
+                if (notesFolder == null)
+                {
+                    notesFolder = new DocumentFolder
+                    {
+                        tenantGuid = tenantGuid,
+                        name = "_Notes",
+                        description = "System-managed folder for entity scratchpad notes",
+                        objectGuid = Guid.NewGuid(),
+                        versionNumber = 1,
+                        active = true,
+                        deleted = false
+                    };
+                    _db.DocumentFolder.Add(notesFolder);
+                    await _db.SaveChangesAsync();
+                    _cache.InvalidateFolders(tenantGuid);
+                }
+
+                var (fkProp, displayName) = ScratchpadEntityMap[entityType];
+                string docName = !string.IsNullOrWhiteSpace(entityName)
+                    ? $"{displayName} - {entityName} Notes"
+                    : $"{displayName} Notes";
+                string fileName = docName + ".md";
+
+                byte[] emptyContent = System.Text.Encoding.UTF8.GetBytes($"# {docName}\n\n");
+
+                Document newDoc = new Document
+                {
+                    tenantGuid = tenantGuid,
+                    name = docName,
+                    fileName = fileName,
+                    mimeType = "text/markdown",
+                    fileSizeBytes = emptyContent.Length,
+                    fileDataFileName = fileName,
+                    fileDataSize = emptyContent.Length,
+                    fileDataData = emptyContent,
+                    fileDataMimeType = "text/markdown",
+                    documentFolderId = notesFolder.id,
+                    uploadedBy = securityUser.accountName,
+                    objectGuid = Guid.NewGuid(),
+                    versionNumber = 1,
+                    active = true,
+                    deleted = false
+                };
+
+                // Set the entity FK using reflection
+                typeof(Document).GetProperty(fkProp)?.SetValue(newDoc, entityId);
+
+                Document saved = await _fileStorage.UploadDocumentAsync(newDoc, securityUser.id);
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+                    $"Created scratchpad note for {entityType} {entityId}: {docName}",
+                    securityUser.accountName);
+                _cache.InvalidateDocuments(tenantGuid);
+
+                await BroadcastDocumentChangedAsync(tenantGuid,
+                    new { action = "scratchpadCreated", documentId = saved.id, entityType, entityId });
+
+                return Ok(saved.ToDTO());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating scratchpad for {EntityType}/{EntityId}.", entityType, entityId);
+                return StatusCode(500, "Error creating scratchpad.");
+            }
+        }
+
+
+        /// <summary>
+        /// Archives the current scratchpad for an entity (renames with timestamp)
+        /// and creates a fresh empty one.
+        /// </summary>
+        [Route("api/FileManager/Scratchpad/{entityType}/{entityId}/Archive")]
+        [HttpPost]
+        public async Task<IActionResult> ArchiveScratchpad(string entityType, int entityId, [FromQuery] string entityName = "")
+        {
+            if (!await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED))
+                return Forbid();
+
+            if (!ScratchpadEntityMap.ContainsKey(entityType))
+                return BadRequest($"Unknown entity type: {entityType}");
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                var (fkProp, _) = ScratchpadEntityMap[entityType];
+                var param = System.Linq.Expressions.Expression.Parameter(typeof(Document), "d");
+                var prop = System.Linq.Expressions.Expression.Property(param, fkProp);
+                var val = System.Linq.Expressions.Expression.Constant(entityId, typeof(int?));
+                var eq = System.Linq.Expressions.Expression.Equal(prop, val);
+                var lambda = System.Linq.Expressions.Expression.Lambda<Func<Document, bool>>(eq, param);
+
+                Document existing = await _db.Document
+                    .Where(d => d.tenantGuid == tenantGuid && d.active == true && d.deleted != true)
+                    .Where(d => d.mimeType == "text/markdown")
+                    .Where(lambda)
+                    .OrderByDescending(d => d.id)
+                    .FirstOrDefaultAsync();
+
+                if (existing == null)
+                    return NotFound("No active scratchpad found to archive.");
+
+                // Rename the existing document with a timestamp suffix
+                string timestamp = DateTime.UtcNow.ToString("yyyy-MM-dd");
+                existing.name = $"{existing.name} ({timestamp})";
+                existing.fileName = $"{existing.name}.md";
+                await _db.SaveChangesAsync();
+
+                await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
+                    $"Archived scratchpad note: {existing.name}",
+                    securityUser.accountName);
+
+                _cache.InvalidateDocuments(tenantGuid);
+
+                // Create a fresh scratchpad (delegate to the Create endpoint logic)
+                return await CreateScratchpad(entityType, entityId, entityName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error archiving scratchpad for {EntityType}/{EntityId}.", entityType, entityId);
+                return StatusCode(500, "Error archiving scratchpad.");
+            }
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
         //  STORAGE QUOTA
         // ═══════════════════════════════════════════════════════════════════════
 

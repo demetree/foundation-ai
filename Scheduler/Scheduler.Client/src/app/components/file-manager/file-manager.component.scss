@@ -1983,3 +1983,43 @@ a.fm-entity-link-name {
     white-space: nowrap;
   }
 }
+
+
+// ─── Text Editor Overlay ─────────────────────────────────────────────
+
+.fm-editor-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: var(--sch-bg-base, #0d1117);
+}
+
+.fm-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+
+  .fw-semibold {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.9rem;
+  }
+}
+
+.fm-editor-body {
+  flex: 1;
+  overflow: hidden;
+
+  fm-text-editor {
+    display: block;
+    height: 100%;
+  }
+}

@@ -312,6 +312,19 @@
         </ng-template>
       </li>
 
+      <!-- Resource Notes (Scratchpad) -->
+      <li ngbNavItem="notes" *ngIf="isEditMode">
+        <button ngbNavLink>
+          <i class="fa-solid fa-pencil me-1"></i> Notes
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="resource">
+            <fm-scratchpad [entityType]="'Resource'" [entityId]="resource!.id"
+                           [entityName]="resource!.name || ''"></fm-scratchpad>
+          </div>
+        </ng-template>
+      </li>
+
       <li ngbNavItem="history" *ngIf="isEditMode">
         <button ngbNavLink>
           <i class="fa-solid fa-clock-rotate-left me-1"></i> History

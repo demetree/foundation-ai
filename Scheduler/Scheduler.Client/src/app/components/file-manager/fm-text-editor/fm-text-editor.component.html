@@ -1,0 +1,125 @@
+<!-- fm-text-editor.component.html — In-app Markdown text editor -->
+
+<div class="fm-text-editor" [class.read-only]="readOnly">
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="editor-loading text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading document...</span>
+    </div>
+    <div class="mt-2 text-muted">Loading document content…</div>
+  </div>
+
+  <!-- Editor -->
+  <ng-container *ngIf="!isLoading">
+
+    <!-- Toolbar -->
+    <div class="editor-toolbar">
+      <div class="toolbar-left">
+        <button class="btn btn-sm btn-glass-subtle" (click)="saveNow()"
+                [disabled]="!isDirty || isSaving || readOnly"
+                title="Save Now (Ctrl+S)">
+          <i class="fa-solid fa-floppy-disk me-1"></i> Save
+        </button>
+
+        <div class="btn-group ms-2">
+          <button class="btn btn-sm btn-glass-subtle" (click)="undo()"
+                  [disabled]="undoStack.length === 0 || readOnly" title="Undo (Ctrl+Z)">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+          <button class="btn btn-sm btn-glass-subtle" (click)="redo()"
+                  [disabled]="redoStack.length === 0 || readOnly" title="Redo (Ctrl+Shift+Z)">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+
+        <button class="btn btn-sm ms-2"
+                [class.btn-glass-accent]="showPreview"
+                [class.btn-glass-subtle]="!showPreview"
+                (click)="togglePreview()" title="Toggle Preview">
+          <i class="fa-solid fa-eye me-1"></i> Preview
+        </button>
+
+        <button class="btn btn-sm ms-2"
+                [class.btn-glass-accent]="showVersions"
+                [class.btn-glass-subtle]="!showVersions"
+                (click)="toggleVersionHistory()" title="Version History">
+          <i class="fa-solid fa-clock-rotate-left me-1"></i> Versions
+        </button>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Auto-save countdown -->
+        <span *ngIf="countdown > 0" class="countdown-badge" title="Time until auto-save">
+          <i class="fa-solid fa-clock me-1"></i>{{ countdownDisplay }}
+        </span>
+
+        <!-- Save status -->
+        <span class="save-status" [class.text-warning]="isDirty" [class.text-success]="!isDirty && versionNumber > 0">
+          <i *ngIf="isSaving" class="fa-solid fa-spinner fa-spin me-1"></i>
+          <i *ngIf="!isDirty && versionNumber > 0 && !isSaving" class="fa-solid fa-check me-1"></i>
+          <i *ngIf="isDirty && !isSaving" class="fa-solid fa-circle-exclamation me-1"></i>
+          {{ saveStatus }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Editor + Preview area -->
+    <div class="editor-body" [class.with-preview]="showPreview" [class.with-versions]="showVersions">
+
+      <!-- Textarea -->
+      <div class="editor-pane">
+        <textarea #editorTextarea
+                  class="editor-textarea"
+                  [(ngModel)]="content"
+                  (input)="onContentInput()"
+                  (keydown)="onKeyDown($event)"
+                  (click)="onCursorMove()"
+                  (keyup)="onCursorMove()"
+                  [readOnly]="readOnly"
+                  placeholder="Start typing your notes in Markdown…"
+                  spellcheck="true">
+        </textarea>
+      </div>
+
+      <!-- Preview pane -->
+      <div *ngIf="showPreview" class="preview-pane">
+        <div class="preview-header">
+          <i class="fa-solid fa-eye me-1"></i> Preview
+        </div>
+        <div class="preview-content markdown-body" [innerHTML]="previewHtml"></div>
+      </div>
+
+      <!-- Version History panel -->
+      <div *ngIf="showVersions" class="versions-pane">
+        <div class="versions-header">
+          <i class="fa-solid fa-clock-rotate-left me-1"></i> Version History
+        </div>
+        <div *ngIf="isLoadingVersions" class="text-center py-3">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+        <div *ngIf="!isLoadingVersions && versions.length === 0" class="text-muted text-center py-3 small">
+          No version history yet.
+        </div>
+        <div class="versions-list" *ngIf="!isLoadingVersions">
+          <div *ngFor="let v of versions" class="version-item"
+               [class.active]="v.versionNumber === versionNumber">
+            <div class="version-number">v{{ v.versionNumber }}</div>
+            <div class="version-meta">
+              <span class="version-date">{{ v.uploadedDate | date:'short' }}</span>
+              <span class="version-user text-muted">{{ v.uploadedBy }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status bar -->
+    <div class="editor-statusbar">
+      <span class="status-item">Ln {{ cursorLine }}, Col {{ cursorCol }}</span>
+      <span class="status-item">Markdown</span>
+      <span *ngIf="content" class="status-item">{{ content.length | number }} chars</span>
+    </div>
+
+  </ng-container>
+</div>

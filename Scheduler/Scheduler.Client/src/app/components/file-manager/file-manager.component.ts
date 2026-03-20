@@ -86,6 +86,10 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     // Document preview
     textPreviewContent: string | null = null;
 
+    // Text editor (markdown editor overlay)
+    editingDocumentId: number | null = null;
+    editingDocumentName: string = '';
+
     // Search
     searchQuery = '';
     isSearching = false;
@@ -413,6 +417,37 @@ export class FileManagerComponent implements OnInit, OnDestroy {
 
     saveViewScopePreference(): void {
         this.userSettings.setStringSetting('fm_viewScope', this.viewScope).subscribe();
+    }
+
+
+    // ─── Text Editor ─────────────────────────────────────────────────
+
+    /** MIME types that can be opened in the text editor. */
+    private static readonly EDITABLE_MIMES = new Set([
+        'text/plain', 'text/markdown', 'text/html', 'text/css', 'text/csv',
+        'text/xml', 'text/javascript', 'application/json', 'application/xml',
+        'application/javascript'
+    ]);
+
+    isTextFile(doc: DocumentDTO): boolean {
+        const mime = (doc.mimeType || '').toLowerCase();
+        return FileManagerComponent.EDITABLE_MIMES.has(mime) || mime.startsWith('text/');
+    }
+
+    openTextEditor(doc: DocumentDTO): void {
+        this.editingDocumentId = doc.id;
+        this.editingDocumentName = doc.name || doc.fileName;
+        this.showDocContext = false;
+    }
+
+    closeTextEditor(): void {
+        this.editingDocumentId = null;
+        this.editingDocumentName = '';
+    }
+
+    onEditorSaved(doc: DocumentDTO): void {
+        // Refresh document list to reflect the new version
+        this.loadDocuments();
     }
 
 

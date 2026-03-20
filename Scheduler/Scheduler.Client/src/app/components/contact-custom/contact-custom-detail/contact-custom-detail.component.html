@@ -267,6 +267,19 @@
         </ng-template>
       </li>
 
+      <!-- Contact Notes (Scratchpad) -->
+      <li ngbNavItem="notes">
+        <button ngbNavLink>
+          <i class="fa-solid fa-pencil me-1"></i> Notes
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="contact">
+            <fm-scratchpad [entityType]="'Contact'" [entityId]="contact!.id"
+                           [entityName]="(contact | contactFullName) || ''"></fm-scratchpad>
+          </div>
+        </ng-template>
+      </li>
+
       <!-- Contact History -->
       <li ngbNavItem="history">
         <button ngbNavLink>
