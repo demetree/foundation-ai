@@ -1,0 +1,221 @@
+<!-- TURN Server Dashboard -->
+<div class="page-container">
+
+  <!-- Hero Header -->
+  <div class="turn-hero">
+    <div class="hero-content">
+      <div class="hero-title-section">
+        <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+            *ngIf="canGoBack()">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="hero-title-content">
+          <h1 class="hero-title">
+            <i class="fa-solid fa-network-wired"></i>
+            TURN Server
+          </h1>
+          <p class="hero-subtitle">Real-time relay server monitoring</p>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <!-- Status badge -->
+        <span class="badge badge-glass" *ngIf="status"
+          [class.badge-success]="status.isRunning"
+          [class.badge-danger]="!status.isRunning">
+          <i class="fas fa-circle me-1"></i>
+          {{ status.isRunning ? 'Running' : 'Stopped' }}
+        </span>
+
+        <!-- Last updated -->
+        <span class="badge badge-glass" *ngIf="lastUpdated">
+          <i class="fas fa-clock me-1"></i>{{ lastUpdated | date:'HH:mm:ss' }}
+        </span>
+
+        <!-- Auto-refresh toggle -->
+        <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
+          [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+          [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
+          <i class="fas fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
+          <span class="ms-1" *ngIf="autoRefreshEnabled">{{ autoRefreshCountdown }}s</span>
+        </button>
+
+        <button class="btn btn-sm btn-outline-light" (click)="refresh()" title="Refresh" [disabled]="loading">
+          <i class="fas fa-refresh" [class.fa-spin]="loading"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading && !status" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading TURN server status...</p>
+  </div>
+
+
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fa-solid fa-circle-exclamation me-1"></i>{{ error }}
+  </div>
+
+
+  <!-- Status Cards -->
+  <div *ngIf="status" class="row g-3 mb-4">
+
+    <!-- Server Status -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card status-card h-100" [ngClass]="getStatusClass()">
+        <div class="card-body text-center">
+          <i class="fa-solid fa-server status-icon mb-2"
+             [class.text-success]="status.isRunning"
+             [class.text-danger]="!status.isRunning"></i>
+          <h6 class="card-title mb-1">Status</h6>
+          <p class="card-text fw-bold mb-0" [class.text-success]="status.isRunning"
+             [class.text-danger]="!status.isRunning">
+            {{ getStatusLabel() }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- UDP Endpoint -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card status-card h-100">
+        <div class="card-body text-center">
+          <i class="fa-solid fa-bolt status-icon mb-2 text-info"></i>
+          <h6 class="card-title mb-1">UDP</h6>
+          <p class="card-text small mb-0">
+            <code *ngIf="status.udpEndpoint">{{ status.udpEndpoint }}</code>
+            <span *ngIf="!status.udpEndpoint" class="text-muted">—</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TCP Endpoint -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card status-card h-100">
+        <div class="card-body text-center">
+          <i class="fa-solid fa-stream status-icon mb-2 text-primary"></i>
+          <h6 class="card-title mb-1">TCP</h6>
+          <p class="card-text small mb-0">
+            <code *ngIf="status.tcpEndpoint">{{ status.tcpEndpoint }}</code>
+            <span *ngIf="!status.tcpEndpoint" class="text-muted">Disabled</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Allocations -->
+    <div class="col-md-3 col-sm-6">
+      <div class="card status-card h-100">
+        <div class="card-body text-center">
+          <i class="fa-solid fa-diagram-project status-icon mb-2 text-warning"></i>
+          <h6 class="card-title mb-1">Allocations</h6>
+          <p class="card-text fw-bold fs-4 mb-0">{{ status.allocationCount }}</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- TLS Info (if enabled) -->
+  <div *ngIf="status?.tlsEndpoint" class="alert alert-info d-flex align-items-center mb-4">
+    <i class="fa-solid fa-shield-halved me-2"></i>
+    <span>TLS active on <code>{{ status?.tlsEndpoint }}</code></span>
+  </div>
+
+
+  <!-- Allocations Table -->
+  <div *ngIf="status" class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">
+        <i class="fa-solid fa-list me-2"></i>Active Allocations
+        <span class="badge bg-secondary ms-2">{{ totalAllocations }}</span>
+      </h5>
+    </div>
+
+    <div class="card-body p-0">
+      <!-- Empty state -->
+      <div *ngIf="allocations.length === 0" class="text-center py-5 text-muted">
+        <i class="fa-solid fa-inbox fa-3x mb-3 opacity-25"></i>
+        <p>No active allocations</p>
+        <p class="small">Allocations appear when clients connect via STUN/TURN</p>
+      </div>
+
+      <!-- Table -->
+      <div *ngIf="allocations.length > 0" class="table-responsive">
+        <table class="table table-hover table-sm mb-0">
+          <thead class="table-light">
+            <tr>
+              <th class="sortable" (click)="sort('username')">
+                Username
+                <i *ngIf="sortColumn === 'username'"
+                   class="fa-solid" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </th>
+              <th class="sortable" (click)="sort('relayPort')">
+                Relay Port
+                <i *ngIf="sortColumn === 'relayPort'"
+                   class="fa-solid" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </th>
+              <th>5-Tuple</th>
+              <th class="sortable" (click)="sort('lifetimeSeconds')">
+                Lifetime
+                <i *ngIf="sortColumn === 'lifetimeSeconds'"
+                   class="fa-solid" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </th>
+              <th class="sortable" (click)="sort('expiresAtUtc')">
+                Expires
+                <i *ngIf="sortColumn === 'expiresAtUtc'"
+                   class="fa-solid" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </th>
+              <th class="sortable text-center" (click)="sort('permissionCount')">
+                Perms
+                <i *ngIf="sortColumn === 'permissionCount'"
+                   class="fa-solid" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </th>
+              <th class="sortable text-center" (click)="sort('channelCount')">
+                Ch
+                <i *ngIf="sortColumn === 'channelCount'"
+                   class="fa-solid" [ngClass]="sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down'"></i>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let alloc of getSortedAllocations()" [class.table-warning]="alloc.isExpired">
+              <td>
+                <i class="fa-solid fa-user me-1 text-muted"></i>
+                {{ alloc.username || '—' }}
+              </td>
+              <td>
+                <code>{{ alloc.relayPort }}</code>
+              </td>
+              <td class="small text-muted text-truncate" style="max-width: 200px;"
+                  [title]="alloc.fiveTuple">
+                {{ alloc.fiveTuple }}
+              </td>
+              <td>{{ alloc.lifetimeSeconds }}s</td>
+              <td>
+                <span [class.text-danger]="alloc.isExpired">
+                  {{ getTimeRemaining(alloc.expiresAtUtc) }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-secondary">{{ alloc.permissionCount }}</span>
+              </td>
+              <td class="text-center">
+                <span class="badge bg-secondary">{{ alloc.channelCount }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>

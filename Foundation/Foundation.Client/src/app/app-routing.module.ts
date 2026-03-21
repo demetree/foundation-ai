@@ -33,6 +33,7 @@ import { SystemsDashboardComponent } from './components/systems-dashboard/system
 import { SystemSettingCustomListingComponent } from './components/system-setting-custom/system-setting-custom-listing/system-setting-custom-listing.component';
 import { IncidentsReportComponent } from './components/incidents-report/incidents-report.component';
 import { UserActivityInsightsComponent } from './components/user-activity-insights/user-activity-insights.component';
+import { TurnServerDashboardComponent } from './components/turn-server-dashboard/turn-server-dashboard.component';
 
 
 //
@@ -224,6 +225,7 @@ const routes: Routes = [
   { path: 'systemsettings', component: SystemSettingCustomListingComponent, canActivate: [AuthGuard], title: 'System Settings' },
   { path: 'incidents', component: IncidentsReportComponent, canActivate: [AuthGuard], title: 'Incidents' },
   { path: 'user-activity-insights', component: UserActivityInsightsComponent, canActivate: [AuthGuard], title: 'User Activity Insights' },
+  { path: 'turn-server', component: TurnServerDashboardComponent, canActivate: [AuthGuard], title: 'TURN Server' },
 
 
   //

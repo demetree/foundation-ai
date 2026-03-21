@@ -83,6 +83,22 @@
     </li>
 
 
+    <!-- Divider: Networking -->
+    <li class="nav-item" *ngIf="isExpanded">
+      <hr class="dropdown-divider text-secondary my-2">
+    </li>
+
+    <!-- TURN Server -->
+    <li class="nav-item">
+      <a routerLink="/turn-server" routerLinkActive="active" class="nav-link text-white"
+         [ngbTooltip]="!isExpanded ? 'TURN Server' : null" triggers="hover" #tTurn="ngbTooltip"
+         (click)="tTurn.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-network-wired"></i>
+        <span class="label px-2">TURN Server</span>
+      </a>
+    </li>
+
+
     <!-- Divider: User / Tenant / Module management  -->
     <li class="nav-item" *ngIf="isExpanded">
       <hr class="dropdown-divider text-secondary my-2">

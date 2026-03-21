@@ -503,6 +503,7 @@ import { SystemSettingCustomAddEditComponent } from './components/system-setting
 import { IncidentsReportComponent } from './components/incidents-report/incidents-report.component';
 import { IncidentsService } from './services/incidents.service';
 import { UserActivityInsightsComponent } from './components/user-activity-insights/user-activity-insights.component';
+import { TurnServerDashboardComponent } from './components/turn-server-dashboard/turn-server-dashboard.component';
 
 
 @NgModule({
@@ -854,6 +855,7 @@ TelemetrySnapshotTableComponent,
     SystemSettingCustomAddEditComponent,
     IncidentsReportComponent,
     UserActivityInsightsComponent,
+    TurnServerDashboardComponent,
   ],
   imports: [
     BrowserModule,
