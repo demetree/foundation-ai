@@ -653,6 +653,21 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         /// <summary>
+        /// Typed entry for the event financial timeline.
+        /// Replaces anonymous types so the list can be sorted without dynamic dispatch.
+        /// </summary>
+        private class TimelineEntryDTO
+        {
+            public DateTime date { get; set; }
+            public string type { get; set; }
+            public string icon { get; set; }
+            public string description { get; set; }
+            public decimal amount { get; set; }
+            public bool isPositive { get; set; }
+        }
+
+
+        /// <summary>
         /// Returns a chronological timeline of all financial operations for a specific event.
         ///
         /// Merges charges and transactions into a unified timeline sorted by date.
@@ -691,7 +706,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 return Problem("Your user account is not configured with a tenant.");
             }
 
-            var timelineEntries = new List<object>();
+            List<TimelineEntryDTO> timelineEntries = new List<TimelineEntryDTO>();
 
             //
             // Load event charges
@@ -712,11 +727,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 //
                 // Use the exported date as entry date, falling back to the event's start date
                 //
-                var chargeDate = charge.exportedDate
+                DateTime chargeDate = charge.exportedDate
                     ?? charge.scheduledEvent?.startDateTime
                     ?? DateTime.UtcNow;
 
-                timelineEntries.Add(new
+                timelineEntries.Add(new TimelineEntryDTO
                 {
                     date = chargeDate,
                     type = chargeLabel.ToLowerInvariant(),
@@ -731,7 +746,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 //
                 if (charge.isDeposit && charge.depositRefundedDate.HasValue)
                 {
-                    timelineEntries.Add(new
+                    timelineEntries.Add(new TimelineEntryDTO
                     {
                         date = charge.depositRefundedDate.Value,
                         type = "refund",
@@ -759,7 +774,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 string txType = tx.isRevenue ? "income" : "expense";
                 string txIcon = tx.isRevenue ? "arrow-down-circle" : "arrow-up-circle";
 
-                timelineEntries.Add(new
+                timelineEntries.Add(new TimelineEntryDTO
                 {
                     date = tx.transactionDate,
                     type = txType,
@@ -773,8 +788,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             //
             // Sort chronologically
             //
-            var sortedTimeline = timelineEntries
-                .OrderBy(e => ((dynamic)e).date)
+            List<TimelineEntryDTO> sortedTimeline = timelineEntries
+                .OrderBy(e => e.date)
                 .ToList();
 
             await CreateAuditEventAsync(AuditType.ReadList,
