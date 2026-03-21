@@ -717,6 +717,125 @@ export class AuthService {
 
 
 
+  // AI-Developed — Volunteer management role check added with AI assistance.
+  ///
+  /// Returns true if the current user has the 'Volunteer Manager' role.
+  /// This is used in conjunction with the system-level VolunteerManagementEnabled
+  /// toggle to gate access to volunteer management features.
+  ///
+  get isVolunteerManager(): boolean {
+
+    var user = this.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    if (user.roles == null || user.roles.length == 0) {
+      return false;
+    }
+
+    //
+    // Deny any access if the user has the 'Volunteer No Access' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Volunteer No Access") {
+        return false;
+      }
+    }
+
+    //
+    // Return true if the user has the 'Volunteer Manager' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Volunteer Manager") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
+  // AI-Developed — Fundraising management role check added with AI assistance.
+  ///
+  /// Returns true if the current user has the 'Fundraising Manager' role.
+  /// Used with the system-level FundraisingEnabled toggle to gate
+  /// access to fundraising/donor management features.
+  ///
+  get isFundraisingManager(): boolean {
+
+    var user = this.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    if (user.roles == null || user.roles.length == 0) {
+      return false;
+    }
+
+    //
+    // Deny any access if the user has the 'Fundraising No Access' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Fundraising No Access") {
+        return false;
+      }
+    }
+
+    //
+    // Return true if the user has the 'Fundraising Manager' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Fundraising Manager") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
+  // AI-Developed — Financial management role check added with AI assistance.
+  ///
+  /// Returns true if the current user has the 'Financial Manager' role.
+  /// Used with the system-level FinancialManagementEnabled toggle to gate
+  /// access to billing, rate sheets, and invoice features.
+  ///
+  get isFinancialManager(): boolean {
+
+    var user = this.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    if (user.roles == null || user.roles.length == 0) {
+      return false;
+    }
+
+    //
+    // Deny any access if the user has the 'Financial No Access' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Financial No Access") {
+        return false;
+      }
+    }
+
+    //
+    // Return true if the user has the 'Financial Manager' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Financial Manager") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
 
   ///
   /// This returns the headers needed to authenticate requests sent to the server with.  These are to be used on all HTTP requests to secure endpoints.

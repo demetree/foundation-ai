@@ -69,6 +69,12 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     viewScope: 'folder' | 'flat' = 'folder';
     sidebarCollapsed = false;
 
+    // AI-Developed — Folder display mode: badges (visual cards) or list (compact rows)
+    folderViewMode: 'badges' | 'list' = 'badges';
+    foldersCollapsed = false;
+    private folderViewModeManuallySet = false;
+    private static readonly FOLDER_LIST_THRESHOLD = 8;
+
     // Sidebar accordion collapse states (false = collapsed)
     sidebarFavoritesOpen = false;
     sidebarTagsOpen = false;
@@ -307,6 +313,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.loadStorageUsage();
         this.loadFavorites();
         this.loadSortPreference();
+        this.loadFolderViewPreference();
         this.connectSignalR();
         this.initEntitySearchPipeline();
     }
@@ -466,6 +473,32 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     }
 
 
+    // AI-Developed — Folder view mode toggle, collapse, and persistence
+
+    toggleFolderViewMode(): void {
+        this.folderViewMode = this.folderViewMode === 'badges' ? 'list' : 'badges';
+        this.folderViewModeManuallySet = true;
+        this.saveFolderViewPreference();
+    }
+
+    toggleFoldersCollapsed(): void {
+        this.foldersCollapsed = !this.foldersCollapsed;
+    }
+
+    private loadFolderViewPreference(): void {
+        this.userSettings.getStringSetting('fm_folderViewMode').subscribe(saved => {
+            if (saved === 'badges' || saved === 'list') {
+                this.folderViewMode = saved;
+                this.folderViewModeManuallySet = true;
+            }
+        });
+    }
+
+    private saveFolderViewPreference(): void {
+        this.userSettings.setStringSetting('fm_folderViewMode', this.folderViewMode).subscribe();
+    }
+
+
     // ─── Text Editor ─────────────────────────────────────────────────
 
     /** MIME types that can be opened in the text editor. */
@@ -524,6 +557,12 @@ export class FileManagerComponent implements OnInit, OnDestroy {
                 ? f.parentDocumentFolderId == null
                 : f.parentDocumentFolderId === this.currentFolderId)
         );
+
+        // AI-Developed — Auto-switch folder view mode based on child folder count
+        if (!this.folderViewModeManuallySet) {
+            this.folderViewMode = this.childFolders.length > FileManagerComponent.FOLDER_LIST_THRESHOLD
+                ? 'list' : 'badges';
+        }
     }
 
     private updateBreadcrumbs(): void {

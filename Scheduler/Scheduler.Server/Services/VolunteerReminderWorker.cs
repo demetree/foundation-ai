@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -32,6 +33,7 @@ namespace Foundation.Scheduler.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<VolunteerReminderWorker> _logger;
+        private readonly IConfiguration _configuration;
         private readonly TimeSpan _interval = TimeSpan.FromHours(1);
 
         // Reminder windows: send reminders when event starts within these windows
@@ -39,10 +41,12 @@ namespace Foundation.Scheduler.Services
 
         public VolunteerReminderWorker(
             IServiceProvider serviceProvider,
-            ILogger<VolunteerReminderWorker> logger)
+            ILogger<VolunteerReminderWorker> logger,
+            IConfiguration configuration)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _configuration = configuration;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -54,6 +58,18 @@ namespace Foundation.Scheduler.Services
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                //
+                // AI-Developed — Skip processing when volunteer management is disabled at the system level.
+                //
+                bool volunteerManagementEnabled = _configuration.GetValue<bool>("Settings:VolunteerManagementEnabled", false);
+
+                if (volunteerManagementEnabled == false)
+                {
+                    _logger.LogDebug("VolunteerReminderWorker: Volunteer management is disabled, skipping this cycle");
+                    await Task.Delay(_interval, stoppingToken);
+                    continue;
+                }
+
                 try
                 {
                     await ProcessRemindersAsync();

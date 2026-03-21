@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { SchedulerHelperService } from '../../services/scheduler-helper.service';
 import { SchedulerModeService } from '../../services/scheduler-mode.service';
+import { FeatureConfigService } from '../../services/feature-config.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -35,7 +36,8 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
     private router: Router,
     private authService: AuthService,
     private schedulerHelperService: SchedulerHelperService,
-    private schedulerModeService: SchedulerModeService) {
+    private schedulerModeService: SchedulerModeService,
+    private featureConfigService: FeatureConfigService) {
 
     //
     // Close side panel + tooltips on navigation
@@ -87,6 +89,25 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   public get isUserSchedulerAdmin(): boolean {
     return this.authService.isSchedulerAdministrator;
   } 
+
+
+  // AI-Developed — Feature toggle visibility properties added with AI assistance.
+  public isVolunteerEnabled$ = this.featureConfigService.isVolunteerEnabled$;
+  public isFundraisingEnabled$ = this.featureConfigService.isFundraisingEnabled$;
+  public isFinancialEnabled$ = this.featureConfigService.isFinancialEnabled$;
+  public isCrewEnabled$ = this.featureConfigService.isCrewEnabled$;
+
+  public get isVolunteerManager(): boolean {
+    return this.authService.isVolunteerManager;
+  }
+
+  public get isFundraisingManager(): boolean {
+    return this.authService.isFundraisingManager;
+  }
+
+  public get isFinancialManager(): boolean {
+    return this.authService.isFinancialManager;
+  }
 
 
   private closeAllTooltips(): void {

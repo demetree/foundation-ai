@@ -44,8 +44,8 @@ namespace Foundation.Scheduler.Database
         private const string SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME = "Scheduler Config Writer";
         private const string SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME = "Scheduler Contact Writer";
         private const string SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME = "Scheduler Resource Writer";
-        private const string SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME = "Scheduler Fundraising Writer";
-        private const string SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME = "Scheduler Volunteer Writer";
+        private const string SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME = "Fundraising Manager";
+        private const string SCHEDULER_VOLUNTEER_MANAGER_ROLE = "Volunteer Manager";
 
 
         public SchedulerDatabaseGenerator() : base("Scheduler", "Scheduler")
@@ -62,8 +62,8 @@ All operational tables include multi-tenant support, versioning where appropriat
             this.database.AddCustomRole(SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME} Role");                      // Admin config: types, templates, calendars, qualifications
             this.database.AddCustomRole(SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME} Role");                    // Contact management
             this.database.AddCustomRole(SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME} Role");                  // Resources, crews, availability, shifts
-            this.database.AddCustomRole(SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME} Role");            // Fundraising module
-            this.database.AddCustomRole(SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME} Role");                // Volunteer extensions
+            this.database.AddCustomRole(SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME, $"{SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME} Role");            // Fundraising module
+            this.database.AddCustomRole(SCHEDULER_VOLUNTEER_MANAGER_ROLE, $"{SCHEDULER_VOLUNTEER_MANAGER_ROLE} Role");                // Volunteer extensions
 
 
             #region Setup Master Data - Resource Types, Countries, states, time zones etc..
@@ -1347,7 +1347,7 @@ All operational tables include multi-tenant support, versioning where appropriat
 Examples: Prospect, Active, On Leave, Inactive, Not Re-invited.
 Used to track engagement level and control visibility/assignment rules.";
             volunteerStatusTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
-            volunteerStatusTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
+            volunteerStatusTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_MANAGER_ROLE;
             volunteerStatusTable.AddIdField();
             volunteerStatusTable.AddNameAndDescriptionFields(true, true, false);
             volunteerStatusTable.AddSequenceField();
@@ -3797,7 +3797,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 -- FUNDS (General Ledger Codes)";
 
             fundTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
-            fundTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
+            fundTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME;
             fundTable.AddIdField();
             fundTable.AddMultiTenantSupport();
             fundTable.AddNameAndDescriptionFields(true, true, true);
@@ -3818,7 +3818,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             campaignTable.comment = @" 2. CAMPAIGNS (Broad Initiatives)";
 
             campaignTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
-            campaignTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
+            campaignTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME;
             campaignTable.AddIdField();
             campaignTable.AddMultiTenantSupport();
             campaignTable.AddNameAndDescriptionFields(true, true, true);
@@ -3838,7 +3838,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             appealTable.comment = @" 3. APPEALS (Specific Solicitations)";
 
             appealTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
-            appealTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
+            appealTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME;
             appealTable.AddIdField();
             appealTable.AddMultiTenantSupport();
             appealTable.AddForeignKeyField(campaignTable, true).AddScriptComments("Optional link to parent campaign");
@@ -3900,7 +3900,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             Database.Table constituentJourneyStageTable = database.AddTable("ConstituentJourneyStage");
             constituentJourneyStageTable.comment = "Defines stages in a donor's journey (e.g., Target, Qualified, Cultivated, Solicited, Stewardship).";
             constituentJourneyStageTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
-            constituentJourneyStageTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
+            constituentJourneyStageTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME;
             constituentJourneyStageTable.AddIdField();
             constituentJourneyStageTable.AddMultiTenantSupport();
             constituentJourneyStageTable.AddNameAndDescriptionFields(true, true, true);
@@ -4042,7 +4042,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
    ====================================================================================================";
 
             pledgeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_FUNDRAISING_WRITER_PERMISSION_LEVEL);
-            pledgeTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_WRITER_CUSTOM_ROLE_NAME;
+            pledgeTable.customWriteAccessRole = SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME;
             pledgeTable.AddIdField();
             pledgeTable.AddMultiTenantSupport();
             pledgeTable.AddForeignKeyField(constituentTable, false);
@@ -4273,7 +4273,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 One-to-one with Resource — allows volunteers to be scheduled just like paid resources
 while carrying volunteer-specific metadata, hours tracking, preferences, etc.";
             volunteerProfileTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
-            volunteerProfileTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
+            volunteerProfileTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_MANAGER_ROLE;
             volunteerProfileTable.AddIdField();
             volunteerProfileTable.AddMultiTenantSupport();
             volunteerProfileTable.AddForeignKeyField(resourceTable, false, true).AddScriptComments("The Resource this volunteer profile belongs to (1:1)");
@@ -4310,7 +4310,7 @@ while carrying volunteer-specific metadata, hours tracking, preferences, etc.";
 Examples: 'Saturday Soup Kitchen Team', 'Festival Setup Crew', 'Board of Directors Helpers'.
 Similar to Crew table but volunteer-specific with lighter structure and volunteer-oriented metadata.";
             volunteerGroupTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
-            volunteerGroupTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
+            volunteerGroupTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_MANAGER_ROLE;
             volunteerGroupTable.AddIdField();
             volunteerGroupTable.AddMultiTenantSupport();
             volunteerGroupTable.AddNameAndDescriptionFields(true, true, true);
@@ -4332,7 +4332,7 @@ Similar to Crew table but volunteer-specific with lighter structure and voluntee
             volunteerGroupMemberTable.comment = @"Membership in a VolunteerGroup.
 Links Resources (volunteers) to groups, with optional default role and sequence.";
             volunteerGroupMemberTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_VOLUNTEER_WRITER_PERMISSION_LEVEL);
-            volunteerGroupMemberTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_WRITER_CUSTOM_ROLE_NAME;
+            volunteerGroupMemberTable.customWriteAccessRole = SCHEDULER_VOLUNTEER_MANAGER_ROLE;
             volunteerGroupMemberTable.AddIdField();
             volunteerGroupMemberTable.AddMultiTenantSupport();
             volunteerGroupMemberTable.AddForeignKeyField(volunteerGroupTable, false, true);

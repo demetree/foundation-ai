@@ -28,6 +28,7 @@ using Foundation.Web.Services.Alerting;
 using Foundation.OIDC;
 using Foundation.Server.Controllers;
 using Foundation.Web.Services;
+using Foundation.Networking.Coturn;
 
 
 namespace Foundation.Server
@@ -178,6 +179,11 @@ namespace Foundation.Server
                 // User activity insights dashboard needs this
                 //
                 controllers.Add(typeof(UserActivityInsightsController));
+
+                //
+                // TURN Server admin dashboard
+                //
+                controllers.Add(typeof(TurnServerController));
                 logger.LogInformation("Controllers have been configured.");
 
                 //
@@ -272,6 +278,11 @@ namespace Foundation.Server
                 // Telemetry Collector Service
                 //
                 builder.Services.AddTelemetryServices(builder.Configuration);
+
+                //
+                // TURN Server (for WebRTC NAT traversal)
+                //
+                builder.Services.AddTurnServer(builder.Configuration);
 
                 //
                 // Alerting Integration Service (for incident management)
@@ -472,6 +483,11 @@ namespace Foundation.Server
                 // Initialize and start the Telemetry Collector
                 //
                 app.Services.UseTelemetryCollector();
+
+                //
+                // Initialize and start the TURN Server
+                //
+                app.Services.UseTurnServer();
 
 
                 //

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>disable</Nullable>
@@ -70,6 +70,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
     <ProjectReference Include="..\..\Foundation.Telemetry\Foundation.Telemetry.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Coturn\Foundation.Networking.Coturn.csproj" />
     <ProjectReference Include="..\Foundation.Client\Foundation.Client.esproj" />
   </ItemGroup>
 

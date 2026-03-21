@@ -217,6 +217,7 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(TenantProfileController));           // For profile access with auto creation
                 controllers.Add(typeof(GeocodingController));               // For address-to-coordinate resolution
                 controllers.Add(typeof(VolunteerHubController));            // For setting up volunteer user accounts for hub acces
+                controllers.Add(typeof(FeatureConfigController));             // AI-Developed — Unified feature toggle endpoint
                 controllers.Add(typeof(FileManagerController));             // For Document Manager / File Manager feature
 
 

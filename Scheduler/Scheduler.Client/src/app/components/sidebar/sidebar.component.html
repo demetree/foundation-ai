@@ -55,7 +55,9 @@
       </a>
     </li>
 
-    <!-- Finances -->
+    <!-- Finances (gated: fundraising toggle + role) -->
+    <!-- AI-Developed — Fundraising visibility gating added with AI assistance. -->
+    <ng-container *ngIf="isFundraisingManager && (isFundraisingEnabled$ | async)">
     <li class="nav-item">
       <a routerLink="/finances" routerLinkActive="active" class="nav-link text-white"
          [ngbTooltip]="!isExpanded ? 'Finances' : null" triggers="hover" #tFinances="ngbTooltip"
@@ -64,6 +66,7 @@
         <span class="label px-2">Finances</span>
       </a>
     </li>
+    </ng-container>
 
     <!-- Divider -->
     <li class="nav-item" *ngIf="isExpanded">
@@ -74,8 +77,9 @@
     <!-- COLLAPSIBLE GROUPS                                           -->
     <!-- ============================================================ -->
 
-    <!-- Volunteers Group (Advanced mode only) -->
-    <ng-container *ngIf="!isSimpleMode">
+    <!-- Volunteers Group (Advanced mode + system toggle + role gated) -->
+    <!-- AI-Developed — Volunteer management visibility gating added with AI assistance. -->
+    <ng-container *ngIf="!isSimpleMode && isVolunteerManager && (isVolunteerEnabled$ | async)">
     <li class="nav-item">
       <a class="nav-link text-white group-toggle" (click)="volunteersExpanded = !volunteersExpanded"
          [ngbTooltip]="!isExpanded ? 'Volunteers' : null" triggers="hover" #tVolGroup="ngbTooltip"
@@ -153,6 +157,8 @@
         </a>
       </li>
 
+      <!-- AI-Developed — Crew management visibility gating added with AI assistance. -->
+      <ng-container *ngIf="isCrewEnabled$ | async">
       <li class="nav-item" [class.group-nested]="isExpanded">
         <a routerLink="/crews" routerLinkActive="active" class="nav-link text-white"
            [ngbTooltip]="!isExpanded ? 'Crews' : null" triggers="hover" #tCrews="ngbTooltip"
@@ -161,6 +167,7 @@
           <span class="label px-2">Crews</span>
         </a>
       </li>
+      </ng-container>
 
       <li class="nav-item" [class.group-nested]="isExpanded">
         <a routerLink="/templates" routerLinkActive="active" class="nav-link text-white"
@@ -171,6 +178,8 @@
         </a>
       </li>
 
+      <!-- AI-Developed — Shift/Crew visibility gating added with AI assistance. -->
+      <ng-container *ngIf="isCrewEnabled$ | async">
       <li class="nav-item" [class.group-nested]="isExpanded">
         <a routerLink="/resourceshifts" routerLinkActive="active" class="nav-link text-white"
            [ngbTooltip]="!isExpanded ? 'Shifts' : null" triggers="hover" #tShifts="ngbTooltip"
@@ -188,7 +197,10 @@
           <span class="label px-2">Shift Patterns</span>
         </a>
       </li>
+      </ng-container>
 
+      <!-- AI-Developed — Financial management visibility gating added with AI assistance. -->
+      <ng-container *ngIf="isFinancialManager && (isFinancialEnabled$ | async)">
       <li class="nav-item" [class.group-nested]="isExpanded">
         <a routerLink="/ratesheets" routerLinkActive="active" class="nav-link text-white"
            [ngbTooltip]="!isExpanded ? 'Rate Sheets' : null" triggers="hover" #tRatesheets="ngbTooltip"
@@ -197,6 +209,7 @@
           <span class="label px-2">Rate Sheets</span>
         </a>
       </li>
+      </ng-container>
 
       <!-- Only show offices if there is at least one configured -->
       <li class="nav-item" [class.group-nested]="isExpanded"
