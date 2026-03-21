@@ -81,6 +81,10 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     isDragOver = false;
     private dragEnterCount = 0;
 
+    // Internal drag-and-drop (document reorganization)
+    draggedDocIds: number[] = [];
+    dropTargetFolderId: number | null | undefined = undefined;  // undefined = no target, null = Root
+
     // Folder import progress
     importProgress: { phase: string; current: number; total: number; detail: string } | null = null;
 
@@ -234,6 +238,9 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     // Pending folder path to resolve once folders are loaded
     private pendingFolderPath: string[] | null = null;
 
+    // Pending document ID to auto-select (from ?docId= query param)
+    private pendingDocId: number | null = null;
+
     // Authenticated thumbnail blob URLs
     thumbnailUrls: Map<number, string> = new Map();
 
@@ -279,7 +286,20 @@ export class FileManagerComponent implements OnInit, OnDestroy {
             }
         }
 
-        this.loadViewScopePreference();
+        // Check for ?docId= query param (drill-in from entity document panels)
+        const docIdParam = this.route.snapshot.queryParamMap.get('docId');
+        if (docIdParam) {
+            this.pendingDocId = parseInt(docIdParam, 10) || null;
+            // Switch to flat view so the document is visible regardless of folder
+            if (this.pendingDocId) {
+                this.viewScope = 'flat';
+            }
+        }
+
+        // Don't restore saved view scope when deep-linking to a document — we need flat view
+        if (!this.pendingDocId) {
+            this.loadViewScopePreference();
+        }
         this.loadFolders();
         this.loadDocuments();
         this.loadTags();
@@ -358,6 +378,21 @@ export class FileManagerComponent implements OnInit, OnDestroy {
                 this.loadDocumentTags();
                 this.clearSelection();
                 this.loadThumbnails();
+
+                // Auto-select a document if we have a pendingDocId from the query param
+                if (this.pendingDocId) {
+                    const targetDoc = this.documents.find(d => d.id === this.pendingDocId);
+                    if (targetDoc) {
+                        // Navigate to the document's folder for context
+                        if (targetDoc.documentFolderId && this.viewScope === 'flat') {
+                            this.currentFolderId = targetDoc.documentFolderId;
+                            this.updateChildFolders();
+                            this.updateBreadcrumbs();
+                        }
+                        this.selectDocument(targetDoc);
+                    }
+                    this.pendingDocId = null; // Consume the pending ID
+                }
             },
             error: (err) => {
                 console.error('Error loading documents', err);
@@ -589,6 +624,10 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     // ─── Document Actions ────────────────────────────────────────────
 
     selectDocument(doc: DocumentDTO): void {
+        // If we just finished a drag, don't toggle selection
+        if (this.draggedDocIds.length > 0) {
+            return;
+        }
         const newSelection = this.selectedDocument?.id === doc.id ? null : doc;
         this.selectedDocument = newSelection;
         this.showTagDropdown = false;
@@ -1050,12 +1089,20 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     // to prevent the *ngIf DOM insertion/removal flicker loop.
     //
     onDragOver(event: DragEvent): void {
+        // Don't interfere with internal drags that are targeting specific folders
+        if (event.dataTransfer?.types?.includes('application/x-fm-doc')) {
+            return;
+        }
         event.preventDefault();
         event.stopPropagation();
     }
 
 
     onDragEnter(event: DragEvent): void {
+        // Don't show upload overlay for internal drags
+        if (event.dataTransfer?.types?.includes('application/x-fm-doc')) {
+            return;
+        }
         event.preventDefault();
         event.stopPropagation();
         this.dragEnterCount++;
@@ -1080,6 +1127,12 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         event.stopPropagation();
         this.dragEnterCount = 0;
         this.isDragOver = false;
+
+        // If this is an internal document move (not external file upload), ignore here
+        // — it will be handled by the specific folder drop target
+        if (event.dataTransfer?.types?.includes('application/x-fm-doc')) {
+            return;
+        }
 
         // Check for folder entries via the webkit API
         const items = event.dataTransfer?.items;
@@ -1115,6 +1168,130 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
             this.uploadFiles(Array.from(event.dataTransfer.files));
         }
+    }
+
+
+    // ─── Internal Drag & Drop (Document Reorganization) ─────────────
+
+    /** Custom MIME type to distinguish internal drags from external file drops */
+    private readonly FM_DRAG_TYPE = 'application/x-fm-doc';
+    private dragGhostEl: HTMLElement | null = null;
+
+    /** Called when a document card/row starts being dragged */
+    onDocDragStart(event: DragEvent, doc: DocumentDTO): void {
+        // If the dragged doc is part of a multi-selection, drag all selected
+        if (this.selectedDocIds.has(doc.id)) {
+            this.draggedDocIds = Array.from(this.selectedDocIds);
+        } else {
+            this.draggedDocIds = [doc.id];
+        }
+
+        // Set the custom type so drop targets (and onDrop) know this is internal
+        event.dataTransfer!.setData(this.FM_DRAG_TYPE, JSON.stringify(this.draggedDocIds));
+        event.dataTransfer!.effectAllowed = 'move';
+
+        // Create a drag image label — keep it in the DOM until dragend
+        const label = this.draggedDocIds.length > 1
+            ? `${this.draggedDocIds.length} files`
+            : doc.fileName;
+        this.dragGhostEl = document.createElement('div');
+        this.dragGhostEl.textContent = label;
+        this.dragGhostEl.className = 'fm-drag-ghost';
+        document.body.appendChild(this.dragGhostEl);
+        event.dataTransfer!.setDragImage(this.dragGhostEl, 0, 0);
+    }
+
+    /** Clears all drag state when a drag ends (drop or cancel) */
+    onDocDragEnd(): void {
+        this.draggedDocIds = [];
+        this.dropTargetFolderId = undefined;
+        // Clean up the ghost element
+        if (this.dragGhostEl && this.dragGhostEl.parentNode) {
+            this.dragGhostEl.parentNode.removeChild(this.dragGhostEl);
+            this.dragGhostEl = null;
+        }
+    }
+
+    /** Called when a dragged item hovers over a folder drop target */
+    onFolderDragOver(event: DragEvent, folderId: number | null): void {
+        // Only accept internal document drags
+        if (!event.dataTransfer?.types?.includes(this.FM_DRAG_TYPE)) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        event.dataTransfer!.dropEffect = 'move';
+        this.dropTargetFolderId = folderId;
+    }
+
+    /** Called when dragged item leaves a folder drop target */
+    onFolderDragLeave(event: DragEvent, folderId: number | null): void {
+        event.stopPropagation();
+        // Only clear if we're leaving the currently highlighted target
+        if (this.dropTargetFolderId === folderId) {
+            this.dropTargetFolderId = undefined;
+        }
+    }
+
+    /** Called when documents are dropped onto a folder */
+    onFolderDrop(event: DragEvent, targetFolderId: number | null): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.dropTargetFolderId = undefined;
+
+        // Parse the dragged doc IDs
+        const data = event.dataTransfer?.getData(this.FM_DRAG_TYPE);
+        if (!data) return;
+
+        let docIds: number[];
+        try {
+            docIds = JSON.parse(data);
+        } catch {
+            return;
+        }
+
+        if (!docIds || docIds.length === 0) return;
+
+        // Filter out docs already in the target folder (no-op moves)
+        const docsToMove = docIds.filter(id => {
+            const doc = this.documents.find(d => d.id === id);
+            return doc && (doc.documentFolderId ?? null) !== targetFolderId;
+        });
+
+        if (docsToMove.length === 0) return;
+
+        // Move documents sequentially using forkJoin
+        const targetName = targetFolderId
+            ? this.allFolders.find(f => f.id === targetFolderId)?.name || 'folder'
+            : 'Root';
+
+        let completed = 0;
+        const total = docsToMove.length;
+
+        for (const docId of docsToMove) {
+            this.fileManagerService.moveDocument(docId, targetFolderId).subscribe({
+                next: () => {
+                    completed++;
+                    if (completed === total) {
+                        const msg = total === 1
+                            ? `Moved 1 file to ${targetName}`
+                            : `Moved ${total} files to ${targetName}`;
+                        this.alertService.showMessage('Moved', msg, MessageSeverity.success);
+                        this.loadDocuments();
+                        this.selectedDocIds.clear();
+                    }
+                },
+                error: () => {
+                    this.alertService.showMessage('Error', 'Failed to move document.', MessageSeverity.error);
+                }
+            });
+        }
+
+        this.draggedDocIds = [];
+    }
+
+    /** Check if a document is currently being dragged (for styling) */
+    isBeingDragged(docId: number): boolean {
+        return this.draggedDocIds.includes(docId);
     }
 
 

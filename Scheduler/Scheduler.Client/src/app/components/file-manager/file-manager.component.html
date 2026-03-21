@@ -95,7 +95,11 @@
                 (openTagManager)="openTagManager($event)"
                 (showNewFolderDialog)="showNewFolderDialog()"
                 (folderContextMenu)="onFolderContextMenu($event.event, $event.folder)"
-                (selectFavoriteDoc)="navigateToFolder($event.documentFolderId ?? null); selectDocument($event)">
+                (selectFavoriteDoc)="navigateToFolder($event.documentFolderId ?? null); selectDocument($event)"
+                [dropTargetFolderId]="dropTargetFolderId"
+                (folderDrop)="onFolderDrop($event.event, $event.folderId)"
+                (folderDragOver)="onFolderDragOver($event.event, $event.folderId)"
+                (folderDragLeave)="onFolderDragLeave($event.event, $event.folderId)">
     </fm-sidebar>
 
 
@@ -121,13 +125,21 @@
       <div class="fm-action-bar" *ngIf="!showTrash">
         <!-- Breadcrumbs (hidden in flat mode) -->
         <nav class="fm-breadcrumbs" aria-label="Folder navigation" *ngIf="viewScope === 'folder'">
-          <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId">
+          <a (click)="navigateToFolder(null)" class="fm-crumb" [class.active]="!currentFolderId"
+             (dragover)="onFolderDragOver($event, null)"
+             (dragleave)="onFolderDragLeave($event, null)"
+             (drop)="onFolderDrop($event, null)"
+             [class.drop-hover]="dropTargetFolderId === null">
             <i class="fa-solid fa-house-chimney"></i>
             <span class="ms-1">Root</span>
           </a>
           <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
             <i class="fa-solid fa-chevron-right fm-crumb-sep"></i>
-            <a (click)="navigateToFolder(crumb.id)" class="fm-crumb" [class.active]="last">
+            <a (click)="navigateToFolder(crumb.id)" class="fm-crumb" [class.active]="last"
+               (dragover)="onFolderDragOver($event, crumb.id)"
+               (dragleave)="onFolderDragLeave($event, crumb.id)"
+               (drop)="onFolderDrop($event, crumb.id)"
+               [class.drop-hover]="dropTargetFolderId === crumb.id">
               {{ crumb.name }}
             </a>
           </ng-container>
@@ -310,7 +322,11 @@
       <div class="fm-subfolder-row" *ngIf="viewScope === 'folder' && !isSearching && childFolders.length > 0 && !isLoading && !showTrash">
         <div class="fm-subfolder-card" *ngFor="let folder of childFolders"
              (click)="navigateToFolder(folder.id)"
-             (contextmenu)="onFolderContextMenu($event, folder)">
+             (contextmenu)="onFolderContextMenu($event, folder)"
+             (dragover)="onFolderDragOver($event, folder.id)"
+             (dragleave)="onFolderDragLeave($event, folder.id)"
+             (drop)="onFolderDrop($event, folder.id)"
+             [class.drop-hover]="dropTargetFolderId === folder.id">
           <i class="fa-solid fa-folder fm-subfolder-icon" [style.color]="folder.color || '#f0ad4e'"></i>
           <span class="fm-subfolder-name">{{ folder.name }}</span>
         </div>
@@ -324,22 +340,29 @@
              (dblclick)="onDocumentDoubleClick(doc)"
              (contextmenu)="onDocContextMenu($event, doc)"
              [class.selected]="selectedDocument?.id === doc.id"
-             [class.bulk-selected]="isDocSelected(doc.id)">
+             [class.bulk-selected]="isDocSelected(doc.id)"
+             [class.fm-dragging]="isBeingDragged(doc.id)"
+             draggable="true"
+             (dragstart)="onDocDragStart($event, doc)"
+             (dragend)="onDocDragEnd()">
 
           <!-- Bulk checkbox -->
           <input type="checkbox" class="fm-card-check" [checked]="isDocSelected(doc.id)"
-                 (click)="toggleDocSelection($event, doc)" (change)="$event.stopPropagation()" />
+                 (click)="toggleDocSelection($event, doc)" (change)="$event.stopPropagation()"
+                 draggable="false" />
 
           <!-- Favorite star -->
           <button class="fm-favorite-btn" [class.active]="isFavorite(doc.id)"
-                  (click)="toggleFavorite(doc.id); $event.stopPropagation()" title="Toggle favorite">
+                  (click)="toggleFavorite(doc.id); $event.stopPropagation()" title="Toggle favorite"
+                  draggable="false">
             <i class="fa-star" [ngClass]="isFavorite(doc.id) ? 'fa-solid' : 'fa-regular'"></i>
           </button>
 
           <div class="fm-file-card-icon">
             <img *ngIf="thumbnailUrls.has(doc.id)" class="fm-thumbnail"
                  [src]="thumbnailUrls.get(doc.id)" loading="lazy"
-                 (error)="$any($event.target).style.display='none'" />
+                 (error)="$any($event.target).style.display='none'"
+                 draggable="false" />
             <i *ngIf="!thumbnailUrls.has(doc.id)" class="fa-solid"
                [ngClass]="fileManagerService.getFileIcon(doc.mimeType)"
                [style.color]="fileManagerService.getFileColor(doc.mimeType)"></i>
@@ -417,6 +440,10 @@
                 (contextmenu)="onDocContextMenu($event, doc)"
                 [class.table-active]="selectedDocument?.id === doc.id"
                 [class.bulk-selected]="isDocSelected(doc.id)"
+                [class.fm-dragging]="isBeingDragged(doc.id)"
+                draggable="true"
+                (dragstart)="onDocDragStart($event, doc)"
+                (dragend)="onDocDragEnd()"
                 class="fm-file-row">
               <td>
                 <input type="checkbox" class="form-check-input"

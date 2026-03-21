@@ -10,6 +10,7 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { FileManagerService, DocumentDTO } from '../../../services/file-manager.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { DocumentService } from '../../../scheduler-data-services/document.service';
 
 
 @Component({
@@ -31,7 +32,8 @@ export class FmScratchpadComponent implements OnInit, OnChanges {
 
     constructor(
         private fileManagerService: FileManagerService,
-        private alertService: AlertService
+        private alertService: AlertService,
+        private documentService: DocumentService
     ) {}
 
     ngOnInit(): void {
@@ -66,6 +68,7 @@ export class FmScratchpadComponent implements OnInit, OnChanges {
             next: (doc) => {
                 this.scratchpadDoc = doc;
                 this.isCreating = false;
+                this.documentService.ClearAllCaches();
                 this.alertService.showMessage('Notes', 'Scratchpad created.', MessageSeverity.success);
             },
             error: (err) => {
@@ -83,6 +86,7 @@ export class FmScratchpadComponent implements OnInit, OnChanges {
             next: (newDoc) => {
                 this.scratchpadDoc = newDoc;
                 this.isArchiving = false;
+                this.documentService.ClearAllCaches();
                 this.alertService.showMessage('Notes', 'Previous note archived. Fresh note created.', MessageSeverity.success);
             },
             error: (err) => {

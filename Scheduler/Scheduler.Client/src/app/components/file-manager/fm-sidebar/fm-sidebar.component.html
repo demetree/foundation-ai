@@ -17,7 +17,11 @@
 <div class="fm-folder-tree" *ngIf="!sidebarCollapsed">
   <div class="fm-folder-node" [class.active]="!currentFolderId && !isSearching"
        (click)="navigateToFolder.emit(null)"
-       (contextmenu)="onFolderContextMenu($event, null)">
+       (contextmenu)="onFolderContextMenu($event, null)"
+       (dragover)="folderDragOver.emit({ event: $event, folderId: null })"
+       (dragleave)="folderDragLeave.emit({ event: $event, folderId: null })"
+       (drop)="folderDrop.emit({ event: $event, folderId: null })"
+       [class.drop-hover]="dropTargetFolderId === null">
     <i class="fa-solid fa-house-chimney fm-folder-icon"></i>
     <span class="fm-folder-name">Root</span>
   </div>
@@ -135,7 +139,11 @@
        [class.active]="currentFolderId === folder.id"
        [style.paddingLeft.px]="16 + (folder.level || 0) * 16"
        (click)="navigateToFolder.emit(folder.id)"
-       (contextmenu)="onFolderContextMenu($event, folder)">
+       (contextmenu)="onFolderContextMenu($event, folder)"
+       (dragover)="folderDragOver.emit({ event: $event, folderId: folder.id })"
+       (dragleave)="folderDragLeave.emit({ event: $event, folderId: folder.id })"
+       (drop)="folderDrop.emit({ event: $event, folderId: folder.id })"
+       [class.drop-hover]="dropTargetFolderId === folder.id">
     <i *ngIf="folder.children && folder.children.length > 0"
        class="fa-solid fm-tree-arrow"
        [ngClass]="folder.expanded ? 'fa-caret-down' : 'fa-caret-right'"

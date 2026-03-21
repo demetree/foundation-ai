@@ -1061,8 +1061,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     return NotFound("Document not found.");
 
                 // Load previous versions from change history
+                // Exclude any entry whose versionNumber matches the current document's —
+                // the current row already represents the latest version.
                 var history = await _db.Set<DocumentChangeHistory>()
-                    .Where(h => h.documentId == documentId && h.tenantGuid == tenantGuid)
+                    .Where(h => h.documentId == documentId && h.tenantGuid == tenantGuid
+                                && h.versionNumber != current.versionNumber)
                     .OrderByDescending(h => h.versionNumber)
                     .Select(h => new {
                         h.id,

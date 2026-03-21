@@ -53,6 +53,9 @@ export class FmSidebarComponent {
     @Input() storagePercentage = 0;
     @Input() storageBarColor = '#198754';
 
+    // ─── Drag & Drop ─────────────────────────────────────────────────
+    @Input() dropTargetFolderId: number | null | undefined = undefined;
+
     // ─── Outputs ─────────────────────────────────────────────────────
     @Output() navigateToFolder = new EventEmitter<number | null>();
     @Output() toggleSidebarCollapse = new EventEmitter<void>();
@@ -68,6 +71,9 @@ export class FmSidebarComponent {
     @Output() showNewFolderDialog = new EventEmitter<void>();
     @Output() folderContextMenu = new EventEmitter<{ event: MouseEvent; folder: FolderDTO | null }>();
     @Output() selectFavoriteDoc = new EventEmitter<DocumentDTO>();
+    @Output() folderDrop = new EventEmitter<{ event: DragEvent; folderId: number | null }>();
+    @Output() folderDragOver = new EventEmitter<{ event: DragEvent; folderId: number | null }>();
+    @Output() folderDragLeave = new EventEmitter<{ event: DragEvent; folderId: number | null }>();
 
 
     constructor(public fileManagerService: FileManagerService) {}

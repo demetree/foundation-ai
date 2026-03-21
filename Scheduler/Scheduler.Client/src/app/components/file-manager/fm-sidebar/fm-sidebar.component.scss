@@ -71,6 +71,13 @@ $transition-normal: 0.25s ease;
     color: var(--sch-text-primary);
     border-right: 3px solid var(--sch-sidebar-active-border);
   }
+
+  &.drop-hover {
+    background: rgba(99, 102, 241, 0.15);
+    outline: 2px solid var(--sch-primary, #6366f1);
+    outline-offset: -2px;
+    color: var(--sch-text-primary);
+  }
 }
 
 .fm-tree-arrow {

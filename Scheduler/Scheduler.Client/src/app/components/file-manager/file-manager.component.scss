@@ -402,14 +402,24 @@ $gradient-file-manager: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   background: var(--sch-bg-elevated);
   border: 1px solid var(--sch-border);
   border-radius: 10px;
-  cursor: pointer;
-  transition: all $transition-fast;
+  cursor: grab;
+  transition: box-shadow $transition-fast, border-color $transition-fast;
   box-shadow: var(--sch-shadow-sm);
+  user-select: none;           // Prevent text selection during drag
+  -webkit-user-drag: element;  // Enable native drag on webkit browsers
+
+  // Prevent child elements from being independently draggable
+  img, button, input, a, i, span, div {
+    -webkit-user-drag: none;
+  }
 
   &:hover {
     box-shadow: var(--sch-shadow-md);
     border-color: var(--sch-border-strong);
-    transform: translateY(-2px);
+  }
+
+  &:active {
+    cursor: grabbing;
   }
 
   &.selected {
@@ -2033,4 +2043,40 @@ a.fm-entity-link-name {
     display: block;
     height: 100%;
   }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════
+//  DRAG & DROP (Internal Document Reorganization)
+// ═══════════════════════════════════════════════════════════════════════
+
+// Dragging source — reduced opacity while dragging
+.fm-file-card.fm-dragging,
+.fm-file-row.fm-dragging {
+  opacity: 0.4;
+}
+
+// Drop target highlight — folder cards, breadcrumbs, sidebar nodes
+.fm-subfolder-card.drop-hover,
+.fm-crumb.drop-hover {
+  outline: 2px solid var(--sch-primary, #6366f1);
+  outline-offset: -2px;
+  background: rgba(99, 102, 241, 0.12) !important;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
+  transition: all 0.15s ease;
+}
+
+// Invisible ghost label for drag image
+.fm-drag-ghost {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--sch-primary, #6366f1);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
 }
