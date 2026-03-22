@@ -57,6 +57,18 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
+                //
+                // Enforce max file size if configured
+                //
+                if (_maxFileSize > 0 && data.CanSeek == true && data.Length > _maxFileSize)
+                {
+                    return new StorageResult
+                    {
+                        Success = false,
+                        Error = "File size " + data.Length + " exceeds maximum allowed size of " + _maxFileSize + " bytes"
+                    };
+                }
+
                 string filePath = GetFilePath(key);
                 string directory = Path.GetDirectoryName(filePath);
 
@@ -71,6 +83,19 @@ namespace Foundation.Networking.DeepSpace.Providers
                 }
 
                 FileInfo info = new FileInfo(filePath);
+
+                //
+                // Post-write size check for non-seekable streams
+                //
+                if (_maxFileSize > 0 && info.Length > _maxFileSize)
+                {
+                    File.Delete(filePath);
+                    return new StorageResult
+                    {
+                        Success = false,
+                        Error = "File size " + info.Length + " exceeds maximum allowed size of " + _maxFileSize + " bytes"
+                    };
+                }
 
                 //
                 // Save metadata as a sidecar file
@@ -98,6 +123,18 @@ namespace Foundation.Networking.DeepSpace.Providers
             Dictionary<string, string> metadata = null,
             CancellationToken cancellationToken = default)
         {
+            //
+            // Eager size check for byte arrays
+            //
+            if (_maxFileSize > 0 && data.Length > _maxFileSize)
+            {
+                return new StorageResult
+                {
+                    Success = false,
+                    Error = "File size " + data.Length + " exceeds maximum allowed size of " + _maxFileSize + " bytes"
+                };
+            }
+
             using (MemoryStream ms = new MemoryStream(data))
             {
                 return await PutAsync(key, ms, contentType, metadata, cancellationToken);

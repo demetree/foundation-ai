@@ -504,6 +504,7 @@ import { IncidentsReportComponent } from './components/incidents-report/incident
 import { IncidentsService } from './services/incidents.service';
 import { UserActivityInsightsComponent } from './components/user-activity-insights/user-activity-insights.component';
 import { TurnServerDashboardComponent } from './components/turn-server-dashboard/turn-server-dashboard.component';
+import { NetworkingDashboardComponent } from './components/networking-dashboard/networking-dashboard.component';
 
 
 @NgModule({
@@ -856,6 +857,7 @@ TelemetrySnapshotTableComponent,
     IncidentsReportComponent,
     UserActivityInsightsComponent,
     TurnServerDashboardComponent,
+    NetworkingDashboardComponent,
   ],
   imports: [
     BrowserModule,

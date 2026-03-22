@@ -71,6 +71,14 @@
     <ProjectReference Include="..\..\FoundationCore.Web\Foundation.Web.csproj" />
     <ProjectReference Include="..\..\Foundation.Telemetry\Foundation.Telemetry.csproj" />
     <ProjectReference Include="..\..\Foundation.Networking.Coturn\Foundation.Networking.Coturn.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Watchtower\Foundation.Networking.Watchtower.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Locksmith\Foundation.Networking.Locksmith.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Skynet\Foundation.Networking.Skynet.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Switchboard\Foundation.Networking.Switchboard.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Hivemind\Foundation.Networking.Hivemind.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.DeepSpace\Foundation.Networking.DeepSpace.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Beacon\Foundation.Networking.Beacon.csproj" />
+    <ProjectReference Include="..\..\Foundation.Networking.Conduit\Foundation.Networking.Conduit.csproj" />
     <ProjectReference Include="..\Foundation.Client\Foundation.Client.esproj" />
   </ItemGroup>
 

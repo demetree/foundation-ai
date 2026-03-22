@@ -88,6 +88,16 @@
       <hr class="dropdown-divider text-secondary my-2">
     </li>
 
+    <!-- Networking Operations -->
+    <li class="nav-item">
+      <a routerLink="/networking" routerLinkActive="active" class="nav-link text-white"
+         [ngbTooltip]="!isExpanded ? 'Networking' : null" triggers="hover" #tNetworking="ngbTooltip"
+         (click)="tNetworking.close()" placement="right" tooltipClass="sidebar-tip">
+        <i class="fa-solid fa-globe"></i>
+        <span class="label px-2">Networking</span>
+      </a>
+    </li>
+
     <!-- TURN Server -->
     <li class="nav-item">
       <a routerLink="/turn-server" routerLinkActive="active" class="nav-link text-white"

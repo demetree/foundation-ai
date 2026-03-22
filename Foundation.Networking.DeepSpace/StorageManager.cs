@@ -252,6 +252,97 @@ namespace Foundation.Networking.DeepSpace
         }
 
 
+        /// <summary>
+        /// Stores data from a stream using the default (or named) provider.
+        /// </summary>
+        public async Task<StorageResult> PutStreamAsync(
+            string key, Stream data, string contentType = null,
+            Dictionary<string, string> metadata = null,
+            string providerName = null,
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+
+            if (provider == null)
+            {
+                return new StorageResult { Success = false, Error = "Provider not found: " + (providerName ?? _defaultProviderName) };
+            }
+
+            try
+            {
+                StorageResult result = await provider.PutAsync(key, data, contentType, metadata, cancellationToken);
+                Interlocked.Increment(ref _totalPuts);
+
+                if (result.Success == false)
+                {
+                    Interlocked.Increment(ref _totalErrors);
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Interlocked.Increment(ref _totalErrors);
+                return new StorageResult { Success = false, Error = ex.Message };
+            }
+        }
+
+
+        /// <summary>
+        /// Gets data as a stream using the default (or named) provider.
+        /// </summary>
+        public async Task<Stream> GetStreamAsync(
+            string key, string providerName = null,
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+
+            if (provider == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                Stream stream = await provider.GetStreamAsync(key, cancellationToken);
+                Interlocked.Increment(ref _totalGets);
+                return stream;
+            }
+            catch (Exception ex)
+            {
+                Interlocked.Increment(ref _totalErrors);
+                _logger.LogWarning("DeepSpace: get stream failed for '{key}': {error}", key, ex.Message);
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets object metadata without downloading the content.
+        /// </summary>
+        public async Task<StorageObject> GetMetadataAsync(
+            string key, string providerName = null,
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+
+            if (provider == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return await provider.GetMetadataAsync(key, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("DeepSpace: get metadata failed for '{key}': {error}", key, ex.Message);
+                return null;
+            }
+        }
+
+
         // ── Statistics ────────────────────────────────────────────────────
 
 

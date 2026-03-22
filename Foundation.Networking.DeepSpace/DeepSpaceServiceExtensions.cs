@@ -52,7 +52,29 @@ namespace Foundation.Networking.DeepSpace
             });
 
             //
-            // Register the storage manager and auto-register local provider
+            // Conditionally register the S3 provider
+            //
+            if (string.IsNullOrEmpty(config.S3Storage.BucketName) == false)
+            {
+                services.AddSingleton<S3StorageProvider>(sp =>
+                {
+                    return new S3StorageProvider(config.S3Storage);
+                });
+            }
+
+            //
+            // Conditionally register the Azure Blob provider
+            //
+            if (string.IsNullOrEmpty(config.AzureBlob.ConnectionString) == false)
+            {
+                services.AddSingleton<AzureBlobStorageProvider>(sp =>
+                {
+                    return new AzureBlobStorageProvider(config.AzureBlob);
+                });
+            }
+
+            //
+            // Register the storage manager and auto-register all available providers
             //
             services.AddSingleton<StorageManager>(sp =>
             {
@@ -62,6 +84,21 @@ namespace Foundation.Networking.DeepSpace
 
                 manager.RegisterProvider(sp.GetRequiredService<LocalStorageProvider>());
 
+                //
+                // Register optional providers if they were configured
+                //
+                S3StorageProvider s3 = sp.GetService<S3StorageProvider>();
+                if (s3 != null)
+                {
+                    manager.RegisterProvider(s3);
+                }
+
+                AzureBlobStorageProvider azure = sp.GetService<AzureBlobStorageProvider>();
+                if (azure != null)
+                {
+                    manager.RegisterProvider(azure);
+                }
+
                 return manager;
             });
 
@@ -69,3 +106,4 @@ namespace Foundation.Networking.DeepSpace
         }
     }
 }
+

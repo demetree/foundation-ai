@@ -29,6 +29,28 @@ using Foundation.OIDC;
 using Foundation.Server.Controllers;
 using Foundation.Web.Services;
 using Foundation.Networking.Coturn;
+using Foundation.Networking.Watchtower.Services;
+using Foundation.Networking.Locksmith.Services;
+using Foundation.Networking.Skynet.Firewall;
+using Foundation.Networking.Skynet.Proxy;
+using Foundation.Networking.Switchboard.Balancing;
+using Foundation.Networking.Switchboard.Registry;
+using Foundation.Networking.Hivemind.Cache;
+using Foundation.Networking.Hivemind.Sessions;
+using Foundation.Networking.Hivemind.PubSub;
+using Foundation.Networking.DeepSpace;
+using Foundation.Networking.Beacon.Discovery;
+using Foundation.Networking.Beacon.Dns;
+using Foundation.Networking.Conduit.Connections;
+using Foundation.Networking.Conduit.Channels;
+using Foundation.Networking.Watchtower.Configuration;
+using Foundation.Networking.Locksmith.Configuration;
+using Foundation.Networking.Skynet.Configuration;
+using Foundation.Networking.Switchboard.Configuration;
+using Foundation.Networking.Hivemind.Configuration;
+using Foundation.Networking.DeepSpace.Configuration;
+using Foundation.Networking.Beacon.Configuration;
+using Foundation.Networking.Conduit.Configuration;
 
 
 namespace Foundation.Server
@@ -184,6 +206,11 @@ namespace Foundation.Server
                 // TURN Server admin dashboard
                 //
                 controllers.Add(typeof(TurnServerController));
+
+                //
+                // Unified Networking dashboard
+                //
+                controllers.Add(typeof(NetworkingController));
                 logger.LogInformation("Controllers have been configured.");
 
                 //
@@ -283,6 +310,51 @@ namespace Foundation.Server
                 // TURN Server (for WebRTC NAT traversal)
                 //
                 builder.Services.AddTurnServer(builder.Configuration);
+
+                //
+                // Foundation Networking Services (for Networking Dashboard)
+                //
+                // Configurations
+                builder.Services.AddSingleton<WatchtowerConfiguration>();
+                builder.Services.AddSingleton<LocksmithConfiguration>();
+                builder.Services.AddSingleton<SkynetConfiguration>();
+                builder.Services.AddSingleton<SwitchboardConfiguration>();
+                builder.Services.AddSingleton<HivemindConfiguration>();
+                builder.Services.AddSingleton<DeepSpaceConfiguration>();
+                builder.Services.AddSingleton<BeaconConfiguration>();
+                builder.Services.AddSingleton<ConduitConfiguration>();
+
+                // Watchtower
+                builder.Services.AddSingleton<Foundation.Networking.Watchtower.Services.PingService>();
+                builder.Services.AddSingleton<LatencyMonitorService>();
+
+                // Locksmith
+                builder.Services.AddSingleton<Foundation.Networking.Locksmith.Services.CertificateInspector>();
+                builder.Services.AddSingleton<CertificateMonitorService>();
+
+                // Skynet
+                builder.Services.AddSingleton<FirewallEngine>();
+                builder.Services.AddSingleton<BackendPool>();
+
+                // Switchboard
+                builder.Services.AddSingleton<LoadBalancer>();
+                builder.Services.AddSingleton<ServiceRegistry>();
+
+                // Hivemind
+                builder.Services.AddSingleton<DistributedCache>();
+                builder.Services.AddSingleton<SessionStore>();
+                builder.Services.AddSingleton<MessageBus>();
+
+                // Deep Space
+                builder.Services.AddSingleton<StorageManager>();
+
+                // Beacon
+                builder.Services.AddSingleton<ServiceDirectory>();
+                builder.Services.AddSingleton<DnsResolver>();
+
+                // Conduit
+                builder.Services.AddSingleton<ConnectionManager>();
+                builder.Services.AddSingleton<ChannelManager>();
 
                 //
                 // Alerting Integration Service (for incident management)

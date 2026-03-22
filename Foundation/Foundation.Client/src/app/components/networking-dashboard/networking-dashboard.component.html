@@ -1,0 +1,131 @@
+<!--
+  Networking Dashboard - Component Template
+
+  Hero header + 3x3 service card grid with click-to-expand detail panels.
+  Header pattern matches TURN Server Dashboard and Login Attempts components.
+-->
+<div class="page-container">
+
+  <!-- Hero Header -->
+  <div class="networking-hero">
+    <div class="hero-content">
+      <div class="hero-title-section">
+        <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+            *ngIf="canGoBack()">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <div class="hero-title-content">
+          <h1 class="hero-title">
+            <i class="fa-solid fa-network-wired"></i>
+            Networking Operations
+          </h1>
+          <p class="hero-subtitle">Real-time monitoring across {{ overview?.totalServices || 0 }} services</p>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <!-- Overall status badge -->
+        <span class="badge badge-glass" *ngIf="overview"
+          [class.badge-success]="overview.overallStatus === 'healthy'"
+          [class.badge-warning]="overview.overallStatus === 'warning'"
+          [class.badge-danger]="overview.overallStatus === 'degraded'">
+          <i class="fas fa-circle me-1"></i>
+          {{ overview.healthyCount }}/{{ overview.totalServices }} Healthy
+        </span>
+
+        <!-- Last updated -->
+        <span class="badge badge-glass" *ngIf="lastUpdated">
+          <i class="fas fa-clock me-1"></i>{{ lastUpdated | date:'HH:mm:ss' }}
+        </span>
+
+        <!-- Auto-refresh toggle -->
+        <button class="btn btn-sm" [class.btn-success]="autoRefreshEnabled"
+          [class.btn-outline-light]="!autoRefreshEnabled" (click)="toggleAutoRefresh()"
+          [title]="autoRefreshEnabled ? 'Auto-refresh ON' : 'Enable auto-refresh'">
+          <i class="fas fa-sync-alt" [class.fa-spin]="autoRefreshEnabled"></i>
+          <span class="ms-1" *ngIf="autoRefreshEnabled">{{ autoRefreshCountdown }}s</span>
+        </button>
+
+        <button class="btn btn-sm btn-outline-light" (click)="refresh()" title="Refresh" [disabled]="loading">
+          <i class="fas fa-refresh" [class.fa-spin]="loading"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading && !overview" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="text-muted mt-2">Loading networking status...</p>
+  </div>
+
+
+  <!-- Error -->
+  <div class="alert alert-danger d-flex align-items-center mb-3" *ngIf="error">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    {{ error }}
+    <button class="btn btn-sm btn-outline-danger ms-auto" (click)="refresh()">Retry</button>
+  </div>
+
+
+  <!-- Service Cards Grid -->
+  <div class="services-grid" *ngIf="overview">
+    <div class="service-card"
+         *ngFor="let service of overview.services"
+         [class.card-healthy]="service.status === 'healthy'"
+         [class.card-warning]="service.status === 'warning'"
+         [class.card-offline]="service.status === 'offline'"
+         [class.card-expanded]="expandedService === service.name"
+         (click)="toggleExpand(service)">
+
+      <div class="card-header-row">
+        <div class="service-icon">
+          <i class="fas" [ngClass]="service.icon"></i>
+        </div>
+        <div class="service-info">
+          <h3 class="service-name">{{ service.name }}</h3>
+          <span class="status-dot" [ngClass]="'dot-' + service.status"></span>
+        </div>
+        <div class="expand-arrow">
+          <i class="fas" [ngClass]="expandedService === service.name ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+        </div>
+      </div>
+
+      <div class="card-metric">
+        <span class="metric-value">{{ service.metricValue }}</span>
+        <span class="metric-label">{{ service.metricLabel }}</span>
+      </div>
+
+      <div class="card-secondary" *ngIf="service.secondaryLabel">
+        {{ service.secondaryLabel }}
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Expanded Detail Panel -->
+  <div class="detail-panel" *ngIf="expandedService && serviceDetail">
+    <div class="detail-header">
+      <h2>
+        <i class="fas" [ngClass]="getExpandedServiceIcon()"></i>
+        {{ expandedService }} — Detail View
+      </h2>
+      <button class="btn btn-sm btn-outline-secondary" (click)="closeDetail()">
+        <i class="fas fa-times"></i> Close
+      </button>
+    </div>
+
+    <div class="detail-loading" *ngIf="detailLoading">
+      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+      Loading detail...
+    </div>
+
+    <div class="detail-content" *ngIf="!detailLoading">
+      <pre class="detail-json">{{ serviceDetail | json }}</pre>
+    </div>
+  </div>
+
+</div>

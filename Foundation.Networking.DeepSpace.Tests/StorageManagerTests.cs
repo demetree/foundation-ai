@@ -181,5 +181,101 @@ namespace Foundation.Networking.DeepSpace.Tests
             Assert.Equal("Local", stats.DefaultProvider);
             Assert.Contains("Local", stats.ProviderNames);
         }
+
+
+        // ── Stream Operations ────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task PutStreamAsync_And_GetStreamAsync_WorksThroughManager()
+        {
+            byte[] data = Encoding.UTF8.GetBytes("streamed data");
+
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                StorageResult putResult = await _manager.PutStreamAsync("stream/test.txt", ms);
+                Assert.True(putResult.Success);
+            }
+
+            using (Stream stream = await _manager.GetStreamAsync("stream/test.txt"))
+            {
+                Assert.NotNull(stream);
+
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    string content = await reader.ReadToEndAsync();
+                    Assert.Equal("streamed data", content);
+                }
+            }
+        }
+
+
+        [Fact]
+        public async Task GetStreamAsync_MissingProvider_ReturnsNull()
+        {
+            Stream result = await _manager.GetStreamAsync("test.txt", providerName: "NonExistent");
+
+            Assert.Null(result);
+        }
+
+
+        [Fact]
+        public async Task PutStreamAsync_MissingProvider_ReturnsFail()
+        {
+            using (MemoryStream ms = new MemoryStream(new byte[] { 1 }))
+            {
+                StorageResult result = await _manager.PutStreamAsync("test.txt", ms, providerName: "NonExistent");
+
+                Assert.False(result.Success);
+                Assert.Contains("not found", result.Error);
+            }
+        }
+
+
+        // ── Metadata ─────────────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task GetMetadataAsync_WorksThroughManager()
+        {
+            await _manager.PutAsync("meta.txt", Encoding.UTF8.GetBytes("meta test"));
+
+            StorageObject obj = await _manager.GetMetadataAsync("meta.txt");
+
+            Assert.NotNull(obj);
+            Assert.Equal("meta.txt", obj.Key);
+            Assert.True(obj.SizeBytes > 0);
+        }
+
+
+        [Fact]
+        public async Task GetMetadataAsync_NonExistent_ReturnsNull()
+        {
+            StorageObject result = await _manager.GetMetadataAsync("missing.txt");
+
+            Assert.Null(result);
+        }
+
+
+        [Fact]
+        public async Task GetMetadataAsync_MissingProvider_ReturnsNull()
+        {
+            StorageObject result = await _manager.GetMetadataAsync("test.txt", providerName: "NonExistent");
+
+            Assert.Null(result);
+        }
+
+
+        [Fact]
+        public async Task PutStreamAsync_TracksStatistics()
+        {
+            using (MemoryStream ms = new MemoryStream(new byte[] { 1 }))
+            {
+                await _manager.PutStreamAsync("stats_stream.txt", ms);
+            }
+
+            StorageManagerStatistics stats = _manager.GetStatistics();
+            Assert.True(stats.TotalPuts >= 1);
+        }
     }
 }

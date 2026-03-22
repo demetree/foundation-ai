@@ -281,5 +281,75 @@ namespace Foundation.Networking.DeepSpace.Tests.Providers
             Assert.True(result.Success);
             Assert.True(await _provider.ExistsAsync("a/b/c/d/nested.txt"));
         }
+
+
+        // ── Max File Size ────────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task PutBytes_ExceedsMaxFileSize_ReturnsFail()
+        {
+            string testRoot = Path.Combine(Path.GetTempPath(), "deepspace_maxsize_" + Guid.NewGuid().ToString("N").Substring(0, 8));
+
+            try
+            {
+                LocalStorageProvider sizedProvider = new LocalStorageProvider(
+                    new LocalStorageConfig { RootPath = testRoot, MaxFileSizeBytes = 10 });
+
+                byte[] data = new byte[20];
+
+                StorageResult result = await sizedProvider.PutBytesAsync("toobig.txt", data);
+
+                Assert.False(result.Success);
+                Assert.Contains("exceeds maximum", result.Error);
+            }
+            finally
+            {
+                if (Directory.Exists(testRoot))
+                {
+                    Directory.Delete(testRoot, true);
+                }
+            }
+        }
+
+
+        [Fact]
+        public async Task PutBytes_WithinMaxFileSize_Succeeds()
+        {
+            string testRoot = Path.Combine(Path.GetTempPath(), "deepspace_maxsize2_" + Guid.NewGuid().ToString("N").Substring(0, 8));
+
+            try
+            {
+                LocalStorageProvider sizedProvider = new LocalStorageProvider(
+                    new LocalStorageConfig { RootPath = testRoot, MaxFileSizeBytes = 100 });
+
+                byte[] data = new byte[50];
+
+                StorageResult result = await sizedProvider.PutBytesAsync("ok.txt", data);
+
+                Assert.True(result.Success);
+            }
+            finally
+            {
+                if (Directory.Exists(testRoot))
+                {
+                    Directory.Delete(testRoot, true);
+                }
+            }
+        }
+
+
+        [Fact]
+        public async Task PutBytes_ZeroMaxSize_AllowsAnySize()
+        {
+            //
+            // Default provider has MaxFileSizeBytes = 0 (unlimited)
+            //
+            byte[] data = new byte[10000];
+
+            StorageResult result = await _provider.PutBytesAsync("unlimited.txt", data);
+
+            Assert.True(result.Success);
+        }
     }
 }
