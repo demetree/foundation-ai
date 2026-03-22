@@ -12,6 +12,9 @@
   <Project Path="Foundation.Networking.DeepSpace.Host/Foundation.Networking.DeepSpace.Host.csproj" />
   <Project Path="Foundation.Networking.DeepSpace.Tests/Foundation.Networking.DeepSpace.Tests.csproj" />
   <Project Path="Foundation.Networking.DeepSpace/Foundation.Networking.DeepSpace.csproj" />
+  <Project Path="DeepSpaceDatabase/DeepSpaceDatabase.csproj" />
+  <Project Path="DatabaseGenerators/DeepspaceDatabaseGenerator/DeepspaceDatabaseGenerator.csproj" />
+  <Project Path="CodeGenerationCommon/CodeGenerationCommon.csproj" />
   <Project Path="Foundation.Networking.Hivemind.Host/Foundation.Networking.Hivemind.Host.csproj" />
   <Project Path="Foundation.Networking.Hivemind.Tests/Foundation.Networking.Hivemind.Tests.csproj" />
   <Project Path="Foundation.Networking.Hivemind/Foundation.Networking.Hivemind.csproj" />
