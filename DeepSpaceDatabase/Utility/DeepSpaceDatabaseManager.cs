@@ -26,7 +26,7 @@ namespace Foundation.DeepSpace.Database
     /// 
     /// Startup sequence:
     ///   1. Create database directory and file if needed
-    ///   2. If tables don't exist → create schema from DeepspaceDatabaseGenerator
+    ///   2. If tables don't exist → create schema from DeepSpaceDatabaseGenerator
     ///   3. If tables exist → run pending migrations, then validate schema
     ///   4. VACUUM and WAL checkpoint
     ///   5. Ready for use

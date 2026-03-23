@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DatabaseGenerators\DeepSpaceDatabaseGenerator\DeepSpaceDatabaseGenerator.csproj" />
     <ProjectReference Include="..\FoundationCore\Foundation.csproj" />
-    <ProjectReference Include="..\DatabaseGenerators\DeepspaceDatabaseGenerator\DeepspaceDatabaseGenerator.csproj" />
   </ItemGroup>
 
 </Project>

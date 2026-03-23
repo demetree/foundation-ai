@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Foundation.Networking.Coturn.Host": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:54092;http://localhost:54098"
+    }
+  }
+}

@@ -1,0 +1,110 @@
+﻿{
+   "CodeGenerationMode": 4,
+   "ContextClassName": "DeepSpaceContext",
+   "ContextNamespace": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "MinimumProductVersion": "2.6.1186",
+   "ModelNamespace": null,
+   "OutputContextPath": null,
+   "OutputPath": "Database",
+   "PreserveCasingWithRegex": true,
+   "ProjectRootNamespace": "Foundation.DeepSpace",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 2,
+   "SelectedToBeGenerated": 0,
+   "T4TemplatePath": null,
+   "Tables": [
+      {
+         "Name": "[DeepSpace].[AccessLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[AccessType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[LifecycleRule]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[LifecycleRuleChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[MigrationJob]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[MigrationJobStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[ReplicationTarget]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[ReplicationTargetChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[StorageObject]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[StorageObjectChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[StorageObjectVersion]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[StorageProvider]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[StorageProviderType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[StorageTier]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[TenantQuota]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[DeepSpace].[TenantQuotaChangeHistory]",
+         "ObjectType": 0
+      }
+   ],
+   "UiHint": null,
+   "UncountableWords": null,
+   "UseAsyncStoredProcedureCalls": true,
+   "UseBoolPropertiesWithoutDefaultSql": false,
+   "UseDatabaseNames": true,
+   "UseDatabaseNamesForRoutines": true,
+   "UseDateOnlyTimeOnly": true,
+   "UseDbContextSplitting": false,
+   "UseDecimalDataAnnotationForSprocResult": true,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseHierarchyId": false,
+   "UseInflector": true,
+   "UseInternalAccessModifiersForSprocsAndFunctions": false,
+   "UseLegacyPluralizer": true,
+   "UseManyToManyEntity": false,
+   "UseNoDefaultConstructor": false,
+   "UseNoNavigations": false,
+   "UseNoObjectFilter": false,
+   "UseNodaTime": false,
+   "UseNullableReferences": false,
+   "UsePrefixNavigationNaming": false,
+   "UseSchemaFolders": false,
+   "UseSchemaNamespaces": false,
+   "UseSpatial": false,
+   "UseT4": false,
+   "UseT4Split": false
+}

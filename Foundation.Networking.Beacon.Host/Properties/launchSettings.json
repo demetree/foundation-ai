@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Foundation.Networking.Beacon.Host": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:54088;http://localhost:54094"
+    }
+  }
+}

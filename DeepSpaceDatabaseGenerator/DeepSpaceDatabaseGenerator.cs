@@ -13,7 +13,7 @@ namespace Foundation.DeepSpace.Database
     /// 
     /// Primary target: SQLite (no SQL Server or PostgreSQL dependency).
     /// </summary>
-    public class DeepSpaceDatabaseGenerator : DatabaseGenerator
+    public class DeepspaceDatabaseGenerator : DatabaseGenerator
     {
         // ── Permission levels ──
         private const int DEEPSPACE_READER_PERMISSION_LEVEL = 1;
@@ -23,7 +23,7 @@ namespace Foundation.DeepSpace.Database
         private const int DEEPSPACE_SUPER_ADMIN_WRITER_PERMISSION_LEVEL = 255;      // Master data (read-only code tables)
 
 
-        public DeepSpaceDatabaseGenerator() : base("DeepSpace", "DeepSpace")
+        public DeepspaceDatabaseGenerator() : base("DeepSpace", "DeepSpace")
         {
             database.comment = @"DeepSpace storage management database schema.
 DeepSpace is a cornerstone storage abstraction layer in the Foundation stack. It provides any Foundation application

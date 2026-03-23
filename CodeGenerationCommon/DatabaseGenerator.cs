@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -1995,6 +1995,23 @@ namespace Foundation.CodeGeneration
 
                         if (version != null)
                         {
+                            //
+                            // Also verify that a corresponding ChangeHistory table exists in the database.
+                            // Without this check, tables that have a versionNumber field as a domain concept
+                            // (e.g. StorageObjectVersion) would incorrectly generate ChangeHistoryToolset code
+                            // referencing a non-existent ChangeHistory table.
+                            //
+                            if (this.database != null && this.database.tables != null)
+                            {
+                                string changeHistoryTableName = this.name + "ChangeHistory";
+                                bool changeHistoryTableExists = this.database.tables.Any(t => t.name == changeHistoryTableName);
+
+                                if (changeHistoryTableExists == false)
+                                {
+                                    return false;
+                                }
+                            }
+
                             return true;
                         }
                         else

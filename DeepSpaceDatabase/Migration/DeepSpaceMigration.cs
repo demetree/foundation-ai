@@ -2,7 +2,7 @@
 //
 // DeepSpaceMigration.cs — Schema creation and migration for DeepSpace SQLite.
 //
-// Uses the DeepspaceDatabaseGenerator at runtime to create the schema,
+// Uses the DeepSpaceDatabaseGenerator at runtime to create the schema,
 // and provides check-then-alter migration blocks for in-place schema updates.
 //
 // Adapted from the RollerOps Migration pattern (Compactica).
@@ -22,7 +22,7 @@ namespace Foundation.DeepSpace.Database
     /// Manages SQLite schema creation and in-place migration for the DeepSpace database.
     /// 
     /// Schema creation:
-    ///   Uses DeepspaceDatabaseGenerator.GenerateDatabaseCreationScripts(SQLite) at runtime
+    ///   Uses DeepSpaceDatabaseGenerator.GenerateDatabaseCreationScripts(SQLite) at runtime
     ///   to create the schema from the generator (not EF's EnsureCreated), preserving
     ///   COLLATE NOCASE, indexes, and seed data.
     /// 
@@ -40,7 +40,7 @@ namespace Foundation.DeepSpace.Database
         {
             try
             {
-                DeepspaceDatabaseGenerator generator = new DeepspaceDatabaseGenerator();
+                DeepSpaceDatabaseGenerator generator = new DeepSpaceDatabaseGenerator();
 
                 string schemaCreationScript = generator.GenerateDatabaseCreationScripts(DatabaseGenerator.DatabaseType.SQLite);
 
@@ -74,7 +74,7 @@ namespace Foundation.DeepSpace.Database
         {
             try
             {
-                DeepspaceDatabaseGenerator generator = new DeepspaceDatabaseGenerator();
+                DeepSpaceDatabaseGenerator generator = new DeepSpaceDatabaseGenerator();
 
                 string schemaCreationScript = generator.GenerateDatabaseCreationScripts(DatabaseGenerator.DatabaseType.SQLite);
 

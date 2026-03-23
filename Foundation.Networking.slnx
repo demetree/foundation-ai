@@ -1,8 +1,13 @@
 <Solution>
+  <Project Path="CodeGenerationCommon/CodeGenerationCommon.csproj" />
+  <Project Path="CodeGenerationCore/CodeGenerationCore.csproj" />
+  <Project Path="DatabaseGenerators/DeepspaceDatabaseGenerator/DeepspaceDatabaseGenerator.csproj" DisplayName="DeepSpaceDatabaseGenerator" />
+  <Project Path="DeepSpaceDatabase/DeepSpaceDatabase.csproj" />
+  <Project Path="DeepspaceTools/DeepspaceTools.csproj" DisplayName="DeepSpaceTools" />
   <Project Path="Foundation.Networking.Beacon.Host/Foundation.Networking.Beacon.Host.csproj" />
   <Project Path="Foundation.Networking.Beacon.Tests/Foundation.Networking.Beacon.Tests.csproj" />
-  <Project Path="Foundation.Networking.Common/Foundation.Networking.Common.csproj" />
   <Project Path="Foundation.Networking.Beacon/Foundation.Networking.Beacon.csproj" />
+  <Project Path="Foundation.Networking.Common/Foundation.Networking.Common.csproj" />
   <Project Path="Foundation.Networking.Conduit.Host/Foundation.Networking.Conduit.Host.csproj" />
   <Project Path="Foundation.Networking.Conduit.Tests/Foundation.Networking.Conduit.Tests.csproj" />
   <Project Path="Foundation.Networking.Conduit/Foundation.Networking.Conduit.csproj" />
@@ -12,9 +17,6 @@
   <Project Path="Foundation.Networking.DeepSpace.Host/Foundation.Networking.DeepSpace.Host.csproj" />
   <Project Path="Foundation.Networking.DeepSpace.Tests/Foundation.Networking.DeepSpace.Tests.csproj" />
   <Project Path="Foundation.Networking.DeepSpace/Foundation.Networking.DeepSpace.csproj" />
-  <Project Path="DeepSpaceDatabase/DeepSpaceDatabase.csproj" />
-  <Project Path="DatabaseGenerators/DeepspaceDatabaseGenerator/DeepspaceDatabaseGenerator.csproj" />
-  <Project Path="CodeGenerationCommon/CodeGenerationCommon.csproj" />
   <Project Path="Foundation.Networking.Hivemind.Host/Foundation.Networking.Hivemind.Host.csproj" />
   <Project Path="Foundation.Networking.Hivemind.Tests/Foundation.Networking.Hivemind.Tests.csproj" />
   <Project Path="Foundation.Networking.Hivemind/Foundation.Networking.Hivemind.csproj" />
