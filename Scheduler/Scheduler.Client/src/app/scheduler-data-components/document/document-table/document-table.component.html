@@ -71,6 +71,10 @@
                 File  Data  Mime  Type
                 <span *ngIf="sortColumn === 'fileDataMimeType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
+            <th class="sortable" scope="col" (click)="sortBy('storageKey')">
+                Storage  Key
+                <span *ngIf="sortColumn === 'storageKey'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
             <th class="sortable" scope="col" (click)="sortBy('invoice.name')">
                 Invoice
                 <span *ngIf="sortColumn === 'invoice.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
@@ -263,6 +267,7 @@ End of commented block for alternate definition option -->
             <td class="text-truncate">{{document.fileDataSize | bigNumberFormat : '1.0-2'}}</td>
             <td class="text-truncate">{{document.fileDataData}}</td>
             <td class="text-truncate">{{document.fileDataMimeType}}</td>
+            <td class="text-truncate">{{document.storageKey}}</td>
             <td class="text-truncate"><a [routerLink]="['/invoice', document.invoiceId]" class="btn btn-link text-left" ngbTooltip="Open Invoice details">{{document.invoice?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/receipt', document.receiptId]" class="btn btn-link text-left" ngbTooltip="Open Receipt details">{{document.receipt?.name}}</a></td>
             <td class="text-truncate"><a [routerLink]="['/scheduledevent', document.scheduledEventId]" class="btn btn-link text-left" ngbTooltip="Open Scheduled Event details">{{document.scheduledEvent?.name}}</a></td>
@@ -477,6 +482,10 @@ End of commented block for alternate definition option -->
             <p class="document-info" *ngIf="document.fileDataMimeType != null">
               <strong>File Data Mime Type: </strong>
               {{document.fileDataMimeType}}
+            </p>
+            <p class="document-info" *ngIf="document.storageKey != null">
+              <strong>Storage Key: </strong>
+              {{document.storageKey}}
             </p>
             <p class="document-info" *ngIf="document.invoiceId != null">
               <strong>Invoice: </strong>

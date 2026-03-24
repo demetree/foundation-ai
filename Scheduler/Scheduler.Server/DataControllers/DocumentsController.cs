@@ -81,6 +81,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string fileDataFileName = null,
 			long? fileDataSize = null,
 			string fileDataMimeType = null,
+			string storageKey = null,
 			int? invoiceId = null,
 			int? receiptId = null,
 			int? scheduledEventId = null,
@@ -211,6 +212,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(fileDataMimeType) == false)
 			{
 				query = query.Where(d => d.fileDataMimeType == fileDataMimeType);
+			}
+			if (string.IsNullOrEmpty(storageKey) == false)
+			{
+				query = query.Where(d => d.storageKey == storageKey);
 			}
 			if (invoiceId.HasValue == true)
 			{
@@ -358,6 +363,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.mimeType.Contains(anyStringContains)
 			       || x.fileDataFileName.Contains(anyStringContains)
 			       || x.fileDataMimeType.Contains(anyStringContains)
+			       || x.storageKey.Contains(anyStringContains)
 			       || x.status.Contains(anyStringContains)
 			       || x.statusChangedBy.Contains(anyStringContains)
 			       || x.uploadedBy.Contains(anyStringContains)
@@ -622,6 +628,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string fileDataFileName = null,
 			long? fileDataSize = null,
 			string fileDataMimeType = null,
+			string storageKey = null,
 			int? invoiceId = null,
 			int? receiptId = null,
 			int? scheduledEventId = null,
@@ -732,6 +739,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (fileDataMimeType != null)
 			{
 				query = query.Where(d => d.fileDataMimeType == fileDataMimeType);
+			}
+			if (storageKey != null)
+			{
+				query = query.Where(d => d.storageKey == storageKey);
 			}
 			if (invoiceId.HasValue == true)
 			{
@@ -876,6 +887,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.mimeType.Contains(anyStringContains)
 			       || x.fileDataFileName.Contains(anyStringContains)
 			       || x.fileDataMimeType.Contains(anyStringContains)
+			       || x.storageKey.Contains(anyStringContains)
 			       || x.status.Contains(anyStringContains)
 			       || x.statusChangedBy.Contains(anyStringContains)
 			       || x.uploadedBy.Contains(anyStringContains)
@@ -1331,6 +1343,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					document.fileDataMimeType = document.fileDataMimeType.Substring(0, 100);
 				}
 
+				if (document.storageKey != null && document.storageKey.Length > 500)
+				{
+					document.storageKey = document.storageKey.Substring(0, 500);
+				}
+
 				if (document.status != null && document.status.Length > 50)
 				{
 					document.status = document.status.Substring(0, 50);
@@ -1541,6 +1558,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				if (document.fileDataMimeType != null && document.fileDataMimeType.Length > 100)
 				{
 					document.fileDataMimeType = document.fileDataMimeType.Substring(0, 100);
+				}
+
+				if (document.storageKey != null && document.storageKey.Length > 500)
+				{
+					document.storageKey = document.storageKey.Substring(0, 500);
 				}
 
 				if (document.status != null && document.status.Length > 50)
@@ -1842,6 +1864,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				    document.fileDataSize = oldDocument.fileDataSize;
 				    document.fileDataData = oldDocument.fileDataData;
 				    document.fileDataMimeType = oldDocument.fileDataMimeType;
+				    document.storageKey = oldDocument.storageKey;
 				    document.invoiceId = oldDocument.invoiceId;
 				    document.receiptId = oldDocument.receiptId;
 				    document.scheduledEventId = oldDocument.scheduledEventId;
@@ -2345,6 +2368,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			string fileDataFileName = null,
 			long? fileDataSize = null,
 			string fileDataMimeType = null,
+			string storageKey = null,
 			int? invoiceId = null,
 			int? receiptId = null,
 			int? scheduledEventId = null,
@@ -2474,6 +2498,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(fileDataMimeType) == false)
 			{
 				query = query.Where(d => d.fileDataMimeType == fileDataMimeType);
+			}
+			if (string.IsNullOrEmpty(storageKey) == false)
+			{
+				query = query.Where(d => d.storageKey == storageKey);
 			}
 			if (invoiceId.HasValue == true)
 			{
@@ -2619,6 +2647,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			       || x.mimeType.Contains(anyStringContains)
 			       || x.fileDataFileName.Contains(anyStringContains)
 			       || x.fileDataMimeType.Contains(anyStringContains)
+			       || x.storageKey.Contains(anyStringContains)
 			       || x.status.Contains(anyStringContains)
 			       || x.statusChangedBy.Contains(anyStringContains)
 			       || x.uploadedBy.Contains(anyStringContains)

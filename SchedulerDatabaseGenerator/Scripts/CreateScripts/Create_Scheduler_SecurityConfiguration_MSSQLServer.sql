@@ -49,10 +49,10 @@ GO
 INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Resource Writer', 'Scheduler Resource Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
 GO
 
-INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Fundraising Writer', 'Scheduler Fundraising Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Fundraising Manager', 'Fundraising Manager Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
 GO
 
-INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Volunteer Writer', 'Scheduler Volunteer Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Volunteer Manager', 'Volunteer Manager Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
 GO
 
 
@@ -65,10 +65,10 @@ GO
 INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Resource Writer' ) )
 GO
 
-INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Fundraising Writer' ) )
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Fundraising Manager' ) )
 GO
 
-INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Volunteer Writer' ) )
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Volunteer Manager' ) )
 GO
 
 

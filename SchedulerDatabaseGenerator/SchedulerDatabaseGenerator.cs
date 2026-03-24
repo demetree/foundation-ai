@@ -4535,6 +4535,7 @@ Links Resources (volunteers) to groups, with optional default role and sequence.
             documentTable.AddString100Field("mimeType", false).AddScriptComments("MIME type of the file (e.g., 'application/pdf', 'image/jpeg').");
             documentTable.AddLongField("fileSizeBytes", false).AddScriptComments("File size in bytes for UI display.");
             documentTable.AddBinaryDataFields("fileData"); // The actual file content stored as binary data.
+            documentTable.AddString500Field("storageKey", true).AddScriptComments("Optionaa key into the storage system that maintains the data for this document");
 
             // Add Invoice and Receipt FKs to the Document table (defined earlier)
             // This allows generated PDF invoices/receipts to be stored as Document records.

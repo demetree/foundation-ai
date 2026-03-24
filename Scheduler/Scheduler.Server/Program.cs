@@ -130,6 +130,42 @@ namespace Foundation.Scheduler
                 // Register Geocoding Service (for address-to-coordinate resolution via Nominatim)
                 builder.Services.AddScoped<global::Scheduler.Server.Services.GeocodingService>();
 
+                // Register Document Storage Provider (binary content abstraction — selected by config)
+                {
+                    string providerKind = builder.Configuration.GetValue<string>("FileStorage:Provider") ?? "Sql";
+
+                    switch (providerKind)
+                    {
+                        case "Local":
+                            string localBasePath = builder.Configuration.GetValue<string>("FileStorage:LocalBasePath")
+                                ?? Path.Combine(builder.Environment.ContentRootPath, "FileStorage");
+
+                            builder.Services.AddScoped<global::Scheduler.Server.Services.IDocumentStorageProvider>(sp =>
+                                new global::Scheduler.Server.Services.LocalDocumentStorageProvider(
+                                    localBasePath,
+                                    sp.GetRequiredService<ILogger<global::Scheduler.Server.Services.LocalDocumentStorageProvider>>()));
+                            break;
+
+                        case "DeepSpace":
+                            string deepSpaceUrl = builder.Configuration.GetValue<string>("FileStorage:DeepSpaceHostUrl")
+                                ?? "https://localhost:5010";
+
+                            builder.Services.AddHttpClient<global::Scheduler.Server.Services.DeepSpaceDocumentStorageProvider>(client =>
+                            {
+                                client.BaseAddress = new Uri(deepSpaceUrl);
+                                client.Timeout = TimeSpan.FromMinutes(5);
+                            });
+
+                            builder.Services.AddScoped<global::Scheduler.Server.Services.IDocumentStorageProvider>(sp =>
+                                sp.GetRequiredService<global::Scheduler.Server.Services.DeepSpaceDocumentStorageProvider>());
+                            break;
+
+                        default: // "Sql"
+                            builder.Services.AddScoped<global::Scheduler.Server.Services.IDocumentStorageProvider, global::Scheduler.Server.Services.SqlDocumentStorageProvider>();
+                            break;
+                    }
+                }
+
                 // Register File Storage Service (for Document Manager / File Manager feature)
                 builder.Services.AddScoped<global::Scheduler.Server.Services.IFileStorageService, global::Scheduler.Server.Services.SqlFileStorageService>();
 

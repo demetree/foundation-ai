@@ -8387,6 +8387,7 @@ CREATE TABLE "Document"
 	"fileDataSize" BIGINT NULL,		-- Part of the binary data field setup
 	"fileDataData" BLOB NULL,		-- Part of the binary data field setup
 	"fileDataMimeType" VARCHAR(100) NULL COLLATE NOCASE,		-- Part of the binary data field setup
+	"storageKey" VARCHAR(500) NULL COLLATE NOCASE,		-- Optionaa key into the storage system that maintains the data for this document
 	"invoiceId" INTEGER NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
 	"receiptId" INTEGER NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
 	"scheduledEventId" INTEGER NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).

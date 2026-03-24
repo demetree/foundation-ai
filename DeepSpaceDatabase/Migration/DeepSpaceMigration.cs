@@ -53,6 +53,12 @@ namespace Foundation.DeepSpace.Database
                         command.ExecuteNonQuery();
                     }
 
+
+                    //
+                    // Seed master/reference data
+                    //
+                    InsertSeedData(connection, logger);
+
                     connection.Close();
                 }
 
@@ -65,6 +71,7 @@ namespace Foundation.DeepSpace.Database
                 throw;
             }
         }
+
 
 
         /// <summary>
@@ -83,6 +90,15 @@ namespace Foundation.DeepSpace.Database
                     command.CommandText = schemaCreationScript;
 
                     command.ExecuteNonQuery();
+                }
+
+
+                //
+                // Seed master/reference data
+                //
+                if (connection is SqliteConnection sqliteConn)
+                {
+                    InsertSeedData(sqliteConn, logger);
                 }
 
                 logger.LogInformation("DeepSpace: SQLite schema created successfully from generator (existing connection).");
@@ -139,13 +155,72 @@ namespace Foundation.DeepSpace.Database
                 // ══════════════════════════════════════════════════════════════
                 //
 
-                logger.LogInformation("DeepSpace: Schema migration check completed. No pending migrations for version 1.");
+                //
+                // Migration 2026-03-24 — Seed data for existing databases that were created before seed data was added
+                //
+                using (SqliteConnection connection = new SqliteConnection(connectionString))
+                {
+                    connection.Open();
+                    InsertSeedData(connection, logger);
+                    connection.Close();
+                }
+
+
+                logger.LogInformation("DeepSpace: Schema migration check completed. All migrations applied.");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "DeepSpace: AttemptToUpdateSQLiteDatabaseSchemaToLatestVersion failed. Connection string is {ConnectionString}", connectionString);
 
                 throw;
+            }
+        }
+
+
+        /// <summary>
+        /// Inserts seed/reference data into the DeepSpace database.
+        /// Uses INSERT OR IGNORE so this is safe to call multiple times.
+        /// </summary>
+        private static void InsertSeedData(SqliteConnection connection, ILogger logger)
+        {
+            try
+            {
+                string seedSql = @"
+                    -- StorageProviderType: master list of supported provider backends
+                    INSERT OR IGNORE INTO StorageProviderType (id, name, description, sequence, objectGuid, active, deleted)
+                    VALUES
+                        (1, 'Local',     'Local filesystem storage',               1, '" + Guid.NewGuid() + @"', 1, 0),
+                        (2, 'S3',        'Amazon S3 compatible storage',            2, '" + Guid.NewGuid() + @"', 1, 0),
+                        (3, 'AzureBlob', 'Azure Blob Storage',                      3, '" + Guid.NewGuid() + @"', 1, 0),
+                        (4, 'DeepSpace', 'DeepSpace managed multi-provider store',  4, '" + Guid.NewGuid() + @"', 1, 0);
+
+                    -- AccessType: types of access operations tracked in access logs
+                    INSERT OR IGNORE INTO AccessType (id, name, description)
+                    VALUES
+                        (1, 'Read',   'Object content was retrieved'),
+                        (2, 'Write',  'Object content was created or updated'),
+                        (3, 'Delete', 'Object was deleted'),
+                        (4, 'List',   'Objects were listed or enumerated'),
+                        (5, 'Copy',   'Object was copied within or across providers');
+
+                    -- StorageTier: classification tiers for storage lifecycle management
+                    INSERT OR IGNORE INTO StorageTier (id, name, description, sequence, objectGuid, active, deleted)
+                    VALUES
+                        (1, 'Standard', 'Default storage tier for active objects',       1, '" + Guid.NewGuid() + @"', 1, 0),
+                        (2, 'Archive',  'Long-term archive tier for infrequent access',  2, '" + Guid.NewGuid() + @"', 1, 0);
+                ";
+
+                using (var command = new SqliteCommand(seedSql, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+
+                logger.LogInformation("DeepSpace: Seed data inserted successfully.");
+            }
+            catch (Exception ex)
+            {
+                // Non-fatal — seed data failure shouldn't prevent operation
+                logger.LogWarning(ex, "DeepSpace: Seed data insertion encountered an error. Continuing anyway.");
             }
         }
     }

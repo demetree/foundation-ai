@@ -108,6 +108,16 @@ namespace Foundation.Networking.DeepSpace.Host
                 bool exists = await mgr.ExistsAsync(key);
                 return Results.Ok(new { Key = key, Exists = exists });
             });
+
+
+            //
+            // Admin: rebuild metadata database from sidecar files
+            //
+            app.MapPost("/api/deepspace/admin/rebuild", async (StorageManager mgr) =>
+            {
+                int recovered = await mgr.RebuildFromProvidersAsync();
+                return Results.Ok(new { Recovered = recovered, Message = $"Recovery complete. {recovered} objects recovered from sidecar files." });
+            });
         }
     }
 }

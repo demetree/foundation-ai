@@ -9210,6 +9210,7 @@ CREATE TABLE [Scheduler].[Document]
 	[fileDataSize] BIGINT NULL,		-- Part of the binary data field setup
 	[fileDataData] VARBINARY(MAX) NULL,		-- Part of the binary data field setup
 	[fileDataMimeType] NVARCHAR(100) NULL,		-- Part of the binary data field setup
+	[storageKey] NVARCHAR(500) NULL,		-- Optionaa key into the storage system that maintains the data for this document
 	[invoiceId] INT NULL,		-- Optional link to an Invoice (e.g., generated invoice PDF).
 	[receiptId] INT NULL,		-- Optional link to a Receipt (e.g., generated receipt PDF).
 	[scheduledEventId] INT NULL,		-- Optional link to a ScheduledEvent (e.g., rental agreement for a booking).

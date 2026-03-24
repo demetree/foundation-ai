@@ -28,11 +28,13 @@ namespace Scheduler.Server.Services
     {
         private readonly SchedulerContext _db;
         private readonly ILogger<SqlFileStorageService> _logger;
+        private readonly IDocumentStorageProvider _storageProvider;
 
-        public SqlFileStorageService(SchedulerContext db, ILogger<SqlFileStorageService> logger)
+        public SqlFileStorageService(SchedulerContext db, ILogger<SqlFileStorageService> logger, IDocumentStorageProvider storageProvider = null)
         {
             _db = db;
             _logger = logger;
+            _storageProvider = storageProvider;
         }
 
 
@@ -233,6 +235,7 @@ namespace Scheduler.Server.Services
                     versionNumber = d.versionNumber,
                     objectGuid = d.objectGuid,
                     active = d.active,
+                    storageKey = d.storageKey,
                     deleted = d.deleted,
                     // Nav properties for display
                     documentType = d.documentType,
@@ -329,6 +332,7 @@ namespace Scheduler.Server.Services
                     versionNumber = d.versionNumber,
                     objectGuid = d.objectGuid,
                     active = d.active,
+                    storageKey = d.storageKey,
                     deleted = d.deleted,
                     // Nav properties for display
                     documentType = d.documentType,
@@ -361,12 +365,34 @@ namespace Scheduler.Server.Services
             //
             // Full fetch including binary — used for download
             //
-            return await _db.Documents
+            Document document = await _db.Documents
                 .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == false)
                 .Include(d => d.documentType)
                 .Include(d => d.documentFolder)
                 .FirstOrDefaultAsync(ct)
                 .ConfigureAwait(false);
+
+            //
+            // Dual-mode: if storageKey is set, fetch binary from the configured provider
+            //
+            if (document != null
+                && string.IsNullOrEmpty(document.storageKey) == false
+                && _storageProvider != null
+                && _storageProvider.ProviderName != "Sql")
+            {
+                try
+                {
+                    byte[] content = await _storageProvider.GetContentAsync(document.storageKey, ct).ConfigureAwait(false);
+                    document.fileDataData = content;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to fetch binary content from storage provider for Document {DocumentId} key '{Key}'.",
+                        documentId, document.storageKey);
+                }
+            }
+
+            return document;
         }
 
 
@@ -377,11 +403,36 @@ namespace Scheduler.Server.Services
             document.deleted = false;
             document.uploadedDate = DateTime.UtcNow;
 
+            //
+            // If an external storage provider is configured, store binary there
+            // and keep only the storageKey reference in SQL.
+            //
+            if (_storageProvider != null
+                && _storageProvider.ProviderName != "Sql"
+                && document.fileDataData != null
+                && document.fileDataData.Length > 0)
+            {
+                string key = BuildStorageKey(document);
+
+                try
+                {
+                    await _storageProvider.StoreContentAsync(key, document.fileDataData, document.mimeType, ct).ConfigureAwait(false);
+
+                    document.storageKey = key;
+                    document.fileDataData = null;  // Don't store binary inline in SQL
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to store binary content externally for Document '{FileName}'. Falling back to SQL storage.", document.fileName);
+                    // Fall through — binary stays in fileDataData as fallback
+                }
+            }
+
             var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(_db, securityUserId, false, ct);
             await chts.SaveEntityAsync(document).ConfigureAwait(false);
 
-            _logger.LogInformation("Uploaded Document {DocumentId} '{FileName}' ({Size} bytes) for tenant {TenantGuid}.",
-                document.id, document.fileName, document.fileSizeBytes, document.tenantGuid);
+            _logger.LogInformation("Uploaded Document {DocumentId} '{FileName}' ({Size} bytes) for tenant {TenantGuid} [provider={Provider}].",
+                document.id, document.fileName, document.fileSizeBytes, document.tenantGuid, _storageProvider?.ProviderName ?? "Sql");
 
             return document;
         }
@@ -552,6 +603,22 @@ namespace Scheduler.Server.Services
                 throw new InvalidOperationException($"Document {documentId} not found.");
             }
 
+            //
+            // If a storage provider is configured, delete binary content from it.
+            //
+            if (_storageProvider != null && _storageProvider.ProviderName != "Sql")
+            {
+                try
+                {
+                    string storageKey = BuildStorageKey(document);
+                    await _storageProvider.DeleteContentAsync(storageKey, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to delete binary content from storage provider for Document {DocumentId}.", documentId);
+                }
+            }
+
             _db.Documents.Remove(document);
             await _db.SaveChangesAsync(ct).ConfigureAwait(false);
 
@@ -703,6 +770,7 @@ namespace Scheduler.Server.Services
                     versionNumber = d.versionNumber,
                     objectGuid = d.objectGuid,
                     active = d.active,
+                    storageKey = d.storageKey,
                     deleted = d.deleted,
                     // Nav properties for display
                     documentType = d.documentType,
@@ -877,6 +945,21 @@ namespace Scheduler.Server.Services
                 .ThenBy(t => t.name)
                 .ToListAsync(ct)
                 .ConfigureAwait(false);
+        }
+
+
+        // ═══════════════════════════════════════════════════════════════════════
+        //  STORAGE KEY HELPERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Builds a deterministic storage key from a Document entity for use with
+        /// external storage providers (Local, DeepSpace).
+        /// Convention: {tenantGuid}/documents/{objectGuid}/{versionNumber}/{fileName}
+        /// </summary>
+        private static string BuildStorageKey(Document document)
+        {
+            return $"{document.tenantGuid}/documents/{document.objectGuid}/{document.versionNumber}/{document.fileName}";
         }
     }
 }

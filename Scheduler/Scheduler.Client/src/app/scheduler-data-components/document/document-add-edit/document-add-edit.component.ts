@@ -65,6 +65,7 @@ interface DocumentFormValues {
   fileDataSize: string | null,     // Stored as string for form input, converted to number on submit.
   fileDataData: string | null,
   fileDataMimeType: string | null,
+  storageKey: string | null,
   invoiceId: number | bigint | null,       // For FK link number
   receiptId: number | bigint | null,       // For FK link number
   scheduledEventId: number | bigint | null,       // For FK link number
@@ -133,6 +134,7 @@ export class DocumentAddEditComponent {
         fileDataSize: [''],
         fileDataData: [''],
         fileDataMimeType: [''],
+        storageKey: [''],
         invoiceId: [null],
         receiptId: [null],
         scheduledEventId: [null],
@@ -344,6 +346,7 @@ export class DocumentAddEditComponent {
         fileDataSize: formValue.fileDataSize ? Number(formValue.fileDataSize) : null,
         fileDataData: formValue.fileDataData?.trim() || null,
         fileDataMimeType: formValue.fileDataMimeType?.trim() || null,
+        storageKey: formValue.storageKey?.trim() || null,
         invoiceId: formValue.invoiceId ? Number(formValue.invoiceId) : null,
         receiptId: formValue.receiptId ? Number(formValue.receiptId) : null,
         scheduledEventId: formValue.scheduledEventId ? Number(formValue.scheduledEventId) : null,
@@ -508,6 +511,7 @@ export class DocumentAddEditComponent {
         fileDataSize: '',
         fileDataData: '',
         fileDataMimeType: '',
+        storageKey: '',
         invoiceId: null,
         receiptId: null,
         scheduledEventId: null,
@@ -555,6 +559,7 @@ export class DocumentAddEditComponent {
         fileDataSize: documentData.fileDataSize?.toString() ?? '',
         fileDataData: documentData.fileDataData ?? '',
         fileDataMimeType: documentData.fileDataMimeType ?? '',
+        storageKey: documentData.storageKey ?? '',
         invoiceId: documentData.invoiceId,
         receiptId: documentData.receiptId,
         scheduledEventId: documentData.scheduledEventId,

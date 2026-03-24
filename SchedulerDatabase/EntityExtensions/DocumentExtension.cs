@@ -327,6 +327,7 @@ namespace Foundation.Scheduler.Database
 			public Int64? fileDataSize { get; set; }
 			public Byte[] fileDataData { get; set; }
 			public String fileDataMimeType { get; set; }
+			public String storageKey { get; set; }
 			public Int32? invoiceId { get; set; }
 			public Int32? receiptId { get; set; }
 			public Int32? scheduledEventId { get; set; }
@@ -413,6 +414,7 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = this.fileDataSize,
 				fileDataData = this.fileDataData,
 				fileDataMimeType = this.fileDataMimeType,
+				storageKey = this.storageKey,
 				invoiceId = this.invoiceId,
 				receiptId = this.receiptId,
 				scheduledEventId = this.scheduledEventId,
@@ -491,6 +493,7 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = this.fileDataSize,
 				fileDataData = this.fileDataData,
 				fileDataMimeType = this.fileDataMimeType,
+				storageKey = this.storageKey,
 				invoiceId = this.invoiceId,
 				receiptId = this.receiptId,
 				scheduledEventId = this.scheduledEventId,
@@ -589,6 +592,7 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = dto.fileDataSize,
 				fileDataData = dto.fileDataData,
 				fileDataMimeType = dto.fileDataMimeType,
+				storageKey = dto.storageKey,
 				invoiceId = dto.invoiceId,
 				receiptId = dto.receiptId,
 				scheduledEventId = dto.scheduledEventId,
@@ -644,6 +648,7 @@ namespace Foundation.Scheduler.Database
 			this.fileDataSize = dto.fileDataSize;
 			this.fileDataData = dto.fileDataData;
 			this.fileDataMimeType = dto.fileDataMimeType;
+			this.storageKey = dto.storageKey;
 			this.invoiceId = dto.invoiceId;
 			this.receiptId = dto.receiptId;
 			this.scheduledEventId = dto.scheduledEventId;
@@ -705,6 +710,7 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = this.fileDataSize,
 				fileDataData = this.fileDataData,
 				fileDataMimeType = this.fileDataMimeType,
+				storageKey = this.storageKey,
 				invoiceId = this.invoiceId,
 				receiptId = this.receiptId,
 				scheduledEventId = this.scheduledEventId,
@@ -797,6 +803,7 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = document.fileDataSize,
 				fileDataData = document.fileDataData,
 				fileDataMimeType = document.fileDataMimeType,
+				storageKey = document.storageKey,
 				invoiceId = document.invoiceId,
 				receiptId = document.receiptId,
 				scheduledEventId = document.scheduledEventId,
@@ -856,6 +863,7 @@ namespace Foundation.Scheduler.Database
 				fileDataSize = document.fileDataSize,
 				fileDataData = document.fileDataData,
 				fileDataMimeType = document.fileDataMimeType,
+				storageKey = document.storageKey,
 				invoiceId = document.invoiceId,
 				receiptId = document.receiptId,
 				scheduledEventId = document.scheduledEventId,

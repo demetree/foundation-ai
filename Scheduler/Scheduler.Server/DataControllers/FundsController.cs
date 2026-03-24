@@ -522,9 +522,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Scheduler Fundraising Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Fundraising Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Fundraising Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Fundraising Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -724,9 +724,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Scheduler Fundraising Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Fundraising Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Fundraising Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Fundraising Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -1301,9 +1301,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Scheduler Fundraising Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Fundraising Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Fundraising Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Fundraising Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -1584,9 +1584,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 
 			//
-			// Scheduler Fundraising Writer role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Fundraising Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Fundraising Writer", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Fundraising Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}

@@ -60,6 +60,7 @@ export class DocumentQueryParameters {
     fileDataFileName: string | null | undefined = null;
     fileDataSize: bigint | number | null | undefined = null;
     fileDataMimeType: string | null | undefined = null;
+    storageKey: string | null | undefined = null;
     invoiceId: bigint | number | null | undefined = null;
     receiptId: bigint | number | null | undefined = null;
     scheduledEventId: bigint | number | null | undefined = null;
@@ -111,6 +112,7 @@ export class DocumentSubmitData {
     fileDataSize: bigint | number | null = null;
     fileDataData: string | null = null;
     fileDataMimeType: string | null = null;
+    storageKey: string | null = null;
     invoiceId: bigint | number | null = null;
     receiptId: bigint | number | null = null;
     scheduledEventId: bigint | number | null = null;
@@ -216,6 +218,7 @@ export class DocumentData {
     fileDataSize!: bigint | number;
     fileDataData!: string | null;
     fileDataMimeType!: string | null;
+    storageKey!: string | null;
     invoiceId!: bigint | number;
     receiptId!: bigint | number;
     scheduledEventId!: bigint | number;
@@ -780,6 +783,7 @@ export class DocumentService extends SecureEndpointBase {
         output.fileDataSize = data.fileDataSize;
         output.fileDataData = data.fileDataData;
         output.fileDataMimeType = data.fileDataMimeType;
+        output.storageKey = data.storageKey;
         output.invoiceId = data.invoiceId;
         output.receiptId = data.receiptId;
         output.scheduledEventId = data.scheduledEventId;

@@ -79,6 +79,10 @@
                                 <label for="Document-fileDataMimeType" id="label-Document-fileDataMimeType">File Data Mime Type</label>
                                 <input type="text" id="Document-fileDataMimeType" formControlName="fileDataMimeType" placeholder="Enter File Data Mime Type" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()" aria-labelledby="label-fileDataMimeType" />
                             </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('storageKey')">
+                                <label for="Document-storageKey" id="label-Document-storageKey">Storage Key</label>
+                                <textarea id="Document-storageKey" formControlName="storageKey" placeholder="Enter Storage Key" class="form-control document-input" [disabled]="!userIsSchedulerDocumentWriter()"></textarea>
+                            </div>
                             <div class="form-group" *ngIf="!isFieldHidden('invoiceId')">
                                 <label for="Document-invoiceId" id="label-Document-invoiceId">Invoice</label>
                                 <select id="Document-invoiceId" formControlName="invoiceId" class="form-select document-select" [disabled]="!userIsSchedulerDocumentWriter()">

@@ -33,6 +33,8 @@ public partial class Document
 
     public string fileDataMimeType { get; set; }
 
+    public string storageKey { get; set; }
+
     public int? invoiceId { get; set; }
 
     public int? receiptId { get; set; }
