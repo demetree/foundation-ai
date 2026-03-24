@@ -164,6 +164,26 @@ namespace Foundation.Scheduler
                             builder.Services.AddScoped<global::Scheduler.Server.Services.IDocumentStorageProvider, global::Scheduler.Server.Services.SqlDocumentStorageProvider>();
                             break;
                     }
+
+                    // ── File Storage startup log ──
+                    Console.WriteLine();
+                    Console.WriteLine("═══ File Manager Storage Configuration ═══");
+                    Console.WriteLine($"  Provider:       {providerKind}");
+                    if (providerKind == "Local")
+                    {
+                        string logPath = builder.Configuration.GetValue<string>("FileStorage:LocalBasePath")
+                            ?? Path.Combine(builder.Environment.ContentRootPath, "FileStorage");
+                        Console.WriteLine($"  Local base path: {logPath}");
+                    }
+                    else if (providerKind == "DeepSpace")
+                    {
+                        string logUrl = builder.Configuration.GetValue<string>("FileStorage:DeepSpaceHostUrl")
+                            ?? "https://localhost:5010";
+                        Console.WriteLine($"  DeepSpace URL:  {logUrl}");
+                    }
+                    Console.WriteLine("  Metadata store: SQL Server (SchedulerContext)");
+                    Console.WriteLine("═══════════════════════════════════════════");
+                    Console.WriteLine();
                 }
 
                 // Register File Storage Service (for Document Manager / File Manager feature)
