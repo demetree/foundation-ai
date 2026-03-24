@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef, Inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { ToastaService, ToastaConfig, ToastOptions, ToastData } from 'ngx-toasta';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
@@ -18,6 +19,7 @@ import { AuthService } from './services/auth.service';
 import { ConfigurationService } from './services/configuration.service';
 import { ThemeService } from './services/theme.service';
 import { MessagingSignalRService } from './services/messaging-signalr.service';
+import { FeatureConfigService } from './services/feature-config.service';
 import { Alertify } from './models/Alertify';
 import { LoginComponent } from './components/login/login.component';
 import { Modal } from 'bootstrap';
@@ -68,7 +70,8 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject('BASE_URL') private baseUrl: string,
     private http: HttpClient,
     private themeService: ThemeService,
-    private messagingSignalR: MessagingSignalRService,) {
+    private messagingSignalR: MessagingSignalRService,
+    private featureConfigService: FeatureConfigService) {
 
     storageManager.initialiseStorageSyncListener();
 
@@ -104,7 +107,9 @@ export class AppComponent implements OnInit, OnDestroy {
     //
     if (this.isUserLoggedIn === true) {
       this.themeService.initializeAfterLogin();
-      this.messagingSignalR.connect();
+      this.featureConfigService.isMessagingEnabled$.pipe(take(1)).subscribe(enabled => {
+        if (enabled) { this.messagingSignalR.connect(); }
+      });
     }
 
     this.schedulerDataServiceManagerService.ClearAllCaches();
@@ -161,7 +166,9 @@ export class AppComponent implements OnInit, OnDestroy {
       //
       if (isLoggedIn === true) {
         this.themeService.initializeAfterLogin();
-        this.messagingSignalR.connect();
+        this.featureConfigService.isMessagingEnabled$.pipe(take(1)).subscribe(enabled => {
+          if (enabled) { this.messagingSignalR.connect(); }
+        });
       } else {
         this.messagingSignalR.disconnect();
       }

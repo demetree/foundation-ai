@@ -20,7 +20,7 @@
       <i class="fa fa-bars"></i>
     </button>
     <!-- Messages icon (desktop/tablet) -->
-    <div *ngIf="isUserLoggedIn" class="header-icon-wrapper d-none d-md-block" id="header-messages-btn">
+    <div *ngIf="isUserLoggedIn && (isMessagingEnabled$ | async)" class="header-icon-wrapper d-none d-md-block" id="header-messages-btn">
       <button class="btn header-icon-btn"
               (click)="onToggleMessaging()"
               title="Messages">
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Notification bell (desktop/tablet) -->
-    <div *ngIf="isUserLoggedIn" class="header-icon-wrapper d-none d-md-block" id="header-notifications-btn">
+    <div *ngIf="isUserLoggedIn && (isMessagingEnabled$ | async)" class="header-icon-wrapper d-none d-md-block" id="header-notifications-btn">
       <button class="btn header-icon-btn header-notification-bell"
               (click)="toggleNotificationDropdown($event)"
               [class.active]="showNotificationDropdown"

@@ -22,6 +22,7 @@ interface FeatureConfig {
     fundraisingEnabled: boolean;
     financialManagementEnabled: boolean;
     crewManagementEnabled: boolean;
+    messagingEnabled: boolean;
 }
 
 
@@ -56,7 +57,8 @@ export class FeatureConfigService extends SecureEndpointBase {
                         volunteerManagementEnabled: false,
                         fundraisingEnabled: false,
                         financialManagementEnabled: false,
-                        crewManagementEnabled: false
+                        crewManagementEnabled: false,
+                        messagingEnabled: false
                     } as FeatureConfig);
                 }),
                 shareReplay({ bufferSize: 1, refCount: false })
@@ -85,5 +87,10 @@ export class FeatureConfigService extends SecureEndpointBase {
     /** Whether Crew Management (crews, shifts, shift patterns) is enabled at the system level. */
     public get isCrewEnabled$(): Observable<boolean> {
         return this.config$.pipe(map(c => c.crewManagementEnabled === true));
+    }
+
+    /** Whether the Messaging & Notification system is enabled. */
+    public get isMessagingEnabled$(): Observable<boolean> {
+        return this.config$.pipe(map(c => c.messagingEnabled === true));
     }
 }

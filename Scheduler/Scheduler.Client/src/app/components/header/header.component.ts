@@ -11,6 +11,7 @@ import { MessagingSignalRService } from '../../services/messaging-signalr.servic
 import { ToastNotificationService } from '../../services/toast-notification.service';
 import { SchedulerHelperService } from '../../services/scheduler-helper.service';
 import { ThemeService, ThemeDefinition } from '../../services/theme.service';
+import { FeatureConfigService } from '../../services/feature-config.service';
 
 
 @Component({
@@ -77,8 +78,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private signalR: MessagingSignalRService,
     private toastService: ToastNotificationService,
     private schedulerHelperService: SchedulerHelperService,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    private featureConfigService: FeatureConfigService
   ) { }
+
+  /** Whether the messaging system is enabled (driven by server feature config). */
+  public isMessagingEnabled$ = this.featureConfigService.isMessagingEnabled$;
 
 
   ngOnInit(): void {

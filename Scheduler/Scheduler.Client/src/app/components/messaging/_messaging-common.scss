@@ -8,20 +8,27 @@
 
 
 /* ─── Design Tokens ──────────────────────────────────────────────────────── */
+//
+// THEME INTEGRATION NOTE (March 2026):
+// Background, text, and surface tokens are mapped to Scheduler's --sch-* CSS
+// custom properties so they respond to theme changes. Accent, danger, and
+// status colors keep SCSS hex values because they're used in rgba() function
+// calls that require compile-time color resolution.
+//
 
 $panel-width: 400px;
 $header-h: 56px;
 $composer-h: 60px;
-$border-color: rgba(255, 255, 255, 0.08);
-$bg-dark: #1e2226;
-$bg-darker: #15181c;
-$bg-panel: #1a1d21;
-$bg-hover: rgba(255, 255, 255, 0.06);
-$accent: #4d8df7;
+$border-color: var(--sch-border);
+$bg-dark: var(--sch-bg-body);
+$bg-darker: var(--sch-sidebar-bg);
+$bg-panel: var(--sch-bg-card);
+$bg-hover: var(--sch-surface-hover);
+$accent: #4d8df7;             // kept for SCSS rgba() — matches --sch-primary
 $accent-hover: #3a7de6;
-$text-primary: #f1f1f2;
-$text-secondary: #a0a3a8;
-$text-muted: #71747a;
+$text-primary: var(--sch-text-primary);
+$text-secondary: var(--sch-text-secondary);
+$text-muted: var(--sch-text-muted);
 $unread-badge: #e63946;
 $danger: #e63946;
 $danger-hover: #c72e3a;

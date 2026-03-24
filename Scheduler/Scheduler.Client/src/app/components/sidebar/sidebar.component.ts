@@ -98,6 +98,7 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   public isFundraisingEnabled$ = this.featureConfigService.isFundraisingEnabled$;
   public isFinancialEnabled$ = this.featureConfigService.isFinancialEnabled$;
   public isCrewEnabled$ = this.featureConfigService.isCrewEnabled$;
+  public isMessagingEnabled$ = this.featureConfigService.isMessagingEnabled$;
 
   public get isVolunteerManager(): boolean {
     return this.authService.isVolunteerManager;
