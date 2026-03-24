@@ -23,6 +23,12 @@ namespace Foundation.Networking.DeepSpace.Configuration
         public string DefaultProvider { get; set; } = "Local";
 
         /// <summary>
+        /// Directory for the DeepSpace SQLite metadata database.
+        /// Defaults to a "DeepSpace" subdirectory of the application base if empty.
+        /// </summary>
+        public string DatabaseDirectory { get; set; } = "";
+
+        /// <summary>
         /// Local filesystem provider settings.
         /// </summary>
         public LocalStorageConfig LocalStorage { get; set; } = new LocalStorageConfig();

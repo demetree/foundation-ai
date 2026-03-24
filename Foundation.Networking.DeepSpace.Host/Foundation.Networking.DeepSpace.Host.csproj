@@ -12,6 +12,11 @@
     <Copyright>Copyright 2025 K2 Research</Copyright>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Hangfire.Core" Version="1.8.21" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FoundationCore.Web\Foundation.Web.csproj" />
+    <ProjectReference Include="..\DeepSpaceDatabase\DeepSpaceDatabase.csproj" />
     <ProjectReference Include="..\Foundation.Networking.DeepSpace\Foundation.Networking.DeepSpace.csproj" />
   </ItemGroup>
 </Project>

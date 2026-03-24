@@ -22,6 +22,8 @@ using Microsoft.Extensions.Logging;
 using Foundation.Networking.DeepSpace.Configuration;
 using Foundation.Networking.DeepSpace.Providers;
 
+using DeepSpaceDatabaseManager = Foundation.DeepSpace.Database.DeepSpaceDatabaseManager;
+
 namespace Foundation.Networking.DeepSpace
 {
     /// <summary>
@@ -50,6 +52,7 @@ namespace Foundation.Networking.DeepSpace
         private readonly ILogger<StorageManager> _logger;
         private readonly ConcurrentDictionary<string, IStorageProvider> _providers;
         private readonly string _defaultProviderName;
+        private readonly DeepSpaceDatabaseManager _databaseManager;
 
         private long _totalPuts;
         private long _totalGets;
@@ -57,12 +60,28 @@ namespace Foundation.Networking.DeepSpace
         private long _totalErrors;
 
 
-        public StorageManager(DeepSpaceConfiguration config, ILogger<StorageManager> logger)
+        /// <summary>
+        /// The DeepSpace metadata database manager, if available.
+        /// </summary>
+        public DeepSpaceDatabaseManager DatabaseManager => _databaseManager;
+
+
+        public StorageManager(DeepSpaceConfiguration config, ILogger<StorageManager> logger, DeepSpaceDatabaseManager databaseManager = null)
         {
             _config = config;
             _logger = logger;
+            _databaseManager = databaseManager;
             _providers = new ConcurrentDictionary<string, IStorageProvider>(StringComparer.OrdinalIgnoreCase);
             _defaultProviderName = config.DefaultProvider ?? "Local";
+
+            if (_databaseManager != null)
+            {
+                _logger.LogInformation("DeepSpace: metadata database is available at {Path}", _databaseManager.DatabaseFilePath);
+            }
+            else
+            {
+                _logger.LogWarning("DeepSpace: operating without metadata database — object tracking is disabled.");
+            }
         }
 
 

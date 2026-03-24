@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 
 using Foundation.Networking.DeepSpace.Configuration;
 using Foundation.Networking.DeepSpace.Providers;
+using Foundation.DeepSpace.Database;
 
 namespace Foundation.Networking.DeepSpace
 {
@@ -73,6 +74,19 @@ namespace Foundation.Networking.DeepSpace
                 });
             }
 
+
+            //
+            // Register the DeepSpace metadata database manager.
+            // This creates and initializes the SQLite database at startup.
+            //
+            services.AddSingleton<DeepSpaceDatabaseManager>(sp =>
+            {
+                return new DeepSpaceDatabaseManager(
+                    config.DatabaseDirectory,
+                    sp.GetRequiredService<ILogger<DeepSpaceDatabaseManager>>());
+            });
+
+
             //
             // Register the storage manager and auto-register all available providers
             //
@@ -80,7 +94,8 @@ namespace Foundation.Networking.DeepSpace
             {
                 StorageManager manager = new StorageManager(
                     config,
-                    sp.GetRequiredService<ILogger<StorageManager>>());
+                    sp.GetRequiredService<ILogger<StorageManager>>(),
+                    sp.GetRequiredService<DeepSpaceDatabaseManager>());
 
                 manager.RegisterProvider(sp.GetRequiredService<LocalStorageProvider>());
 

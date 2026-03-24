@@ -16,7 +16,6 @@ using Foundation.Controllers;
 using Foundation.Security.Database;
 using static Foundation.Auditor.AuditEngine;
 using Foundation.DeepSpace.Database;
-using Foundation.ChangeHistory;
 
 namespace Foundation.DeepSpace.Controllers.WebAPI
 {
@@ -585,25 +584,7 @@ namespace Foundation.DeepSpace.Controllers.WebAPI
 				    EntityEntry<Database.StorageObjectVersion> attached = _context.Entry(existing);
 				    attached.CurrentValues.SetValues(storageObjectVersion);
 
-				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
-				    {
-				        _context.SaveChanges();
-
-				        //
-				        // Now add the change history
-				        //
-				        StorageObjectVersionChangeHistory storageObjectVersionChangeHistory = new StorageObjectVersionChangeHistory();
-				        storageObjectVersionChangeHistory.storageObjectVersionId = storageObjectVersion.id;
-				        storageObjectVersionChangeHistory.versionNumber = storageObjectVersion.versionNumber;
-				        storageObjectVersionChangeHistory.timeStamp = DateTime.UtcNow;
-				        storageObjectVersionChangeHistory.userId = securityUser.id;
-				        storageObjectVersionChangeHistory.data = JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(storageObjectVersion));
-				        _context.StorageObjectVersionChangeHistories.Add(storageObjectVersionChangeHistory);
-
-				        _context.SaveChanges();
-
-				        transaction.Commit();
-				    }
+				    _context.SaveChanges();
 
 					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
 						"DeepSpace.StorageObjectVersion entity successfully updated.",
@@ -688,48 +669,21 @@ namespace Foundation.DeepSpace.Controllers.WebAPI
 				storageObjectVersion.versionNumber = 1;
 
 				_context.StorageObjectVersions.Add(storageObjectVersion);
+				await _context.SaveChangesAsync(cancellationToken);
 
-				await using (IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
-				{
-				    await _context.SaveChangesAsync(cancellationToken);
+				//
+				// Detach the storageObjectVersion object so that no further changes will be written to the database
+				//
+				_context.Entry(storageObjectVersion).State = EntityState.Detached;
 
-				    //
-				    // Now add the change history
-				    //
+				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
+					"DeepSpace.StorageObjectVersion entity successfully created.",
+					true,
+					storageObjectVersion.id.ToString(),
+					"",
+					JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(storageObjectVersion)),
+					null);
 
-				    //
-				    // Detach the storageObjectVersion object so that no further changes will be written to the database
-				    //
-				    _context.Entry(storageObjectVersion).State = EntityState.Detached;
-
-				    //
-				    // Nullify all object properties before serializing.
-				    //
-					storageObjectVersion.storageObject = null;
-					storageObjectVersion.storageProvider = null;
-
-
-				    StorageObjectVersionChangeHistory storageObjectVersionChangeHistory = new StorageObjectVersionChangeHistory();
-				    storageObjectVersionChangeHistory.storageObjectVersionId = storageObjectVersion.id;
-				    storageObjectVersionChangeHistory.versionNumber = storageObjectVersion.versionNumber;
-				    storageObjectVersionChangeHistory.timeStamp = DateTime.UtcNow;
-				    storageObjectVersionChangeHistory.userId = securityUser.id;
-				    storageObjectVersionChangeHistory.data = JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(storageObjectVersion));
-				    _context.StorageObjectVersionChangeHistories.Add(storageObjectVersionChangeHistory);
-				    await _context.SaveChangesAsync(cancellationToken);
-
-				    await transaction.CommitAsync(cancellationToken);
-
-					await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-						"DeepSpace.StorageObjectVersion entity successfully created.",
-						true,
-						storageObjectVersion. id.ToString(),
-						"",
-						JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(storageObjectVersion)),
-						null);
-
-
-				}
 			}
 			catch (Exception ex)
 			{
@@ -746,367 +700,7 @@ namespace Foundation.DeepSpace.Controllers.WebAPI
 
 
 
-        /// <summary>
-        /// 
-        /// This rolls a StorageObjectVersion entity back to the state it was in at a prior version number.
-        ///
-        /// The rate limit is 2 per second per user.
-        /// 
-        /// </summary>
-		[HttpPut]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/StorageObjectVersion/Rollback/{id}")]
-		[Route("api/StorageObjectVersion/Rollback")]
-		public async Task<IActionResult> RollbackToStorageObjectVersionVersion(int id, int versionNumber, CancellationToken cancellationToken = default)
-		{
-			//
-			// Data rollback is an admin only function, like Deletes.
-			//
-			StartAuditEventClock();
-			
-			if (await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
-			{
-			   return Forbid();
-			}
 
-
-			
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-			
-			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-
-			
-
-			
-			IQueryable <Database.StorageObjectVersion> query = (from x in _context.StorageObjectVersions
-			        where
-			        (x.id == id)
-			        select x);
-
-
-			//
-			// Make sure nobody else is editing this StorageObjectVersion concurrently
-			//
-			lock (storageObjectVersionPutSyncRoot)
-			{
-				
-				Database.StorageObjectVersion storageObjectVersion = query.FirstOrDefault();
-				
-				if (storageObjectVersion == null)
-				{
-				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for DeepSpace.StorageObjectVersion rollback", id.ToString(), new Exception("No DeepSpace.StorageObjectVersion entity could be find with the primary key provided for the rollback operation."));
-				    return NotFound();
-				}
-				
-				//
-				// Make a copy of the StorageObjectVersion current state so we can log it.
-				//
-				Database.StorageObjectVersion cloneOfExisting = (Database.StorageObjectVersion)_context.Entry(storageObjectVersion).GetDatabaseValues().ToObject();
-				
-				//
-				// Remove any object fields from the clone object so that it can serialize effectively
-				//
-				cloneOfExisting.storageObject = null;
-				cloneOfExisting.storageProvider = null;
-
-				if (versionNumber >= storageObjectVersion.versionNumber)
-				{
-				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Invalid version number provided for DeepSpace.StorageObjectVersion rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Invalid version number provided for DeepSpace.StorageObjectVersion rollback operation.Version number provided is " + versionNumber));
-				    return NotFound();
-				}
-				
-				StorageObjectVersionChangeHistory storageObjectVersionChangeHistory = (from x in _context.StorageObjectVersionChangeHistories
-				                                               where
-				                                               x.storageObjectVersionId == id &&
-				                                               x.versionNumber == versionNumber
-				                                               select x)
-				                                               .AsNoTracking()
-				                                               .FirstOrDefault();
-
-				if (storageObjectVersionChangeHistory != null)
-				{
-				    Database.StorageObjectVersion oldStorageObjectVersion = JsonSerializer.Deserialize<Database.StorageObjectVersion>(storageObjectVersionChangeHistory.data);
-				
-				    //
-				    // Increase the version number
-				    //
-				    storageObjectVersion.versionNumber++;
-				
-				    //
-				    // Put all other fields back the way that they were 
-				    //
-				    storageObjectVersion.storageObjectId = oldStorageObjectVersion.storageObjectId;
-				    storageObjectVersion.storageProviderId = oldStorageObjectVersion.storageProviderId;
-				    storageObjectVersion.providerKey = oldStorageObjectVersion.providerKey;
-				    storageObjectVersion.sizeBytes = oldStorageObjectVersion.sizeBytes;
-				    storageObjectVersion.md5Hash = oldStorageObjectVersion.md5Hash;
-				    storageObjectVersion.createdByUserGuid = oldStorageObjectVersion.createdByUserGuid;
-				    storageObjectVersion.createdUtc = oldStorageObjectVersion.createdUtc;
-				    storageObjectVersion.objectGuid = oldStorageObjectVersion.objectGuid;
-				    storageObjectVersion.active = oldStorageObjectVersion.active;
-				    storageObjectVersion.deleted = oldStorageObjectVersion.deleted;
-
-				    string serializedStorageObjectVersion = JsonSerializer.Serialize(storageObjectVersion);
-
-				    using (IDbContextTransaction transaction = _context.Database.BeginTransaction())
-				    {
-
-				        _context.SaveChanges();
-
-				        //
-				        // Now add the change history
-				        //
-				        StorageObjectVersionChangeHistory newStorageObjectVersionChangeHistory = new StorageObjectVersionChangeHistory();
-				        newStorageObjectVersionChangeHistory.storageObjectVersionId = storageObjectVersion.id;
-				        newStorageObjectVersionChangeHistory.versionNumber = storageObjectVersion.versionNumber;
-				        newStorageObjectVersionChangeHistory.timeStamp = DateTime.UtcNow;
-				        newStorageObjectVersionChangeHistory.userId = securityUser.id;
-				        newStorageObjectVersionChangeHistory.data = JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(storageObjectVersion));
-				        _context.StorageObjectVersionChangeHistories.Add(newStorageObjectVersionChangeHistory);
-
-				        _context.SaveChanges();
-
-				        transaction.Commit();
-				    }
-
-					CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-						"DeepSpace.StorageObjectVersion rollback process successfully rolled back to version number " + versionNumber,
-						true,
-						id.ToString(),
-						JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-						JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(storageObjectVersion)),
-						null);
-
-
-				    return Ok(Database.StorageObjectVersion.CreateAnonymous(storageObjectVersion));
-				}
-				else
-				{
-				    CreateAuditEvent(AuditEngine.AuditType.UpdateEntity, "Could not find version number provided for DeepSpace.StorageObjectVersion rollback.  Version number provided is " + versionNumber, id.ToString(), new Exception("Could not find version number provided for DeepSpace.StorageObjectVersion rollback.  Version number provided is " + versionNumber));
-
-				    return BadRequest();
-				}
-			}
-		}
-
-
-
-        /// <summary>
-        /// 
-        /// Gets the change metadata (version info, timestamp, user) for a specific version of a StorageObjectVersion.
-        ///
-        /// The rate limit is 2 per second per user.
-        /// 
-        /// </summary>
-        /// <param name="id">The primary key of the StorageObjectVersion</param>
-        /// <param name="versionNumber">The version number to retrieve metadata for</param>
-        /// <returns>VersionInformation containing timestamp and user details</returns>
-		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/StorageObjectVersion/{id}/ChangeMetadata")]
-		public async Task<IActionResult> GetStorageObjectVersionChangeMetadata(int id, int versionNumber, CancellationToken cancellationToken = default)
-		{
-
-			//
-			// DeepSpace Reader role or better needed to read from this table, as well as the minimum read permission level.
-			//
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-			{
-			   return Forbid();
-			}
-
-
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-
-			Database.StorageObjectVersion storageObjectVersion = await _context.StorageObjectVersions.Where(x => x.id == id
-			).FirstOrDefaultAsync(cancellationToken);
-
-			if (storageObjectVersion == null)
-			{
-				return NotFound();
-			}
-
-			try
-			{
-				storageObjectVersion.SetupVersionInquiry(_context, Guid.Empty);
-
-				VersionInformation<Database.StorageObjectVersion> versionInfo = await storageObjectVersion.GetVersionAsync(versionNumber, includeData: false, cancellationToken).ConfigureAwait(false);
-
-				if (versionInfo == null)
-				{
-					return NotFound($"Version {versionNumber} not found.");
-				}
-
-				return Ok(versionInfo);
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
-		}
-
-
-
-        /// <summary>
-        /// 
-        /// Gets the full audit history for a StorageObjectVersion.
-        ///
-        /// The rate limit is 2 per second per user.
-        /// 
-        /// </summary>
-        /// <param name="id">The primary key of the StorageObjectVersion</param>
-        /// <param name="includeData">Whether to include the full entity data for each version (can be large)</param>
-        /// <returns>List of VersionInformation items</returns>
-		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/StorageObjectVersion/{id}/AuditHistory")]
-		public async Task<IActionResult> GetStorageObjectVersionAuditHistory(int id, bool includeData = false, CancellationToken cancellationToken = default)
-		{
-
-			//
-			// DeepSpace Reader role or better needed to read from this table, as well as the minimum read permission level.
-			//
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-			{
-			   return Forbid();
-			}
-
-
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-
-			Database.StorageObjectVersion storageObjectVersion = await _context.StorageObjectVersions.Where(x => x.id == id
-			).FirstOrDefaultAsync(cancellationToken);
-
-			if (storageObjectVersion == null)
-			{
-				return NotFound();
-			}
-
-			try
-			{
-				storageObjectVersion.SetupVersionInquiry(_context, Guid.Empty);
-
-				List<VersionInformation<Database.StorageObjectVersion>> versions = await storageObjectVersion.GetAllVersionsAsync(includeData: includeData, cancellationToken).ConfigureAwait(false);
-
-				return Ok(versions);
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
-		}
-
-
-
-        /// <summary>
-        /// 
-        /// Gets a specific version of a StorageObjectVersion.
-        ///
-        /// The rate limit is 2 per second per user.
-        /// 
-        /// </summary>
-        /// <param name="id">The primary key of the StorageObjectVersion</param>
-        /// <param name="version">The version number to retrieve</param>
-        /// <returns>The StorageObjectVersion object at that version</returns>
-		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/StorageObjectVersion/{id}/Version/{version}")]
-		public async Task<IActionResult> GetStorageObjectVersionVersion(int id, int version, CancellationToken cancellationToken = default)
-		{
-
-			//
-			// DeepSpace Reader role or better needed to read from this table, as well as the minimum read permission level.
-			//
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-			{
-			   return Forbid();
-			}
-
-
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-
-			Database.StorageObjectVersion storageObjectVersion = await _context.StorageObjectVersions.Where(x => x.id == id
-			).FirstOrDefaultAsync(cancellationToken);
-
-			if (storageObjectVersion == null)
-			{
-				return NotFound();
-			}
-
-			try
-			{
-				storageObjectVersion.SetupVersionInquiry(_context, Guid.Empty);
-
-				VersionInformation<Database.StorageObjectVersion> versionInfo = await storageObjectVersion.GetVersionAsync(version, includeData: true, cancellationToken).ConfigureAwait(false);
-
-				if (versionInfo == null || versionInfo.data == null)
-				{
-					return NotFound();
-				}
-
-				return Ok(versionInfo.data.ToOutputDTO());
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
-		}
-
-
-
-        /// <summary>
-        /// 
-        /// Gets the state of a StorageObjectVersion at a specific point in time.
-        ///
-        /// The rate limit is 2 per second per user.
-        /// 
-        /// </summary>
-        /// <param name="id">The primary key of the StorageObjectVersion</param>
-        /// <param name="time">The point in time (ISO format, UTC)</param>
-        /// <returns>The StorageObjectVersion object at that time</returns>
-		[HttpGet]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/StorageObjectVersion/{id}/StateAtTime")]
-		public async Task<IActionResult> GetStorageObjectVersionStateAtTime(int id, DateTime time, CancellationToken cancellationToken = default)
-		{
-
-			//
-			// DeepSpace Reader role or better needed to read from this table, as well as the minimum read permission level.
-			//
-			if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-			{
-			   return Forbid();
-			}
-
-
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-
-			Database.StorageObjectVersion storageObjectVersion = await _context.StorageObjectVersions.Where(x => x.id == id
-			).FirstOrDefaultAsync(cancellationToken);
-
-			if (storageObjectVersion == null)
-			{
-				return NotFound();
-			}
-
-			try
-			{
-				storageObjectVersion.SetupVersionInquiry(_context, Guid.Empty);
-
-				VersionInformation<Database.StorageObjectVersion> versionInfo = await storageObjectVersion.GetVersionAtTimeAsync(time, includeData: true, cancellationToken).ConfigureAwait(false);
-
-				if (versionInfo == null || versionInfo.data == null)
-				{
-					return NotFound("No state found at specified time.");
-				}
-
-				return Ok(versionInfo.data.ToOutputDTO());
-			}
-			catch (Exception ex)
-			{
-				return Problem(ex.Message);
-			}
-		}
 
         /// <summary>
         /// 
@@ -1159,18 +753,6 @@ namespace Foundation.DeepSpace.Controllers.WebAPI
 
 			        _context.SaveChanges();
 
-			        //
-			        // Now add the change history
-			        //
-			        StorageObjectVersionChangeHistory storageObjectVersionChangeHistory = new StorageObjectVersionChangeHistory();
-			        storageObjectVersionChangeHistory.storageObjectVersionId = storageObjectVersion.id;
-			        storageObjectVersionChangeHistory.versionNumber = storageObjectVersion.versionNumber;
-			        storageObjectVersionChangeHistory.timeStamp = DateTime.UtcNow;
-			        storageObjectVersionChangeHistory.userId = securityUser.id;
-			        storageObjectVersionChangeHistory.data = JsonSerializer.Serialize(Database.StorageObjectVersion.CreateAnonymousWithFirstLevelSubObjects(storageObjectVersion));
-			        _context.StorageObjectVersionChangeHistories.Add(storageObjectVersionChangeHistory);
-
-			        _context.SaveChanges();
 
 					CreateAuditEvent(AuditEngine.AuditType.DeleteEntity,
 						"DeepSpace.StorageObjectVersion entity successfully deleted.",
