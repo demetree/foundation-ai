@@ -1,0 +1,160 @@
+<!-- Backdrop when panel is open -->
+<div class="channels-backdrop" *ngIf="isOpen" (click)="closePanel()"></div>
+
+<!-- Channels Panel (slide-out from right) -->
+<div class="channels-panel" [class.open]="isOpen">
+
+  <!-- Header -->
+  <div class="channels-header">
+    <div class="header-left">
+      <button *ngIf="selectedChannel" class="btn-icon" (click)="backToChannelList()" title="Back to channels">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <h3 *ngIf="!selectedChannel"><i class="fa-solid fa-hashtag"></i> Channels</h3>
+      <h3 *ngIf="selectedChannel" class="channel-title">
+        <i class="fa-solid fa-hashtag"></i> {{ selectedChannel.name }}
+      </h3>
+    </div>
+    <div class="header-right">
+      <button *ngIf="!selectedChannel" class="btn-icon" (click)="openBrowseChannels()" title="Browse all channels" id="channels-browse-btn">
+        <i class="fa-solid fa-compass"></i>
+      </button>
+      <button *ngIf="!selectedChannel" class="btn-icon" (click)="toggleCreateChannel()" title="Create channel"
+              [class.active]="showCreateChannel" id="channels-create-btn">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+      <button class="btn-icon" (click)="closePanel()" title="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ─── Channel List View (shown when no channel is selected) ────────────── -->
+  <ng-container *ngIf="!selectedChannel">
+
+    <!-- Create Channel Form (inline expand) -->
+    <div class="create-channel-form" *ngIf="showCreateChannel">
+      <input type="text"
+             [(ngModel)]="newChannelName"
+             placeholder="Channel name"
+             class="channel-input"
+             autocomplete="off"
+             id="channels-name-input" />
+      <input type="text"
+             [(ngModel)]="newChannelDescription"
+             placeholder="Description (optional)"
+             class="channel-input"
+             autocomplete="off" />
+      <div class="channel-form-row">
+        <label class="channel-public-toggle">
+          <input type="checkbox" [(ngModel)]="newChannelIsPublic" />
+          <span>Public</span>
+        </label>
+        <div class="channel-form-actions">
+          <button class="btn-text" (click)="toggleCreateChannel()">Cancel</button>
+          <button class="btn-primary btn-sm" (click)="submitCreateChannel()" [disabled]="!newChannelName.trim()">
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Channel List -->
+    <div class="channels-list">
+
+      <!-- Loading -->
+      <div class="loading-state" *ngIf="isLoading">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading channels...</span>
+      </div>
+
+      <!-- Channel items -->
+      <div class="channel-item"
+           *ngFor="let ch of channels"
+           (click)="selectChannel(ch)"
+           [class.unread]="ch.unreadCount > 0">
+        <div class="channel-icon">
+          <i class="fa-solid fa-hashtag"></i>
+        </div>
+        <div class="channel-info">
+          <div class="channel-name-row">
+            <span class="channel-name">{{ ch.name }}</span>
+            <span class="channel-time">{{ formatTime(ch.lastMessageDateTime || ch.dateTimeCreated) }}</span>
+          </div>
+          <div class="channel-preview-row">
+            <span class="channel-preview">{{ ch.lastMessagePreview || ch.description || 'No messages yet' }}</span>
+            <span class="channel-meta" *ngIf="ch.memberCount">
+              <i class="fa-solid fa-users"></i> {{ ch.memberCount }}
+            </span>
+          </div>
+        </div>
+        <button class="channel-leave-btn"
+                (click)="leaveChannel(ch); $event.stopPropagation()"
+                title="Leave channel">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <div class="channels-empty" *ngIf="!isLoading && channels.length === 0 && !showCreateChannel">
+        <div class="channels-empty-actions">
+          <button class="btn-action" (click)="toggleCreateChannel()">
+            <i class="fa-solid fa-plus"></i> Create Channel
+          </button>
+          <button class="btn-action" (click)="openBrowseChannels()">
+            <i class="fa-solid fa-compass"></i> Browse
+          </button>
+        </div>
+        <div class="channels-empty-hint">
+          <i class="fa-solid fa-hashtag"></i>
+          <p>No channels yet</p>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+
+  <!-- ─── Inline Chat View (shown when a channel is selected) ────────────── -->
+  <app-chat-view
+    *ngIf="selectedChannel"
+    [conversation]="selectedChannel"
+    [displayMode]="'panel'"
+    (conversationUpdated)="onConversationUpdated($event)"
+    (backRequested)="onChatBackRequested()">
+  </app-chat-view>
+
+
+  <!-- Browse Channels Modal (overlay) -->
+  <div class="browse-overlay" *ngIf="showBrowseChannels">
+    <div class="browse-modal">
+      <div class="browse-header">
+        <h4><i class="fa-solid fa-compass"></i> Browse Channels</h4>
+        <button class="btn-icon" (click)="closeBrowseChannels()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="browse-list">
+        <div class="browse-loading" *ngIf="isLoadingBrowseChannels">
+          <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+        </div>
+
+        <div class="browse-item" *ngFor="let ch of browseableChannels">
+          <div class="browse-item-info">
+            <span class="browse-item-name"><i class="fa-solid fa-hashtag"></i> {{ ch.name }}</span>
+            <span class="browse-item-desc" *ngIf="ch.description">{{ ch.description }}</span>
+            <span class="browse-item-meta"><i class="fa-solid fa-users"></i> {{ ch.memberCount }} members</span>
+          </div>
+          <button class="btn-primary btn-sm" *ngIf="!ch.isMember" (click)="joinChannel(ch)">Join</button>
+          <span class="browse-item-joined" *ngIf="ch.isMember"><i class="fa-solid fa-check"></i> Joined</span>
+        </div>
+
+        <div class="browse-empty" *ngIf="!isLoadingBrowseChannels && browseableChannels.length === 0">
+          <p>No public channels available</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

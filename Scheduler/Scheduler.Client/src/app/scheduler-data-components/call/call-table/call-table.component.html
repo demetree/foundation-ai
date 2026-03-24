@@ -1,0 +1,391 @@
+<app-call-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-call-add-edit>
+<div class="row" *ngIf="userIsSchedulerCallReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCallWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Call">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCallWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('callType.name')">
+                Call  Type
+                <span *ngIf="sortColumn === 'callType.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('callStatus.name')">
+                Call  Status
+                <span *ngIf="sortColumn === 'callStatus.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('providerId')">
+                Provider  Id
+                <span *ngIf="sortColumn === 'providerId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('providerCallId')">
+                Provider  Call  Id
+                <span *ngIf="sortColumn === 'providerCallId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('conversation.name')">
+                Conversation
+                <span *ngIf="sortColumn === 'conversation.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('initiatorUserId')">
+                Initiator  User  Id
+                <span *ngIf="sortColumn === 'initiatorUserId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('startDateTime')">
+                Start  Date  Time
+                <span *ngIf="sortColumn === 'startDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('answerDateTime')">
+                Answer  Date  Time
+                <span *ngIf="sortColumn === 'answerDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('endDateTime')">
+                End  Date  Time
+                <span *ngIf="sortColumn === 'endDateTime'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('durationSeconds')">
+                Duration  Seconds
+                <span *ngIf="sortColumn === 'durationSeconds'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let call of filteredCalls; trackBy: getCallId"
+              [ngClass]="{
+                 'row-inactive': call.active == false,
+                 'row-deleted': call.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerCallWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(call)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerCallWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(call)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="call.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(call)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="call.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(call, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(call, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(call, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(call, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(call, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(call, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(call, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(call, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/calltype', call.callTypeId]" class="btn btn-link text-left" ngbTooltip="Open Call Type details">{{call.callType?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/callstatus', call.callStatusId]" class="btn btn-link text-left" ngbTooltip="Open Call Status details">{{call.callStatus?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/call', call.id]" class="btn btn-link text-left" ngbTooltip="Open Call details">{{call.providerId}}</a></td>
+            <td class="text-truncate">{{call.providerCallId}}</td>
+            <td class="text-truncate"><a [routerLink]="['/conversation', call.conversationId]" class="btn btn-link text-left" ngbTooltip="Open Conversation details">{{call.conversation?.name}}</a></td>
+            <td class="text-truncate">{{call.initiatorUserId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{call.startDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{call.answerDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{call.endDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{call.durationSeconds | bigNumberFormat : '1.0-2'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let call of filteredCalls; trackBy: getCallId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': call.active == false,
+                 'row-deleted': call.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(call, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(call, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(call, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(call, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(call, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(call, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(call, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(call, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(call, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(call, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(call, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(call, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(call, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/call', call.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(call)" *ngIf="userIsSchedulerCallWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(call)" *ngIf="userIsSchedulerCallWriter() && call.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(call)" *ngIf="userIsSchedulerCallWriter() && call.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{call.id}}</strong>
+               <small class="text-muted d-block">{{call.callType?.name}}</small>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/call', call.id]"
+                        ngbTooltip="Call Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(call)"
+                        ngbTooltip="Edit Call">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(call)"
+                      ngbTooltip="Delete Call" 
+                      placement="top"
+                      *ngIf="call.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(call)"
+                      ngbTooltip="Undelete Call" 
+                      placement="top"
+                      *ngIf="call.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="call-info" *ngIf="call.callTypeId != null">
+              <strong>Call Type: </strong>
+              <a [routerLink]="['/calltype', call.callTypeId]" class="text-left p-0 m-0" ngbTooltip="Open Call Type details">{{call.callType?.name}}</a>
+            </p>
+            <p class="call-info" *ngIf="call.callStatusId != null">
+              <strong>Call Status: </strong>
+              <a [routerLink]="['/callstatus', call.callStatusId]" class="text-left p-0 m-0" ngbTooltip="Open Call Status details">{{call.callStatus?.name}}</a>
+            </p>
+            <p class="call-info" *ngIf="call.providerId != null">
+              <strong>Provider Id: </strong>
+              {{call.providerId}}
+            </p>
+            <p class="call-info" *ngIf="call.providerCallId != null">
+              <strong>Provider Call Id: </strong>
+              {{call.providerCallId}}
+            </p>
+            <p class="call-info" *ngIf="call.conversationId != null">
+              <strong>Conversation: </strong>
+              <a [routerLink]="['/conversation', call.conversationId]" class="text-left p-0 m-0" ngbTooltip="Open Conversation details">{{call.conversation?.name}}</a>
+            </p>
+            <p class="call-info" *ngIf="call.initiatorUserId != null">
+              <strong>Initiator User Id: </strong>
+              {{call.initiatorUserId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="call-info" *ngIf="call.startDateTime != null">
+              <strong>Start Date Time: </strong>
+              {{call.startDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="call-info" *ngIf="call.answerDateTime != null">
+              <strong>Answer Date Time: </strong>
+              {{call.answerDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="call-info" *ngIf="call.endDateTime != null">
+              <strong>End Date Time: </strong>
+              {{call.endDateTime | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="call-info" *ngIf="call.durationSeconds != null">
+              <strong>Duration Seconds: </strong>
+              {{call.durationSeconds | bigNumberFormat : '1.0-2'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

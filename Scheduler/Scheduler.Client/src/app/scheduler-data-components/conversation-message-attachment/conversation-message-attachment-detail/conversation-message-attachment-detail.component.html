@@ -1,0 +1,128 @@
+<div class="container-fluid p-1 m-0 conversation-message-attachment-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="conversation-message-attachment-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Conversation Message Attachment</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Conversation Message Attachment' : 'Add Conversation Message Attachment'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerConversationMessageAttachmentReader()">
+                <div class="col m-2 conversation-message-attachment-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="conversationMessageAttachmentForm" (ngSubmit)="submitForm()" class="conversation-message-attachment-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('conversationMessageId')">
+                                <label for="ConversationMessageAttachment-conversationMessageId" id="label-ConversationMessageAttachment-conversationMessageId"><span class="text-danger">*</span>Conversation Message</label>
+                                <select id="ConversationMessageAttachment-conversationMessageId" formControlName="conversationMessageId" class="form-select conversation-message-attachment-select" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()">
+                                    <option [ngValue]="null">Select Conversation Message</option>
+                                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                                </select>
+                                <div *ngIf="conversationMessageAttachmentForm.get('conversationMessageId')?.invalid && conversationMessageAttachmentForm.get('conversationMessageId')?.touched" class="text-danger">
+                                    Conversation Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ConversationMessageAttachment-userId" id="label-ConversationMessageAttachment-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ConversationMessageAttachment-userId" formControlName="userId" placeholder="Enter User Id" class="form-control conversation-message-attachment-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="conversationMessageAttachmentForm.get('userId')?.invalid && conversationMessageAttachmentForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                                <label for="ConversationMessageAttachment-dateTimeCreated" id="label-ConversationMessageAttachment-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                                <input type="datetime-local" id="ConversationMessageAttachment-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control conversation-message-attachment-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" aria-labelledby="label-dateTimeCreated" />
+                                <div *ngIf="conversationMessageAttachmentForm.get('dateTimeCreated')?.invalid && conversationMessageAttachmentForm.get('dateTimeCreated')?.touched" class="text-danger">
+                                    Date Time Created is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contentFileName')">
+                                <label for="ConversationMessageAttachment-contentFileName" id="label-ConversationMessageAttachment-contentFileName"><span class="text-danger">*</span>Content File Name</label>
+                                <input type="text" id="ConversationMessageAttachment-contentFileName" formControlName="contentFileName" placeholder="Enter Content File Name" class="form-control conversation-message-attachment-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" aria-labelledby="label-contentFileName" />
+                                <div *ngIf="conversationMessageAttachmentForm.get('contentFileName')?.invalid && conversationMessageAttachmentForm.get('contentFileName')?.touched" class="text-danger">
+                                    Content File Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contentSize')">
+                                <label for="ConversationMessageAttachment-contentSize" id="label-ConversationMessageAttachment-contentSize"><span class="text-danger">*</span>Content Size</label>
+                                <input type="number" id="ConversationMessageAttachment-contentSize" formControlName="contentSize" placeholder="Enter Content Size" class="form-control conversation-message-attachment-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" aria-labelledby="label-contentSize" />
+                                <div *ngIf="conversationMessageAttachmentForm.get('contentSize')?.invalid && conversationMessageAttachmentForm.get('contentSize')?.touched" class="text-danger">
+                                    Content Size is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contentData')">
+                                <label for="ConversationMessageAttachment-contentData" id="label-ConversationMessageAttachment-contentData"><span class="text-danger">*</span>Content Data</label>
+                                <input type="text" id="ConversationMessageAttachment-contentData" formControlName="contentData" placeholder="Enter Content Data" class="form-control conversation-message-attachment-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" aria-labelledby="label-contentData" />
+                                <div *ngIf="conversationMessageAttachmentForm.get('contentData')?.invalid && conversationMessageAttachmentForm.get('contentData')?.touched" class="text-danger">
+                                    Content Data is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('contentMimeType')">
+                                <label for="ConversationMessageAttachment-contentMimeType" id="label-ConversationMessageAttachment-contentMimeType"><span class="text-danger">*</span>Content Mime Type</label>
+                                <input type="text" id="ConversationMessageAttachment-contentMimeType" formControlName="contentMimeType" placeholder="Enter Content Mime Type" class="form-control conversation-message-attachment-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" aria-labelledby="label-contentMimeType" />
+                                <div *ngIf="conversationMessageAttachmentForm.get('contentMimeType')?.invalid && conversationMessageAttachmentForm.get('contentMimeType')?.touched" class="text-danger">
+                                    Content Mime Type is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ConversationMessageAttachment-versionNumber" id="label-ConversationMessageAttachment-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ConversationMessageAttachment-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control conversation-message-attachment-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationMessageAttachment-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" />
+                                <label for="ConversationMessageAttachment-active" class="form-check-label" id="label-ConversationMessageAttachment-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationMessageAttachment-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageAttachmentWriter()" />
+                                <label for="ConversationMessageAttachment-deleted" class="form-check-label" id="label-ConversationMessageAttachment-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="conversation-message-attachment-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="conversationMessageAttachmentForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Conversation Message Attachment">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationMessageAttachmentForm.valid || !conversationMessageAttachmentForm.dirty || conversationMessageAttachmentForm.pristine  || userIsSchedulerConversationMessageAttachmentWriter() == false " ngbTooltip="Save the Conversation Message Attachment changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Conversation Message Attachment' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerConversationMessageAttachmentReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 conversation-message-attachment-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="conversationMessageAttachmentChangeHistoryService.userIsSchedulerConversationMessageAttachmentChangeHistoryReader()">
+                            <button ngbNavLink>Conversation Message Attachment Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (conversationMessageAttachmentData?.ConversationMessageAttachmentChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-conversation-message-attachment-change-history-table [queryParams]="{ conversationMessageAttachmentId: conversationMessageAttachmentData?.id }" [showAddButton]="true" [preSeededData]="{ conversationMessageAttachmentId: conversationMessageAttachmentData?.id }" [hiddenFields]="['conversationMessageAttachmentId']"></app-conversation-message-attachment-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

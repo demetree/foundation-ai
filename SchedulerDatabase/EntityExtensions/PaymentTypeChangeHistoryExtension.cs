@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = paymentTypeChangeHistory.timeStamp,
 				userId = paymentTypeChangeHistory.userId,
 				data = paymentTypeChangeHistory.data,
-				paymentType = PaymentType.CreateMinimalAnonymous(paymentTypeChangeHistory.paymentType),
+				paymentType = PaymentType.CreateMinimalAnonymous(paymentTypeChangeHistory.paymentType)
 			 };
 		}
 

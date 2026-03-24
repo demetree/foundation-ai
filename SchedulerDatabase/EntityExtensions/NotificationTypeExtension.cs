@@ -23,10 +23,7 @@ namespace Foundation.Scheduler.Database
 			public Int32 id { get; set; }
 			[Required]
 			public String name { get; set; }
-			[Required]
 			public String description { get; set; }
-			public Int32? sequence { get; set; }
-			public String color { get; set; }
 			[Required]
 			public Guid objectGuid { get; set; }
 			public Boolean? active { get; set; }
@@ -58,8 +55,6 @@ namespace Foundation.Scheduler.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
-				sequence = this.sequence,
-				color = this.color,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -104,8 +99,6 @@ namespace Foundation.Scheduler.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
-				sequence = this.sequence,
-				color = this.color,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted
@@ -150,8 +143,6 @@ namespace Foundation.Scheduler.Database
 				id = dto.id,
 				name = dto.name,
 				description = dto.description,
-				sequence = dto.sequence,
-				color = dto.color,
 				objectGuid = dto.objectGuid,
 				active = dto.active ?? true,
 				deleted = dto.deleted ?? false
@@ -173,8 +164,6 @@ namespace Foundation.Scheduler.Database
 
 			this.name = dto.name;
 			this.description = dto.description;
-			this.sequence = dto.sequence;
-			this.color = dto.color;
 			this.objectGuid = dto.objectGuid;
 			if (dto.active.HasValue == true)
 			{
@@ -201,8 +190,6 @@ namespace Foundation.Scheduler.Database
 				id = this.id,
 				name = this.name,
 				description = this.description,
-				sequence = this.sequence,
-				color = this.color,
 				objectGuid = this.objectGuid,
 				active = this.active,
 				deleted = this.deleted,
@@ -261,8 +248,6 @@ namespace Foundation.Scheduler.Database
 				id = notificationType.id,
 				name = notificationType.name,
 				description = notificationType.description,
-				sequence = notificationType.sequence,
-				color = notificationType.color,
 				objectGuid = notificationType.objectGuid,
 				active = notificationType.active,
 				deleted = notificationType.deleted,
@@ -288,8 +273,6 @@ namespace Foundation.Scheduler.Database
 				id = notificationType.id,
 				name = notificationType.name,
 				description = notificationType.description,
-				sequence = notificationType.sequence,
-				color = notificationType.color,
 				objectGuid = notificationType.objectGuid,
 				active = notificationType.active,
 				deleted = notificationType.deleted,

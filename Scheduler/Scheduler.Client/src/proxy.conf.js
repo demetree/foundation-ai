@@ -15,7 +15,8 @@ const PROXY_CONFIG = [
   {
     context: [
       "/FileManagerSignal",
-      "/SchedulerSignal"
+      "/SchedulerSignal",
+      "/hubs"
     ],
     target: "https://localhost:10101",
     secure: false,

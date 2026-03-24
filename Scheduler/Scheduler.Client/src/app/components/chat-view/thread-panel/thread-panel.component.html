@@ -1,0 +1,52 @@
+<div class="thread-panel">
+
+  <div class="thread-header">
+    <h4>Thread</h4>
+    <button class="btn-icon" (click)="close()" title="Close thread">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Parent message -->
+  <div class="thread-parent-message" *ngIf="parentMessage">
+    <div class="thread-parent-sender">{{ parentMessage.userDisplayName }}</div>
+    <div class="thread-parent-text message-text" [innerHTML]="parentMessage.message"></div>
+    <div class="thread-parent-time">{{ formatTime(parentMessage.dateTimeCreated) }}</div>
+  </div>
+
+  <div class="thread-divider">
+    <span>{{ threadMessages.length }} {{ threadMessages.length === 1 ? 'reply' : 'replies' }}</span>
+  </div>
+
+  <!-- Thread replies -->
+  <div class="thread-replies">
+    <div class="thread-loading" *ngIf="isLoadingThread">
+      <i class="fa-solid fa-spinner fa-spin"></i> Loading replies...
+    </div>
+
+    <div class="thread-reply" *ngFor="let reply of threadMessages">
+      <div class="thread-reply-sender">{{ reply.userDisplayName }}</div>
+      <div class="thread-reply-text message-text" [innerHTML]="reply.message"></div>
+      <div class="thread-reply-time">{{ formatTime(reply.dateTimeCreated) }}</div>
+    </div>
+
+    <div class="thread-empty" *ngIf="!isLoadingThread && threadMessages.length === 0">
+      No replies yet. Start the conversation!
+    </div>
+  </div>
+
+  <!-- Thread composer -->
+  <div class="thread-composer">
+    <input type="text"
+           [(ngModel)]="threadReplyText"
+           placeholder="Reply in thread..."
+           (keydown.enter)="sendReply()"
+           class="thread-input" />
+    <button class="btn-primary btn-sm thread-send-btn"
+            (click)="sendReply()"
+            [disabled]="!threadReplyText.trim()">
+      <i class="fa-solid fa-paper-plane"></i>
+    </button>
+  </div>
+
+</div>

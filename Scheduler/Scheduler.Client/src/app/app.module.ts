@@ -47,6 +47,7 @@ import { FilterAndJoinPipe } from './pipes/filter-and-join.pipe';
 import { BigNumberFormatPipe } from './pipes/big-number-format.pipe';
 import { ContrastColorPipe } from './pipes/contrast-color.pipe';
 import { ContactFullNamePipe } from './pipes/contact-full-name.pipe';
+import { MessageFormatPipe } from './pipes/message-format.pipe';
 
 
 //
@@ -298,6 +299,24 @@ import { FmTagManagerModalComponent } from './components/file-manager/fm-tag-man
 import { FmTextEditorComponent } from './components/file-manager/fm-text-editor/fm-text-editor.component';
 import { FmScratchpadComponent } from './components/file-manager/fm-scratchpad/fm-scratchpad.component';
 
+//
+// Foundation Messaging components — AI-Developed
+//
+import { MessagingComponent } from './components/messaging/messaging.component';
+import { ChatViewComponent } from './components/chat-view/chat-view.component';
+import { ChannelsComponent } from './components/channels/channels.component';
+import { MessagingPageComponent } from './components/messaging-page/messaging-page.component';
+import { EntityConversationsComponent } from './components/entity-conversations/entity-conversations.component';
+import { EntityDiscussionComponent } from './components/entity-discussion/entity-discussion.component';
+import { ToastNotificationComponent } from './components/toast-notification/toast-notification.component';
+import { TiptapEditorComponent } from './components/tiptap-editor/tiptap-editor.component';
+import { MessagingAdminComponent } from './components/messaging-admin/messaging-admin.component';
+import { ForwardModalComponent } from './components/chat-view/forward-modal/forward-modal.component';
+import { NotificationSettingsComponent } from './components/messaging/notification-settings/notification-settings.component';
+import { ThreadPanelComponent } from './components/chat-view/thread-panel/thread-panel.component';
+import { PinnedMessagesComponent } from './components/chat-view/pinned-messages/pinned-messages.component';
+import { LinkPreviewCardComponent } from './components/link-preview-card/link-preview-card.component';
+
 
 //
 // Custom services
@@ -358,6 +377,11 @@ import { BudgetService } from './scheduler-data-services/budget.service';
 import { BudgetChangeHistoryService } from './scheduler-data-services/budget-change-history.service';
 import { CalendarService } from './scheduler-data-services/calendar.service';
 import { CalendarChangeHistoryService } from './scheduler-data-services/calendar-change-history.service';
+import { CallService } from './scheduler-data-services/call.service';
+import { CallEventLogService } from './scheduler-data-services/call-event-log.service';
+import { CallParticipantService } from './scheduler-data-services/call-participant.service';
+import { CallStatusService } from './scheduler-data-services/call-status.service';
+import { CallTypeService } from './scheduler-data-services/call-type.service';
 import { CampaignService } from './scheduler-data-services/campaign.service';
 import { CampaignChangeHistoryService } from './scheduler-data-services/campaign-change-history.service';
 import { ChargeStatusService } from './scheduler-data-services/charge-status.service';
@@ -383,6 +407,21 @@ import { ContactMethodService } from './scheduler-data-services/contact-method.s
 import { ContactTagService } from './scheduler-data-services/contact-tag.service';
 import { ContactTagChangeHistoryService } from './scheduler-data-services/contact-tag-change-history.service';
 import { ContactTypeService } from './scheduler-data-services/contact-type.service';
+import { ConversationService } from './scheduler-data-services/conversation.service';
+import { ConversationChannelService } from './scheduler-data-services/conversation-channel.service';
+import { ConversationChannelChangeHistoryService } from './scheduler-data-services/conversation-channel-change-history.service';
+import { ConversationMessageService } from './scheduler-data-services/conversation-message.service';
+import { ConversationMessageAttachmentService } from './scheduler-data-services/conversation-message-attachment.service';
+import { ConversationMessageAttachmentChangeHistoryService } from './scheduler-data-services/conversation-message-attachment-change-history.service';
+import { ConversationMessageChangeHistoryService } from './scheduler-data-services/conversation-message-change-history.service';
+import { ConversationMessageLinkPreviewService } from './scheduler-data-services/conversation-message-link-preview.service';
+import { ConversationMessageLinkPreviewChangeHistoryService } from './scheduler-data-services/conversation-message-link-preview-change-history.service';
+import { ConversationMessageReactionService } from './scheduler-data-services/conversation-message-reaction.service';
+import { ConversationMessageUserService } from './scheduler-data-services/conversation-message-user.service';
+import { ConversationPinService } from './scheduler-data-services/conversation-pin.service';
+import { ConversationThreadUserService } from './scheduler-data-services/conversation-thread-user.service';
+import { ConversationTypeService } from './scheduler-data-services/conversation-type.service';
+import { ConversationUserService } from './scheduler-data-services/conversation-user.service';
 import { CountryService } from './scheduler-data-services/country.service';
 import { CrewService } from './scheduler-data-services/crew.service';
 import { CrewChangeHistoryService } from './scheduler-data-services/crew-change-history.service';
@@ -404,6 +443,9 @@ import { DocumentTypeService } from './scheduler-data-services/document-type.ser
 import { EventCalendarService } from './scheduler-data-services/event-calendar.service';
 import { EventChargeService } from './scheduler-data-services/event-charge.service';
 import { EventChargeChangeHistoryService } from './scheduler-data-services/event-charge-change-history.service';
+import { EventNotificationSubscriptionService } from './scheduler-data-services/event-notification-subscription.service';
+import { EventNotificationSubscriptionChangeHistoryService } from './scheduler-data-services/event-notification-subscription-change-history.service';
+import { EventNotificationTypeService } from './scheduler-data-services/event-notification-type.service';
 import { EventResourceAssignmentService } from './scheduler-data-services/event-resource-assignment.service';
 import { EventResourceAssignmentChangeHistoryService } from './scheduler-data-services/event-resource-assignment-change-history.service';
 import { EventStatusService } from './scheduler-data-services/event-status.service';
@@ -431,8 +473,14 @@ import { InvoiceService } from './scheduler-data-services/invoice.service';
 import { InvoiceChangeHistoryService } from './scheduler-data-services/invoice-change-history.service';
 import { InvoiceLineItemService } from './scheduler-data-services/invoice-line-item.service';
 import { InvoiceStatusService } from './scheduler-data-services/invoice-status.service';
-import { NotificationSubscriptionService } from './scheduler-data-services/notification-subscription.service';
-import { NotificationSubscriptionChangeHistoryService } from './scheduler-data-services/notification-subscription-change-history.service';
+import { MessageBookmarkService } from './scheduler-data-services/message-bookmark.service';
+import { MessageFlagService } from './scheduler-data-services/message-flag.service';
+import { MessagingAuditLogService } from './scheduler-data-services/messaging-audit-log.service';
+import { NotificationService } from './scheduler-data-services/notification.service';
+import { NotificationAttachmentService } from './scheduler-data-services/notification-attachment.service';
+import { NotificationAttachmentChangeHistoryService } from './scheduler-data-services/notification-attachment-change-history.service';
+import { NotificationChangeHistoryService } from './scheduler-data-services/notification-change-history.service';
+import { NotificationDistributionService } from './scheduler-data-services/notification-distribution.service';
 import { NotificationTypeService } from './scheduler-data-services/notification-type.service';
 import { OfficeService } from './scheduler-data-services/office.service';
 import { OfficeChangeHistoryService } from './scheduler-data-services/office-change-history.service';
@@ -450,6 +498,8 @@ import { PeriodStatusService } from './scheduler-data-services/period-status.ser
 import { PledgeService } from './scheduler-data-services/pledge.service';
 import { PledgeChangeHistoryService } from './scheduler-data-services/pledge-change-history.service';
 import { PriorityService } from './scheduler-data-services/priority.service';
+import { PushDeliveryLogService } from './scheduler-data-services/push-delivery-log.service';
+import { PushProviderConfigurationService } from './scheduler-data-services/push-provider-configuration.service';
 import { QualificationService } from './scheduler-data-services/qualification.service';
 import { RateSheetService } from './scheduler-data-services/rate-sheet.service';
 import { RateSheetChangeHistoryService } from './scheduler-data-services/rate-sheet-change-history.service';
@@ -512,6 +562,7 @@ import { TimeZoneService } from './scheduler-data-services/time-zone.service';
 import { TributeService } from './scheduler-data-services/tribute.service';
 import { TributeChangeHistoryService } from './scheduler-data-services/tribute-change-history.service';
 import { TributeTypeService } from './scheduler-data-services/tribute-type.service';
+import { UserPresenceService } from './scheduler-data-services/user-presence.service';
 import { VolunteerGroupService } from './scheduler-data-services/volunteer-group.service';
 import { VolunteerGroupChangeHistoryService } from './scheduler-data-services/volunteer-group-change-history.service';
 import { VolunteerGroupMemberService } from './scheduler-data-services/volunteer-group-member.service';
@@ -604,6 +655,26 @@ import { CalendarChangeHistoryListingComponent } from './scheduler-data-componen
 import { CalendarChangeHistoryAddEditComponent } from './scheduler-data-components/calendar-change-history/calendar-change-history-add-edit/calendar-change-history-add-edit.component';
 import { CalendarChangeHistoryDetailComponent } from './scheduler-data-components/calendar-change-history/calendar-change-history-detail/calendar-change-history-detail.component';
 import { CalendarChangeHistoryTableComponent } from './scheduler-data-components/calendar-change-history/calendar-change-history-table/calendar-change-history-table.component';
+import { CallListingComponent } from './scheduler-data-components/call/call-listing/call-listing.component';
+import { CallAddEditComponent } from './scheduler-data-components/call/call-add-edit/call-add-edit.component';
+import { CallDetailComponent } from './scheduler-data-components/call/call-detail/call-detail.component';
+import { CallTableComponent } from './scheduler-data-components/call/call-table/call-table.component';
+import { CallEventLogListingComponent } from './scheduler-data-components/call-event-log/call-event-log-listing/call-event-log-listing.component';
+import { CallEventLogAddEditComponent } from './scheduler-data-components/call-event-log/call-event-log-add-edit/call-event-log-add-edit.component';
+import { CallEventLogDetailComponent } from './scheduler-data-components/call-event-log/call-event-log-detail/call-event-log-detail.component';
+import { CallEventLogTableComponent } from './scheduler-data-components/call-event-log/call-event-log-table/call-event-log-table.component';
+import { CallParticipantListingComponent } from './scheduler-data-components/call-participant/call-participant-listing/call-participant-listing.component';
+import { CallParticipantAddEditComponent } from './scheduler-data-components/call-participant/call-participant-add-edit/call-participant-add-edit.component';
+import { CallParticipantDetailComponent } from './scheduler-data-components/call-participant/call-participant-detail/call-participant-detail.component';
+import { CallParticipantTableComponent } from './scheduler-data-components/call-participant/call-participant-table/call-participant-table.component';
+import { CallStatusListingComponent } from './scheduler-data-components/call-status/call-status-listing/call-status-listing.component';
+import { CallStatusAddEditComponent } from './scheduler-data-components/call-status/call-status-add-edit/call-status-add-edit.component';
+import { CallStatusDetailComponent } from './scheduler-data-components/call-status/call-status-detail/call-status-detail.component';
+import { CallStatusTableComponent } from './scheduler-data-components/call-status/call-status-table/call-status-table.component';
+import { CallTypeListingComponent } from './scheduler-data-components/call-type/call-type-listing/call-type-listing.component';
+import { CallTypeAddEditComponent } from './scheduler-data-components/call-type/call-type-add-edit/call-type-add-edit.component';
+import { CallTypeDetailComponent } from './scheduler-data-components/call-type/call-type-detail/call-type-detail.component';
+import { CallTypeTableComponent } from './scheduler-data-components/call-type/call-type-table/call-type-table.component';
 import { CampaignListingComponent } from './scheduler-data-components/campaign/campaign-listing/campaign-listing.component';
 import { CampaignAddEditComponent } from './scheduler-data-components/campaign/campaign-add-edit/campaign-add-edit.component';
 import { CampaignDetailComponent } from './scheduler-data-components/campaign/campaign-detail/campaign-detail.component';
@@ -704,6 +775,66 @@ import { ContactTypeListingComponent } from './scheduler-data-components/contact
 import { ContactTypeAddEditComponent } from './scheduler-data-components/contact-type/contact-type-add-edit/contact-type-add-edit.component';
 import { ContactTypeDetailComponent } from './scheduler-data-components/contact-type/contact-type-detail/contact-type-detail.component';
 import { ContactTypeTableComponent } from './scheduler-data-components/contact-type/contact-type-table/contact-type-table.component';
+import { ConversationListingComponent } from './scheduler-data-components/conversation/conversation-listing/conversation-listing.component';
+import { ConversationAddEditComponent } from './scheduler-data-components/conversation/conversation-add-edit/conversation-add-edit.component';
+import { ConversationDetailComponent } from './scheduler-data-components/conversation/conversation-detail/conversation-detail.component';
+import { ConversationTableComponent } from './scheduler-data-components/conversation/conversation-table/conversation-table.component';
+import { ConversationChannelListingComponent } from './scheduler-data-components/conversation-channel/conversation-channel-listing/conversation-channel-listing.component';
+import { ConversationChannelAddEditComponent } from './scheduler-data-components/conversation-channel/conversation-channel-add-edit/conversation-channel-add-edit.component';
+import { ConversationChannelDetailComponent } from './scheduler-data-components/conversation-channel/conversation-channel-detail/conversation-channel-detail.component';
+import { ConversationChannelTableComponent } from './scheduler-data-components/conversation-channel/conversation-channel-table/conversation-channel-table.component';
+import { ConversationChannelChangeHistoryListingComponent } from './scheduler-data-components/conversation-channel-change-history/conversation-channel-change-history-listing/conversation-channel-change-history-listing.component';
+import { ConversationChannelChangeHistoryAddEditComponent } from './scheduler-data-components/conversation-channel-change-history/conversation-channel-change-history-add-edit/conversation-channel-change-history-add-edit.component';
+import { ConversationChannelChangeHistoryDetailComponent } from './scheduler-data-components/conversation-channel-change-history/conversation-channel-change-history-detail/conversation-channel-change-history-detail.component';
+import { ConversationChannelChangeHistoryTableComponent } from './scheduler-data-components/conversation-channel-change-history/conversation-channel-change-history-table/conversation-channel-change-history-table.component';
+import { ConversationMessageListingComponent } from './scheduler-data-components/conversation-message/conversation-message-listing/conversation-message-listing.component';
+import { ConversationMessageAddEditComponent } from './scheduler-data-components/conversation-message/conversation-message-add-edit/conversation-message-add-edit.component';
+import { ConversationMessageDetailComponent } from './scheduler-data-components/conversation-message/conversation-message-detail/conversation-message-detail.component';
+import { ConversationMessageTableComponent } from './scheduler-data-components/conversation-message/conversation-message-table/conversation-message-table.component';
+import { ConversationMessageAttachmentListingComponent } from './scheduler-data-components/conversation-message-attachment/conversation-message-attachment-listing/conversation-message-attachment-listing.component';
+import { ConversationMessageAttachmentAddEditComponent } from './scheduler-data-components/conversation-message-attachment/conversation-message-attachment-add-edit/conversation-message-attachment-add-edit.component';
+import { ConversationMessageAttachmentDetailComponent } from './scheduler-data-components/conversation-message-attachment/conversation-message-attachment-detail/conversation-message-attachment-detail.component';
+import { ConversationMessageAttachmentTableComponent } from './scheduler-data-components/conversation-message-attachment/conversation-message-attachment-table/conversation-message-attachment-table.component';
+import { ConversationMessageAttachmentChangeHistoryListingComponent } from './scheduler-data-components/conversation-message-attachment-change-history/conversation-message-attachment-change-history-listing/conversation-message-attachment-change-history-listing.component';
+import { ConversationMessageAttachmentChangeHistoryAddEditComponent } from './scheduler-data-components/conversation-message-attachment-change-history/conversation-message-attachment-change-history-add-edit/conversation-message-attachment-change-history-add-edit.component';
+import { ConversationMessageAttachmentChangeHistoryDetailComponent } from './scheduler-data-components/conversation-message-attachment-change-history/conversation-message-attachment-change-history-detail/conversation-message-attachment-change-history-detail.component';
+import { ConversationMessageAttachmentChangeHistoryTableComponent } from './scheduler-data-components/conversation-message-attachment-change-history/conversation-message-attachment-change-history-table/conversation-message-attachment-change-history-table.component';
+import { ConversationMessageChangeHistoryListingComponent } from './scheduler-data-components/conversation-message-change-history/conversation-message-change-history-listing/conversation-message-change-history-listing.component';
+import { ConversationMessageChangeHistoryAddEditComponent } from './scheduler-data-components/conversation-message-change-history/conversation-message-change-history-add-edit/conversation-message-change-history-add-edit.component';
+import { ConversationMessageChangeHistoryDetailComponent } from './scheduler-data-components/conversation-message-change-history/conversation-message-change-history-detail/conversation-message-change-history-detail.component';
+import { ConversationMessageChangeHistoryTableComponent } from './scheduler-data-components/conversation-message-change-history/conversation-message-change-history-table/conversation-message-change-history-table.component';
+import { ConversationMessageLinkPreviewListingComponent } from './scheduler-data-components/conversation-message-link-preview/conversation-message-link-preview-listing/conversation-message-link-preview-listing.component';
+import { ConversationMessageLinkPreviewAddEditComponent } from './scheduler-data-components/conversation-message-link-preview/conversation-message-link-preview-add-edit/conversation-message-link-preview-add-edit.component';
+import { ConversationMessageLinkPreviewDetailComponent } from './scheduler-data-components/conversation-message-link-preview/conversation-message-link-preview-detail/conversation-message-link-preview-detail.component';
+import { ConversationMessageLinkPreviewTableComponent } from './scheduler-data-components/conversation-message-link-preview/conversation-message-link-preview-table/conversation-message-link-preview-table.component';
+import { ConversationMessageLinkPreviewChangeHistoryListingComponent } from './scheduler-data-components/conversation-message-link-preview-change-history/conversation-message-link-preview-change-history-listing/conversation-message-link-preview-change-history-listing.component';
+import { ConversationMessageLinkPreviewChangeHistoryAddEditComponent } from './scheduler-data-components/conversation-message-link-preview-change-history/conversation-message-link-preview-change-history-add-edit/conversation-message-link-preview-change-history-add-edit.component';
+import { ConversationMessageLinkPreviewChangeHistoryDetailComponent } from './scheduler-data-components/conversation-message-link-preview-change-history/conversation-message-link-preview-change-history-detail/conversation-message-link-preview-change-history-detail.component';
+import { ConversationMessageLinkPreviewChangeHistoryTableComponent } from './scheduler-data-components/conversation-message-link-preview-change-history/conversation-message-link-preview-change-history-table/conversation-message-link-preview-change-history-table.component';
+import { ConversationMessageReactionListingComponent } from './scheduler-data-components/conversation-message-reaction/conversation-message-reaction-listing/conversation-message-reaction-listing.component';
+import { ConversationMessageReactionAddEditComponent } from './scheduler-data-components/conversation-message-reaction/conversation-message-reaction-add-edit/conversation-message-reaction-add-edit.component';
+import { ConversationMessageReactionDetailComponent } from './scheduler-data-components/conversation-message-reaction/conversation-message-reaction-detail/conversation-message-reaction-detail.component';
+import { ConversationMessageReactionTableComponent } from './scheduler-data-components/conversation-message-reaction/conversation-message-reaction-table/conversation-message-reaction-table.component';
+import { ConversationMessageUserListingComponent } from './scheduler-data-components/conversation-message-user/conversation-message-user-listing/conversation-message-user-listing.component';
+import { ConversationMessageUserAddEditComponent } from './scheduler-data-components/conversation-message-user/conversation-message-user-add-edit/conversation-message-user-add-edit.component';
+import { ConversationMessageUserDetailComponent } from './scheduler-data-components/conversation-message-user/conversation-message-user-detail/conversation-message-user-detail.component';
+import { ConversationMessageUserTableComponent } from './scheduler-data-components/conversation-message-user/conversation-message-user-table/conversation-message-user-table.component';
+import { ConversationPinListingComponent } from './scheduler-data-components/conversation-pin/conversation-pin-listing/conversation-pin-listing.component';
+import { ConversationPinAddEditComponent } from './scheduler-data-components/conversation-pin/conversation-pin-add-edit/conversation-pin-add-edit.component';
+import { ConversationPinDetailComponent } from './scheduler-data-components/conversation-pin/conversation-pin-detail/conversation-pin-detail.component';
+import { ConversationPinTableComponent } from './scheduler-data-components/conversation-pin/conversation-pin-table/conversation-pin-table.component';
+import { ConversationThreadUserListingComponent } from './scheduler-data-components/conversation-thread-user/conversation-thread-user-listing/conversation-thread-user-listing.component';
+import { ConversationThreadUserAddEditComponent } from './scheduler-data-components/conversation-thread-user/conversation-thread-user-add-edit/conversation-thread-user-add-edit.component';
+import { ConversationThreadUserDetailComponent } from './scheduler-data-components/conversation-thread-user/conversation-thread-user-detail/conversation-thread-user-detail.component';
+import { ConversationThreadUserTableComponent } from './scheduler-data-components/conversation-thread-user/conversation-thread-user-table/conversation-thread-user-table.component';
+import { ConversationTypeListingComponent } from './scheduler-data-components/conversation-type/conversation-type-listing/conversation-type-listing.component';
+import { ConversationTypeAddEditComponent } from './scheduler-data-components/conversation-type/conversation-type-add-edit/conversation-type-add-edit.component';
+import { ConversationTypeDetailComponent } from './scheduler-data-components/conversation-type/conversation-type-detail/conversation-type-detail.component';
+import { ConversationTypeTableComponent } from './scheduler-data-components/conversation-type/conversation-type-table/conversation-type-table.component';
+import { ConversationUserListingComponent } from './scheduler-data-components/conversation-user/conversation-user-listing/conversation-user-listing.component';
+import { ConversationUserAddEditComponent } from './scheduler-data-components/conversation-user/conversation-user-add-edit/conversation-user-add-edit.component';
+import { ConversationUserDetailComponent } from './scheduler-data-components/conversation-user/conversation-user-detail/conversation-user-detail.component';
+import { ConversationUserTableComponent } from './scheduler-data-components/conversation-user/conversation-user-table/conversation-user-table.component';
 import { CountryListingComponent } from './scheduler-data-components/country/country-listing/country-listing.component';
 import { CountryAddEditComponent } from './scheduler-data-components/country/country-add-edit/country-add-edit.component';
 import { CountryDetailComponent } from './scheduler-data-components/country/country-detail/country-detail.component';
@@ -788,6 +919,18 @@ import { EventChargeChangeHistoryListingComponent } from './scheduler-data-compo
 import { EventChargeChangeHistoryAddEditComponent } from './scheduler-data-components/event-charge-change-history/event-charge-change-history-add-edit/event-charge-change-history-add-edit.component';
 import { EventChargeChangeHistoryDetailComponent } from './scheduler-data-components/event-charge-change-history/event-charge-change-history-detail/event-charge-change-history-detail.component';
 import { EventChargeChangeHistoryTableComponent } from './scheduler-data-components/event-charge-change-history/event-charge-change-history-table/event-charge-change-history-table.component';
+import { EventNotificationSubscriptionListingComponent } from './scheduler-data-components/event-notification-subscription/event-notification-subscription-listing/event-notification-subscription-listing.component';
+import { EventNotificationSubscriptionAddEditComponent } from './scheduler-data-components/event-notification-subscription/event-notification-subscription-add-edit/event-notification-subscription-add-edit.component';
+import { EventNotificationSubscriptionDetailComponent } from './scheduler-data-components/event-notification-subscription/event-notification-subscription-detail/event-notification-subscription-detail.component';
+import { EventNotificationSubscriptionTableComponent } from './scheduler-data-components/event-notification-subscription/event-notification-subscription-table/event-notification-subscription-table.component';
+import { EventNotificationSubscriptionChangeHistoryListingComponent } from './scheduler-data-components/event-notification-subscription-change-history/event-notification-subscription-change-history-listing/event-notification-subscription-change-history-listing.component';
+import { EventNotificationSubscriptionChangeHistoryAddEditComponent } from './scheduler-data-components/event-notification-subscription-change-history/event-notification-subscription-change-history-add-edit/event-notification-subscription-change-history-add-edit.component';
+import { EventNotificationSubscriptionChangeHistoryDetailComponent } from './scheduler-data-components/event-notification-subscription-change-history/event-notification-subscription-change-history-detail/event-notification-subscription-change-history-detail.component';
+import { EventNotificationSubscriptionChangeHistoryTableComponent } from './scheduler-data-components/event-notification-subscription-change-history/event-notification-subscription-change-history-table/event-notification-subscription-change-history-table.component';
+import { EventNotificationTypeListingComponent } from './scheduler-data-components/event-notification-type/event-notification-type-listing/event-notification-type-listing.component';
+import { EventNotificationTypeAddEditComponent } from './scheduler-data-components/event-notification-type/event-notification-type-add-edit/event-notification-type-add-edit.component';
+import { EventNotificationTypeDetailComponent } from './scheduler-data-components/event-notification-type/event-notification-type-detail/event-notification-type-detail.component';
+import { EventNotificationTypeTableComponent } from './scheduler-data-components/event-notification-type/event-notification-type-table/event-notification-type-table.component';
 import { EventResourceAssignmentListingComponent } from './scheduler-data-components/event-resource-assignment/event-resource-assignment-listing/event-resource-assignment-listing.component';
 import { EventResourceAssignmentAddEditComponent } from './scheduler-data-components/event-resource-assignment/event-resource-assignment-add-edit/event-resource-assignment-add-edit.component';
 import { EventResourceAssignmentDetailComponent } from './scheduler-data-components/event-resource-assignment/event-resource-assignment-detail/event-resource-assignment-detail.component';
@@ -896,14 +1039,38 @@ import { InvoiceStatusListingComponent } from './scheduler-data-components/invoi
 import { InvoiceStatusAddEditComponent } from './scheduler-data-components/invoice-status/invoice-status-add-edit/invoice-status-add-edit.component';
 import { InvoiceStatusDetailComponent } from './scheduler-data-components/invoice-status/invoice-status-detail/invoice-status-detail.component';
 import { InvoiceStatusTableComponent } from './scheduler-data-components/invoice-status/invoice-status-table/invoice-status-table.component';
-import { NotificationSubscriptionListingComponent } from './scheduler-data-components/notification-subscription/notification-subscription-listing/notification-subscription-listing.component';
-import { NotificationSubscriptionAddEditComponent } from './scheduler-data-components/notification-subscription/notification-subscription-add-edit/notification-subscription-add-edit.component';
-import { NotificationSubscriptionDetailComponent } from './scheduler-data-components/notification-subscription/notification-subscription-detail/notification-subscription-detail.component';
-import { NotificationSubscriptionTableComponent } from './scheduler-data-components/notification-subscription/notification-subscription-table/notification-subscription-table.component';
-import { NotificationSubscriptionChangeHistoryListingComponent } from './scheduler-data-components/notification-subscription-change-history/notification-subscription-change-history-listing/notification-subscription-change-history-listing.component';
-import { NotificationSubscriptionChangeHistoryAddEditComponent } from './scheduler-data-components/notification-subscription-change-history/notification-subscription-change-history-add-edit/notification-subscription-change-history-add-edit.component';
-import { NotificationSubscriptionChangeHistoryDetailComponent } from './scheduler-data-components/notification-subscription-change-history/notification-subscription-change-history-detail/notification-subscription-change-history-detail.component';
-import { NotificationSubscriptionChangeHistoryTableComponent } from './scheduler-data-components/notification-subscription-change-history/notification-subscription-change-history-table/notification-subscription-change-history-table.component';
+import { MessageBookmarkListingComponent } from './scheduler-data-components/message-bookmark/message-bookmark-listing/message-bookmark-listing.component';
+import { MessageBookmarkAddEditComponent } from './scheduler-data-components/message-bookmark/message-bookmark-add-edit/message-bookmark-add-edit.component';
+import { MessageBookmarkDetailComponent } from './scheduler-data-components/message-bookmark/message-bookmark-detail/message-bookmark-detail.component';
+import { MessageBookmarkTableComponent } from './scheduler-data-components/message-bookmark/message-bookmark-table/message-bookmark-table.component';
+import { MessageFlagListingComponent } from './scheduler-data-components/message-flag/message-flag-listing/message-flag-listing.component';
+import { MessageFlagAddEditComponent } from './scheduler-data-components/message-flag/message-flag-add-edit/message-flag-add-edit.component';
+import { MessageFlagDetailComponent } from './scheduler-data-components/message-flag/message-flag-detail/message-flag-detail.component';
+import { MessageFlagTableComponent } from './scheduler-data-components/message-flag/message-flag-table/message-flag-table.component';
+import { MessagingAuditLogListingComponent } from './scheduler-data-components/messaging-audit-log/messaging-audit-log-listing/messaging-audit-log-listing.component';
+import { MessagingAuditLogAddEditComponent } from './scheduler-data-components/messaging-audit-log/messaging-audit-log-add-edit/messaging-audit-log-add-edit.component';
+import { MessagingAuditLogDetailComponent } from './scheduler-data-components/messaging-audit-log/messaging-audit-log-detail/messaging-audit-log-detail.component';
+import { MessagingAuditLogTableComponent } from './scheduler-data-components/messaging-audit-log/messaging-audit-log-table/messaging-audit-log-table.component';
+import { NotificationListingComponent } from './scheduler-data-components/notification/notification-listing/notification-listing.component';
+import { NotificationAddEditComponent } from './scheduler-data-components/notification/notification-add-edit/notification-add-edit.component';
+import { NotificationDetailComponent } from './scheduler-data-components/notification/notification-detail/notification-detail.component';
+import { NotificationTableComponent } from './scheduler-data-components/notification/notification-table/notification-table.component';
+import { NotificationAttachmentListingComponent } from './scheduler-data-components/notification-attachment/notification-attachment-listing/notification-attachment-listing.component';
+import { NotificationAttachmentAddEditComponent } from './scheduler-data-components/notification-attachment/notification-attachment-add-edit/notification-attachment-add-edit.component';
+import { NotificationAttachmentDetailComponent } from './scheduler-data-components/notification-attachment/notification-attachment-detail/notification-attachment-detail.component';
+import { NotificationAttachmentTableComponent } from './scheduler-data-components/notification-attachment/notification-attachment-table/notification-attachment-table.component';
+import { NotificationAttachmentChangeHistoryListingComponent } from './scheduler-data-components/notification-attachment-change-history/notification-attachment-change-history-listing/notification-attachment-change-history-listing.component';
+import { NotificationAttachmentChangeHistoryAddEditComponent } from './scheduler-data-components/notification-attachment-change-history/notification-attachment-change-history-add-edit/notification-attachment-change-history-add-edit.component';
+import { NotificationAttachmentChangeHistoryDetailComponent } from './scheduler-data-components/notification-attachment-change-history/notification-attachment-change-history-detail/notification-attachment-change-history-detail.component';
+import { NotificationAttachmentChangeHistoryTableComponent } from './scheduler-data-components/notification-attachment-change-history/notification-attachment-change-history-table/notification-attachment-change-history-table.component';
+import { NotificationChangeHistoryListingComponent } from './scheduler-data-components/notification-change-history/notification-change-history-listing/notification-change-history-listing.component';
+import { NotificationChangeHistoryAddEditComponent } from './scheduler-data-components/notification-change-history/notification-change-history-add-edit/notification-change-history-add-edit.component';
+import { NotificationChangeHistoryDetailComponent } from './scheduler-data-components/notification-change-history/notification-change-history-detail/notification-change-history-detail.component';
+import { NotificationChangeHistoryTableComponent } from './scheduler-data-components/notification-change-history/notification-change-history-table/notification-change-history-table.component';
+import { NotificationDistributionListingComponent } from './scheduler-data-components/notification-distribution/notification-distribution-listing/notification-distribution-listing.component';
+import { NotificationDistributionAddEditComponent } from './scheduler-data-components/notification-distribution/notification-distribution-add-edit/notification-distribution-add-edit.component';
+import { NotificationDistributionDetailComponent } from './scheduler-data-components/notification-distribution/notification-distribution-detail/notification-distribution-detail.component';
+import { NotificationDistributionTableComponent } from './scheduler-data-components/notification-distribution/notification-distribution-table/notification-distribution-table.component';
 import { NotificationTypeListingComponent } from './scheduler-data-components/notification-type/notification-type-listing/notification-type-listing.component';
 import { NotificationTypeAddEditComponent } from './scheduler-data-components/notification-type/notification-type-add-edit/notification-type-add-edit.component';
 import { NotificationTypeDetailComponent } from './scheduler-data-components/notification-type/notification-type-detail/notification-type-detail.component';
@@ -972,6 +1139,14 @@ import { PriorityListingComponent } from './scheduler-data-components/priority/p
 import { PriorityAddEditComponent } from './scheduler-data-components/priority/priority-add-edit/priority-add-edit.component';
 import { PriorityDetailComponent } from './scheduler-data-components/priority/priority-detail/priority-detail.component';
 import { PriorityTableComponent } from './scheduler-data-components/priority/priority-table/priority-table.component';
+import { PushDeliveryLogListingComponent } from './scheduler-data-components/push-delivery-log/push-delivery-log-listing/push-delivery-log-listing.component';
+import { PushDeliveryLogAddEditComponent } from './scheduler-data-components/push-delivery-log/push-delivery-log-add-edit/push-delivery-log-add-edit.component';
+import { PushDeliveryLogDetailComponent } from './scheduler-data-components/push-delivery-log/push-delivery-log-detail/push-delivery-log-detail.component';
+import { PushDeliveryLogTableComponent } from './scheduler-data-components/push-delivery-log/push-delivery-log-table/push-delivery-log-table.component';
+import { PushProviderConfigurationListingComponent } from './scheduler-data-components/push-provider-configuration/push-provider-configuration-listing/push-provider-configuration-listing.component';
+import { PushProviderConfigurationAddEditComponent } from './scheduler-data-components/push-provider-configuration/push-provider-configuration-add-edit/push-provider-configuration-add-edit.component';
+import { PushProviderConfigurationDetailComponent } from './scheduler-data-components/push-provider-configuration/push-provider-configuration-detail/push-provider-configuration-detail.component';
+import { PushProviderConfigurationTableComponent } from './scheduler-data-components/push-provider-configuration/push-provider-configuration-table/push-provider-configuration-table.component';
 import { QualificationListingComponent } from './scheduler-data-components/qualification/qualification-listing/qualification-listing.component';
 import { QualificationAddEditComponent } from './scheduler-data-components/qualification/qualification-add-edit/qualification-add-edit.component';
 import { QualificationDetailComponent } from './scheduler-data-components/qualification/qualification-detail/qualification-detail.component';
@@ -1220,6 +1395,10 @@ import { TributeTypeListingComponent } from './scheduler-data-components/tribute
 import { TributeTypeAddEditComponent } from './scheduler-data-components/tribute-type/tribute-type-add-edit/tribute-type-add-edit.component';
 import { TributeTypeDetailComponent } from './scheduler-data-components/tribute-type/tribute-type-detail/tribute-type-detail.component';
 import { TributeTypeTableComponent } from './scheduler-data-components/tribute-type/tribute-type-table/tribute-type-table.component';
+import { UserPresenceListingComponent } from './scheduler-data-components/user-presence/user-presence-listing/user-presence-listing.component';
+import { UserPresenceAddEditComponent } from './scheduler-data-components/user-presence/user-presence-add-edit/user-presence-add-edit.component';
+import { UserPresenceDetailComponent } from './scheduler-data-components/user-presence/user-presence-detail/user-presence-detail.component';
+import { UserPresenceTableComponent } from './scheduler-data-components/user-presence/user-presence-table/user-presence-table.component';
 import { VolunteerGroupListingComponent } from './scheduler-data-components/volunteer-group/volunteer-group-listing/volunteer-group-listing.component';
 import { VolunteerGroupAddEditComponent } from './scheduler-data-components/volunteer-group/volunteer-group-add-edit/volunteer-group-add-edit.component';
 import { VolunteerGroupDetailComponent } from './scheduler-data-components/volunteer-group/volunteer-group-detail/volunteer-group-detail.component';
@@ -1253,6 +1432,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
 //
 
 @NgModule({
+  // @ts-ignore TS2590 — declarations array exceeds TypeScript union-type limit after entity expansion
   declarations: [
     AppComponent,
     LoginComponent,
@@ -1277,6 +1457,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     BigNumberFormatPipe,
     ContrastColorPipe,
     ContactFullNamePipe,
+    MessageFormatPipe,
 
     OverviewComponent,
 
@@ -1515,6 +1696,24 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     FmTextEditorComponent,
     FmScratchpadComponent,
 
+    //
+    // Foundation Messaging components — AI-Developed
+    //
+    MessagingComponent,
+    ChatViewComponent,
+    ChannelsComponent,
+    MessagingPageComponent,
+    EntityConversationsComponent,
+    EntityDiscussionComponent,
+    ToastNotificationComponent,
+    TiptapEditorComponent,
+    MessagingAdminComponent,
+    ForwardModalComponent,
+    NotificationSettingsComponent,
+    ThreadPanelComponent,
+    PinnedMessagesComponent,
+    LinkPreviewCardComponent,
+
 
     //
     // Beginning of declarations for Scheduler Data Components
@@ -1595,6 +1794,26 @@ CalendarChangeHistoryListingComponent,
 CalendarChangeHistoryAddEditComponent,
 CalendarChangeHistoryDetailComponent,
 CalendarChangeHistoryTableComponent,
+CallListingComponent,
+CallAddEditComponent,
+CallDetailComponent,
+CallTableComponent,
+CallEventLogListingComponent,
+CallEventLogAddEditComponent,
+CallEventLogDetailComponent,
+CallEventLogTableComponent,
+CallParticipantListingComponent,
+CallParticipantAddEditComponent,
+CallParticipantDetailComponent,
+CallParticipantTableComponent,
+CallStatusListingComponent,
+CallStatusAddEditComponent,
+CallStatusDetailComponent,
+CallStatusTableComponent,
+CallTypeListingComponent,
+CallTypeAddEditComponent,
+CallTypeDetailComponent,
+CallTypeTableComponent,
 CampaignListingComponent,
 CampaignAddEditComponent,
 CampaignDetailComponent,
@@ -1695,6 +1914,66 @@ ContactTypeListingComponent,
 ContactTypeAddEditComponent,
 ContactTypeDetailComponent,
 ContactTypeTableComponent,
+ConversationListingComponent,
+ConversationAddEditComponent,
+ConversationDetailComponent,
+ConversationTableComponent,
+ConversationChannelListingComponent,
+ConversationChannelAddEditComponent,
+ConversationChannelDetailComponent,
+ConversationChannelTableComponent,
+ConversationChannelChangeHistoryListingComponent,
+ConversationChannelChangeHistoryAddEditComponent,
+ConversationChannelChangeHistoryDetailComponent,
+ConversationChannelChangeHistoryTableComponent,
+ConversationMessageListingComponent,
+ConversationMessageAddEditComponent,
+ConversationMessageDetailComponent,
+ConversationMessageTableComponent,
+ConversationMessageAttachmentListingComponent,
+ConversationMessageAttachmentAddEditComponent,
+ConversationMessageAttachmentDetailComponent,
+ConversationMessageAttachmentTableComponent,
+ConversationMessageAttachmentChangeHistoryListingComponent,
+ConversationMessageAttachmentChangeHistoryAddEditComponent,
+ConversationMessageAttachmentChangeHistoryDetailComponent,
+ConversationMessageAttachmentChangeHistoryTableComponent,
+ConversationMessageChangeHistoryListingComponent,
+ConversationMessageChangeHistoryAddEditComponent,
+ConversationMessageChangeHistoryDetailComponent,
+ConversationMessageChangeHistoryTableComponent,
+ConversationMessageLinkPreviewListingComponent,
+ConversationMessageLinkPreviewAddEditComponent,
+ConversationMessageLinkPreviewDetailComponent,
+ConversationMessageLinkPreviewTableComponent,
+ConversationMessageLinkPreviewChangeHistoryListingComponent,
+ConversationMessageLinkPreviewChangeHistoryAddEditComponent,
+ConversationMessageLinkPreviewChangeHistoryDetailComponent,
+ConversationMessageLinkPreviewChangeHistoryTableComponent,
+ConversationMessageReactionListingComponent,
+ConversationMessageReactionAddEditComponent,
+ConversationMessageReactionDetailComponent,
+ConversationMessageReactionTableComponent,
+ConversationMessageUserListingComponent,
+ConversationMessageUserAddEditComponent,
+ConversationMessageUserDetailComponent,
+ConversationMessageUserTableComponent,
+ConversationPinListingComponent,
+ConversationPinAddEditComponent,
+ConversationPinDetailComponent,
+ConversationPinTableComponent,
+ConversationThreadUserListingComponent,
+ConversationThreadUserAddEditComponent,
+ConversationThreadUserDetailComponent,
+ConversationThreadUserTableComponent,
+ConversationTypeListingComponent,
+ConversationTypeAddEditComponent,
+ConversationTypeDetailComponent,
+ConversationTypeTableComponent,
+ConversationUserListingComponent,
+ConversationUserAddEditComponent,
+ConversationUserDetailComponent,
+ConversationUserTableComponent,
 CountryListingComponent,
 CountryAddEditComponent,
 CountryDetailComponent,
@@ -1779,6 +2058,18 @@ EventChargeChangeHistoryListingComponent,
 EventChargeChangeHistoryAddEditComponent,
 EventChargeChangeHistoryDetailComponent,
 EventChargeChangeHistoryTableComponent,
+EventNotificationSubscriptionListingComponent,
+EventNotificationSubscriptionAddEditComponent,
+EventNotificationSubscriptionDetailComponent,
+EventNotificationSubscriptionTableComponent,
+EventNotificationSubscriptionChangeHistoryListingComponent,
+EventNotificationSubscriptionChangeHistoryAddEditComponent,
+EventNotificationSubscriptionChangeHistoryDetailComponent,
+EventNotificationSubscriptionChangeHistoryTableComponent,
+EventNotificationTypeListingComponent,
+EventNotificationTypeAddEditComponent,
+EventNotificationTypeDetailComponent,
+EventNotificationTypeTableComponent,
 EventResourceAssignmentListingComponent,
 EventResourceAssignmentAddEditComponent,
 EventResourceAssignmentDetailComponent,
@@ -1887,14 +2178,38 @@ InvoiceStatusListingComponent,
 InvoiceStatusAddEditComponent,
 InvoiceStatusDetailComponent,
 InvoiceStatusTableComponent,
-NotificationSubscriptionListingComponent,
-NotificationSubscriptionAddEditComponent,
-NotificationSubscriptionDetailComponent,
-NotificationSubscriptionTableComponent,
-NotificationSubscriptionChangeHistoryListingComponent,
-NotificationSubscriptionChangeHistoryAddEditComponent,
-NotificationSubscriptionChangeHistoryDetailComponent,
-NotificationSubscriptionChangeHistoryTableComponent,
+MessageBookmarkListingComponent,
+MessageBookmarkAddEditComponent,
+MessageBookmarkDetailComponent,
+MessageBookmarkTableComponent,
+MessageFlagListingComponent,
+MessageFlagAddEditComponent,
+MessageFlagDetailComponent,
+MessageFlagTableComponent,
+MessagingAuditLogListingComponent,
+MessagingAuditLogAddEditComponent,
+MessagingAuditLogDetailComponent,
+MessagingAuditLogTableComponent,
+NotificationListingComponent,
+NotificationAddEditComponent,
+NotificationDetailComponent,
+NotificationTableComponent,
+NotificationAttachmentListingComponent,
+NotificationAttachmentAddEditComponent,
+NotificationAttachmentDetailComponent,
+NotificationAttachmentTableComponent,
+NotificationAttachmentChangeHistoryListingComponent,
+NotificationAttachmentChangeHistoryAddEditComponent,
+NotificationAttachmentChangeHistoryDetailComponent,
+NotificationAttachmentChangeHistoryTableComponent,
+NotificationChangeHistoryListingComponent,
+NotificationChangeHistoryAddEditComponent,
+NotificationChangeHistoryDetailComponent,
+NotificationChangeHistoryTableComponent,
+NotificationDistributionListingComponent,
+NotificationDistributionAddEditComponent,
+NotificationDistributionDetailComponent,
+NotificationDistributionTableComponent,
 NotificationTypeListingComponent,
 NotificationTypeAddEditComponent,
 NotificationTypeDetailComponent,
@@ -1963,6 +2278,14 @@ PriorityListingComponent,
 PriorityAddEditComponent,
 PriorityDetailComponent,
 PriorityTableComponent,
+PushDeliveryLogListingComponent,
+PushDeliveryLogAddEditComponent,
+PushDeliveryLogDetailComponent,
+PushDeliveryLogTableComponent,
+PushProviderConfigurationListingComponent,
+PushProviderConfigurationAddEditComponent,
+PushProviderConfigurationDetailComponent,
+PushProviderConfigurationTableComponent,
 QualificationListingComponent,
 QualificationAddEditComponent,
 QualificationDetailComponent,
@@ -2211,6 +2534,10 @@ TributeTypeListingComponent,
 TributeTypeAddEditComponent,
 TributeTypeDetailComponent,
 TributeTypeTableComponent,
+UserPresenceListingComponent,
+UserPresenceAddEditComponent,
+UserPresenceDetailComponent,
+UserPresenceTableComponent,
 VolunteerGroupListingComponent,
 VolunteerGroupAddEditComponent,
 VolunteerGroupDetailComponent,
@@ -2352,6 +2679,11 @@ BudgetService,
 BudgetChangeHistoryService,
 CalendarService,
 CalendarChangeHistoryService,
+CallService,
+CallEventLogService,
+CallParticipantService,
+CallStatusService,
+CallTypeService,
 CampaignService,
 CampaignChangeHistoryService,
 ChargeStatusService,
@@ -2377,6 +2709,21 @@ ContactMethodService,
 ContactTagService,
 ContactTagChangeHistoryService,
 ContactTypeService,
+ConversationService,
+ConversationChannelService,
+ConversationChannelChangeHistoryService,
+ConversationMessageService,
+ConversationMessageAttachmentService,
+ConversationMessageAttachmentChangeHistoryService,
+ConversationMessageChangeHistoryService,
+ConversationMessageLinkPreviewService,
+ConversationMessageLinkPreviewChangeHistoryService,
+ConversationMessageReactionService,
+ConversationMessageUserService,
+ConversationPinService,
+ConversationThreadUserService,
+ConversationTypeService,
+ConversationUserService,
 CountryService,
 CrewService,
 CrewChangeHistoryService,
@@ -2398,6 +2745,9 @@ DocumentTypeService,
 EventCalendarService,
 EventChargeService,
 EventChargeChangeHistoryService,
+EventNotificationSubscriptionService,
+EventNotificationSubscriptionChangeHistoryService,
+EventNotificationTypeService,
 EventResourceAssignmentService,
 EventResourceAssignmentChangeHistoryService,
 EventStatusService,
@@ -2425,8 +2775,14 @@ InvoiceService,
 InvoiceChangeHistoryService,
 InvoiceLineItemService,
 InvoiceStatusService,
-NotificationSubscriptionService,
-NotificationSubscriptionChangeHistoryService,
+MessageBookmarkService,
+MessageFlagService,
+MessagingAuditLogService,
+NotificationService,
+NotificationAttachmentService,
+NotificationAttachmentChangeHistoryService,
+NotificationChangeHistoryService,
+NotificationDistributionService,
 NotificationTypeService,
 OfficeService,
 OfficeChangeHistoryService,
@@ -2444,6 +2800,8 @@ PeriodStatusService,
 PledgeService,
 PledgeChangeHistoryService,
 PriorityService,
+PushDeliveryLogService,
+PushProviderConfigurationService,
 QualificationService,
 RateSheetService,
 RateSheetChangeHistoryService,
@@ -2506,6 +2864,7 @@ TimeZoneService,
 TributeService,
 TributeChangeHistoryService,
 TributeTypeService,
+UserPresenceService,
 VolunteerGroupService,
 VolunteerGroupChangeHistoryService,
 VolunteerGroupMemberService,

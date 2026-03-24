@@ -1,0 +1,382 @@
+<app-message-flag-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-message-flag-add-edit>
+<div class="row" *ngIf="userIsSchedulerMessageFlagReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerMessageFlagWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Message Flag">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerMessageFlagWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('conversationMessage.name')">
+                Conversation  Message
+                <span *ngIf="sortColumn === 'conversationMessage.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('flaggedByUserId')">
+                Flagged  By  User  Id
+                <span *ngIf="sortColumn === 'flaggedByUserId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('reason')">
+                Reason
+                <span *ngIf="sortColumn === 'reason'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('details')">
+                Details
+                <span *ngIf="sortColumn === 'details'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('status')">
+                Status
+                <span *ngIf="sortColumn === 'status'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('reviewedByUserId')">
+                Reviewed  By  User  Id
+                <span *ngIf="sortColumn === 'reviewedByUserId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('dateTimeReviewed')">
+                Date  Time  Reviewed
+                <span *ngIf="sortColumn === 'dateTimeReviewed'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('resolutionNotes')">
+                Resolution  Notes
+                <span *ngIf="sortColumn === 'resolutionNotes'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('dateTimeCreated')">
+                Date  Time  Created
+                <span *ngIf="sortColumn === 'dateTimeCreated'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let messageFlag of filteredMessageFlags; trackBy: getMessageFlagId"
+              [ngClass]="{
+                 'row-inactive': messageFlag.active == false,
+                 'row-deleted': messageFlag.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerMessageFlagWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(messageFlag)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerMessageFlagWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(messageFlag)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="messageFlag.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(messageFlag)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="messageFlag.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(messageFlag, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(messageFlag, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(messageFlag, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(messageFlag, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(messageFlag, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(messageFlag, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(messageFlag, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(messageFlag, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/conversationmessage', messageFlag.conversationMessageId]" class="btn btn-link text-left" ngbTooltip="Open Conversation Message details">{{messageFlag.conversationMessage?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/messageflag', messageFlag.id]" class="btn btn-link text-left" ngbTooltip="Open Message Flag details">{{messageFlag.flaggedByUserId | bigNumberFormat : '1.0-2'}}</a></td>
+            <td class="text-truncate">{{messageFlag.reason}}</td>
+            <td class="text-truncate">{{messageFlag.details}}</td>
+            <td class="text-truncate">{{messageFlag.status}}</td>
+            <td class="text-truncate">{{messageFlag.reviewedByUserId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{messageFlag.dateTimeReviewed | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+            <td class="text-truncate">{{messageFlag.resolutionNotes}}</td>
+            <td class="text-truncate">{{messageFlag.dateTimeCreated | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let messageFlag of filteredMessageFlags; trackBy: getMessageFlagId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': messageFlag.active == false,
+                 'row-deleted': messageFlag.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(messageFlag, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(messageFlag, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(messageFlag, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(messageFlag, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(messageFlag, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(messageFlag, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(messageFlag, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(messageFlag, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(messageFlag, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(messageFlag, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(messageFlag, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(messageFlag, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(messageFlag, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/messageflag', messageFlag.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(messageFlag)" *ngIf="userIsSchedulerMessageFlagWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(messageFlag)" *ngIf="userIsSchedulerMessageFlagWriter() && messageFlag.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(messageFlag)" *ngIf="userIsSchedulerMessageFlagWriter() && messageFlag.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{messageFlag.id}}</strong>
+               <small class="text-muted d-block">{{messageFlag.conversationMessage?.name}}</small>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/messageflag', messageFlag.id]"
+                        ngbTooltip="Message Flag Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(messageFlag)"
+                        ngbTooltip="Edit Message Flag">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(messageFlag)"
+                      ngbTooltip="Delete Message Flag" 
+                      placement="top"
+                      *ngIf="messageFlag.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(messageFlag)"
+                      ngbTooltip="Undelete Message Flag" 
+                      placement="top"
+                      *ngIf="messageFlag.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="message-flag-info" *ngIf="messageFlag.conversationMessageId != null">
+              <strong>Conversation Message: </strong>
+              <a [routerLink]="['/conversationmessage', messageFlag.conversationMessageId]" class="text-left p-0 m-0" ngbTooltip="Open Conversation Message details">{{messageFlag.conversationMessage?.name}}</a>
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.flaggedByUserId != null">
+              <strong>Flagged By User Id: </strong>
+              {{messageFlag.flaggedByUserId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.reason != null">
+              <strong>Reason: </strong>
+              {{messageFlag.reason}}
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.details != null">
+              <strong>Details: </strong>
+              {{messageFlag.details}}
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.status != null">
+              <strong>Status: </strong>
+              {{messageFlag.status}}
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.reviewedByUserId != null">
+              <strong>Reviewed By User Id: </strong>
+              {{messageFlag.reviewedByUserId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.dateTimeReviewed != null">
+              <strong>Date Time Reviewed: </strong>
+              {{messageFlag.dateTimeReviewed | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.resolutionNotes != null">
+              <strong>Resolution Notes: </strong>
+              {{messageFlag.resolutionNotes}}
+            </p>
+            <p class="message-flag-info" *ngIf="messageFlag.dateTimeCreated != null">
+              <strong>Date Time Created: </strong>
+              {{messageFlag.dateTimeCreated | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

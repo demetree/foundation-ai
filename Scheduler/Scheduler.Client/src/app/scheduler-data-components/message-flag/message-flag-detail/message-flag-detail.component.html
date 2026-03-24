@@ -1,0 +1,102 @@
+<div class="container-fluid p-1 m-0 message-flag-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="message-flag-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Message Flag</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Message Flag' : 'Add Message Flag'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerMessageFlagReader()">
+                <div class="col m-2 message-flag-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="messageFlagForm" (ngSubmit)="submitForm()" class="message-flag-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('conversationMessageId')">
+                                <label for="MessageFlag-conversationMessageId" id="label-MessageFlag-conversationMessageId"><span class="text-danger">*</span>Conversation Message</label>
+                                <select id="MessageFlag-conversationMessageId" formControlName="conversationMessageId" class="form-select message-flag-select" [disabled]="!userIsSchedulerMessageFlagWriter()">
+                                    <option [ngValue]="null">Select Conversation Message</option>
+                                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                                </select>
+                                <div *ngIf="messageFlagForm.get('conversationMessageId')?.invalid && messageFlagForm.get('conversationMessageId')?.touched" class="text-danger">
+                                    Conversation Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('flaggedByUserId')">
+                                <label for="MessageFlag-flaggedByUserId" id="label-MessageFlag-flaggedByUserId"><span class="text-danger">*</span>Flagged By User Id</label>
+                                <input type="number" id="MessageFlag-flaggedByUserId" formControlName="flaggedByUserId" placeholder="Enter Flagged By User Id" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()" aria-labelledby="label-flaggedByUserId" />
+                                <div *ngIf="messageFlagForm.get('flaggedByUserId')?.invalid && messageFlagForm.get('flaggedByUserId')?.touched" class="text-danger">
+                                    Flagged By User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reason')">
+                                <label for="MessageFlag-reason" id="label-MessageFlag-reason"><span class="text-danger">*</span>Reason</label>
+                                <input type="text" id="MessageFlag-reason" formControlName="reason" placeholder="Enter Reason" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()" aria-labelledby="label-reason" />
+                                <div *ngIf="messageFlagForm.get('reason')?.invalid && messageFlagForm.get('reason')?.touched" class="text-danger">
+                                    Reason is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('details')">
+                                <label for="MessageFlag-details" id="label-MessageFlag-details">Details</label>
+                                <textarea id="MessageFlag-details" formControlName="details" placeholder="Enter Details" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                                <label for="MessageFlag-status" id="label-MessageFlag-status"><span class="text-danger">*</span>Status</label>
+                                <input type="text" id="MessageFlag-status" formControlName="status" placeholder="Enter Status" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()" aria-labelledby="label-status" />
+                                <div *ngIf="messageFlagForm.get('status')?.invalid && messageFlagForm.get('status')?.touched" class="text-danger">
+                                    Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reviewedByUserId')">
+                                <label for="MessageFlag-reviewedByUserId" id="label-MessageFlag-reviewedByUserId">Reviewed By User Id</label>
+                                <input type="number" id="MessageFlag-reviewedByUserId" formControlName="reviewedByUserId" placeholder="Enter Reviewed By User Id" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()" aria-labelledby="label-reviewedByUserId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeReviewed')">
+                                <label for="MessageFlag-dateTimeReviewed" id="label-MessageFlag-dateTimeReviewed">Date Time Reviewed</label>
+                                <input type="datetime-local" id="MessageFlag-dateTimeReviewed" formControlName="dateTimeReviewed" placeholder="Enter Date Time Reviewed" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()" aria-labelledby="label-dateTimeReviewed" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('resolutionNotes')">
+                                <label for="MessageFlag-resolutionNotes" id="label-MessageFlag-resolutionNotes">Resolution Notes</label>
+                                <textarea id="MessageFlag-resolutionNotes" formControlName="resolutionNotes" placeholder="Enter Resolution Notes" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                                <label for="MessageFlag-dateTimeCreated" id="label-MessageFlag-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                                <input type="datetime-local" id="MessageFlag-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control message-flag-input" [disabled]="!userIsSchedulerMessageFlagWriter()" aria-labelledby="label-dateTimeCreated" />
+                                <div *ngIf="messageFlagForm.get('dateTimeCreated')?.invalid && messageFlagForm.get('dateTimeCreated')?.touched" class="text-danger">
+                                    Date Time Created is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MessageFlag-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerMessageFlagWriter()" />
+                                <label for="MessageFlag-active" class="form-check-label" id="label-MessageFlag-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MessageFlag-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerMessageFlagWriter()" />
+                                <label for="MessageFlag-deleted" class="form-check-label" id="label-MessageFlag-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="message-flag-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="messageFlagForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Message Flag">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !messageFlagForm.valid || !messageFlagForm.dirty || messageFlagForm.pristine  || userIsSchedulerMessageFlagWriter() == false " ngbTooltip="Save the Message Flag changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Message Flag' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

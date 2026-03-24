@@ -1,0 +1,83 @@
+<div class="container-fluid p-1 m-0 conversation-message-user-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="conversation-message-user-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Conversation Message User</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Conversation Message User' : 'Add Conversation Message User'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerConversationMessageUserReader()">
+                <div class="col m-2 conversation-message-user-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="conversationMessageUserForm" (ngSubmit)="submitForm()" class="conversation-message-user-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('conversationMessageId')">
+                                <label for="ConversationMessageUser-conversationMessageId" id="label-ConversationMessageUser-conversationMessageId"><span class="text-danger">*</span>Conversation Message</label>
+                                <select id="ConversationMessageUser-conversationMessageId" formControlName="conversationMessageId" class="form-select conversation-message-user-select" [disabled]="!userIsSchedulerConversationMessageUserWriter()">
+                                    <option [ngValue]="null">Select Conversation Message</option>
+                                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                                </select>
+                                <div *ngIf="conversationMessageUserForm.get('conversationMessageId')?.invalid && conversationMessageUserForm.get('conversationMessageId')?.touched" class="text-danger">
+                                    Conversation Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ConversationMessageUser-userId" id="label-ConversationMessageUser-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ConversationMessageUser-userId" formControlName="userId" placeholder="Enter User Id" class="form-control conversation-message-user-input" [disabled]="!userIsSchedulerConversationMessageUserWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="conversationMessageUserForm.get('userId')?.invalid && conversationMessageUserForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                                <label for="ConversationMessageUser-dateTimeCreated" id="label-ConversationMessageUser-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                                <input type="datetime-local" id="ConversationMessageUser-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control conversation-message-user-input" [disabled]="!userIsSchedulerConversationMessageUserWriter()" aria-labelledby="label-dateTimeCreated" />
+                                <div *ngIf="conversationMessageUserForm.get('dateTimeCreated')?.invalid && conversationMessageUserForm.get('dateTimeCreated')?.touched" class="text-danger">
+                                    Date Time Created is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('acknowledged')">
+                                <input type="checkbox" id="ConversationMessageUser-acknowledged" formControlName="acknowledged" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageUserWriter()" />
+                                <label for="ConversationMessageUser-acknowledged" class="form-check-label" id="label-ConversationMessageUser-acknowledged"><span class="text-danger">*</span>Acknowledged</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeAcknowledged')">
+                                <label for="ConversationMessageUser-dateTimeAcknowledged" id="label-ConversationMessageUser-dateTimeAcknowledged"><span class="text-danger">*</span>Date Time Acknowledged</label>
+                                <input type="datetime-local" id="ConversationMessageUser-dateTimeAcknowledged" formControlName="dateTimeAcknowledged" placeholder="Enter Date Time Acknowledged" class="form-control conversation-message-user-input" [disabled]="!userIsSchedulerConversationMessageUserWriter()" aria-labelledby="label-dateTimeAcknowledged" />
+                                <div *ngIf="conversationMessageUserForm.get('dateTimeAcknowledged')?.invalid && conversationMessageUserForm.get('dateTimeAcknowledged')?.touched" class="text-danger">
+                                    Date Time Acknowledged is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationMessageUser-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageUserWriter()" />
+                                <label for="ConversationMessageUser-active" class="form-check-label" id="label-ConversationMessageUser-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationMessageUser-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageUserWriter()" />
+                                <label for="ConversationMessageUser-deleted" class="form-check-label" id="label-ConversationMessageUser-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="conversation-message-user-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="conversationMessageUserForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Conversation Message User">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationMessageUserForm.valid || !conversationMessageUserForm.dirty || conversationMessageUserForm.pristine  || userIsSchedulerConversationMessageUserWriter() == false " ngbTooltip="Save the Conversation Message User changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Conversation Message User' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

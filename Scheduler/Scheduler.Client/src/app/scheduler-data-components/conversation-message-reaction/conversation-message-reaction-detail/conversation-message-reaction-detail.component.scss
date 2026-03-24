@@ -1,0 +1,325 @@
+:host {
+  color: var(--sch-text-primary);
+}
+
+.header-card {
+  background-color: var(--sch-panel-bg);
+  border-radius: 8px;
+  box-shadow: var(--sch-shadow-sm);
+
+  .card-header {
+    background-color: transparent;
+    border: none;
+    padding: 1rem 1.5rem;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .text-muted {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+// Styles for the color picker
+.color-picker {
+  // Native color inputs are usually square and small; make it a reasonable size
+  width: 60px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+// Style for the read-only hex display next to the picker
+.input-color-display {
+  margin-bottom: 0; // Align properly with the picker
+}
+
+
+
+.conversation-message-reaction-details-header {
+    background-color: transparent;
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+/* Full height for container with navbar and footer */
+.conversation-message-reaction-details-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* Full height relative to viewport */
+  overflow: hidden; /* Prevent internal scrolling and make outer container scrollable */
+  padding-top: 3px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 3px;
+  background-color: transparent;
+}
+
+/* Body section that allows for scrolling */
+.conversation-message-reaction-details-body {
+  flex-grow: 1; /* Takes up remaining space in the viewport */
+  overflow-y: auto; /* Enables vertical scrolling if needed */
+  box-sizing: border-box; /* Ensure padding doesn't cause overflow */
+  overflow-x: hidden;   /* hide any potential x overflow.  There should be none, but we want to make sure x scrollbars don't appear*/
+  padding: 1rem 1.5rem;
+}
+
+/* Form styling */
+.conversation-message-reaction-details-form {
+  width: 100%; /* Ensure the form doesn't exceed the container width */
+  max-width: 100%; /* Prevent unintended overflow */
+  box-sizing: border-box; /* Ensure consistent sizing with padding and borders */
+  padding: 5px;
+  font-size: 1rem;
+}
+
+/* Footer stays at the bottom of the form but will only be visible when the page is scrolled */
+.conversation-message-reaction-details-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  border: none;
+}
+
+.conversation-message-reaction-input, .conversation-message-reaction-select {
+  margin-bottom: 10px;
+  border-radius: 5px;
+}
+
+.conversation-message-reaction-input::placeholder, .conversation-message-reaction-select::placeholder {
+  color: var(--sch-text-muted);
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.detail-background {
+  border-radius: 5px;
+  padding: 1rem;
+}
+
+.back-button {
+  margin-right: 3px;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Glassmorphism header card */
+.header-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--sch-panel-border);
+}
+
+.header-card .page-title {
+  color: var(--sch-text-primary);
+}
+
+.header-card .text-muted {
+  color: var(--sch-text-muted) !important;
+}
+
+/* Theme-aware buttons — override Bootstrap 5 internal CSS custom properties */
+.btn-light {
+  --bs-btn-bg: var(--sch-panel-bg);
+  --bs-btn-color: var(--sch-text-primary);
+  --bs-btn-border-color: var(--sch-border);
+  --bs-btn-hover-bg: var(--sch-bg-hover);
+  --bs-btn-hover-color: var(--sch-text-primary);
+  --bs-btn-hover-border-color: var(--sch-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--sch-primary);
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: var(--sch-primary);
+  --bs-btn-hover-bg: var(--sch-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-border-color: var(--sch-primary);
+  --bs-btn-active-bg: var(--sch-primary);
+  --bs-btn-active-color: #fff;
+  --bs-btn-disabled-bg: var(--sch-primary);
+  --bs-btn-disabled-color: #fff;
+  filter: brightness(1);
+  transition: filter 0.15s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.15);
+}
+
+.btn-secondary {
+  --bs-btn-bg: var(--sch-bg-elevated);
+  --bs-btn-color: var(--sch-text-primary);
+  --bs-btn-border-color: var(--sch-border);
+  --bs-btn-hover-bg: var(--sch-bg-hover);
+  --bs-btn-hover-color: var(--sch-text-primary);
+  --bs-btn-hover-border-color: var(--sch-border);
+  --bs-btn-active-bg: var(--sch-bg-hover);
+  --bs-btn-active-color: var(--sch-text-primary);
+}
+
+/* Form labels */
+label {
+  color: var(--sch-text-primary);
+}
+
+/* Theme-aware form controls */
+.form-control, .form-select {
+  background-color: var(--sch-bg-elevated);
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+  border-radius: 8px;
+  padding: 0.625rem 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--sch-bg-elevated);
+  color: var(--sch-text-primary);
+  border-color: var(--sch-primary);
+  box-shadow: 0 0 0 0.2rem var(--sch-accent-glow-soft);
+}
+
+.form-control::placeholder {
+  color: var(--sch-text-muted);
+}
+
+/* Premium checkbox styling */
+.form-check {
+  padding-left: 2rem;
+  min-height: 1.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.form-check-input {
+  width: 1.25em;
+  height: 1.25em;
+  margin-top: 0;
+  margin-left: -2rem;
+  background-color: var(--sch-bg-elevated);
+  border: 2px solid var(--sch-border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+}
+
+.form-check-input:checked {
+  background-color: var(--sch-primary);
+  border-color: var(--sch-primary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='m6 10 3 3 6-6'/%3e%3c/svg%3e");
+  background-size: 0.75em;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.form-check-input:focus {
+  border-color: var(--sch-primary);
+  box-shadow: 0 0 0 0.2rem var(--sch-accent-glow-soft);
+  outline: none;
+}
+
+.form-check-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-check-label {
+  color: var(--sch-text-primary);
+  cursor: pointer;
+  padding-left: 0.5rem;
+  font-weight: 500;
+}
+
+/* Theme-aware child table tabs — premium underline style */
+.nav-tabs {
+  border-bottom: 2px solid var(--sch-border);
+  padding: 0 1rem;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--sch-text-secondary);
+  font-weight: 500;
+  padding: 1rem 1.5rem;
+  margin-bottom: -2px;
+  transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  color: var(--sch-primary);
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  color: var(--sch-primary);
+  background: transparent;
+  border-bottom-color: var(--sch-primary);
+}
+
+.nav-tabs .nav-link i {
+  opacity: 0.7;
+}
+
+/* Tab badges */
+.nav-link .badge {
+  background-color: var(--sch-primary) !important;
+}
+
+/* Tab content panel */
+.tab-content {
+  background-color: transparent;
+  color: var(--sch-text-primary);
+}
+
+.tab-pane {
+  background-color: transparent;
+}
+
+/* Child table inside tabs */
+.tab-pane .card {
+  background-color: var(--sch-panel-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: var(--sch-panel-border);
+  color: var(--sch-text-primary);
+}
+
+.tab-pane table {
+  color: var(--sch-text-primary);
+}
+
+.tab-pane th {
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+}
+
+.tab-pane td {
+  color: var(--sch-text-primary);
+  border-color: var(--sch-border);
+}
+
+.tab-pane a {
+  color: var(--sch-primary);
+}

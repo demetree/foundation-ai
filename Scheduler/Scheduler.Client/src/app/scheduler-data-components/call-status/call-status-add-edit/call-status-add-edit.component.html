@@ -1,0 +1,57 @@
+<div class="add-call-status" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-call-status me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Call Status" 
+        *ngIf="userIsSchedulerCallStatusWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #callStatusModal let-modal>
+   <div class="modal-header call-status-modal-header">
+      <h5 class="modal-title mb-0" id="callStatusModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Call Status' : 'Add Call Status' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body call-status-modal-body">
+      <form [formGroup]="callStatusForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="CallStatus-name" id="label-CallStatus-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="CallStatus-name" formControlName="name" placeholder="Enter Name" class="form-control call-status-input" [disabled]="!userIsSchedulerCallStatusWriter()" aria-labelledby="label-name" />
+                <div *ngIf="callStatusForm.get('name')?.invalid && callStatusForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="CallStatus-description" id="label-CallStatus-description">Description</label>
+                <textarea id="CallStatus-description" formControlName="description" placeholder="Enter Description" class="form-control call-status-input" [disabled]="!userIsSchedulerCallStatusWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="CallStatus-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCallStatusWriter()" />
+                <label for="CallStatus-active" class="form-check-label" id="label-CallStatus-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="CallStatus-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCallStatusWriter()" />
+                <label for="CallStatus-deleted" class="form-check-label" id="label-CallStatus-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer call-status-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Call Status changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !callStatusForm.valid || callStatusForm.pristine  || userIsSchedulerCallStatusWriter() == false " ngbTooltip="Save the Call Status changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Call Status' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

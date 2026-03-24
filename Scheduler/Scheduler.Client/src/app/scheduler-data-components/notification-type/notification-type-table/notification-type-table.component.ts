@@ -177,8 +177,6 @@ export class NotificationTypeTableComponent implements OnInit, OnChanges, AfterV
     const defaultColumns: TableColumn[] = [
     { key: 'name', label: 'Name', width: undefined, mobile: 'prominent', template: 'link', linkPath: ['/notificationtype', 'id']  },
     { key: 'description', label: 'Description', width: undefined },
-    { key: 'sequence', label: 'Sequence', width: undefined },
-    { key: 'color', label: 'Color', width: "50px", template: 'color' },
 
     ];
 
@@ -326,8 +324,6 @@ export class NotificationTypeTableComponent implements OnInit, OnChanges, AfterV
         const filterFields = [
                       'name',
                       'description',
-                      'sequence',
-                      'color',
         ];
 
         result = result.filter((notificationType) =>

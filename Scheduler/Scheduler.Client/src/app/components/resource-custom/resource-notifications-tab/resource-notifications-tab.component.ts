@@ -2,7 +2,7 @@ import { Component, Input, Output, OnChanges, SimpleChanges } from '@angular/cor
 import { Subject } from 'rxjs'
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ResourceData } from '../../../scheduler-data-services/resource.service';
-import { NotificationSubscriptionService, NotificationSubscriptionData } from '../../../scheduler-data-services/notification-subscription.service';
+import { EventNotificationSubscriptionService, EventNotificationSubscriptionData } from '../../../scheduler-data-services/event-notification-subscription.service';
 import { NotificationSubscriptionCustomAddEditModalComponent } from '../notification-subscription-custom-add-edit-modal/notification-subscription-custom-add-edit-modal.component';
 import { ConfirmationService } from '../../../services/confirmation-service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
@@ -26,10 +26,10 @@ export class ResourceNotificationsTabComponent implements OnChanges {
   @Input() resource!: ResourceData | null;
 
   // Triggers when a notification subscription is changed.  To be implemented by users of this component.
-  @Output() resourceNotificationSubscriptionChanged = new Subject<NotificationSubscriptionData>();
+  @Output() resourceNotificationSubscriptionChanged = new Subject<EventNotificationSubscriptionData>();
 
 
-  public subscriptions: NotificationSubscriptionData[] | null = null;
+  public subscriptions: EventNotificationSubscriptionData[] | null = null;
   public isLoading = true;
   public error: string | null = null;
 
@@ -40,7 +40,7 @@ export class ResourceNotificationsTabComponent implements OnChanges {
   public readonly TRIGGER_REMINDER = 8;
 
   constructor(private modalService: NgbModal,
-    private notificationSubscriptionService: NotificationSubscriptionService,
+    private notificationSubscriptionService: EventNotificationSubscriptionService,
     private confirmationService: ConfirmationService,
     private alertService: AlertService,
   ) { }
@@ -48,7 +48,7 @@ export class ResourceNotificationsTabComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['resource'] && this.resource) {
 
-      this.resource.ClearNotificationSubscriptionsCache();
+      this.resource.ClearEventNotificationSubscriptionsCache();
 
       this.loadSubscriptions();
     }
@@ -67,12 +67,12 @@ export class ResourceNotificationsTabComponent implements OnChanges {
     this.isLoading = true;
     this.error = null;
 
-    this.resource.NotificationSubscriptions
-      .then(subs => {
+    this.resource.EventNotificationSubscriptions
+      .then((subs: EventNotificationSubscriptionData[] | null) => {
         this.subscriptions = subs ?? [];
         this.isLoading = false;
       })
-      .catch(err => {
+      .catch((err: any) => {
         console.error('Failed to load notification subscriptions', err);
         this.error = 'Unable to load notification subscriptions';
         this.subscriptions = [];
@@ -83,7 +83,7 @@ export class ResourceNotificationsTabComponent implements OnChanges {
   /**
    * Opens modal to add or edit a subscription.
    */
-  public openAddEditModal(subscription?: NotificationSubscriptionData): void {
+  public openAddEditModal(subscription?: EventNotificationSubscriptionData): void {
     if (!this.resource) return;
 
     const modalRef = this.modalService.open(NotificationSubscriptionCustomAddEditModalComponent, {
@@ -96,8 +96,8 @@ export class ResourceNotificationsTabComponent implements OnChanges {
       modalRef.componentInstance.existingSubscription = subscription;
     }
 
-    modalRef.componentInstance.subscriptionChanged.subscribe((data: NotificationSubscriptionData) => {
-      this.resource?.ClearNotificationSubscriptionsCache();
+    modalRef.componentInstance.subscriptionChanged.subscribe((data: EventNotificationSubscriptionData) => {
+      this.resource?.ClearEventNotificationSubscriptionsCache();
 
       this.resourceNotificationSubscriptionChanged.next(data);
 
@@ -108,7 +108,7 @@ export class ResourceNotificationsTabComponent implements OnChanges {
   /**
    * Deletes a subscription.
    */
-  public deleteSubscription(sub: NotificationSubscriptionData): void {
+  public deleteSubscription(sub: EventNotificationSubscriptionData): void {
 
     this.confirmationService
       .confirm('Delete Notification Subscription', 'Are you sure you want to delete this Notification Subscription?')
@@ -121,12 +121,12 @@ export class ResourceNotificationsTabComponent implements OnChanges {
   }
 
 
-  private deleteNotificationSubscription(notificationSubscriptionData: NotificationSubscriptionData): void {
-    this.notificationSubscriptionService.DeleteNotificationSubscription(notificationSubscriptionData.id).subscribe({
+  private deleteNotificationSubscription(notificationSubscriptionData: EventNotificationSubscriptionData): void {
+    this.notificationSubscriptionService.DeleteEventNotificationSubscription(notificationSubscriptionData.id).subscribe({
       next: (data) => {
         this.notificationSubscriptionService.ClearAllCaches();       // Clear the data service cache because we know we have changed the data.
 
-        this.resource?.ClearNotificationSubscriptionsCache();
+        this.resource?.ClearEventNotificationSubscriptionsCache();
 
         this.loadSubscriptions(); // Reload the data list after deletion
 

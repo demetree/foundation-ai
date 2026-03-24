@@ -1,0 +1,25 @@
+using System;
+using System.Collections.Generic;
+
+namespace Foundation.Messaging.Database
+{
+    public partial class ConversationChannel
+    {
+        public int id { get; set; }
+        public Guid tenantGuid { get; set; }
+        public int conversationId { get; set; }
+        public string name { get; set; }
+        public string topic { get; set; }
+        public bool isPrivate { get; set; }
+        public bool isPinned { get; set; }
+
+        public int versionNumber { get; set; }
+        public Guid objectGuid { get; set; }
+        public bool active { get; set; }
+        public bool deleted { get; set; }
+
+        public virtual ICollection<ConversationChannelChangeHistory> ConversationChannelChangeHistories { get; set; } = new List<ConversationChannelChangeHistory>();
+        public virtual ICollection<ConversationMessage> ConversationMessages { get; set; } = new List<ConversationMessage>();
+        public virtual Conversation conversation { get; set; }
+    }
+}

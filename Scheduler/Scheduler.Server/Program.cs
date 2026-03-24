@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using static Foundation.Configuration;
 using static Foundation.StartupBasics;
 using Foundation.Web.Services;
+using Foundation.HubConfig;
 
 
 namespace Foundation.Scheduler
@@ -202,6 +203,43 @@ namespace Foundation.Scheduler
                 builder.Services.AddHostedService<Foundation.Scheduler.Services.VolunteerReminderWorker>();
 
                 //
+                // ─── Foundation Messaging services ─────────────────────────────────
+                // AI-Developed — This block was added with AI assistance.
+                //
+                Foundation.Messaging.Database.MessagingContext.SchemaName = "Scheduler";
+
+                builder.Services.AddScoped<Foundation.Scheduler.Services.SchedulerUserResolver>();
+                builder.Services.AddScoped<Foundation.Messaging.IMessagingUserResolver>(sp =>
+                    new Foundation.Scheduler.Services.CachingMessagingUserResolver(
+                        sp.GetRequiredService<Foundation.Scheduler.Services.SchedulerUserResolver>()));
+
+                builder.Services.AddScoped<Foundation.Messaging.Services.ConversationService>();
+                builder.Services.AddScoped<Foundation.Messaging.Services.PresenceService>();
+                builder.Services.AddScoped<Foundation.Messaging.Services.NotificationService>();
+                builder.Services.AddScoped<Foundation.Messaging.Services.MessagingProfileService>();
+                builder.Services.AddScoped<Foundation.Messaging.Services.MessagingAdminService>();
+                builder.Services.AddScoped<Foundation.Messaging.Services.CallService>();
+
+                // Stale presence cleanup — marks users as Offline when heartbeat stops
+                builder.Services.AddHostedService<Foundation.Messaging.Hosting.PresenceCleanupService>();
+
+                // Link preview background processing
+                builder.Services.AddSingleton<Foundation.Messaging.Services.LinkPreviewQueue>();
+                builder.Services.AddHostedService<Foundation.Messaging.Hosting.LinkPreviewBackgroundService>();
+
+                // Scheduled message delivery — polls for due messages and releases them
+                builder.Services.AddHostedService<Foundation.Messaging.Hosting.ScheduledMessageService>();
+
+                // Call providers and TURN server configuration
+                builder.Services.AddSingleton<Foundation.Messaging.Services.ICallProvider, Foundation.Messaging.Services.WebRtcCallProvider>();
+                builder.Services.AddSingleton<Foundation.Messaging.Services.ITurnServerProvider, Foundation.Messaging.Services.MeteredTurnServerProvider>();
+
+                // File attachment storage — files stored on disk, tenant-isolated
+                string attachmentStoragePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AttachmentStorage");
+                builder.Services.AddSingleton<Foundation.Messaging.Services.IAttachmentStorageProvider>(
+                    new Foundation.Messaging.Services.FileSystemAttachmentStorageProvider(attachmentStoragePath));
+
+                //
                 // Add the Scheduler Database context
                 //
                 builder.Services.AddDbContext<SchedulerContext>(options =>
@@ -273,8 +311,9 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(TenantProfileController));           // For profile access with auto creation
                 controllers.Add(typeof(GeocodingController));               // For address-to-coordinate resolution
                 controllers.Add(typeof(VolunteerHubController));            // For setting up volunteer user accounts for hub acces
-                controllers.Add(typeof(FeatureConfigController));             // AI-Developed — Unified feature toggle endpoint
+                controllers.Add(typeof(FeatureConfigController));           // AI-Developed — Unified feature toggle endpoint
                 controllers.Add(typeof(FileManagerController));             // For Document Manager / File Manager feature
+                controllers.Add(typeof(MessagingController));               // AI-Developed — Foundation Messaging endpoints
 
 
                 //
@@ -303,6 +342,11 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(BudgetChangeHistoriesController));
                 controllers.Add(typeof(CalendarsController));
                 controllers.Add(typeof(CalendarChangeHistoriesController));
+                controllers.Add(typeof(CallsController));
+                controllers.Add(typeof(CallEventLogsController));
+                controllers.Add(typeof(CallParticipantsController));
+                controllers.Add(typeof(CallStatusesController));
+                controllers.Add(typeof(CallTypesController));
                 controllers.Add(typeof(CampaignsController));
                 controllers.Add(typeof(CampaignChangeHistoriesController));
                 controllers.Add(typeof(ChargeStatusesController));
@@ -328,6 +372,21 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(ContactTagsController));
                 controllers.Add(typeof(ContactTagChangeHistoriesController));
                 controllers.Add(typeof(ContactTypesController));
+                controllers.Add(typeof(ConversationsController));
+                controllers.Add(typeof(ConversationChannelsController));
+                controllers.Add(typeof(ConversationChannelChangeHistoriesController));
+                controllers.Add(typeof(ConversationMessagesController));
+                controllers.Add(typeof(ConversationMessageAttachmentsController));
+                controllers.Add(typeof(ConversationMessageAttachmentChangeHistoriesController));
+                controllers.Add(typeof(ConversationMessageChangeHistoriesController));
+                controllers.Add(typeof(ConversationMessageLinkPreviewsController));
+                controllers.Add(typeof(ConversationMessageLinkPreviewChangeHistoriesController));
+                controllers.Add(typeof(ConversationMessageReactionsController));
+                controllers.Add(typeof(ConversationMessageUsersController));
+                controllers.Add(typeof(ConversationPinsController));
+                controllers.Add(typeof(ConversationThreadUsersController));
+                controllers.Add(typeof(ConversationTypesController));
+                controllers.Add(typeof(ConversationUsersController));
                 controllers.Add(typeof(CountriesController));
                 controllers.Add(typeof(CrewsController));
                 controllers.Add(typeof(CrewChangeHistoriesController));
@@ -349,6 +408,9 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(EventCalendarsController));
                 controllers.Add(typeof(EventChargesController));
                 controllers.Add(typeof(EventChargeChangeHistoriesController));
+                controllers.Add(typeof(EventNotificationSubscriptionsController));
+                controllers.Add(typeof(EventNotificationSubscriptionChangeHistoriesController));
+                controllers.Add(typeof(EventNotificationTypesController));
                 controllers.Add(typeof(EventResourceAssignmentsController));
                 controllers.Add(typeof(EventResourceAssignmentChangeHistoriesController));
                 controllers.Add(typeof(EventStatusesController));
@@ -376,8 +438,14 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(InvoiceChangeHistoriesController));
                 controllers.Add(typeof(InvoiceLineItemsController));
                 controllers.Add(typeof(InvoiceStatusesController));
-                controllers.Add(typeof(NotificationSubscriptionsController));
-                controllers.Add(typeof(NotificationSubscriptionChangeHistoriesController));
+                controllers.Add(typeof(MessageBookmarksController));
+                controllers.Add(typeof(MessageFlagsController));
+                controllers.Add(typeof(MessagingAuditLogsController));
+                controllers.Add(typeof(NotificationsController));
+                controllers.Add(typeof(NotificationAttachmentsController));
+                controllers.Add(typeof(NotificationAttachmentChangeHistoriesController));
+                controllers.Add(typeof(NotificationChangeHistoriesController));
+                controllers.Add(typeof(NotificationDistributionsController));
                 controllers.Add(typeof(NotificationTypesController));
                 controllers.Add(typeof(OfficesController));
                 controllers.Add(typeof(OfficeChangeHistoriesController));
@@ -395,6 +463,8 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(PledgesController));
                 controllers.Add(typeof(PledgeChangeHistoriesController));
                 controllers.Add(typeof(PrioritiesController));
+                controllers.Add(typeof(PushDeliveryLogsController));
+                controllers.Add(typeof(PushProviderConfigurationsController));
                 controllers.Add(typeof(QualificationsController));
                 controllers.Add(typeof(RateSheetsController));
                 controllers.Add(typeof(RateSheetChangeHistoriesController));
@@ -457,6 +527,7 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(TributesController));
                 controllers.Add(typeof(TributeChangeHistoriesController));
                 controllers.Add(typeof(TributeTypesController));
+                controllers.Add(typeof(UserPresencesController));
                 controllers.Add(typeof(VolunteerGroupsController));
                 controllers.Add(typeof(VolunteerGroupChangeHistoriesController));
                 controllers.Add(typeof(VolunteerGroupMembersController));
@@ -720,6 +791,7 @@ namespace Foundation.Scheduler
 
                 app.MapHub<SchedulerHub>("/SchedulerSignal");
                 app.MapHub<FileManagerHub>("/FileManagerSignal");
+                app.MapHub<MessagingHub>("/hubs/messaging");
 
                 app.MapControllers();
 

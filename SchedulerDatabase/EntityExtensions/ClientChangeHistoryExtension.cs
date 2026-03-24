@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = clientChangeHistory.timeStamp,
 				userId = clientChangeHistory.userId,
 				data = clientChangeHistory.data,
-				client = Client.CreateMinimalAnonymous(clientChangeHistory.client),
+				client = Client.CreateMinimalAnonymous(clientChangeHistory.client)
 			 };
 		}
 

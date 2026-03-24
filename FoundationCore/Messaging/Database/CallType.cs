@@ -1,0 +1,17 @@
+using System;
+using System.Collections.Generic;
+
+namespace Foundation.Messaging.Database
+{
+    public partial class CallType
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
+        public Guid objectGuid { get; set; }
+        public bool active { get; set; }
+        public bool deleted { get; set; }
+
+        public virtual ICollection<Call> Calls { get; set; } = new List<Call>();
+    }
+}

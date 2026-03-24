@@ -1,0 +1,73 @@
+<div class="add-event-notification-subscription-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-event-notification-subscription-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Event Notification Subscription Change History" 
+        *ngIf="userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #eventNotificationSubscriptionChangeHistoryModal let-modal>
+   <div class="modal-header event-notification-subscription-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="eventNotificationSubscriptionChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Event Notification Subscription Change History' : 'Add Event Notification Subscription Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body event-notification-subscription-change-history-modal-body">
+      <form [formGroup]="eventNotificationSubscriptionChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('eventNotificationSubscriptionId')">
+                <label for="EventNotificationSubscriptionChangeHistory-eventNotificationSubscriptionId" id="label-EventNotificationSubscriptionChangeHistory-eventNotificationSubscriptionId"><span class="text-danger">*</span>Event Notification Subscription</label>
+                <select id="EventNotificationSubscriptionChangeHistory-eventNotificationSubscriptionId" formControlName="eventNotificationSubscriptionId" class="form-select event-notification-subscription-change-history-select" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Event Notification Subscription</option>
+                    <option *ngFor="let eventNotificationSubscription of eventNotificationSubscriptions$ | async" [ngValue]="eventNotificationSubscription.id">{{eventNotificationSubscription.recipientAddress}}</option>
+                </select>
+                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('eventNotificationSubscriptionId')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('eventNotificationSubscriptionId')?.touched" class="text-danger">
+                    Event Notification Subscription is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="EventNotificationSubscriptionChangeHistory-versionNumber" id="label-EventNotificationSubscriptionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="EventNotificationSubscriptionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-notification-subscription-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="EventNotificationSubscriptionChangeHistory-timeStamp" id="label-EventNotificationSubscriptionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="EventNotificationSubscriptionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control event-notification-subscription-change-history-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('timeStamp')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="EventNotificationSubscriptionChangeHistory-userId" id="label-EventNotificationSubscriptionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="EventNotificationSubscriptionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control event-notification-subscription-change-history-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('userId')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="EventNotificationSubscriptionChangeHistory-data" id="label-EventNotificationSubscriptionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="EventNotificationSubscriptionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control event-notification-subscription-change-history-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()"></textarea>
+                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('data')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer event-notification-subscription-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Event Notification Subscription Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventNotificationSubscriptionChangeHistoryForm.valid || eventNotificationSubscriptionChangeHistoryForm.pristine  || userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter() == false " ngbTooltip="Save the Event Notification Subscription Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Event Notification Subscription Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

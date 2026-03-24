@@ -35,9 +35,7 @@ import { AuthService } from '../../../services/auth.service';
 //
 interface NotificationTypeFormValues {
   name: string,
-  description: string,
-  sequence: string | null,     // Stored as string for form input, converted to number on submit.
-  color: string | null,
+  description: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -71,9 +69,7 @@ export class NotificationTypeAddEditComponent {
 
   public notificationTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
-        description: ['', Validators.required],
-        sequence: [''],
-        color: [''],
+        description: [''],
         active: [true],
         deleted: [false],
       });
@@ -210,9 +206,7 @@ export class NotificationTypeAddEditComponent {
     const notificationTypeSubmitData: NotificationTypeSubmitData = {
         id: this.notificationTypeSubmitData?.id || 0,
         name: formValue.name!.trim(),
-        description: formValue.description!.trim(),
-        sequence: formValue.sequence ? Number(formValue.sequence) : null,
-        color: formValue.color?.trim() || null,
+        description: formValue.description?.trim() || null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };
@@ -342,8 +336,6 @@ export class NotificationTypeAddEditComponent {
       this.notificationTypeForm.reset({
         name: '',
         description: '',
-        sequence: '',
-        color: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -357,8 +349,6 @@ export class NotificationTypeAddEditComponent {
         this.notificationTypeForm.reset({
         name: notificationTypeData.name ?? '',
         description: notificationTypeData.description ?? '',
-        sequence: notificationTypeData.sequence?.toString() ?? '',
-        color: notificationTypeData.color ?? '',
         active: notificationTypeData.active ?? true,
         deleted: notificationTypeData.deleted ?? false,
       }, { emitEvent: false});

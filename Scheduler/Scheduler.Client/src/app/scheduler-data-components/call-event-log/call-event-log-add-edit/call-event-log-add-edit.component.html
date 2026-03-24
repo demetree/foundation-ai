@@ -1,0 +1,82 @@
+<div class="add-call-event-log" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-call-event-log me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Call Event Log" 
+        *ngIf="userIsSchedulerCallEventLogWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #callEventLogModal let-modal>
+   <div class="modal-header call-event-log-modal-header">
+      <h5 class="modal-title mb-0" id="callEventLogModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Call Event Log' : 'Add Call Event Log' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body call-event-log-modal-body">
+      <form [formGroup]="callEventLogForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('callId')">
+                <label for="CallEventLog-callId" id="label-CallEventLog-callId"><span class="text-danger">*</span>Call</label>
+                <select id="CallEventLog-callId" formControlName="callId" class="form-select call-event-log-select" [disabled]="!userIsSchedulerCallEventLogWriter()">
+                    <option [ngValue]="null">Select Call</option>
+                    <option *ngFor="let call of calls$ | async" [ngValue]="call.id">{{call.providerId}}</option>
+                </select>
+                <div *ngIf="callEventLogForm.get('callId')?.invalid && callEventLogForm.get('callId')?.touched" class="text-danger">
+                    Call is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('eventType')">
+                <label for="CallEventLog-eventType" id="label-CallEventLog-eventType"><span class="text-danger">*</span>Event Type</label>
+                <input type="text" id="CallEventLog-eventType" formControlName="eventType" placeholder="Enter Event Type" class="form-control call-event-log-input" [disabled]="!userIsSchedulerCallEventLogWriter()" aria-labelledby="label-eventType" />
+                <div *ngIf="callEventLogForm.get('eventType')?.invalid && callEventLogForm.get('eventType')?.touched" class="text-danger">
+                    Event Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="CallEventLog-userId" id="label-CallEventLog-userId">User Id</label>
+                <input type="number" id="CallEventLog-userId" formControlName="userId" placeholder="Enter User Id" class="form-control call-event-log-input" [disabled]="!userIsSchedulerCallEventLogWriter()" aria-labelledby="label-userId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('providerId')">
+                <label for="CallEventLog-providerId" id="label-CallEventLog-providerId">Provider Id</label>
+                <input type="text" id="CallEventLog-providerId" formControlName="providerId" placeholder="Enter Provider Id" class="form-control call-event-log-input" [disabled]="!userIsSchedulerCallEventLogWriter()" aria-labelledby="label-providerId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('metadata')">
+                <label for="CallEventLog-metadata" id="label-CallEventLog-metadata">Metadata</label>
+                <textarea id="CallEventLog-metadata" formControlName="metadata" placeholder="Enter Metadata" class="form-control call-event-log-input" [disabled]="!userIsSchedulerCallEventLogWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                <label for="CallEventLog-dateTimeCreated" id="label-CallEventLog-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                <input type="datetime-local" id="CallEventLog-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control call-event-log-input" [disabled]="!userIsSchedulerCallEventLogWriter()" aria-labelledby="label-dateTimeCreated" />
+                <div *ngIf="callEventLogForm.get('dateTimeCreated')?.invalid && callEventLogForm.get('dateTimeCreated')?.touched" class="text-danger">
+                    Date Time Created is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="CallEventLog-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCallEventLogWriter()" />
+                <label for="CallEventLog-active" class="form-check-label" id="label-CallEventLog-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="CallEventLog-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCallEventLogWriter()" />
+                <label for="CallEventLog-deleted" class="form-check-label" id="label-CallEventLog-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer call-event-log-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Call Event Log changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !callEventLogForm.valid || callEventLogForm.pristine  || userIsSchedulerCallEventLogWriter() == false " ngbTooltip="Save the Call Event Log changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Call Event Log' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

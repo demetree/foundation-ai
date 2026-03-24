@@ -1,0 +1,30 @@
+using System;
+using System.Collections.Generic;
+
+namespace Foundation.Messaging.Database
+{
+    public partial class Call
+    {
+        public int id { get; set; }
+        public Guid tenantGuid { get; set; }
+        public int callTypeId { get; set; }
+        public int callStatusId { get; set; }
+        public string providerId { get; set; }
+        public string providerCallId { get; set; }
+        public int conversationId { get; set; }
+        public int initiatorUserId { get; set; }
+        public DateTime startDateTime { get; set; }
+        public DateTime? answerDateTime { get; set; }
+        public DateTime? endDateTime { get; set; }
+        public int? durationSeconds { get; set; }
+        public Guid objectGuid { get; set; }
+        public bool active { get; set; }
+        public bool deleted { get; set; }
+
+        public virtual CallType callType { get; set; }
+        public virtual CallStatus callStatus { get; set; }
+        public virtual Conversation conversation { get; set; }
+        public virtual ICollection<CallParticipant> CallParticipants { get; set; } = new List<CallParticipant>();
+        public virtual ICollection<CallEventLog> CallEventLogs { get; set; } = new List<CallEventLog>();
+    }
+}

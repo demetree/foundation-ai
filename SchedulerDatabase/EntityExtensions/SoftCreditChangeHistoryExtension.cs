@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = softCreditChangeHistory.timeStamp,
 				userId = softCreditChangeHistory.userId,
 				data = softCreditChangeHistory.data,
-				softCredit = SoftCredit.CreateMinimalAnonymous(softCreditChangeHistory.softCredit),
+				softCredit = SoftCredit.CreateMinimalAnonymous(softCreditChangeHistory.softCredit)
 			 };
 		}
 

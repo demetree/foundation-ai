@@ -1,0 +1,90 @@
+<div class="add-conversation-message-link-preview" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-conversation-message-link-preview me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Conversation Message Link Preview" 
+        *ngIf="userIsSchedulerConversationMessageLinkPreviewWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #conversationMessageLinkPreviewModal let-modal>
+   <div class="modal-header conversation-message-link-preview-modal-header">
+      <h5 class="modal-title mb-0" id="conversationMessageLinkPreviewModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Conversation Message Link Preview' : 'Add Conversation Message Link Preview' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body conversation-message-link-preview-modal-body">
+      <form [formGroup]="conversationMessageLinkPreviewForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('conversationMessageId')">
+                <label for="ConversationMessageLinkPreview-conversationMessageId" id="label-ConversationMessageLinkPreview-conversationMessageId"><span class="text-danger">*</span>Conversation Message</label>
+                <select id="ConversationMessageLinkPreview-conversationMessageId" formControlName="conversationMessageId" class="form-select conversation-message-link-preview-select" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()">
+                    <option [ngValue]="null">Select Conversation Message</option>
+                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                </select>
+                <div *ngIf="conversationMessageLinkPreviewForm.get('conversationMessageId')?.invalid && conversationMessageLinkPreviewForm.get('conversationMessageId')?.touched" class="text-danger">
+                    Conversation Message is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('url')">
+                <label for="ConversationMessageLinkPreview-url" id="label-ConversationMessageLinkPreview-url"><span class="text-danger">*</span>Url</label>
+                <textarea id="ConversationMessageLinkPreview-url" formControlName="url" placeholder="Enter Url" class="form-control conversation-message-link-preview-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()"></textarea>
+                <div *ngIf="conversationMessageLinkPreviewForm.get('url')?.invalid && conversationMessageLinkPreviewForm.get('url')?.touched" class="text-danger">
+                    Url is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('title')">
+                <label for="ConversationMessageLinkPreview-title" id="label-ConversationMessageLinkPreview-title">Title</label>
+                <textarea id="ConversationMessageLinkPreview-title" formControlName="title" placeholder="Enter Title" class="form-control conversation-message-link-preview-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('description')">
+                <label for="ConversationMessageLinkPreview-description" id="label-ConversationMessageLinkPreview-description">Description</label>
+                <textarea id="ConversationMessageLinkPreview-description" formControlName="description" placeholder="Enter Description" class="form-control conversation-message-link-preview-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('imageUrl')">
+                <label for="ConversationMessageLinkPreview-imageUrl" id="label-ConversationMessageLinkPreview-imageUrl">Image Url</label>
+                <textarea id="ConversationMessageLinkPreview-imageUrl" formControlName="imageUrl" placeholder="Enter Image Url" class="form-control conversation-message-link-preview-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('siteName')">
+                <label for="ConversationMessageLinkPreview-siteName" id="label-ConversationMessageLinkPreview-siteName">Site Name</label>
+                <input type="text" id="ConversationMessageLinkPreview-siteName" formControlName="siteName" placeholder="Enter Site Name" class="form-control conversation-message-link-preview-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()" aria-labelledby="label-siteName" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('fetchedDateTime')">
+                <label for="ConversationMessageLinkPreview-fetchedDateTime" id="label-ConversationMessageLinkPreview-fetchedDateTime"><span class="text-danger">*</span>Fetched Date Time</label>
+                <input type="datetime-local" id="ConversationMessageLinkPreview-fetchedDateTime" formControlName="fetchedDateTime" placeholder="Enter Fetched Date Time" class="form-control conversation-message-link-preview-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()" aria-labelledby="label-fetchedDateTime" />
+                <div *ngIf="conversationMessageLinkPreviewForm.get('fetchedDateTime')?.invalid && conversationMessageLinkPreviewForm.get('fetchedDateTime')?.touched" class="text-danger">
+                    Fetched Date Time is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ConversationMessageLinkPreview-versionNumber" id="label-ConversationMessageLinkPreview-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ConversationMessageLinkPreview-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control conversation-message-link-preview-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConversationMessageLinkPreview-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()" />
+                <label for="ConversationMessageLinkPreview-active" class="form-check-label" id="label-ConversationMessageLinkPreview-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConversationMessageLinkPreview-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageLinkPreviewWriter()" />
+                <label for="ConversationMessageLinkPreview-deleted" class="form-check-label" id="label-ConversationMessageLinkPreview-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer conversation-message-link-preview-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Conversation Message Link Preview changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationMessageLinkPreviewForm.valid || conversationMessageLinkPreviewForm.pristine  || userIsSchedulerConversationMessageLinkPreviewWriter() == false " ngbTooltip="Save the Conversation Message Link Preview changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Conversation Message Link Preview' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

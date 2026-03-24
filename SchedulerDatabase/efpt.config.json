@@ -92,6 +92,26 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[Call]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CallEventLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CallParticipant]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CallStatus]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[CallType]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Campaign]",
          "ObjectType": 0
       },
@@ -192,6 +212,66 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[Conversation]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationChannel]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationChannelChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessage]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessageAttachment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessageAttachmentChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessageChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessageLinkPreview]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessageLinkPreviewChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessageReaction]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationMessageUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationPin]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationThreadUser]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[ConversationUser]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Country]",
          "ObjectType": 0
       },
@@ -273,6 +353,18 @@
       },
       {
          "Name": "[Scheduler].[EventChargeChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventNotificationSubscription]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventNotificationSubscriptionChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[EventNotificationType]",
          "ObjectType": 0
       },
       {
@@ -384,11 +476,35 @@
          "ObjectType": 0
       },
       {
-         "Name": "[Scheduler].[NotificationSubscription]",
+         "Name": "[Scheduler].[MessageBookmark]",
          "ObjectType": 0
       },
       {
-         "Name": "[Scheduler].[NotificationSubscriptionChangeHistory]",
+         "Name": "[Scheduler].[MessageFlag]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[MessagingAuditLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[Notification]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[NotificationAttachment]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[NotificationAttachmentChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[NotificationChangeHistory]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[NotificationDistribution]",
          "ObjectType": 0
       },
       {
@@ -457,6 +573,14 @@
       },
       {
          "Name": "[Scheduler].[Priority]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PushDeliveryLog]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[PushProviderConfiguration]",
          "ObjectType": 0
       },
       {
@@ -705,6 +829,10 @@
       },
       {
          "Name": "[Scheduler].[TributeType]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[UserPresence]",
          "ObjectType": 0
       },
       {

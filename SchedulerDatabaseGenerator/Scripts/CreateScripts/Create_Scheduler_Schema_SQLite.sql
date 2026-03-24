@@ -49,9 +49,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "Campaign"
 -- DROP TABLE "FundChangeHistory"
 -- DROP TABLE "Fund"
--- DROP TABLE "NotificationSubscriptionChangeHistory"
--- DROP TABLE "NotificationSubscription"
--- DROP TABLE "NotificationType"
+-- DROP TABLE "EventNotificationSubscriptionChangeHistory"
+-- DROP TABLE "EventNotificationSubscription"
+-- DROP TABLE "EventNotificationType"
 -- DROP TABLE "RecurrenceExceptionChangeHistory"
 -- DROP TABLE "RecurrenceException"
 -- DROP TABLE "ScheduledEventQualificationRequirementChangeHistory"
@@ -186,6 +186,38 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- DROP TABLE "AttributeDefinition"
 -- DROP TABLE "AttributeDefinitionEntity"
 -- DROP TABLE "AttributeDefinitionType"
+-- DROP TABLE "CallEventLog"
+-- DROP TABLE "CallParticipant"
+-- DROP TABLE "Call"
+-- DROP TABLE "CallStatus"
+-- DROP TABLE "CallType"
+-- DROP TABLE "MessagingAuditLog"
+-- DROP TABLE "MessageFlag"
+-- DROP TABLE "PushProviderConfiguration"
+-- DROP TABLE "PushDeliveryLog"
+-- DROP TABLE "MessageBookmark"
+-- DROP TABLE "ConversationThreadUser"
+-- DROP TABLE "UserPresence"
+-- DROP TABLE "ConversationMessageLinkPreviewChangeHistory"
+-- DROP TABLE "ConversationMessageLinkPreview"
+-- DROP TABLE "ConversationPin"
+-- DROP TABLE "ConversationMessageReaction"
+-- DROP TABLE "ConversationMessageUser"
+-- DROP TABLE "ConversationMessageAttachmentChangeHistory"
+-- DROP TABLE "ConversationMessageAttachment"
+-- DROP TABLE "ConversationMessageChangeHistory"
+-- DROP TABLE "ConversationMessage"
+-- DROP TABLE "ConversationChannelChangeHistory"
+-- DROP TABLE "ConversationChannel"
+-- DROP TABLE "ConversationUser"
+-- DROP TABLE "Conversation"
+-- DROP TABLE "ConversationType"
+-- DROP TABLE "NotificationDistribution"
+-- DROP TABLE "NotificationAttachmentChangeHistory"
+-- DROP TABLE "NotificationAttachment"
+-- DROP TABLE "NotificationChangeHistory"
+-- DROP TABLE "Notification"
+-- DROP TABLE "NotificationType"
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" DISABLE
@@ -231,9 +263,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "Campaign" DISABLE
 -- ALTER INDEX ALL ON "FundChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "Fund" DISABLE
--- ALTER INDEX ALL ON "NotificationSubscriptionChangeHistory" DISABLE
--- ALTER INDEX ALL ON "NotificationSubscription" DISABLE
--- ALTER INDEX ALL ON "NotificationType" DISABLE
+-- ALTER INDEX ALL ON "EventNotificationSubscriptionChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "EventNotificationSubscription" DISABLE
+-- ALTER INDEX ALL ON "EventNotificationType" DISABLE
 -- ALTER INDEX ALL ON "RecurrenceExceptionChangeHistory" DISABLE
 -- ALTER INDEX ALL ON "RecurrenceException" DISABLE
 -- ALTER INDEX ALL ON "ScheduledEventQualificationRequirementChangeHistory" DISABLE
@@ -368,6 +400,38 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "AttributeDefinition" DISABLE
 -- ALTER INDEX ALL ON "AttributeDefinitionEntity" DISABLE
 -- ALTER INDEX ALL ON "AttributeDefinitionType" DISABLE
+-- ALTER INDEX ALL ON "CallEventLog" DISABLE
+-- ALTER INDEX ALL ON "CallParticipant" DISABLE
+-- ALTER INDEX ALL ON "Call" DISABLE
+-- ALTER INDEX ALL ON "CallStatus" DISABLE
+-- ALTER INDEX ALL ON "CallType" DISABLE
+-- ALTER INDEX ALL ON "MessagingAuditLog" DISABLE
+-- ALTER INDEX ALL ON "MessageFlag" DISABLE
+-- ALTER INDEX ALL ON "PushProviderConfiguration" DISABLE
+-- ALTER INDEX ALL ON "PushDeliveryLog" DISABLE
+-- ALTER INDEX ALL ON "MessageBookmark" DISABLE
+-- ALTER INDEX ALL ON "ConversationThreadUser" DISABLE
+-- ALTER INDEX ALL ON "UserPresence" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessageLinkPreviewChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessageLinkPreview" DISABLE
+-- ALTER INDEX ALL ON "ConversationPin" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessageReaction" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessageUser" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessageAttachmentChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessageAttachment" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessageChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "ConversationMessage" DISABLE
+-- ALTER INDEX ALL ON "ConversationChannelChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "ConversationChannel" DISABLE
+-- ALTER INDEX ALL ON "ConversationUser" DISABLE
+-- ALTER INDEX ALL ON "Conversation" DISABLE
+-- ALTER INDEX ALL ON "ConversationType" DISABLE
+-- ALTER INDEX ALL ON "NotificationDistribution" DISABLE
+-- ALTER INDEX ALL ON "NotificationAttachmentChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "NotificationAttachment" DISABLE
+-- ALTER INDEX ALL ON "NotificationChangeHistory" DISABLE
+-- ALTER INDEX ALL ON "Notification" DISABLE
+-- ALTER INDEX ALL ON "NotificationType" DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON "EventResourceAssignmentChangeHistory" REBUILD
@@ -413,9 +477,9 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "Campaign" REBUILD
 -- ALTER INDEX ALL ON "FundChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "Fund" REBUILD
--- ALTER INDEX ALL ON "NotificationSubscriptionChangeHistory" REBUILD
--- ALTER INDEX ALL ON "NotificationSubscription" REBUILD
--- ALTER INDEX ALL ON "NotificationType" REBUILD
+-- ALTER INDEX ALL ON "EventNotificationSubscriptionChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "EventNotificationSubscription" REBUILD
+-- ALTER INDEX ALL ON "EventNotificationType" REBUILD
 -- ALTER INDEX ALL ON "RecurrenceExceptionChangeHistory" REBUILD
 -- ALTER INDEX ALL ON "RecurrenceException" REBUILD
 -- ALTER INDEX ALL ON "ScheduledEventQualificationRequirementChangeHistory" REBUILD
@@ -550,6 +614,1425 @@ All operational tables include multi-tenant support, versioning where appropriat
 -- ALTER INDEX ALL ON "AttributeDefinition" REBUILD
 -- ALTER INDEX ALL ON "AttributeDefinitionEntity" REBUILD
 -- ALTER INDEX ALL ON "AttributeDefinitionType" REBUILD
+-- ALTER INDEX ALL ON "CallEventLog" REBUILD
+-- ALTER INDEX ALL ON "CallParticipant" REBUILD
+-- ALTER INDEX ALL ON "Call" REBUILD
+-- ALTER INDEX ALL ON "CallStatus" REBUILD
+-- ALTER INDEX ALL ON "CallType" REBUILD
+-- ALTER INDEX ALL ON "MessagingAuditLog" REBUILD
+-- ALTER INDEX ALL ON "MessageFlag" REBUILD
+-- ALTER INDEX ALL ON "PushProviderConfiguration" REBUILD
+-- ALTER INDEX ALL ON "PushDeliveryLog" REBUILD
+-- ALTER INDEX ALL ON "MessageBookmark" REBUILD
+-- ALTER INDEX ALL ON "ConversationThreadUser" REBUILD
+-- ALTER INDEX ALL ON "UserPresence" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessageLinkPreviewChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessageLinkPreview" REBUILD
+-- ALTER INDEX ALL ON "ConversationPin" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessageReaction" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessageUser" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessageAttachmentChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessageAttachment" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessageChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "ConversationMessage" REBUILD
+-- ALTER INDEX ALL ON "ConversationChannelChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "ConversationChannel" REBUILD
+-- ALTER INDEX ALL ON "ConversationUser" REBUILD
+-- ALTER INDEX ALL ON "Conversation" REBUILD
+-- ALTER INDEX ALL ON "ConversationType" REBUILD
+-- ALTER INDEX ALL ON "NotificationDistribution" REBUILD
+-- ALTER INDEX ALL ON "NotificationAttachmentChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "NotificationAttachment" REBUILD
+-- ALTER INDEX ALL ON "NotificationChangeHistory" REBUILD
+-- ALTER INDEX ALL ON "Notification" REBUILD
+-- ALTER INDEX ALL ON "NotificationType" REBUILD
+
+-- This table defines the types of notifications that are available.  It is part of the Foundation Notification system.
+CREATE TABLE "NotificationType"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"description" VARCHAR(500) NULL COLLATE NOCASE,
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the NotificationType table's name field.
+CREATE INDEX "I_NotificationType_name" ON "NotificationType" ("name")
+;
+
+-- Index on the NotificationType table's active field.
+CREATE INDEX "I_NotificationType_active" ON "NotificationType" ("active")
+;
+
+-- Index on the NotificationType table's deleted field.
+CREATE INDEX "I_NotificationType_deleted" ON "NotificationType" ("deleted")
+;
+
+-- Index on the NotificationType table's id,active,deleted fields.
+CREATE INDEX "I_NotificationType_id_active_deleted" ON "NotificationType" ("id", "active", "deleted")
+;
+
+INSERT INTO "NotificationType" ( "name", "description", "objectGuid" ) VALUES  ( 'Informative', 'Informative', '065c2b74-dae1-4450-b8ee-bc5500ce64eb' );
+
+INSERT INTO "NotificationType" ( "name", "description", "objectGuid" ) VALUES  ( 'Regular', 'Regular', 'e7c40dde-461f-41d1-8a9b-32e128179baa' );
+
+INSERT INTO "NotificationType" ( "name", "description", "objectGuid" ) VALUES  ( 'Urgent', 'Urgent', '825c0094-f3bb-45da-aa22-da459f4593b4' );
+
+
+-- This table store Notifications.  It is part of the Foundation Notification system.
+CREATE TABLE "Notification"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"notificationTypeId" INTEGER NULL,		-- Link to the NotificationType table.
+	"createdByUserId" INTEGER NULL,		-- The user that created this notification.  Nullable so that the 'system' can create them too.  Resolved by IMessagingUserResolver.
+	"message" TEXT NOT NULL COLLATE NOCASE,
+	"priority" INTEGER NOT NULL DEFAULT 100,		-- The intent here is that the lower the priority number, the more urgent the notification is.
+	"entity" VARCHAR(250) NULL COLLATE NOCASE,		-- The name of the entity that this notification is about.
+	"entityId" INTEGER NULL,		-- The ID for the entity that this notification is about.
+	"externalURL" VARCHAR(1000) NULL COLLATE NOCASE,		-- Ad-hoc external URL to be used if helpful.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When the notification was created.
+	"dateTimeDistributed" DATETIME NULL,		-- When the notification was distributed.
+	"distributionCompleted" BIT NOT NULL DEFAULT 0,		-- Control flag to mark whether or not this notification has been distributed to the notificationUser table or not
+	"userId" INTEGER NULL,		-- Optional target user for this notification.  Resolved by IMessagingUserResolver.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("notificationTypeId") REFERENCES "NotificationType"("id")		-- Foreign key to the NotificationType table.
+);
+-- Index on the Notification table's tenantGuid field.
+CREATE INDEX "I_Notification_tenantGuid" ON "Notification" ("tenantGuid")
+;
+
+-- Index on the Notification table's tenantGuid,notificationTypeId fields.
+CREATE INDEX "I_Notification_tenantGuid_notificationTypeId" ON "Notification" ("tenantGuid", "notificationTypeId")
+;
+
+-- Index on the Notification table's tenantGuid,active fields.
+CREATE INDEX "I_Notification_tenantGuid_active" ON "Notification" ("tenantGuid", "active")
+;
+
+-- Index on the Notification table's tenantGuid,deleted fields.
+CREATE INDEX "I_Notification_tenantGuid_deleted" ON "Notification" ("tenantGuid", "deleted")
+;
+
+-- Index on the Notification table's id,active,deleted fields.
+CREATE INDEX "I_Notification_id_active_deleted" ON "Notification" ("id", "active", "deleted")
+;
+
+
+-- The change history for records from the Notification table.
+CREATE TABLE "NotificationChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"notificationId" INTEGER NOT NULL,		-- Link to the Notification table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("notificationId") REFERENCES "Notification"("id")		-- Foreign key to the Notification table.
+);
+-- Index on the NotificationChangeHistory table's tenantGuid field.
+CREATE INDEX "I_NotificationChangeHistory_tenantGuid" ON "NotificationChangeHistory" ("tenantGuid")
+;
+
+-- Index on the NotificationChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_NotificationChangeHistory_tenantGuid_versionNumber" ON "NotificationChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the NotificationChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_NotificationChangeHistory_tenantGuid_timeStamp" ON "NotificationChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the NotificationChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_NotificationChangeHistory_tenantGuid_userId" ON "NotificationChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the NotificationChangeHistory table's tenantGuid,notificationId fields.
+CREATE INDEX "I_NotificationChangeHistory_tenantGuid_notificationId" ON "NotificationChangeHistory" ("tenantGuid", "notificationId", "versionNumber", "timeStamp", "userId")
+;
+
+
+-- This table stores attachments for notifications.  It is part of the Foundation Notification system.
+CREATE TABLE "NotificationAttachment"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"notificationId" INTEGER NOT NULL,		-- The notification for this attachment.
+	"userId" INTEGER NOT NULL,		-- The user that created this attachment.  Resolved by IMessagingUserResolver.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When this notification attachment was created.
+	"contentFileName" VARCHAR(250) NOT NULL COLLATE NOCASE,		-- Part of the binary data field setup
+	"contentSize" BIGINT NOT NULL,		-- Part of the binary data field setup
+	"contentData" BLOB NOT NULL,		-- Part of the binary data field setup
+	"contentMimeType" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- Part of the binary data field setup
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("notificationId") REFERENCES "Notification"("id")		-- Foreign key to the Notification table.
+);
+-- Index on the NotificationAttachment table's tenantGuid field.
+CREATE INDEX "I_NotificationAttachment_tenantGuid" ON "NotificationAttachment" ("tenantGuid")
+;
+
+-- Index on the NotificationAttachment table's tenantGuid,notificationId fields.
+CREATE INDEX "I_NotificationAttachment_tenantGuid_notificationId" ON "NotificationAttachment" ("tenantGuid", "notificationId")
+;
+
+-- Index on the NotificationAttachment table's tenantGuid,active fields.
+CREATE INDEX "I_NotificationAttachment_tenantGuid_active" ON "NotificationAttachment" ("tenantGuid", "active")
+;
+
+-- Index on the NotificationAttachment table's tenantGuid,deleted fields.
+CREATE INDEX "I_NotificationAttachment_tenantGuid_deleted" ON "NotificationAttachment" ("tenantGuid", "deleted")
+;
+
+-- Index on the NotificationAttachment table's id,active,deleted fields.
+CREATE INDEX "I_NotificationAttachment_id_active_deleted" ON "NotificationAttachment" ("id", "active", "deleted")
+;
+
+
+-- The change history for records from the NotificationAttachment table.
+CREATE TABLE "NotificationAttachmentChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"notificationAttachmentId" INTEGER NOT NULL,		-- Link to the NotificationAttachment table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("notificationAttachmentId") REFERENCES "NotificationAttachment"("id")		-- Foreign key to the NotificationAttachment table.
+);
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid field.
+CREATE INDEX "I_NotificationAttachmentChangeHistory_tenantGuid" ON "NotificationAttachmentChangeHistory" ("tenantGuid")
+;
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_NotificationAttachmentChangeHistory_tenantGuid_versionNumber" ON "NotificationAttachmentChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_NotificationAttachmentChangeHistory_tenantGuid_timeStamp" ON "NotificationAttachmentChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_NotificationAttachmentChangeHistory_tenantGuid_userId" ON "NotificationAttachmentChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,notificationAttachmentId fields.
+CREATE INDEX "I_NtfctnttchmntChngHstry_tnntGud_ntfctnttchmntd" ON "NotificationAttachmentChangeHistory" ("tenantGuid", "notificationAttachmentId", "versionNumber", "timeStamp", "userId")
+;
+
+
+-- This table defines the distribution for a notification.  It is part of the Foundation Notification system.
+CREATE TABLE "NotificationDistribution"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"notificationId" INTEGER NOT NULL,		-- The notification that is being distributed.
+	"userId" INTEGER NOT NULL,		-- The user to distribute the notification to.  Resolved by IMessagingUserResolver.
+	"acknowledged" BIT NOT NULL DEFAULT 0,		-- Whether or not the notification has been acknowledged.
+	"dateTimeAcknowledged" DATETIME NULL,		-- When the notification was acknowledged.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("notificationId") REFERENCES "Notification"("id")		-- Foreign key to the Notification table.
+);
+-- Index on the NotificationDistribution table's tenantGuid field.
+CREATE INDEX "I_NotificationDistribution_tenantGuid" ON "NotificationDistribution" ("tenantGuid")
+;
+
+-- Index on the NotificationDistribution table's tenantGuid,notificationId fields.
+CREATE INDEX "I_NotificationDistribution_tenantGuid_notificationId" ON "NotificationDistribution" ("tenantGuid", "notificationId")
+;
+
+-- Index on the NotificationDistribution table's tenantGuid,active fields.
+CREATE INDEX "I_NotificationDistribution_tenantGuid_active" ON "NotificationDistribution" ("tenantGuid", "active")
+;
+
+-- Index on the NotificationDistribution table's tenantGuid,deleted fields.
+CREATE INDEX "I_NotificationDistribution_tenantGuid_deleted" ON "NotificationDistribution" ("tenantGuid", "deleted")
+;
+
+-- Index on the NotificationDistribution table's id,active,deleted fields.
+CREATE INDEX "I_NotificationDistribution_id_active_deleted" ON "NotificationDistribution" ("id", "active", "deleted")
+;
+
+
+/*
+This is the main Conversation Type table.  It provides the types of conversations that can be created.
+
+It is part of the Foundation's Conversation/Messaging system.
+*/
+CREATE TABLE "ConversationType"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"description" VARCHAR(500) NULL COLLATE NOCASE,
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the ConversationType table's name field.
+CREATE INDEX "I_ConversationType_name" ON "ConversationType" ("name")
+;
+
+-- Index on the ConversationType table's active field.
+CREATE INDEX "I_ConversationType_active" ON "ConversationType" ("active")
+;
+
+-- Index on the ConversationType table's deleted field.
+CREATE INDEX "I_ConversationType_deleted" ON "ConversationType" ("deleted")
+;
+
+-- Index on the ConversationType table's id,active,deleted fields.
+CREATE INDEX "I_ConversationType_id_active_deleted" ON "ConversationType" ("id", "active", "deleted")
+;
+
+INSERT INTO "ConversationType" ( "name", "description", "objectGuid" ) VALUES  ( 'Regular', 'Regular', '70174fce-f8de-4c44-b11f-db68b314204b' );
+
+INSERT INTO "ConversationType" ( "name", "description", "objectGuid" ) VALUES  ( 'Urgent', 'Urgent', '987ea6eb-155a-44ed-ac57-15a72ad2ae27' );
+
+INSERT INTO "ConversationType" ( "name", "description", "objectGuid" ) VALUES  ( 'Channel', 'A persistent named conversation (like a Teams/Slack channel)', '54883c38-7860-40bf-a6e4-ce5535db7ed4' );
+
+INSERT INTO "ConversationType" ( "name", "description", "objectGuid" ) VALUES  ( 'Direct Message', 'A 1:1 or small group direct message conversation', 'd45cfb49-0dbc-4c05-a8b7-f17a6e71a926' );
+
+
+-- This is the main Conversation table.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE "Conversation"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"createdByUserId" INTEGER NULL,		-- The user that started the conversation.  Resolved by IMessagingUserResolver.  Nullable for system-started conversations.
+	"conversationTypeId" INTEGER NULL,		-- Link to the ConversationType table.
+	"priority" INTEGER NOT NULL DEFAULT 100,		-- The intent here is that the lower the priority number, the more urgent the conversation is.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When the conversation was created.
+	"entity" VARCHAR(250) NULL COLLATE NOCASE,		-- The in case the conversation is to do with an entity, it is named here
+	"entityId" INTEGER NULL,		-- The id of the entity that the conversation is about
+	"externalURL" VARCHAR(1000) NULL COLLATE NOCASE,
+	"name" VARCHAR(250) NULL COLLATE NOCASE,		-- The name of the conversation.  A named conversation is a channel.  Optional because not all conversations will be channels.
+	"description" VARCHAR(1000) NULL COLLATE NOCASE,		-- The description of the channel conversation.  Optional because not all conversations need to have a description, but if it does have one, this is where it goes.
+	"isPublic" BIT NULL,		-- Whether or not the conversation is public
+	"userId" INTEGER NULL,		-- Optional target user for this conversation.  Resolved by IMessagingUserResolver.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationTypeId") REFERENCES "ConversationType"("id")		-- Foreign key to the ConversationType table.
+);
+-- Index on the Conversation table's tenantGuid field.
+CREATE INDEX "I_Conversation_tenantGuid" ON "Conversation" ("tenantGuid")
+;
+
+-- Index on the Conversation table's tenantGuid,conversationTypeId fields.
+CREATE INDEX "I_Conversation_tenantGuid_conversationTypeId" ON "Conversation" ("tenantGuid", "conversationTypeId")
+;
+
+-- Index on the Conversation table's tenantGuid,active fields.
+CREATE INDEX "I_Conversation_tenantGuid_active" ON "Conversation" ("tenantGuid", "active")
+;
+
+-- Index on the Conversation table's tenantGuid,deleted fields.
+CREATE INDEX "I_Conversation_tenantGuid_deleted" ON "Conversation" ("tenantGuid", "deleted")
+;
+
+-- Index on the Conversation table's id,active,deleted fields.
+CREATE INDEX "I_Conversation_id_active_deleted" ON "Conversation" ("id", "active", "deleted")
+;
+
+
+-- This is the ConversationUser table.  It tracks the users that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE "ConversationUser"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationId" INTEGER NOT NULL,		-- Link to the Conversation table.
+	"userId" INTEGER NOT NULL,		-- The user in this conversation.  Resolved by IMessagingUserResolver.
+	"role" VARCHAR(50) NOT NULL DEFAULT 'Member' COLLATE NOCASE,
+	"dateTimeAdded" DATETIME NOT NULL,		-- When this user was added to the conversation.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id")		-- Foreign key to the Conversation table.
+);
+-- Index on the ConversationUser table's tenantGuid field.
+CREATE INDEX "I_ConversationUser_tenantGuid" ON "ConversationUser" ("tenantGuid")
+;
+
+-- Index on the ConversationUser table's tenantGuid,conversationId fields.
+CREATE INDEX "I_ConversationUser_tenantGuid_conversationId" ON "ConversationUser" ("tenantGuid", "conversationId")
+;
+
+-- Index on the ConversationUser table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationUser_tenantGuid_active" ON "ConversationUser" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationUser table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationUser_tenantGuid_deleted" ON "ConversationUser" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationUser table's id,active,deleted fields.
+CREATE INDEX "I_ConversationUser_id_active_deleted" ON "ConversationUser" ("id", "active", "deleted")
+;
+
+
+/*
+This table extends a Conversation record to be a named Channel.  It is part of the Foundation's Messaging system.
+
+A channel is a persistent, named conversation that users can browse and join.  It links to the base Conversation record 
+and adds channel-specific fields like name, topic, and privacy.
+*/
+CREATE TABLE "ConversationChannel"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationId" INTEGER NOT NULL,		-- The base conversation record that this channel extends.
+	"name" VARCHAR(250) NOT NULL COLLATE NOCASE,		-- The display name for the channel.
+	"topic" VARCHAR(1000) NULL COLLATE NOCASE,		-- The current topic or description of the channel.  Can be changed over time.
+	"isPrivate" BIT NOT NULL DEFAULT 0,		-- Whether or not this channel is private.  Private channels are invitation-only and do not appear in the channel browser.
+	"isPinned" BIT NOT NULL DEFAULT 0,		-- Whether or not this channel is pinned in the UI.  Pinned channels appear at the top of the channel list.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id")		-- Foreign key to the Conversation table.
+);
+-- Index on the ConversationChannel table's tenantGuid field.
+CREATE INDEX "I_ConversationChannel_tenantGuid" ON "ConversationChannel" ("tenantGuid")
+;
+
+-- Index on the ConversationChannel table's tenantGuid,conversationId fields.
+CREATE INDEX "I_ConversationChannel_tenantGuid_conversationId" ON "ConversationChannel" ("tenantGuid", "conversationId")
+;
+
+-- Index on the ConversationChannel table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationChannel_tenantGuid_active" ON "ConversationChannel" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationChannel table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationChannel_tenantGuid_deleted" ON "ConversationChannel" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationChannel table's id,active,deleted fields.
+CREATE INDEX "I_ConversationChannel_id_active_deleted" ON "ConversationChannel" ("id", "active", "deleted")
+;
+
+
+-- The change history for records from the ConversationChannel table.
+CREATE TABLE "ConversationChannelChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationChannelId" INTEGER NOT NULL,		-- Link to the ConversationChannel table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("conversationChannelId") REFERENCES "ConversationChannel"("id")		-- Foreign key to the ConversationChannel table.
+);
+-- Index on the ConversationChannelChangeHistory table's tenantGuid field.
+CREATE INDEX "I_ConversationChannelChangeHistory_tenantGuid" ON "ConversationChannelChangeHistory" ("tenantGuid")
+;
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_ConversationChannelChangeHistory_tenantGuid_versionNumber" ON "ConversationChannelChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_ConversationChannelChangeHistory_tenantGuid_timeStamp" ON "ConversationChannelChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_ConversationChannelChangeHistory_tenantGuid_userId" ON "ConversationChannelChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,conversationChannelId fields.
+CREATE INDEX "I_CnvrstnChnnlChngHstry_tnntGud_cnvrstnChnnld" ON "ConversationChannelChangeHistory" ("tenantGuid", "conversationChannelId", "versionNumber", "timeStamp", "userId")
+;
+
+
+-- This is the ConversationMessage table.  It tracks the messages that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE "ConversationMessage"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationId" INTEGER NOT NULL,		-- Link to the Conversation table.
+	"userId" INTEGER NOT NULL,		-- The user that sent this message.  Resolved by IMessagingUserResolver.
+	"parentConversationMessageId" INTEGER NULL,		-- Link to the ConversationMessage table.
+	"conversationChannelId" INTEGER NULL,		-- Optional channel that this message belongs to.  NULL = conversation-level (no channel).
+	"dateTimeCreated" DATETIME NOT NULL,		-- When this message was created.
+	"message" TEXT NOT NULL COLLATE NOCASE,
+	"messageType" VARCHAR(50) NULL COLLATE NOCASE,		-- The type of message: null/'text' (default), 'voice', 'video', 'call_event'. Determines how the client renders the message content.
+	"entity" VARCHAR(250) NULL COLLATE NOCASE,		-- The in case the conversation message is to do with an entity, it is named here
+	"entityId" INTEGER NULL,		-- The id of the entity that the message is about
+	"externalURL" VARCHAR(1000) NULL COLLATE NOCASE,
+	"forwardedFromMessageId" INTEGER NULL,		-- The ID of the original message that was forwarded.  NULL if the message is not a forward.
+	"forwardedFromUserId" INTEGER NULL,		-- The user ID of the original sender whose message was forwarded.  Resolved by IMessagingUserResolver.
+	"isScheduled" BIT NOT NULL DEFAULT 0,		-- Whether this message is scheduled for future delivery.
+	"scheduledDateTime" DATETIME NULL,		-- When the scheduled message should be released.  Null if not scheduled.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id"),		-- Foreign key to the Conversation table.
+	FOREIGN KEY ("parentConversationMessageId") REFERENCES "ConversationMessage"("id"),		-- Foreign key to the ConversationMessage table.
+	FOREIGN KEY ("conversationChannelId") REFERENCES "ConversationChannel"("id")		-- Foreign key to the ConversationChannel table.
+);
+-- Index on the ConversationMessage table's tenantGuid field.
+CREATE INDEX "I_ConversationMessage_tenantGuid" ON "ConversationMessage" ("tenantGuid")
+;
+
+-- Index on the ConversationMessage table's tenantGuid,conversationId fields.
+CREATE INDEX "I_ConversationMessage_tenantGuid_conversationId" ON "ConversationMessage" ("tenantGuid", "conversationId")
+;
+
+-- Index on the ConversationMessage table's tenantGuid,parentConversationMessageId fields.
+CREATE INDEX "I_ConversationMessage_tenantGuid_parentConversationMessageId" ON "ConversationMessage" ("tenantGuid", "parentConversationMessageId")
+;
+
+-- Index on the ConversationMessage table's tenantGuid,conversationChannelId fields.
+CREATE INDEX "I_ConversationMessage_tenantGuid_conversationChannelId" ON "ConversationMessage" ("tenantGuid", "conversationChannelId")
+;
+
+-- Index on the ConversationMessage table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationMessage_tenantGuid_active" ON "ConversationMessage" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationMessage table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationMessage_tenantGuid_deleted" ON "ConversationMessage" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationMessage table's id,active,deleted fields.
+CREATE INDEX "I_ConversationMessage_id_active_deleted" ON "ConversationMessage" ("id", "active", "deleted")
+;
+
+
+-- The change history for records from the ConversationMessage table.
+CREATE TABLE "ConversationMessageChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageId" INTEGER NOT NULL,		-- Link to the ConversationMessage table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the ConversationMessageChangeHistory table's tenantGuid field.
+CREATE INDEX "I_ConversationMessageChangeHistory_tenantGuid" ON "ConversationMessageChangeHistory" ("tenantGuid")
+;
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_ConversationMessageChangeHistory_tenantGuid_versionNumber" ON "ConversationMessageChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_ConversationMessageChangeHistory_tenantGuid_timeStamp" ON "ConversationMessageChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_ConversationMessageChangeHistory_tenantGuid_userId" ON "ConversationMessageChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_CnvrstnMssgChngHstry_tnntGud_cnvrstnMssgd" ON "ConversationMessageChangeHistory" ("tenantGuid", "conversationMessageId", "versionNumber", "timeStamp", "userId")
+;
+
+
+-- This is the ConversationMessageAttachment table.  It tracks the attachments that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE "ConversationMessageAttachment"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageId" INTEGER NOT NULL,		-- Link to the ConversationMessage table.
+	"userId" INTEGER NOT NULL,		-- The user that uploaded this attachment.  Resolved by IMessagingUserResolver.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When this conversation message attachment was created.
+	"contentFileName" VARCHAR(250) NOT NULL COLLATE NOCASE,		-- Part of the binary data field setup
+	"contentSize" BIGINT NOT NULL,		-- Part of the binary data field setup
+	"contentData" BLOB NOT NULL,		-- Part of the binary data field setup
+	"contentMimeType" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- Part of the binary data field setup
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the ConversationMessageAttachment table's tenantGuid field.
+CREATE INDEX "I_ConversationMessageAttachment_tenantGuid" ON "ConversationMessageAttachment" ("tenantGuid")
+;
+
+-- Index on the ConversationMessageAttachment table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_CnvrstnMssgttchmnt_tnntGud_cnvrstnMssgd" ON "ConversationMessageAttachment" ("tenantGuid", "conversationMessageId")
+;
+
+-- Index on the ConversationMessageAttachment table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationMessageAttachment_tenantGuid_active" ON "ConversationMessageAttachment" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationMessageAttachment table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationMessageAttachment_tenantGuid_deleted" ON "ConversationMessageAttachment" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationMessageAttachment table's id,active,deleted fields.
+CREATE INDEX "I_ConversationMessageAttachment_id_active_deleted" ON "ConversationMessageAttachment" ("id", "active", "deleted")
+;
+
+
+-- The change history for records from the ConversationMessageAttachment table.
+CREATE TABLE "ConversationMessageAttachmentChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageAttachmentId" INTEGER NOT NULL,		-- Link to the ConversationMessageAttachment table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("conversationMessageAttachmentId") REFERENCES "ConversationMessageAttachment"("id")		-- Foreign key to the ConversationMessageAttachment table.
+);
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid field.
+CREATE INDEX "I_ConversationMessageAttachmentChangeHistory_tenantGuid" ON "ConversationMessageAttachmentChangeHistory" ("tenantGuid")
+;
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_CnvrstnMssgttchmntChngHstry_tnntGud_vrsnNumbr" ON "ConversationMessageAttachmentChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_CnvrstnMssgttchmntChngHstry_tnntGud_tmStmp" ON "ConversationMessageAttachmentChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_ConversationMessageAttachmentChangeHistory_tenantGuid_userId" ON "ConversationMessageAttachmentChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,conversationMessageAttachmentId fields.
+CREATE INDEX "I_CnvrstnMssgttchmntChngHstry_tnntGud_cnvrstnMssgttchmntd" ON "ConversationMessageAttachmentChangeHistory" ("tenantGuid", "conversationMessageAttachmentId", "versionNumber", "timeStamp", "userId")
+;
+
+
+-- This is the ConversationMessageUser table.  It tracks the users that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE "ConversationMessageUser"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageId" INTEGER NOT NULL,		-- Link to the ConversationMessage table.
+	"userId" INTEGER NOT NULL,		-- The target user for this message.  Resolved by IMessagingUserResolver.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When this conversation message user was created.
+	"acknowledged" BIT NOT NULL DEFAULT 0,
+	"dateTimeAcknowledged" DATETIME NOT NULL,		-- When this conversation message user was acknowledge by the user.  For messages, this may be auto acknowledged once the data is read and shown.  Up to the UI to decide when to mark it as acknowledged..
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the ConversationMessageUser table's tenantGuid field.
+CREATE INDEX "I_ConversationMessageUser_tenantGuid" ON "ConversationMessageUser" ("tenantGuid")
+;
+
+-- Index on the ConversationMessageUser table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_ConversationMessageUser_tenantGuid_conversationMessageId" ON "ConversationMessageUser" ("tenantGuid", "conversationMessageId")
+;
+
+-- Index on the ConversationMessageUser table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationMessageUser_tenantGuid_active" ON "ConversationMessageUser" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationMessageUser table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationMessageUser_tenantGuid_deleted" ON "ConversationMessageUser" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationMessageUser table's id,active,deleted fields.
+CREATE INDEX "I_ConversationMessageUser_id_active_deleted" ON "ConversationMessageUser" ("id", "active", "deleted")
+;
+
+
+/*
+This table stores emoji reactions to conversation messages.  It is part of the Foundation's Messaging system.
+
+Reactions provide a lightweight way for users to respond to messages without creating additional message records.  
+Each reaction is a short string representing an emoji code or shortname.
+*/
+CREATE TABLE "ConversationMessageReaction"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageId" INTEGER NOT NULL,		-- The message that this reaction is for.
+	"userId" INTEGER NOT NULL,		-- The user who reacted.  Resolved by IMessagingUserResolver.
+	"reaction" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The emoji code or shortname for the reaction, for example 'thumbsup', 'heart', 'laughing'.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When this reaction was created.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the ConversationMessageReaction table's tenantGuid field.
+CREATE INDEX "I_ConversationMessageReaction_tenantGuid" ON "ConversationMessageReaction" ("tenantGuid")
+;
+
+-- Index on the ConversationMessageReaction table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_ConversationMessageReaction_tenantGuid_conversationMessageId" ON "ConversationMessageReaction" ("tenantGuid", "conversationMessageId")
+;
+
+-- Index on the ConversationMessageReaction table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationMessageReaction_tenantGuid_active" ON "ConversationMessageReaction" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationMessageReaction table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationMessageReaction_tenantGuid_deleted" ON "ConversationMessageReaction" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationMessageReaction table's id,active,deleted fields.
+CREATE INDEX "I_ConversationMessageReaction_id_active_deleted" ON "ConversationMessageReaction" ("id", "active", "deleted")
+;
+
+-- Index on the ConversationMessageReaction table's conversationMessageId,active,deleted fields.
+CREATE INDEX "I_CnvrstnMssgRctn_cnvrstnMssgd_ctv_dltd" ON "ConversationMessageReaction" ("conversationMessageId", "active", "deleted")
+;
+
+
+/*
+This table tracks pinned messages within a conversation.  It is part of the Foundation's Messaging system.
+
+Pinned messages are highlighted in the conversation and can be browsed separately, providing a way to bookmark 
+important messages, decisions, or reference information within a conversation.
+*/
+CREATE TABLE "ConversationPin"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationId" INTEGER NOT NULL,		-- The conversation that this pin belongs to.
+	"conversationMessageId" INTEGER NOT NULL,		-- The message that is pinned.
+	"pinnedByUserId" INTEGER NOT NULL,		-- The user who pinned this message.  Resolved by IMessagingUserResolver.
+	"dateTimePinned" DATETIME NOT NULL,		-- When this message was pinned.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id"),		-- Foreign key to the Conversation table.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the ConversationPin table's tenantGuid field.
+CREATE INDEX "I_ConversationPin_tenantGuid" ON "ConversationPin" ("tenantGuid")
+;
+
+-- Index on the ConversationPin table's tenantGuid,conversationId fields.
+CREATE INDEX "I_ConversationPin_tenantGuid_conversationId" ON "ConversationPin" ("tenantGuid", "conversationId")
+;
+
+-- Index on the ConversationPin table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_ConversationPin_tenantGuid_conversationMessageId" ON "ConversationPin" ("tenantGuid", "conversationMessageId")
+;
+
+-- Index on the ConversationPin table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationPin_tenantGuid_active" ON "ConversationPin" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationPin table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationPin_tenantGuid_deleted" ON "ConversationPin" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationPin table's id,active,deleted fields.
+CREATE INDEX "I_ConversationPin_id_active_deleted" ON "ConversationPin" ("id", "active", "deleted")
+;
+
+-- Index on the ConversationPin table's conversationId,active,deleted fields.
+CREATE INDEX "I_ConversationPin_conversationId_active_deleted" ON "ConversationPin" ("conversationId", "active", "deleted")
+;
+
+
+/*
+This table stores link preview data (Open Graph metadata) for URLs found in conversation messages.  It is part of the Foundation's Messaging system.
+
+When a message containing URLs is sent, the system asynchronously fetches Open Graph / meta tag data for each URL and stores the results here.  
+The preview data is then pushed to connected clients via SignalR so link preview cards appear below the message bubble.
+*/
+CREATE TABLE "ConversationMessageLinkPreview"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageId" INTEGER NOT NULL,		-- The message that contains this URL.
+	"url" VARCHAR(1000) NOT NULL COLLATE NOCASE,		-- The original URL found in the message.
+	"title" VARCHAR(500) NULL COLLATE NOCASE,		-- The page title from og:title or <title> tag.
+	"description" VARCHAR(1000) NULL COLLATE NOCASE,		-- The page description from og:description or meta description.
+	"imageUrl" VARCHAR(1000) NULL COLLATE NOCASE,		-- The preview image URL from og:image.
+	"siteName" VARCHAR(250) NULL COLLATE NOCASE,		-- The site name from og:site_name.
+	"fetchedDateTime" DATETIME NOT NULL,		-- When the preview data was fetched from the URL.
+	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the ConversationMessageLinkPreview table's tenantGuid field.
+CREATE INDEX "I_ConversationMessageLinkPreview_tenantGuid" ON "ConversationMessageLinkPreview" ("tenantGuid")
+;
+
+-- Index on the ConversationMessageLinkPreview table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_CnvrstnMssgLnkPrvw_tnntGud_cnvrstnMssgd" ON "ConversationMessageLinkPreview" ("tenantGuid", "conversationMessageId")
+;
+
+-- Index on the ConversationMessageLinkPreview table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationMessageLinkPreview_tenantGuid_active" ON "ConversationMessageLinkPreview" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationMessageLinkPreview table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationMessageLinkPreview_tenantGuid_deleted" ON "ConversationMessageLinkPreview" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationMessageLinkPreview table's id,active,deleted fields.
+CREATE INDEX "I_ConversationMessageLinkPreview_id_active_deleted" ON "ConversationMessageLinkPreview" ("id", "active", "deleted")
+;
+
+-- Index on the ConversationMessageLinkPreview table's conversationMessageId,active,deleted fields.
+CREATE INDEX "I_CnvrstnMssgLnkPrvw_cnvrstnMssgd_ctv_dltd" ON "ConversationMessageLinkPreview" ("conversationMessageId", "active", "deleted")
+;
+
+
+-- The change history for records from the ConversationMessageLinkPreview table.
+CREATE TABLE "ConversationMessageLinkPreviewChangeHistory"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageLinkPreviewId" INTEGER NOT NULL,		-- Link to the ConversationMessageLinkPreview table.
+	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
+	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
+	"userId" INTEGER NOT NULL,
+	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY ("conversationMessageLinkPreviewId") REFERENCES "ConversationMessageLinkPreview"("id")		-- Foreign key to the ConversationMessageLinkPreview table.
+);
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid field.
+CREATE INDEX "I_ConversationMessageLinkPreviewChangeHistory_tenantGuid" ON "ConversationMessageLinkPreviewChangeHistory" ("tenantGuid")
+;
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_CnvrstnMssgLnkPrvwChngHstry_tnntGud_vrsnNumbr" ON "ConversationMessageLinkPreviewChangeHistory" ("tenantGuid", "versionNumber")
+;
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_CnvrstnMssgLnkPrvwChngHstry_tnntGud_tmStmp" ON "ConversationMessageLinkPreviewChangeHistory" ("tenantGuid", "timeStamp")
+;
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_CnvrstnMssgLnkPrvwChngHstry_tnntGud_usrd" ON "ConversationMessageLinkPreviewChangeHistory" ("tenantGuid", "userId")
+;
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,conversationMessageLinkPreviewId fields.
+CREATE INDEX "I_CnvrstnMssgLnkPrvwChngHstry_tnntGud_cnvrstnMssgLnkPrvwd" ON "ConversationMessageLinkPreviewChangeHistory" ("tenantGuid", "conversationMessageLinkPreviewId", "versionNumber", "timeStamp", "userId")
+;
+
+
+/*
+This table tracks user online/offline status and activity for the messaging system.  It is part of the Foundation's Messaging system.
+
+Presence records are updated when users connect to or disconnect from the MessagingHub.  The connectionCount field supports 
+multi-device presence (a user connected from both a browser and a mobile app would have connectionCount = 2).  
+When connectionCount drops to 0, the user is considered offline.
+*/
+CREATE TABLE "UserPresence"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"userId" INTEGER NOT NULL,		-- The user whose presence is being tracked.  Resolved by IMessagingUserResolver.
+	"status" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The current status: 'online', 'away', 'busy', 'offline', 'doNotDisturb'.
+	"customStatusMessage" VARCHAR(250) NULL COLLATE NOCASE,		-- Optional custom status message, for example 'In a meeting until 3pm'.
+	"lastSeenDateTime" DATETIME NOT NULL,		-- The last time this user was seen connected.
+	"lastActivityDateTime" DATETIME NOT NULL,		-- The last time this user performed an action (sent a message, reacted, etc).
+	"connectionCount" INTEGER NOT NULL DEFAULT 0,		-- The number of active connections for this user.  Supports multi-device presence.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the UserPresence table's tenantGuid field.
+CREATE INDEX "I_UserPresence_tenantGuid" ON "UserPresence" ("tenantGuid")
+;
+
+-- Index on the UserPresence table's tenantGuid,active fields.
+CREATE INDEX "I_UserPresence_tenantGuid_active" ON "UserPresence" ("tenantGuid", "active")
+;
+
+-- Index on the UserPresence table's tenantGuid,deleted fields.
+CREATE INDEX "I_UserPresence_tenantGuid_deleted" ON "UserPresence" ("tenantGuid", "deleted")
+;
+
+-- Index on the UserPresence table's id,active,deleted fields.
+CREATE INDEX "I_UserPresence_id_active_deleted" ON "UserPresence" ("id", "active", "deleted")
+;
+
+-- Index on the UserPresence table's userId,active,deleted fields.
+CREATE INDEX "I_UserPresence_userId_active_deleted" ON "UserPresence" ("userId", "active", "deleted")
+;
+
+
+/*
+This table tracks a user's last-read position within a message thread (reply chain).  It is part of the Foundation's Messaging system.
+
+When a user views a thread panel, the client calls UpdateThreadReadPosition to update the lastReadMessageId.  
+The unread reply count is then computed by counting messages in that thread with an ID greater than lastReadMessageId.
+*/
+CREATE TABLE "ConversationThreadUser"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationId" INTEGER NOT NULL,		-- The conversation that contains this thread.
+	"parentConversationMessageId" INTEGER NOT NULL,		-- The root message of the thread.
+	"userId" INTEGER NOT NULL,		-- The user being tracked.  Resolved by IMessagingUserResolver.
+	"lastReadMessageId" INTEGER NULL,		-- The last message in this thread that the user has read.
+	"lastReadDateTime" DATETIME NULL,		-- When the user last read the thread.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id"),		-- Foreign key to the Conversation table.
+	FOREIGN KEY ("parentConversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the ConversationThreadUser table's tenantGuid field.
+CREATE INDEX "I_ConversationThreadUser_tenantGuid" ON "ConversationThreadUser" ("tenantGuid")
+;
+
+-- Index on the ConversationThreadUser table's tenantGuid,conversationId fields.
+CREATE INDEX "I_ConversationThreadUser_tenantGuid_conversationId" ON "ConversationThreadUser" ("tenantGuid", "conversationId")
+;
+
+-- Index on the ConversationThreadUser table's tenantGuid,parentConversationMessageId fields.
+CREATE INDEX "I_CnvrstnThrdsr_tnntGud_prntCnvrstnMssgd" ON "ConversationThreadUser" ("tenantGuid", "parentConversationMessageId")
+;
+
+-- Index on the ConversationThreadUser table's tenantGuid,active fields.
+CREATE INDEX "I_ConversationThreadUser_tenantGuid_active" ON "ConversationThreadUser" ("tenantGuid", "active")
+;
+
+-- Index on the ConversationThreadUser table's tenantGuid,deleted fields.
+CREATE INDEX "I_ConversationThreadUser_tenantGuid_deleted" ON "ConversationThreadUser" ("tenantGuid", "deleted")
+;
+
+-- Index on the ConversationThreadUser table's id,active,deleted fields.
+CREATE INDEX "I_ConversationThreadUser_id_active_deleted" ON "ConversationThreadUser" ("id", "active", "deleted")
+;
+
+-- Index on the ConversationThreadUser table's userId,parentConversationMessageId fields.
+CREATE INDEX "I_ConversationThreadUser_userId_parentConversationMessageId" ON "ConversationThreadUser" ("userId", "parentConversationMessageId")
+;
+
+-- Index on the ConversationThreadUser table's conversationId,active,deleted fields.
+CREATE INDEX "I_ConversationThreadUser_conversationId_active_deleted" ON "ConversationThreadUser" ("conversationId", "active", "deleted")
+;
+
+
+/*
+This table stores personal message bookmarks.  It is part of the Foundation's Messaging system.
+
+Users can bookmark any message for later reference and optionally add a personal note explaining why they saved it.  
+Bookmarks are per-user and private — each user sees only their own bookmarks.
+*/
+CREATE TABLE "MessageBookmark"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"userId" INTEGER NOT NULL,		-- The user who bookmarked the message.  Resolved by IMessagingUserResolver.
+	"conversationMessageId" INTEGER NOT NULL,		-- The bookmarked message.
+	"note" VARCHAR(500) NULL COLLATE NOCASE,		-- Optional personal note about why the message was bookmarked.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When the bookmark was created.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the MessageBookmark table's tenantGuid field.
+CREATE INDEX "I_MessageBookmark_tenantGuid" ON "MessageBookmark" ("tenantGuid")
+;
+
+-- Index on the MessageBookmark table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_MessageBookmark_tenantGuid_conversationMessageId" ON "MessageBookmark" ("tenantGuid", "conversationMessageId")
+;
+
+-- Index on the MessageBookmark table's tenantGuid,active fields.
+CREATE INDEX "I_MessageBookmark_tenantGuid_active" ON "MessageBookmark" ("tenantGuid", "active")
+;
+
+-- Index on the MessageBookmark table's tenantGuid,deleted fields.
+CREATE INDEX "I_MessageBookmark_tenantGuid_deleted" ON "MessageBookmark" ("tenantGuid", "deleted")
+;
+
+-- Index on the MessageBookmark table's id,active,deleted fields.
+CREATE INDEX "I_MessageBookmark_id_active_deleted" ON "MessageBookmark" ("id", "active", "deleted")
+;
+
+-- Index on the MessageBookmark table's userId,active,deleted fields.
+CREATE INDEX "I_MessageBookmark_userId_active_deleted" ON "MessageBookmark" ("userId", "active", "deleted")
+;
+
+-- Index on the MessageBookmark table's conversationMessageId,active,deleted fields.
+CREATE INDEX "I_MessageBookmark_conversationMessageId_active_deleted" ON "MessageBookmark" ("conversationMessageId", "active", "deleted")
+;
+
+
+/*
+This table tracks external push delivery attempts for notifications and messages.  It is part of the Foundation's Messaging Platform system.
+
+Each time a notification or message triggers an external delivery (email, SMS), a record is created here to track 
+the delivery attempt, its success or failure, and any error messages.
+*/
+CREATE TABLE "PushDeliveryLog"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"userId" INTEGER NOT NULL,		-- The target user for this delivery attempt.  Resolved by IMessagingUserResolver.
+	"providerId" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The push provider that handled this delivery, for example 'smtp', 'sms', 'webhook'.
+	"destination" VARCHAR(250) NULL COLLATE NOCASE,		-- The masked destination address (email or phone number).  Partially masked for privacy.
+	"sourceType" VARCHAR(50) NULL COLLATE NOCASE,		-- The source type: 'notification' or 'message'.
+	"sourceNotificationId" INTEGER NULL,		-- The notification ID that triggered this delivery attempt, if applicable.
+	"sourceConversationMessageId" INTEGER NULL,		-- The conversation message ID that triggered this delivery attempt, if applicable.
+	"success" BIT NOT NULL DEFAULT 0,		-- Whether the delivery attempt was successful.
+	"externalId" VARCHAR(250) NULL COLLATE NOCASE,		-- The external ID returned by the provider (e.g., SMTP message ID, SMS provider ID).
+	"errorMessage" VARCHAR(1000) NULL COLLATE NOCASE,		-- The error message if the delivery attempt failed.
+	"attemptNumber" INTEGER NOT NULL DEFAULT 1,		-- The attempt number for retry scenarios.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When this delivery attempt was made.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the PushDeliveryLog table's tenantGuid field.
+CREATE INDEX "I_PushDeliveryLog_tenantGuid" ON "PushDeliveryLog" ("tenantGuid")
+;
+
+-- Index on the PushDeliveryLog table's tenantGuid,active fields.
+CREATE INDEX "I_PushDeliveryLog_tenantGuid_active" ON "PushDeliveryLog" ("tenantGuid", "active")
+;
+
+-- Index on the PushDeliveryLog table's tenantGuid,deleted fields.
+CREATE INDEX "I_PushDeliveryLog_tenantGuid_deleted" ON "PushDeliveryLog" ("tenantGuid", "deleted")
+;
+
+-- Index on the PushDeliveryLog table's id,active,deleted fields.
+CREATE INDEX "I_PushDeliveryLog_id_active_deleted" ON "PushDeliveryLog" ("id", "active", "deleted")
+;
+
+-- Index on the PushDeliveryLog table's userId,active,deleted fields.
+CREATE INDEX "I_PushDeliveryLog_userId_active_deleted" ON "PushDeliveryLog" ("userId", "active", "deleted")
+;
+
+-- Index on the PushDeliveryLog table's providerId,active,deleted fields.
+CREATE INDEX "I_PushDeliveryLog_providerId_active_deleted" ON "PushDeliveryLog" ("providerId", "active", "deleted")
+;
+
+-- Index on the PushDeliveryLog table's success,active,deleted fields.
+CREATE INDEX "I_PushDeliveryLog_success_active_deleted" ON "PushDeliveryLog" ("success", "active", "deleted")
+;
+
+
+/*
+This table stores per-tenant push provider configuration.  It is part of the Foundation's Messaging Platform system.
+
+Each tenant can enable/disable individual push providers (SMTP, SMS, webhooks) and store provider-specific 
+configuration as JSON.  This allows tenant administrators to control which external delivery channels are active.
+*/
+CREATE TABLE "PushProviderConfiguration"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"providerId" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The push provider identifier, for example 'smtp', 'sms', 'webhook'.
+	"enabled" BIT NOT NULL DEFAULT 0,		-- Whether this provider is enabled for this tenant.
+	"configurationJson" TEXT NULL COLLATE NOCASE,		-- Provider-specific configuration stored as JSON.  Structure varies by provider type.
+	"dateTimeModified" DATETIME NOT NULL,		-- When this configuration was last modified.
+	"modifiedByUserId" INTEGER NOT NULL,		-- The user who last modified this configuration.  Resolved by IMessagingUserResolver.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the PushProviderConfiguration table's tenantGuid field.
+CREATE INDEX "I_PushProviderConfiguration_tenantGuid" ON "PushProviderConfiguration" ("tenantGuid")
+;
+
+-- Index on the PushProviderConfiguration table's tenantGuid,active fields.
+CREATE INDEX "I_PushProviderConfiguration_tenantGuid_active" ON "PushProviderConfiguration" ("tenantGuid", "active")
+;
+
+-- Index on the PushProviderConfiguration table's tenantGuid,deleted fields.
+CREATE INDEX "I_PushProviderConfiguration_tenantGuid_deleted" ON "PushProviderConfiguration" ("tenantGuid", "deleted")
+;
+
+-- Index on the PushProviderConfiguration table's id,active,deleted fields.
+CREATE INDEX "I_PushProviderConfiguration_id_active_deleted" ON "PushProviderConfiguration" ("id", "active", "deleted")
+;
+
+-- Index on the PushProviderConfiguration table's providerId,active,deleted fields.
+CREATE INDEX "I_PushProviderConfiguration_providerId_active_deleted" ON "PushProviderConfiguration" ("providerId", "active", "deleted")
+;
+
+
+/*
+This table tracks message flags/reports for administrative review.  It is part of the Foundation's Messaging Platform system.
+
+Users can flag messages that they believe violate policies or require administrative attention.  Each flag tracks 
+the reason, the review status (open/reviewed/resolved/dismissed), and any resolution notes from the reviewer.
+*/
+CREATE TABLE "MessageFlag"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"conversationMessageId" INTEGER NOT NULL,		-- The message that was flagged.
+	"flaggedByUserId" INTEGER NOT NULL,		-- The user who flagged the message.  Resolved by IMessagingUserResolver.
+	"reason" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- The reason for flagging: 'abuse', 'spam', 'harassment', 'inappropriate', 'other'.
+	"details" VARCHAR(1000) NULL COLLATE NOCASE,		-- Additional details provided by the reporting user.
+	"status" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The review status: 'open', 'reviewed', 'resolved', 'dismissed'.
+	"reviewedByUserId" INTEGER NULL,		-- The admin user who reviewed the flag.  Resolved by IMessagingUserResolver.
+	"dateTimeReviewed" DATETIME NULL,		-- When the flag was reviewed.
+	"resolutionNotes" VARCHAR(1000) NULL COLLATE NOCASE,		-- Notes from the reviewer about the resolution.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When the flag was created.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("conversationMessageId") REFERENCES "ConversationMessage"("id")		-- Foreign key to the ConversationMessage table.
+);
+-- Index on the MessageFlag table's tenantGuid field.
+CREATE INDEX "I_MessageFlag_tenantGuid" ON "MessageFlag" ("tenantGuid")
+;
+
+-- Index on the MessageFlag table's tenantGuid,conversationMessageId fields.
+CREATE INDEX "I_MessageFlag_tenantGuid_conversationMessageId" ON "MessageFlag" ("tenantGuid", "conversationMessageId")
+;
+
+-- Index on the MessageFlag table's tenantGuid,active fields.
+CREATE INDEX "I_MessageFlag_tenantGuid_active" ON "MessageFlag" ("tenantGuid", "active")
+;
+
+-- Index on the MessageFlag table's tenantGuid,deleted fields.
+CREATE INDEX "I_MessageFlag_tenantGuid_deleted" ON "MessageFlag" ("tenantGuid", "deleted")
+;
+
+-- Index on the MessageFlag table's id,active,deleted fields.
+CREATE INDEX "I_MessageFlag_id_active_deleted" ON "MessageFlag" ("id", "active", "deleted")
+;
+
+-- Index on the MessageFlag table's status,active,deleted fields.
+CREATE INDEX "I_MessageFlag_status_active_deleted" ON "MessageFlag" ("status", "active", "deleted")
+;
+
+-- Index on the MessageFlag table's conversationMessageId,active,deleted fields.
+CREATE INDEX "I_MessageFlag_conversationMessageId_active_deleted" ON "MessageFlag" ("conversationMessageId", "active", "deleted")
+;
+
+-- Index on the MessageFlag table's flaggedByUserId,active,deleted fields.
+CREATE INDEX "I_MessageFlag_flaggedByUserId_active_deleted" ON "MessageFlag" ("flaggedByUserId", "active", "deleted")
+;
+
+
+/*
+This table records administrative actions within the messaging system.  It is part of the Foundation's Messaging Platform system.
+
+All administrative actions (flag resolutions, message deletions, user bans, configuration changes) are logged here 
+for accountability and compliance.  Each entry records who performed the action, what was affected, and when.
+*/
+CREATE TABLE "MessagingAuditLog"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"performedByUserId" INTEGER NOT NULL,		-- The admin user who performed the action.  Resolved by IMessagingUserResolver.
+	"action" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- The action performed: 'ResolveFlag', 'DeleteMessage', 'BanUser', 'ConfigChange', etc.
+	"entityType" VARCHAR(100) NULL COLLATE NOCASE,		-- The type of entity affected: 'MessageFlag', 'ConversationMessage', 'User', etc.
+	"entityId" INTEGER NULL,		-- The ID of the entity that was affected.
+	"details" TEXT NULL COLLATE NOCASE,		-- JSON or descriptive details about the action taken.
+	"ipAddress" VARCHAR(50) NULL COLLATE NOCASE,		-- The IP address of the admin when the action was performed.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When the action was performed.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the MessagingAuditLog table's tenantGuid field.
+CREATE INDEX "I_MessagingAuditLog_tenantGuid" ON "MessagingAuditLog" ("tenantGuid")
+;
+
+-- Index on the MessagingAuditLog table's tenantGuid,active fields.
+CREATE INDEX "I_MessagingAuditLog_tenantGuid_active" ON "MessagingAuditLog" ("tenantGuid", "active")
+;
+
+-- Index on the MessagingAuditLog table's tenantGuid,deleted fields.
+CREATE INDEX "I_MessagingAuditLog_tenantGuid_deleted" ON "MessagingAuditLog" ("tenantGuid", "deleted")
+;
+
+-- Index on the MessagingAuditLog table's id,active,deleted fields.
+CREATE INDEX "I_MessagingAuditLog_id_active_deleted" ON "MessagingAuditLog" ("id", "active", "deleted")
+;
+
+-- Index on the MessagingAuditLog table's performedByUserId,active,deleted fields.
+CREATE INDEX "I_MessagingAuditLog_performedByUserId_active_deleted" ON "MessagingAuditLog" ("performedByUserId", "active", "deleted")
+;
+
+-- Index on the MessagingAuditLog table's action,active,deleted fields.
+CREATE INDEX "I_MessagingAuditLog_action_active_deleted" ON "MessagingAuditLog" ("action", "active", "deleted")
+;
+
+
+/*
+This table defines the types of calls that can be made.  It is part of the Foundation's Calling system.
+
+Call types include voice, video, and screen share.
+*/
+CREATE TABLE "CallType"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"description" VARCHAR(500) NULL COLLATE NOCASE,
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the CallType table's name field.
+CREATE INDEX "I_CallType_name" ON "CallType" ("name")
+;
+
+-- Index on the CallType table's active field.
+CREATE INDEX "I_CallType_active" ON "CallType" ("active")
+;
+
+-- Index on the CallType table's deleted field.
+CREATE INDEX "I_CallType_deleted" ON "CallType" ("deleted")
+;
+
+-- Index on the CallType table's id,active,deleted fields.
+CREATE INDEX "I_CallType_id_active_deleted" ON "CallType" ("id", "active", "deleted")
+;
+
+INSERT INTO "CallType" ( "name", "description", "objectGuid" ) VALUES  ( 'Voice', 'Voice call', 'b1c3d4e5-f6a7-4890-b123-456789abcde0' );
+
+INSERT INTO "CallType" ( "name", "description", "objectGuid" ) VALUES  ( 'Video', 'Video call', 'c2d4e5f6-a7b8-4901-c234-56789abcdef1' );
+
+INSERT INTO "CallType" ( "name", "description", "objectGuid" ) VALUES  ( 'ScreenShare', 'Screen sharing session', 'd3e5f6a7-b8c9-4012-d345-6789abcdef02' );
+
+
+/*
+This table defines the possible statuses for a call.  It is part of the Foundation's Calling system.
+
+Call statuses track the lifecycle of a call from initiation through to completion.
+*/
+CREATE TABLE "CallStatus"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
+	"description" VARCHAR(500) NULL COLLATE NOCASE,
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the CallStatus table's name field.
+CREATE INDEX "I_CallStatus_name" ON "CallStatus" ("name")
+;
+
+-- Index on the CallStatus table's active field.
+CREATE INDEX "I_CallStatus_active" ON "CallStatus" ("active")
+;
+
+-- Index on the CallStatus table's deleted field.
+CREATE INDEX "I_CallStatus_deleted" ON "CallStatus" ("deleted")
+;
+
+-- Index on the CallStatus table's id,active,deleted fields.
+CREATE INDEX "I_CallStatus_id_active_deleted" ON "CallStatus" ("id", "active", "deleted")
+;
+
+INSERT INTO "CallStatus" ( "name", "description", "objectGuid" ) VALUES  ( 'Ringing', 'The call has been initiated and is ringing', 'e4f6a7b8-c9d0-4123-e456-789abcdef034' );
+
+INSERT INTO "CallStatus" ( "name", "description", "objectGuid" ) VALUES  ( 'Active', 'The call is currently active', 'f5a7b8c9-d0e1-4234-f567-89abcdef0145' );
+
+INSERT INTO "CallStatus" ( "name", "description", "objectGuid" ) VALUES  ( 'Ended', 'The call ended normally', 'a6b8c9d0-e1f2-4345-a678-9abcdef01256' );
+
+INSERT INTO "CallStatus" ( "name", "description", "objectGuid" ) VALUES  ( 'Missed', 'The call was not answered', 'b7c9d0e1-f2a3-4456-b789-abcdef012367' );
+
+INSERT INTO "CallStatus" ( "name", "description", "objectGuid" ) VALUES  ( 'Declined', 'The call was declined by the recipient', 'c8d0e1f2-a3b4-4567-c890-bcdef0123478' );
+
+INSERT INTO "CallStatus" ( "name", "description", "objectGuid" ) VALUES  ( 'Failed', 'The call failed due to a technical error', 'd9e1f2a3-b4c5-4678-d901-cdef01234589' );
+
+
+/*
+This is the main Call table.  It records voice, video, and screen share calls.  It is part of the Foundation's Calling system.
+
+Each call is linked to a conversation and tracks the call provider used, timing information, and overall call state.  
+The providerId field identifies which ICallProvider implementation handled the call (e.g. 'webrtc', 'azure-acs').
+*/
+CREATE TABLE "Call"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"callTypeId" INTEGER NOT NULL,		-- The type of call: voice, video, or screen share.
+	"callStatusId" INTEGER NOT NULL,		-- The current status of the call.
+	"providerId" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The call provider that is handling this call, for example 'webrtc', 'azure-acs'.
+	"providerCallId" VARCHAR(250) NULL COLLATE NOCASE,		-- The provider-specific call identifier.  Used for correlation with external systems like Azure Communication Services.
+	"conversationId" INTEGER NOT NULL,		-- The conversation that this call belongs to.
+	"initiatorUserId" INTEGER NOT NULL,		-- The user who initiated the call.  Resolved by IMessagingUserResolver.
+	"startDateTime" DATETIME NOT NULL,		-- When the call was initiated.
+	"answerDateTime" DATETIME NULL,		-- When the call was answered.  Null if the call was never answered.
+	"endDateTime" DATETIME NULL,		-- When the call ended.  Null if the call is still active or was never connected.
+	"durationSeconds" INTEGER NULL,		-- The duration of the call in seconds.  Calculated from answerDateTime to endDateTime.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("callTypeId") REFERENCES "CallType"("id"),		-- Foreign key to the CallType table.
+	FOREIGN KEY ("callStatusId") REFERENCES "CallStatus"("id"),		-- Foreign key to the CallStatus table.
+	FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id")		-- Foreign key to the Conversation table.
+);
+-- Index on the Call table's tenantGuid field.
+CREATE INDEX "I_Call_tenantGuid" ON "Call" ("tenantGuid")
+;
+
+-- Index on the Call table's tenantGuid,callTypeId fields.
+CREATE INDEX "I_Call_tenantGuid_callTypeId" ON "Call" ("tenantGuid", "callTypeId")
+;
+
+-- Index on the Call table's tenantGuid,callStatusId fields.
+CREATE INDEX "I_Call_tenantGuid_callStatusId" ON "Call" ("tenantGuid", "callStatusId")
+;
+
+-- Index on the Call table's tenantGuid,conversationId fields.
+CREATE INDEX "I_Call_tenantGuid_conversationId" ON "Call" ("tenantGuid", "conversationId")
+;
+
+-- Index on the Call table's tenantGuid,active fields.
+CREATE INDEX "I_Call_tenantGuid_active" ON "Call" ("tenantGuid", "active")
+;
+
+-- Index on the Call table's tenantGuid,deleted fields.
+CREATE INDEX "I_Call_tenantGuid_deleted" ON "Call" ("tenantGuid", "deleted")
+;
+
+-- Index on the Call table's id,active,deleted fields.
+CREATE INDEX "I_Call_id_active_deleted" ON "Call" ("id", "active", "deleted")
+;
+
+-- Index on the Call table's conversationId,active,deleted fields.
+CREATE INDEX "I_Call_conversationId_active_deleted" ON "Call" ("conversationId", "active", "deleted")
+;
+
+-- Index on the Call table's initiatorUserId,active,deleted fields.
+CREATE INDEX "I_Call_initiatorUserId_active_deleted" ON "Call" ("initiatorUserId", "active", "deleted")
+;
+
+-- Index on the Call table's callStatusId,active,deleted fields.
+CREATE INDEX "I_Call_callStatusId_active_deleted" ON "Call" ("callStatusId", "active", "deleted")
+;
+
+-- Index on the Call table's providerId,active,deleted fields.
+CREATE INDEX "I_Call_providerId_active_deleted" ON "Call" ("providerId", "active", "deleted")
+;
+
+
+/*
+This table tracks individual user participation in calls.  It is part of the Foundation's Calling system.
+
+Each participant record tracks the user's role (initiator or recipient), their participation status (ringing, joined, 
+declined, missed), and when they joined and left the call.  Supports multi-party calls.
+*/
+CREATE TABLE "CallParticipant"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"callId" INTEGER NOT NULL,		-- The call that this participant belongs to.
+	"userId" INTEGER NOT NULL,		-- The user participating in the call.  Resolved by IMessagingUserResolver.
+	"role" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The participant's role: 'initiator' or 'recipient'.
+	"status" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The participant's status: 'ringing', 'joined', 'declined', 'missed', 'left'.
+	"joinedDateTime" DATETIME NULL,		-- When the participant joined the call.  Null if they never joined.
+	"leftDateTime" DATETIME NULL,		-- When the participant left the call.  Null if they are still in the call or never joined.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("callId") REFERENCES "Call"("id")		-- Foreign key to the Call table.
+);
+-- Index on the CallParticipant table's tenantGuid field.
+CREATE INDEX "I_CallParticipant_tenantGuid" ON "CallParticipant" ("tenantGuid")
+;
+
+-- Index on the CallParticipant table's tenantGuid,callId fields.
+CREATE INDEX "I_CallParticipant_tenantGuid_callId" ON "CallParticipant" ("tenantGuid", "callId")
+;
+
+-- Index on the CallParticipant table's tenantGuid,active fields.
+CREATE INDEX "I_CallParticipant_tenantGuid_active" ON "CallParticipant" ("tenantGuid", "active")
+;
+
+-- Index on the CallParticipant table's tenantGuid,deleted fields.
+CREATE INDEX "I_CallParticipant_tenantGuid_deleted" ON "CallParticipant" ("tenantGuid", "deleted")
+;
+
+-- Index on the CallParticipant table's id,active,deleted fields.
+CREATE INDEX "I_CallParticipant_id_active_deleted" ON "CallParticipant" ("id", "active", "deleted")
+;
+
+-- Index on the CallParticipant table's callId,active,deleted fields.
+CREATE INDEX "I_CallParticipant_callId_active_deleted" ON "CallParticipant" ("callId", "active", "deleted")
+;
+
+-- Index on the CallParticipant table's userId,active,deleted fields.
+CREATE INDEX "I_CallParticipant_userId_active_deleted" ON "CallParticipant" ("userId", "active", "deleted")
+;
+
+-- Index on the CallParticipant table's status,active,deleted fields.
+CREATE INDEX "I_CallParticipant_status_active_deleted" ON "CallParticipant" ("status", "active", "deleted")
+;
+
+
+/*
+This table records significant events during the lifecycle of a call.  It is part of the Foundation's Calling system.
+
+Each event records what happened (initiated, joined, left, ended, failed), who performed the action, which provider 
+was involved, and any additional metadata as JSON.  Used for debugging, analytics, and compliance.
+*/
+CREATE TABLE "CallEventLog"
+(
+	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
+	"callId" INTEGER NOT NULL,		-- The call that this event belongs to.
+	"eventType" VARCHAR(100) NOT NULL COLLATE NOCASE,		-- The type of event: 'initiated', 'ringing', 'joined', 'left', 'ended', 'failed', 'declined', 'missed', 'ice_connected', 'ice_failed', 'media_started', 'media_stopped'.
+	"userId" INTEGER NULL,		-- The user associated with this event.  Resolved by IMessagingUserResolver.  Nullable for system-level events.
+	"providerId" VARCHAR(50) NULL COLLATE NOCASE,		-- The call provider associated with this event.
+	"metadata" TEXT NULL COLLATE NOCASE,		-- Additional event metadata stored as JSON.  Structure varies by event type.
+	"dateTimeCreated" DATETIME NOT NULL,		-- When the event occurred.
+	"objectGuid" VARCHAR(50) NOT NULL UNIQUE COLLATE NOCASE,		-- Unique identifier for this table.
+	"active" BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	FOREIGN KEY ("callId") REFERENCES "Call"("id")		-- Foreign key to the Call table.
+);
+-- Index on the CallEventLog table's tenantGuid field.
+CREATE INDEX "I_CallEventLog_tenantGuid" ON "CallEventLog" ("tenantGuid")
+;
+
+-- Index on the CallEventLog table's tenantGuid,callId fields.
+CREATE INDEX "I_CallEventLog_tenantGuid_callId" ON "CallEventLog" ("tenantGuid", "callId")
+;
+
+-- Index on the CallEventLog table's tenantGuid,active fields.
+CREATE INDEX "I_CallEventLog_tenantGuid_active" ON "CallEventLog" ("tenantGuid", "active")
+;
+
+-- Index on the CallEventLog table's tenantGuid,deleted fields.
+CREATE INDEX "I_CallEventLog_tenantGuid_deleted" ON "CallEventLog" ("tenantGuid", "deleted")
+;
+
+-- Index on the CallEventLog table's id,active,deleted fields.
+CREATE INDEX "I_CallEventLog_id_active_deleted" ON "CallEventLog" ("id", "active", "deleted")
+;
+
+-- Index on the CallEventLog table's callId,active,deleted fields.
+CREATE INDEX "I_CallEventLog_callId_active_deleted" ON "CallEventLog" ("callId", "active", "deleted")
+;
+
+-- Index on the CallEventLog table's eventType,active,deleted fields.
+CREATE INDEX "I_CallEventLog_eventType_active_deleted" ON "CallEventLog" ("eventType", "active", "deleted")
+;
+
+-- Index on the CallEventLog table's userId,active,deleted fields.
+CREATE INDEX "I_CallEventLog_userId_active_deleted" ON "CallEventLog" ("userId", "active", "deleted")
+;
+
 
 -- Master list of available attribute data types.
 CREATE TABLE "AttributeDefinitionType"
@@ -6701,8 +8184,8 @@ CREATE INDEX "I_RcurrncxcptnChngHstry_tnntGud_rcurrncxcptnd" ON "RecurrenceExcep
 ;
 
 
--- Master list of notification types
-CREATE TABLE "NotificationType"
+-- Master list of event notification types
+CREATE TABLE "EventNotificationType"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"name" VARCHAR(100) NOT NULL UNIQUE COLLATE NOCASE,
@@ -6714,33 +8197,33 @@ CREATE TABLE "NotificationType"
 	"deleted" BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
 );
--- Index on the NotificationType table's name field.
-CREATE INDEX "I_NotificationType_name" ON "NotificationType" ("name")
+-- Index on the EventNotificationType table's name field.
+CREATE INDEX "I_EventNotificationType_name" ON "EventNotificationType" ("name")
 ;
 
--- Index on the NotificationType table's active field.
-CREATE INDEX "I_NotificationType_active" ON "NotificationType" ("active")
+-- Index on the EventNotificationType table's active field.
+CREATE INDEX "I_EventNotificationType_active" ON "EventNotificationType" ("active")
 ;
 
--- Index on the NotificationType table's deleted field.
-CREATE INDEX "I_NotificationType_deleted" ON "NotificationType" ("deleted")
+-- Index on the EventNotificationType table's deleted field.
+CREATE INDEX "I_EventNotificationType_deleted" ON "EventNotificationType" ("deleted")
 ;
 
-INSERT INTO "NotificationType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Email', 'Send to email address', 1, '73ff7b17-3fd7-40ce-91bf-c91daca7b4ce' );
+INSERT INTO "EventNotificationType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Email', 'Send to email address', 1, '73ff7b17-3fd7-40ce-91bf-c91daca7b4ce' );
 
-INSERT INTO "NotificationType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'SMS', 'Sent to cell phone via SMS message', 2, '89391299-4427-43f6-bcf2-0266e47e83a7' );
+INSERT INTO "EventNotificationType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'SMS', 'Sent to cell phone via SMS message', 2, '89391299-4427-43f6-bcf2-0266e47e83a7' );
 
-INSERT INTO "NotificationType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Push', 'Sent to cell phone via Push notification', 3, '0395ddde-58dc-4577-9dae-07614680c386' );
+INSERT INTO "EventNotificationType" ( "name", "description", "sequence", "objectGuid" ) VALUES  ( 'Push', 'Sent to cell phone via Push notification', 3, '0395ddde-58dc-4577-9dae-07614680c386' );
 
 
 -- Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration
-CREATE TABLE "NotificationSubscription"
+CREATE TABLE "EventNotificationSubscription"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
 	"resourceId" INTEGER NULL,		-- Optional resource for this notification subscription.  Needs either this or contact to be valid.
 	"contactId" INTEGER NULL,		-- Optional contact for this notification subscription.  Needs either this or resource to be valid.
-	"notificationTypeId" INTEGER NOT NULL,		-- Link to the NotificationType table.
+	"eventNotificationTypeId" INTEGER NOT NULL,		-- Link to the EventNotificationType table.
 	"triggerEvents" INTEGER NOT NULL DEFAULT 1,		-- Bitmask: 1=Assigned, 2=Canceled, 4=Modified, 8=Reminder
 	"recipientAddress" VARCHAR(250) NOT NULL COLLATE NOCASE,		-- Email address or Phone #
 	"versionNumber" INTEGER NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -6749,63 +8232,63 @@ CREATE TABLE "NotificationSubscription"
 	"deleted" BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
 	FOREIGN KEY ("resourceId") REFERENCES "Resource"("id"),		-- Foreign key to the Resource table.
 	FOREIGN KEY ("contactId") REFERENCES "Contact"("id"),		-- Foreign key to the Contact table.
-	FOREIGN KEY ("notificationTypeId") REFERENCES "NotificationType"("id")		-- Foreign key to the NotificationType table.
+	FOREIGN KEY ("eventNotificationTypeId") REFERENCES "EventNotificationType"("id")		-- Foreign key to the EventNotificationType table.
 );
--- Index on the NotificationSubscription table's tenantGuid field.
-CREATE INDEX "I_NotificationSubscription_tenantGuid" ON "NotificationSubscription" ("tenantGuid")
+-- Index on the EventNotificationSubscription table's tenantGuid field.
+CREATE INDEX "I_EventNotificationSubscription_tenantGuid" ON "EventNotificationSubscription" ("tenantGuid")
 ;
 
--- Index on the NotificationSubscription table's tenantGuid,resourceId fields.
-CREATE INDEX "I_NotificationSubscription_tenantGuid_resourceId" ON "NotificationSubscription" ("tenantGuid", "resourceId")
+-- Index on the EventNotificationSubscription table's tenantGuid,resourceId fields.
+CREATE INDEX "I_EventNotificationSubscription_tenantGuid_resourceId" ON "EventNotificationSubscription" ("tenantGuid", "resourceId")
 ;
 
--- Index on the NotificationSubscription table's tenantGuid,contactId fields.
-CREATE INDEX "I_NotificationSubscription_tenantGuid_contactId" ON "NotificationSubscription" ("tenantGuid", "contactId")
+-- Index on the EventNotificationSubscription table's tenantGuid,contactId fields.
+CREATE INDEX "I_EventNotificationSubscription_tenantGuid_contactId" ON "EventNotificationSubscription" ("tenantGuid", "contactId")
 ;
 
--- Index on the NotificationSubscription table's tenantGuid,notificationTypeId fields.
-CREATE INDEX "I_NotificationSubscription_tenantGuid_notificationTypeId" ON "NotificationSubscription" ("tenantGuid", "notificationTypeId")
+-- Index on the EventNotificationSubscription table's tenantGuid,eventNotificationTypeId fields.
+CREATE INDEX "I_vntNtfctnSubscrptn_tnntGud_vntNtfctnTypd" ON "EventNotificationSubscription" ("tenantGuid", "eventNotificationTypeId")
 ;
 
--- Index on the NotificationSubscription table's tenantGuid,active fields.
-CREATE INDEX "I_NotificationSubscription_tenantGuid_active" ON "NotificationSubscription" ("tenantGuid", "active")
+-- Index on the EventNotificationSubscription table's tenantGuid,active fields.
+CREATE INDEX "I_EventNotificationSubscription_tenantGuid_active" ON "EventNotificationSubscription" ("tenantGuid", "active")
 ;
 
--- Index on the NotificationSubscription table's tenantGuid,deleted fields.
-CREATE INDEX "I_NotificationSubscription_tenantGuid_deleted" ON "NotificationSubscription" ("tenantGuid", "deleted")
+-- Index on the EventNotificationSubscription table's tenantGuid,deleted fields.
+CREATE INDEX "I_EventNotificationSubscription_tenantGuid_deleted" ON "EventNotificationSubscription" ("tenantGuid", "deleted")
 ;
 
 
--- The change history for records from the NotificationSubscription table.
-CREATE TABLE "NotificationSubscriptionChangeHistory"
+-- The change history for records from the EventNotificationSubscription table.
+CREATE TABLE "EventNotificationSubscriptionChangeHistory"
 (
 	"id" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
 	"tenantGuid" VARCHAR(50) NOT NULL COLLATE NOCASE,		-- The guid for the Tenant to which this record belongs.
-	"notificationSubscriptionId" INTEGER NOT NULL,		-- Link to the NotificationSubscription table.
+	"eventNotificationSubscriptionId" INTEGER NOT NULL,		-- Link to the EventNotificationSubscription table.
 	"versionNumber" INTEGER NOT NULL,		-- This is the version number that is being historized.
 	"timeStamp" DATETIME NOT NULL,		-- The time that the record version was created.
 	"userId" INTEGER NOT NULL,
 	"data" TEXT NOT NULL COLLATE NOCASE,		-- This stores the JSON representing the object's historical state.
-	FOREIGN KEY ("notificationSubscriptionId") REFERENCES "NotificationSubscription"("id")		-- Foreign key to the NotificationSubscription table.
+	FOREIGN KEY ("eventNotificationSubscriptionId") REFERENCES "EventNotificationSubscription"("id")		-- Foreign key to the EventNotificationSubscription table.
 );
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid field.
-CREATE INDEX "I_NotificationSubscriptionChangeHistory_tenantGuid" ON "NotificationSubscriptionChangeHistory" ("tenantGuid")
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid field.
+CREATE INDEX "I_EventNotificationSubscriptionChangeHistory_tenantGuid" ON "EventNotificationSubscriptionChangeHistory" ("tenantGuid")
 ;
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX "I_NtfctnSubscrptnChngHstry_tnntGud_vrsnNumbr" ON "NotificationSubscriptionChangeHistory" ("tenantGuid", "versionNumber")
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX "I_vntNtfctnSubscrptnChngHstry_tnntGud_vrsnNumbr" ON "EventNotificationSubscriptionChangeHistory" ("tenantGuid", "versionNumber")
 ;
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX "I_NotificationSubscriptionChangeHistory_tenantGuid_timeStamp" ON "NotificationSubscriptionChangeHistory" ("tenantGuid", "timeStamp")
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX "I_vntNtfctnSubscrptnChngHstry_tnntGud_tmStmp" ON "EventNotificationSubscriptionChangeHistory" ("tenantGuid", "timeStamp")
 ;
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX "I_NotificationSubscriptionChangeHistory_tenantGuid_userId" ON "NotificationSubscriptionChangeHistory" ("tenantGuid", "userId")
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX "I_EventNotificationSubscriptionChangeHistory_tenantGuid_userId" ON "EventNotificationSubscriptionChangeHistory" ("tenantGuid", "userId")
 ;
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,notificationSubscriptionId fields.
-CREATE INDEX "I_NtfctnSubscrptnChngHstry_tnntGud_ntfctnSubscrptnd" ON "NotificationSubscriptionChangeHistory" ("tenantGuid", "notificationSubscriptionId", "versionNumber", "timeStamp", "userId")
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,eventNotificationSubscriptionId fields.
+CREATE INDEX "I_vntNtfctnSubscrptnChngHstry_tnntGud_vntNtfctnSubscrptnd" ON "EventNotificationSubscriptionChangeHistory" ("tenantGuid", "eventNotificationSubscriptionId", "versionNumber", "timeStamp", "userId")
 ;
 
 

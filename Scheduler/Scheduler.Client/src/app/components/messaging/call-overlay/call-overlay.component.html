@@ -1,0 +1,192 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CALL OVERLAY — renders at app root level, persists across navigation       -->
+<!-- Three visual states: incoming ring, active call, minimized bar             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Nothing to show when idle -->
+<ng-container *ngIf="callState !== 'idle'">
+
+  <!-- Hidden audio element — always present for remote audio playback (voice and video calls) -->
+  <audio #remoteAudio autoplay playsinline></audio>
+
+
+  <!-- ─── INITIATING CALL (caller sees this immediately) ────────────────── -->
+
+  <div class="call-overlay-backdrop" *ngIf="callState === 'initiating'">
+    <div class="call-incoming-modal call-initiating">
+
+      <div class="call-incoming-body">
+        <div class="caller-avatar pulsing">
+          <i class="fa fa-phone"></i>
+        </div>
+        <h3 class="caller-name">Starting Call</h3>
+        <p class="call-status-text">Setting up...</p>
+        <div class="connecting-spinner">
+          <i class="fa fa-spinner fa-spin"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ─── INCOMING CALL MODAL ─────────────────────────────────────────────── -->
+
+  <div class="call-overlay-backdrop" *ngIf="callState === 'ringing' && isIncoming">
+    <div class="call-incoming-modal">
+
+      <div class="call-incoming-header">
+        <div class="call-type-badge">
+          <i class="fa" [ngClass]="callTypeIcon"></i>
+          <span>Incoming {{ activeCall?.callType }} Call</span>
+        </div>
+      </div>
+
+      <div class="call-incoming-body">
+        <div class="caller-avatar">
+          <i class="fa fa-user"></i>
+        </div>
+        <h3 class="caller-name">{{ activeCall?.remoteUserDisplayName }}</h3>
+        <p class="call-status-text">is calling you...</p>
+      </div>
+
+      <div class="call-incoming-actions">
+        <button class="call-btn call-btn-decline" (click)="declineCall()" title="Decline">
+          <i class="fa fa-phone-slash"></i>
+        </button>
+        <button class="call-btn call-btn-accept" (click)="acceptCall()" title="Accept">
+          <i class="fa fa-phone"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ─── OUTGOING RINGING INDICATOR ──────────────────────────────────────── -->
+
+  <div class="call-overlay-backdrop" *ngIf="callState === 'ringing' && !isIncoming">
+    <div class="call-incoming-modal call-outgoing">
+
+      <div class="call-incoming-header">
+        <div class="call-type-badge">
+          <i class="fa" [ngClass]="callTypeIcon"></i>
+          <span>{{ activeCall?.callType }} Call</span>
+        </div>
+      </div>
+
+      <div class="call-incoming-body">
+        <div class="caller-avatar pulsing">
+          <i class="fa fa-user"></i>
+        </div>
+        <h3 class="caller-name">{{ activeCall?.remoteUserDisplayName }}</h3>
+        <p class="call-status-text">Ringing...</p>
+      </div>
+
+      <div class="call-incoming-actions">
+        <button class="call-btn call-btn-decline" (click)="endCall()" title="Cancel">
+          <i class="fa fa-phone-slash"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ─── CONNECTING INDICATOR ────────────────────────────────────────────── -->
+
+  <div class="call-overlay-backdrop" *ngIf="callState === 'connecting'">
+    <div class="call-incoming-modal call-connecting">
+
+      <div class="call-incoming-body">
+        <div class="caller-avatar pulsing">
+          <i class="fa fa-user"></i>
+        </div>
+        <h3 class="caller-name">{{ activeCall?.remoteUserDisplayName }}</h3>
+        <p class="call-status-text">Connecting...</p>
+        <div class="connecting-spinner">
+          <i class="fa fa-spinner fa-spin"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ─── ACTIVE CALL VIEW ────────────────────────────────────────────────── -->
+
+  <div class="call-active-overlay" *ngIf="callState === 'active' && !isMinimized">
+
+    <!-- Video area — always rendered, hidden via CSS for voice-only calls -->
+    <div class="call-video-area" [class.hidden]="!isVideoCall">
+      <video #remoteVideo class="remote-video" autoplay playsinline></video>
+      <video #localVideo class="local-video" autoplay playsinline muted></video>
+
+      <!-- Camera off placeholder — shown when remote video track is disabled/ended -->
+      <div class="remote-camera-off" *ngIf="isVideoCall && isRemoteVideoOff">
+        <div class="camera-off-icon">
+          <i class="fa fa-video-slash"></i>
+        </div>
+        <p>Camera is off</p>
+      </div>
+    </div>
+
+    <!-- Audio-only call display -->
+    <div class="call-audio-area" *ngIf="!isVideoCall">
+      <div class="audio-call-avatar">
+        <i class="fa fa-user"></i>
+      </div>
+      <h3 class="audio-call-name">{{ activeCall?.remoteUserDisplayName }}</h3>
+    </div>
+
+    <!-- Call info bar -->
+    <div class="call-info-bar">
+      <span class="call-timer">{{ formattedDuration }}</span>
+      <span class="call-type-label">{{ activeCall?.callType }} Call</span>
+    </div>
+
+    <!-- Call controls -->
+    <div class="call-controls">
+      <button class="call-control-btn" [class.active]="isMuted" (click)="toggleMute()"
+              [title]="isMuted ? 'Unmute' : 'Mute'">
+        <i class="fa" [ngClass]="isMuted ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+      </button>
+
+      <button class="call-control-btn" *ngIf="isVideoCall" [class.active]="isVideoOff"
+              (click)="toggleVideo()" [title]="isVideoOff ? 'Turn Camera On' : 'Turn Camera Off'">
+        <i class="fa" [ngClass]="isVideoOff ? 'fa-video-slash' : 'fa-video'"></i>
+      </button>
+
+      <button class="call-control-btn call-end-btn" (click)="endCall()" title="End Call">
+        <i class="fa fa-phone-slash"></i>
+      </button>
+
+      <button class="call-control-btn call-minimize-btn" (click)="minimize()" title="Minimize">
+        <i class="fa fa-compress-alt"></i>
+      </button>
+    </div>
+
+  </div>
+
+
+  <!-- ─── MINIMIZED CALL BAR ──────────────────────────────────────────────── -->
+
+  <div class="call-minimized-bar" *ngIf="callState === 'active' && isMinimized" (click)="expand()">
+    <div class="minimized-info">
+      <i class="fa" [ngClass]="callTypeIcon"></i>
+      <span class="minimized-name">{{ activeCall?.remoteUserDisplayName }}</span>
+      <span class="minimized-timer">{{ formattedDuration }}</span>
+    </div>
+    <div class="minimized-actions">
+      <button class="minimized-btn minimized-mute" (click)="toggleMute(); $event.stopPropagation()"
+              [title]="isMuted ? 'Unmute' : 'Mute'">
+        <i class="fa" [ngClass]="isMuted ? 'fa-microphone-slash' : 'fa-microphone'"></i>
+      </button>
+      <button class="minimized-btn minimized-end" (click)="endCall(); $event.stopPropagation()" title="End Call">
+        <i class="fa fa-phone-slash"></i>
+      </button>
+    </div>
+  </div>
+
+
+</ng-container>

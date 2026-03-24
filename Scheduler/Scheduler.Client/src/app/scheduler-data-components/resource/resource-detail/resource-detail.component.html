@@ -277,16 +277,16 @@
                             </div>
                             </ng-template>
                         </li>
-                      <li ngbNavItem *ngIf="notificationSubscriptionService.userIsSchedulerNotificationSubscriptionReader()">
-                            <button ngbNavLink>Notification Subscriptions
+                      <li ngbNavItem *ngIf="eventNotificationSubscriptionService.userIsSchedulerEventNotificationSubscriptionReader()">
+                            <button ngbNavLink>Event Notification Subscriptions
                                 <span class="badge bg-primary ms-2">
-                                    {{ (resourceData?.NotificationSubscriptionsCount$ | async) ?? '-' }}
+                                    {{ (resourceData?.EventNotificationSubscriptionsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-notification-subscription-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-notification-subscription-table>
+                                    <app-event-notification-subscription-table [queryParams]="{ resourceId: resourceData?.id }" [showAddButton]="true" [preSeededData]="{ resourceId: resourceData?.id }" [hiddenFields]="['resourceId']"></app-event-notification-subscription-table>
                                 </div>
                             </div>
                             </ng-template>

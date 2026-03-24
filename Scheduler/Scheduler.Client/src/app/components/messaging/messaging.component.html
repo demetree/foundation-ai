@@ -1,0 +1,615 @@
+<!-- ─── Messaging Panel (slide-out overlay from the right) ──────────────────── -->
+
+<!-- Backdrop when panel is open (panel mode only) -->
+<div class="messaging-backdrop" *ngIf="isOpen && displayMode === 'panel'" (click)="closePanel()"></div>
+
+<!-- Panel container -->
+<div [ngClass]="{
+       'messaging-panel': displayMode === 'panel',
+       'messaging-fullscreen': displayMode === 'fullscreen',
+       'messaging-popout': displayMode === 'popout'
+     }"
+     [class.open]="isOpen">
+
+  <!-- ─── Header ──────────────────────────────────────────────────────────────── -->
+  <div class="panel-header">
+    <div class="header-left">
+      <!-- Back to app (fullscreen only) -->
+      <button *ngIf="displayMode === 'fullscreen'" class="btn-icon" (click)="backToApp()" title="Back to app">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <!-- Back to list (panel mode, or mobile in fullscreen/popout when viewing a conversation) -->
+      <button *ngIf="selectedConversation && !isWideLayout" class="btn-icon" (click)="backToList()" title="Back">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <h3 *ngIf="!selectedConversation || isWideLayout">
+        Messages
+        <i class="fa-solid fa-spinner fa-spin header-loading-spinner" *ngIf="isLoading"></i>
+      </h3>
+      <h3 *ngIf="selectedConversation && !isWideLayout" class="conversation-title">
+        {{ getConversationDisplayName(selectedConversation) }}
+      </h3>
+    </div>
+    <div class="header-right">
+
+      <button *ngIf="!selectedConversation || isWideLayout" class="btn-icon" (click)="openNewConversation()" title="New Message">
+        <i class="fa-solid fa-pen-to-square"></i>
+      </button>
+
+      <button *ngIf="(!selectedConversation || isWideLayout) && !showMessageSearch" class="btn-icon" (click)="openMessageSearch()" title="Search Messages">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+
+      <!-- Overflow menu (People, Settings, Fullscreen, Pop Out) -->
+      <div class="header-overflow" *ngIf="(!selectedConversation || isWideLayout) && !showMessageSearch && !showNotificationSettings">
+        <button class="btn-icon" (click)="showHeaderMenu = !showHeaderMenu" title="More options"
+                [class.active]="showHeaderMenu">
+          <i class="fa-solid fa-ellipsis-vertical"></i>
+        </button>
+
+        <div class="header-overflow-menu" *ngIf="showHeaderMenu">
+          <button class="overflow-menu-item" (click)="openPeoplePanel(); showHeaderMenu = false">
+            <i class="fa-solid fa-address-book"></i>
+            <span>People</span>
+          </button>
+          <button class="overflow-menu-item" (click)="openNotificationSettings(); showHeaderMenu = false">
+            <i class="fa-solid fa-gear"></i>
+            <span>Notification Settings</span>
+          </button>
+          <div class="overflow-menu-divider" *ngIf="displayMode === 'panel'"></div>
+          <button class="overflow-menu-item" *ngIf="displayMode === 'panel'" (click)="expandToFullscreen(); showHeaderMenu = false">
+            <i class="fa-solid fa-expand"></i>
+            <span>Open Full Screen</span>
+          </button>
+          <button class="overflow-menu-item" *ngIf="displayMode === 'panel'" (click)="popOut(); showHeaderMenu = false">
+            <i class="fa-solid fa-up-right-from-square"></i>
+            <span>Pop Out Window</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Status button (panel mode) -->
+      <div class="header-status-trigger" *ngIf="displayMode === 'panel'">
+        <button class="btn-icon" (click)="toggleStatusPicker()"
+                [title]="currentCustomStatus || 'Set a status'"
+                [class.has-status]="currentCustomStatus">
+          <span class="header-status-avatar">{{ currentUserInitials }}</span>
+          <span class="header-status-dot" *ngIf="currentCustomStatus"></span>
+        </button>
+
+        <!-- Status Picker Dropdown (panel mode) -->
+        <div class="status-picker" *ngIf="showStatusPicker">
+          <div class="status-picker-header">
+            <span>Set your status</span>
+            <button class="btn-icon" (click)="showStatusPicker = false"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="status-picker-base">
+            <button class="status-base-btn"
+                    *ngFor="let opt of baseStatusOptions"
+                    [class.active]="currentBaseStatus === opt.status"
+                    (click)="setBaseStatus(opt.status)">
+              <span class="presence-dot-inline" [ngClass]="opt.cssClass"></span>
+              {{ opt.label }}
+            </button>
+          </div>
+
+          <div class="status-picker-custom">
+            <input type="text"
+                   [(ngModel)]="customStatusInput"
+                   placeholder="What's on your mind?"
+                   (keydown.enter)="setCustomStatus(customStatusInput)"
+                   maxlength="100" />
+            <button class="btn-primary btn-sm" (click)="setCustomStatus(customStatusInput)" [disabled]="!customStatusInput.trim()">Set</button>
+          </div>
+
+          <div class="status-picker-presets">
+            <button class="status-preset" *ngFor="let preset of statusPresets" (click)="setCustomStatus(preset.text)">
+              <span class="status-preset-emoji">{{ preset.emoji }}</span>
+              <span class="status-preset-text">{{ preset.text }}</span>
+            </button>
+          </div>
+
+          <button class="status-clear-btn" *ngIf="currentCustomStatus" (click)="clearCustomStatus()">
+            <i class="fa-solid fa-xmark"></i> Clear status
+          </button>
+        </div>
+      </div>
+
+      <!-- Close button (panel mode only) -->
+      <button *ngIf="displayMode === 'panel'" class="btn-icon" (click)="closePanel()" title="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- User identity (fullscreen / popout only) -->
+      <div *ngIf="displayMode !== 'panel'" class="user-identity">
+        <div class="user-identity-status-trigger" (click)="toggleStatusPicker()">
+          <span class="user-identity-avatar">{{ currentUserInitials }}</span>
+          <div class="user-identity-info">
+            <span class="user-identity-name">{{ currentUserDisplayName }}</span>
+            <span class="user-identity-status-text" *ngIf="currentCustomStatus">{{ currentCustomStatus }}</span>
+            <span class="user-identity-status-text muted" *ngIf="!currentCustomStatus">Set a status</span>
+          </div>
+        </div>
+
+        <!-- Status Picker Dropdown -->
+        <div class="status-picker" *ngIf="showStatusPicker">
+          <div class="status-picker-header">
+            <span>Set your status</span>
+            <button class="btn-icon" (click)="showStatusPicker = false"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="status-picker-base">
+            <button class="status-base-btn"
+                    *ngFor="let opt of baseStatusOptions"
+                    [class.active]="currentBaseStatus === opt.status"
+                    (click)="setBaseStatus(opt.status)">
+              <span class="presence-dot-inline" [ngClass]="opt.cssClass"></span>
+              {{ opt.label }}
+            </button>
+          </div>
+
+          <div class="status-picker-custom">
+            <input type="text"
+                   [(ngModel)]="customStatusInput"
+                   placeholder="What's on your mind?"
+                   (keydown.enter)="setCustomStatus(customStatusInput)"
+                   maxlength="100"
+                   id="messaging-status-input" />
+            <button class="btn-primary btn-sm" (click)="setCustomStatus(customStatusInput)" [disabled]="!customStatusInput.trim()">Set</button>
+          </div>
+
+          <div class="status-picker-presets">
+            <button class="status-preset" *ngFor="let preset of statusPresets" (click)="setCustomStatus(preset.text)">
+              <span class="status-preset-emoji">{{ preset.emoji }}</span>
+              <span class="status-preset-text">{{ preset.text }}</span>
+            </button>
+          </div>
+
+          <button class="status-clear-btn" *ngIf="currentCustomStatus" (click)="clearCustomStatus()">
+            <i class="fa-solid fa-xmark"></i> Clear status
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ─── Body (conversation list + chat view) ─────────────────────────────────── -->
+  <div class="messaging-body" [class.wide-layout]="isWideLayout">
+
+  <!-- Connection banner -->
+  <div class="connection-banner" *ngIf="!isConnected && !isLoading">
+    <i class="fa-solid fa-wifi connection-pulse"></i>
+    <span>Reconnecting...</span>
+  </div>
+
+  <!-- ─── People Panel Overlay ──────────────────────────────────────── -->
+  <div class="people-panel-overlay" *ngIf="showPeoplePanel">
+    <div class="people-panel-header">
+      <i class="fa-solid fa-address-book"></i>
+      <span>People</span>
+      <button class="btn-icon" (click)="closePeoplePanel()" title="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="people-panel-search">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text"
+             placeholder="Search people..."
+             [(ngModel)]="peopleFilter"
+             id="people-search-input"
+             autocomplete="off" />
+    </div>
+
+    <div class="people-panel-list" *ngIf="!isLoadingPeople">
+
+      <!-- Online users -->
+      <div class="people-group" *ngIf="onlinePeople.length > 0">
+        <div class="people-group-header">
+          <span class="presence-dot-inline online"></span>
+          Online ({{ onlinePeople.length }})
+        </div>
+        <div class="people-item"
+             *ngFor="let user of onlinePeople"
+             (click)="startDirectMessage(user)"
+             title="Start conversation with {{ user.displayName }}">
+          <div class="people-item-avatar">
+            <i class="fa-solid fa-user"></i>
+            <span class="presence-dot" [ngClass]="getPresenceClass(user.status)"></span>
+          </div>
+          <div class="people-item-info">
+            <span class="people-item-name">{{ user.displayName }}</span>
+            <span class="people-item-status" *ngIf="user.customStatusMessage">{{ user.customStatusMessage }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Away / Busy / DND users -->
+      <div class="people-group" *ngIf="awayPeople.length > 0">
+        <div class="people-group-header">
+          <span class="presence-dot-inline away"></span>
+          Away / Busy ({{ awayPeople.length }})
+        </div>
+        <div class="people-item"
+             *ngFor="let user of awayPeople"
+             (click)="startDirectMessage(user)"
+             title="Start conversation with {{ user.displayName }}">
+          <div class="people-item-avatar">
+            <i class="fa-solid fa-user"></i>
+            <span class="presence-dot" [ngClass]="getPresenceClass(user.status)"></span>
+          </div>
+          <div class="people-item-info">
+            <span class="people-item-name">{{ user.displayName }}</span>
+            <span class="people-item-detail">
+              {{ getPresenceLabel(user.status) }}
+              <span *ngIf="user.customStatusMessage"> &mdash; {{ user.customStatusMessage }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offline users -->
+      <div class="people-group" *ngIf="offlinePeople.length > 0">
+        <div class="people-group-header offline-header">
+          <span class="presence-dot-inline offline"></span>
+          Offline ({{ offlinePeople.length }})
+        </div>
+        <div class="people-item offline-item"
+             *ngFor="let user of offlinePeople"
+             (click)="startDirectMessage(user)"
+             title="Start conversation with {{ user.displayName }}">
+          <div class="people-item-avatar">
+            <i class="fa-solid fa-user"></i>
+            <span class="presence-dot offline"></span>
+          </div>
+          <div class="people-item-info">
+            <span class="people-item-name">{{ user.displayName }}</span>
+            <span class="people-item-last-seen">{{ formatLastSeen(user.lastSeenDateTime) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="people-panel-empty" *ngIf="filteredPeoplePresences.length === 0 && peopleFilter.trim()">
+        <i class="fa-solid fa-search"></i>
+        <p>No people found</p>
+      </div>
+    </div>
+
+    <div class="people-panel-loading" *ngIf="isLoadingPeople">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <span>Loading people...</span>
+    </div>
+  </div>
+
+  <!-- ─── Notification Settings Overlay ─────────────────────────────────── -->
+  <div class="notification-settings-overlay" *ngIf="showNotificationSettings">
+    <app-notification-settings
+      (closed)="closeNotificationSettings()">
+    </app-notification-settings>
+  </div>
+
+  <!-- ─── New Conversation (full width overlay) ────────────────────────────────── -->
+  <div class="new-conversation" *ngIf="showNewConversation">
+
+    <!-- Selected recipient chips -->
+    <div class="recipient-chips" *ngIf="selectedRecipients.length > 0">
+      <div class="recipient-chip" *ngFor="let recipient of selectedRecipients">
+        <span class="recipient-chip-name">{{ recipient.displayName || recipient.accountName }}</span>
+        <button class="recipient-chip-remove" (click)="removeRecipient(recipient)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="new-conv-input-row">
+      <label>To:</label>
+      <div class="typeahead-container">
+        <input type="text"
+               [(ngModel)]="newConversationRecipient"
+               (input)="onRecipientInput()"
+               (focus)="onRecipientInput()"
+               placeholder="Search users..."
+               autocomplete="off"
+               id="messaging-recipient-input" />
+
+        <!-- Loading indicator -->
+        <div class="typeahead-loading" *ngIf="isLoadingUsers">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
+
+        <!-- Typeahead dropdown -->
+        <div class="typeahead-dropdown" *ngIf="showUserDropdown">
+          <div class="typeahead-item"
+               *ngFor="let user of filteredUsers"
+               (mousedown)="selectRecipient(user)">
+            <div class="typeahead-item-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="typeahead-item-info">
+              <span class="typeahead-item-name">{{ user.displayName || user.accountName }}</span>
+              <span class="typeahead-item-account">{{ user.accountName }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Browse all toggle (inside the input) -->
+        <button class="btn-icon browse-all-btn" (click)="toggleBrowseAllUsers()" title="Browse all users"
+                [class.active]="showBrowseAllUsers">
+          <i class="fa-solid fa-users"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Browse All Users list -->
+    <div class="browse-all-panel" *ngIf="showBrowseAllUsers">
+      <div class="browse-all-filter">
+        <i class="fa-solid fa-filter"></i>
+        <input type="text"
+               [(ngModel)]="browseAllFilter"
+               (input)="onBrowseAllFilterInput()"
+               placeholder="Filter users..."
+               autocomplete="off" />
+      </div>
+      <div class="browse-all-list">
+        <div class="browse-all-item"
+             *ngFor="let user of browseAllFilteredUsers"
+             (click)="toggleBrowseUser(user)">
+          <div class="browse-all-checkbox">
+            <i [ngClass]="isRecipientSelected(user) ? 'fa-solid fa-square-check' : 'fa-regular fa-square'"></i>
+          </div>
+          <div class="browse-all-avatar">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <div class="browse-all-info">
+            <span class="browse-all-name">{{ user.displayName || user.accountName }}</span>
+            <span class="browse-all-account">{{ user.accountName }}</span>
+          </div>
+        </div>
+        <div class="browse-all-empty" *ngIf="browseAllFilteredUsers.length === 0">
+          No users found
+        </div>
+      </div>
+    </div>
+
+    <div class="new-conv-actions">
+      <button class="btn-secondary" (click)="cancelNewConversation()">Cancel</button>
+      <button class="btn-primary" (click)="startNewConversation()"
+              [disabled]="selectedRecipients.length === 0">Start</button>
+    </div>
+  </div>
+
+
+  <!-- ─── Message Search Overlay ──────────────────────────────────────── -->
+  <div class="message-search-overlay" *ngIf="showMessageSearch">
+    <div class="message-search-header">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text"
+             placeholder="Search all messages..."
+             [(ngModel)]="messageSearchQuery"
+             (input)="onMessageSearchInput()"
+             id="message-search-input"
+             autofocus />
+      <button class="btn-icon" (click)="closeMessageSearch()" title="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="message-search-results" *ngIf="messageSearchResults.length > 0">
+      <div class="message-search-result"
+           *ngFor="let result of messageSearchResults"
+           (click)="navigateToSearchResult(result)">
+        <div class="msr-sender">{{ result.userDisplayName }}</div>
+        <div class="msr-text" [innerHTML]="highlightSearchMatch(result.message)"></div>
+        <div class="msr-meta">
+          <span class="msr-conv">{{ getConversationNameById(result.conversationId) }}</span>
+          <span class="msr-time">{{ formatTime(result.dateTimeCreated) }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="message-search-empty" *ngIf="messageSearchQuery.trim().length > 0 && messageSearchResults.length === 0 && !isSearching">
+      <i class="fa-solid fa-search"></i>
+      <p>No messages found</p>
+    </div>
+    <div class="message-search-empty" *ngIf="isSearching">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <p>Searching...</p>
+    </div>
+  </div>
+
+
+  <!-- ─── Conversation List (left pane in wide layout, full pane in stacked) ──── -->
+  <div class="conversation-list"
+       *ngIf="!showNewConversation && (isWideLayout || !selectedConversation)">
+
+
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!isLoading && conversations.length === 0">
+      <i class="fa-regular fa-comments"></i>
+      <p>No conversations yet</p>
+      <button class="btn-primary" (click)="openNewConversation()">Start a conversation</button>
+    </div>
+
+    <!-- Filter Chips -->
+    <div class="conv-filter-bar" *ngIf="(isLoading || conversations.length > 0) && isWideLayout">
+      <div class="conv-filter-chips">
+        <button class="conv-filter-chip" [class.active]="activeFilter === 'all'" (click)="toggleFilter('all')">All</button>
+        <button class="conv-filter-chip" [class.active]="activeFilter === 'unread'" (click)="toggleFilter('unread')">Unread</button>
+        <button class="conv-filter-chip" [class.active]="activeFilter === 'groups'" (click)="toggleFilter('groups')">Groups</button>
+        <button class="conv-filter-chip" [class.active]="activeFilter === 'dms'" (click)="toggleFilter('dms')">DMs</button>
+        <button class="conv-filter-chip" [class.active]="activeFilter === 'archived'" (click)="toggleFilter('archived')">Archived</button>
+      </div>
+    </div>
+
+    <!-- No search results -->
+    <div class="conv-no-results" *ngIf="!isLoading && conversations.length > 0 && pinnedConversations.length === 0 && unpinnedConversations.length === 0">
+      <i class="fa-solid fa-search"></i>
+      <p>No conversations match your search</p>
+      <button class="conv-no-results-clear" (click)="clearSearch(); activeFilter = 'all'">Clear filters</button>
+    </div>
+
+    <!-- People section (non-offline users with status) -->
+    <div class="online-now-section" *ngIf="!isLoading && otherOnlineUsers.length > 0">
+      <div class="online-now-header" (click)="toggleOnlineSection()">
+        <span class="online-now-title">
+          <span class="online-now-dot"></span>
+          People ({{ otherOnlineUsers.length }})
+        </span>
+        <i class="fa-solid" [ngClass]="showOnlineSection ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+      </div>
+      <div class="online-now-list" *ngIf="showOnlineSection">
+        <div class="online-user-item"
+             *ngFor="let user of otherOnlineUsers"
+             (click)="startDirectMessage(user)"
+             title="Start conversation with {{ user.displayName }}">
+          <div class="online-user-avatar">
+            <i class="fa-solid fa-user"></i>
+            <span class="presence-dot" [ngClass]="getPresenceClass(user.status)"></span>
+          </div>
+          <span class="online-user-name">{{ user.displayName }}</span>
+          <span class="online-user-status" *ngIf="user.customStatusMessage">{{ user.customStatusMessage }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared conversation item template (fix #15 — dedup) -->
+    <ng-template #conversationItemTpl let-conv>
+      <div class="conversation-item"
+           [class.pinned]="isConversationPinned(conv.id)"
+           [class.unread]="conv.unreadCount > 0"
+           [class.muted]="isConversationMuted(conv.id)"
+           [class.selected]="selectedConversation?.id === conv.id"
+           (click)="selectConversation(conv)"
+           (contextmenu)="openConversationContextMenu($event, conv.id)">
+        <div class="conv-avatar" [style.background]="getAvatarGradient(conv)">
+          <span class="conv-avatar-initials">{{ getConversationInitials(conv) }}</span>
+          <span class="conv-avatar-group-badge" *ngIf="isGroupConversation(conv)"><i class="fa-solid fa-users"></i></span>
+        </div>
+        <div class="conv-info">
+          <div class="conv-name-row">
+            <span class="conv-name" *ngIf="renamingConversationId !== conv.id">{{ getConversationDisplayName(conv) }}</span>
+            <input *ngIf="renamingConversationId === conv.id"
+                   class="conv-name-edit"
+                   [id]="'rename-input-' + conv.id"
+                   [(ngModel)]="renameText"
+                   (keydown.enter)="confirmRename(conv.id)"
+                   (keydown.escape)="cancelRename()"
+                   (blur)="confirmRename(conv.id)"
+                   (click)="$event.stopPropagation()" />
+            <span class="conv-time">{{ formatTime(conv.lastMessageDateTime || conv.dateTimeCreated) }}</span>
+          </div>
+          <div class="conv-preview-row">
+            <span class="conv-preview">{{ conv.lastMessagePreview || 'No messages yet' }}</span>
+            <span class="reaction-count-badge" *ngIf="conv.lastMessageReactionCount && conv.lastMessageReactionCount > 0">
+              <i class="fa-solid fa-heart"></i> {{ conv.lastMessageReactionCount }}
+            </span>
+            <i class="fa-solid fa-bell-slash muted-icon" *ngIf="getNotificationPref(conv.id) === 'none'"></i>
+            <i class="fa-solid fa-at muted-icon" *ngIf="getNotificationPref(conv.id) === 'mentions'"></i>
+            <span class="unread-badge" *ngIf="conv.unreadCount > 0">{{ conv.unreadCount }}</span>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+    <!-- Pinned conversations section -->
+    <div class="conversation-section" *ngIf="pinnedConversations.length > 0">
+      <div class="section-header">
+        <i class="fa-solid fa-thumbtack"></i> Pinned
+      </div>
+      <ng-container *ngFor="let conv of pinnedConversations">
+        <ng-container *ngTemplateOutlet="conversationItemTpl; context: { $implicit: conv }"></ng-container>
+      </ng-container>
+    </div>
+
+    <!-- All / unpinned conversations -->
+    <div class="conversation-section">
+      <div class="section-header" *ngIf="pinnedConversations.length > 0">
+        <i class="fa-regular fa-comments"></i> All Conversations
+      </div>
+      <ng-container *ngFor="let conv of unpinnedConversations">
+        <ng-container *ngTemplateOutlet="conversationItemTpl; context: { $implicit: conv }"></ng-container>
+      </ng-container>
+    </div>
+
+    <!-- Conversation context menu (right-click) -->
+    <div class="conversation-context-menu"
+         *ngIf="showConversationContextMenu && contextMenuConversationId != null"
+         [style.top.px]="contextMenuPosition.y"
+         [style.left.px]="contextMenuPosition.x"
+         (mouseleave)="closeConversationContextMenu()">
+      <button (click)="togglePinConversation(contextMenuConversationId)">
+        <i class="fa-solid fa-thumbtack"></i>
+        {{ isConversationPinned(contextMenuConversationId) ? 'Unpin' : 'Pin' }}
+      </button>
+      <button (click)="setNotificationPref(contextMenuConversationId, 'all')">
+        <i class="fa-solid fa-bell"></i>
+        All Notifications
+        <i class="fa-solid fa-check pref-check" *ngIf="getNotificationPref(contextMenuConversationId) === 'all'"></i>
+      </button>
+      <button (click)="setNotificationPref(contextMenuConversationId, 'mentions')">
+        <i class="fa-solid fa-at"></i>
+        Mentions Only
+        <i class="fa-solid fa-check pref-check" *ngIf="getNotificationPref(contextMenuConversationId) === 'mentions'"></i>
+      </button>
+      <button (click)="setNotificationPref(contextMenuConversationId, 'none')">
+        <i class="fa-solid fa-bell-slash"></i>
+        None
+        <i class="fa-solid fa-check pref-check" *ngIf="getNotificationPref(contextMenuConversationId) === 'none'"></i>
+      </button>
+      <button (click)="renameConversation(contextMenuConversationId)">
+        <i class="fa-solid fa-pen"></i>
+        Rename
+      </button>
+      <button (click)="archiveConversation(contextMenuConversationId)">
+        <i class="fa-solid fa-box-archive"></i>
+        Archive
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ─── Chat Area (right pane in wide layout, full pane in stacked) ──────────── -->
+  <div class="chat-area" *ngIf="!showNewConversation && (isWideLayout || selectedConversation)">
+
+    <!-- Right pane prompt -->
+    <div class="no-conversation-selected" *ngIf="!selectedConversation">
+      <div class="no-conv-content">
+        <!-- Intro banner when no conversations exist -->
+        <ng-container *ngIf="!isLoading && conversations.length === 0">
+          <div class="no-conv-icon">
+            <i class="fa-regular fa-comments"></i>
+          </div>
+          <h3>Welcome to Messages</h3>
+          <p>Start a conversation with your team.</p>
+        </ng-container>
+
+        <!-- Subtle prompt when conversations exist -->
+        <ng-container *ngIf="conversations.length > 0">
+          <i class="fa-regular fa-comments no-conv-icon-inline"></i>
+          <span>Select a conversation to get started</span>
+        </ng-container>
+
+        <!-- New Message button (always visible) -->
+        <button class="btn-primary btn-new-message" (click)="openNewConversation()" id="messaging-new-message-cta">
+          <i class="fa-solid fa-pen-to-square"></i>
+          New Message
+        </button>
+      </div>
+    </div>
+
+    <!-- Chat View (delegated to app-chat-view) -->
+    <app-chat-view
+      *ngIf="selectedConversation"
+      [conversation]="selectedConversation"
+      [displayMode]="displayMode"
+      [allConversations]="conversations"
+      (conversationUpdated)="onConversationUpdated($event)"
+      (backRequested)="onChatBackRequested()">
+    </app-chat-view>
+  </div>
+
+  </div> <!-- /.messaging-body -->
+
+</div>

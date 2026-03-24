@@ -1,0 +1,61 @@
+<!-- Entity Discussion Component — inline chat for entity detail views -->
+<div class="entity-discussion" [class.expanded]="isExpanded">
+
+  <!-- Header (always visible — click to expand/collapse) -->
+  <div class="discussion-header" (click)="toggleExpanded()">
+    <div class="discussion-header-left">
+      <i class="fa-solid fa-comments"></i>
+      <span class="discussion-title">{{ title }}</span>
+      <span class="message-count" *ngIf="messages.length > 0">({{ messages.length }})</span>
+    </div>
+    <i class="fa-solid" [ngClass]="isExpanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+  </div>
+
+  <!-- Body (visible when expanded) -->
+  <div class="discussion-body" *ngIf="isExpanded">
+
+    <!-- Loading -->
+    <div class="discussion-loading" *ngIf="isLoading">
+      <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+    </div>
+
+    <!-- No conversation yet — offer to start one -->
+    <div class="discussion-empty" *ngIf="!isLoading && !conversation">
+      <i class="fa-regular fa-comments"></i>
+      <p>No discussion yet for this {{ entityName }}</p>
+      <button class="btn-primary discussion-start-btn" (click)="startConversation(); $event.stopPropagation()">
+        <i class="fa-solid fa-plus"></i> Start Discussion
+      </button>
+    </div>
+
+    <!-- Messages list -->
+    <div class="discussion-messages" #discussionContainer *ngIf="conversation && !isLoading">
+      <div class="discussion-msg"
+           *ngFor="let msg of messages"
+           [class.own]="isOwnMessage(msg)">
+        <div class="discussion-msg-sender" *ngIf="!isOwnMessage(msg)">{{ msg.userDisplayName }}</div>
+        <div class="discussion-msg-bubble">{{ msg.message }}</div>
+        <div class="discussion-msg-time">{{ formatTime(msg.dateTimeCreated) }}</div>
+      </div>
+
+      <div class="discussion-empty-conv" *ngIf="messages.length === 0">
+        <p>No messages yet — start the conversation!</p>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <div class="discussion-composer" *ngIf="conversation">
+      <textarea
+        [(ngModel)]="messageText"
+        placeholder="Type a message..."
+        rows="1"
+        (keydown)="onKeyDown($event)">
+      </textarea>
+      <button class="discussion-send-btn"
+              (click)="sendMessage()"
+              [disabled]="!messageText.trim()">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>

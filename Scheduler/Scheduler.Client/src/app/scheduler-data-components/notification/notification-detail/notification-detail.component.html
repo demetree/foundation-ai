@@ -1,0 +1,160 @@
+<div class="container-fluid p-1 m-0 notification-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="notification-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Notification</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Notification' : 'Add Notification'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerNotificationReader()">
+                <div class="col m-2 notification-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="notificationForm" (ngSubmit)="submitForm()" class="notification-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('notificationTypeId')">
+                                <label for="Notification-notificationTypeId" id="label-Notification-notificationTypeId">Notification Type</label>
+                                <select id="Notification-notificationTypeId" formControlName="notificationTypeId" class="form-select notification-select" [disabled]="!userIsSchedulerNotificationWriter()">
+                                    <option [ngValue]="null">Select Notification Type</option>
+                                    <option *ngFor="let notificationType of notificationTypes$ | async" [ngValue]="notificationType.id">{{notificationType.name}}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('createdByUserId')">
+                                <label for="Notification-createdByUserId" id="label-Notification-createdByUserId">Created By User Id</label>
+                                <input type="number" id="Notification-createdByUserId" formControlName="createdByUserId" placeholder="Enter Created By User Id" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()" aria-labelledby="label-createdByUserId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('message')">
+                                <label for="Notification-message" id="label-Notification-message"><span class="text-danger">*</span>Message</label>
+                                <textarea id="Notification-message" formControlName="message" placeholder="Enter Message" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()"></textarea>
+                                <div *ngIf="notificationForm.get('message')?.invalid && notificationForm.get('message')?.touched" class="text-danger">
+                                    Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('priority')">
+                                <label for="Notification-priority" id="label-Notification-priority"><span class="text-danger">*</span>Priority</label>
+                                <input type="number" id="Notification-priority" formControlName="priority" placeholder="Enter Priority" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()" aria-labelledby="label-priority" />
+                                <div *ngIf="notificationForm.get('priority')?.invalid && notificationForm.get('priority')?.touched" class="text-danger">
+                                    Priority is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('entity')">
+                                <label for="Notification-entity" id="label-Notification-entity">Entity</label>
+                                <input type="text" id="Notification-entity" formControlName="entity" placeholder="Enter Entity" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()" aria-labelledby="label-entity" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('entityId')">
+                                <label for="Notification-entityId" id="label-Notification-entityId">Entity Id</label>
+                                <input type="number" id="Notification-entityId" formControlName="entityId" placeholder="Enter Entity Id" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()" aria-labelledby="label-entityId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalURL')">
+                                <label for="Notification-externalURL" id="label-Notification-externalURL">External U R L</label>
+                                <textarea id="Notification-externalURL" formControlName="externalURL" placeholder="Enter External U R L" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                                <label for="Notification-dateTimeCreated" id="label-Notification-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                                <input type="datetime-local" id="Notification-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()" aria-labelledby="label-dateTimeCreated" />
+                                <div *ngIf="notificationForm.get('dateTimeCreated')?.invalid && notificationForm.get('dateTimeCreated')?.touched" class="text-danger">
+                                    Date Time Created is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeDistributed')">
+                                <label for="Notification-dateTimeDistributed" id="label-Notification-dateTimeDistributed">Date Time Distributed</label>
+                                <input type="datetime-local" id="Notification-dateTimeDistributed" formControlName="dateTimeDistributed" placeholder="Enter Date Time Distributed" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()" aria-labelledby="label-dateTimeDistributed" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('distributionCompleted')">
+                                <input type="checkbox" id="Notification-distributionCompleted" formControlName="distributionCompleted" class="form-check-input" [disabled]="!userIsSchedulerNotificationWriter()" />
+                                <label for="Notification-distributionCompleted" class="form-check-label" id="label-Notification-distributionCompleted"><span class="text-danger">*</span>Distribution Completed</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="Notification-userId" id="label-Notification-userId">User Id</label>
+                                <input type="number" id="Notification-userId" formControlName="userId" placeholder="Enter User Id" class="form-control notification-input" [disabled]="!userIsSchedulerNotificationWriter()" aria-labelledby="label-userId" />
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="Notification-versionNumber" id="label-Notification-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="Notification-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control notification-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Notification-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerNotificationWriter()" />
+                                <label for="Notification-active" class="form-check-label" id="label-Notification-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="Notification-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerNotificationWriter()" />
+                                <label for="Notification-deleted" class="form-check-label" id="label-Notification-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="notification-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="notificationForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Notification">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !notificationForm.valid || !notificationForm.dirty || notificationForm.pristine  || userIsSchedulerNotificationWriter() == false " ngbTooltip="Save the Notification changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Notification' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerNotificationReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 notification-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="notificationChangeHistoryService.userIsSchedulerNotificationChangeHistoryReader()">
+                            <button ngbNavLink>Notification Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (notificationData?.NotificationChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-notification-change-history-table [queryParams]="{ notificationId: notificationData?.id }" [showAddButton]="true" [preSeededData]="{ notificationId: notificationData?.id }" [hiddenFields]="['notificationId']"></app-notification-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="notificationAttachmentService.userIsSchedulerNotificationAttachmentReader()">
+                            <button ngbNavLink>Notification Attachments
+                                <span class="badge bg-primary ms-2">
+                                    {{ (notificationData?.NotificationAttachmentsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-notification-attachment-table [queryParams]="{ notificationId: notificationData?.id }" [showAddButton]="true" [preSeededData]="{ notificationId: notificationData?.id }" [hiddenFields]="['notificationId']"></app-notification-attachment-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="notificationDistributionService.userIsSchedulerNotificationDistributionReader()">
+                            <button ngbNavLink>Notification Distributions
+                                <span class="badge bg-primary ms-2">
+                                    {{ (notificationData?.NotificationDistributionsCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-notification-distribution-table [queryParams]="{ notificationId: notificationData?.id }" [showAddButton]="true" [preSeededData]="{ notificationId: notificationData?.id }" [hiddenFields]="['notificationId']"></app-notification-distribution-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

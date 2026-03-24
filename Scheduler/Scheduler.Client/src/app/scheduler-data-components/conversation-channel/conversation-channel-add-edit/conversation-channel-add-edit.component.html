@@ -1,0 +1,79 @@
+<div class="add-conversation-channel" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-conversation-channel me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Conversation Channel" 
+        *ngIf="userIsSchedulerConversationChannelWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #conversationChannelModal let-modal>
+   <div class="modal-header conversation-channel-modal-header">
+      <h5 class="modal-title mb-0" id="conversationChannelModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Conversation Channel' : 'Add Conversation Channel' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body conversation-channel-modal-body">
+      <form [formGroup]="conversationChannelForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('conversationId')">
+                <label for="ConversationChannel-conversationId" id="label-ConversationChannel-conversationId"><span class="text-danger">*</span>Conversation</label>
+                <select id="ConversationChannel-conversationId" formControlName="conversationId" class="form-select conversation-channel-select" [disabled]="!userIsSchedulerConversationChannelWriter()">
+                    <option [ngValue]="null">Select Conversation</option>
+                    <option *ngFor="let conversation of conversations$ | async" [ngValue]="conversation.id">{{conversation.entity}}</option>
+                </select>
+                <div *ngIf="conversationChannelForm.get('conversationId')?.invalid && conversationChannelForm.get('conversationId')?.touched" class="text-danger">
+                    Conversation is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                <label for="ConversationChannel-name" id="label-ConversationChannel-name"><span class="text-danger">*</span>Name</label>
+                <input type="text" id="ConversationChannel-name" formControlName="name" placeholder="Enter Name" class="form-control conversation-channel-input" [disabled]="!userIsSchedulerConversationChannelWriter()" aria-labelledby="label-name" />
+                <div *ngIf="conversationChannelForm.get('name')?.invalid && conversationChannelForm.get('name')?.touched" class="text-danger">
+                    Name is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('topic')">
+                <label for="ConversationChannel-topic" id="label-ConversationChannel-topic">Topic</label>
+                <textarea id="ConversationChannel-topic" formControlName="topic" placeholder="Enter Topic" class="form-control conversation-channel-input" [disabled]="!userIsSchedulerConversationChannelWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrivate')">
+                <input type="checkbox" id="ConversationChannel-isPrivate" formControlName="isPrivate" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                <label for="ConversationChannel-isPrivate" class="form-check-label" id="label-ConversationChannel-isPrivate"><span class="text-danger">*</span>Is Private</label>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('isPinned')">
+                <input type="checkbox" id="ConversationChannel-isPinned" formControlName="isPinned" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                <label for="ConversationChannel-isPinned" class="form-check-label" id="label-ConversationChannel-isPinned"><span class="text-danger">*</span>Is Pinned</label>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ConversationChannel-versionNumber" id="label-ConversationChannel-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ConversationChannel-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control conversation-channel-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConversationChannel-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                <label for="ConversationChannel-active" class="form-check-label" id="label-ConversationChannel-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConversationChannel-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                <label for="ConversationChannel-deleted" class="form-check-label" id="label-ConversationChannel-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer conversation-channel-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Conversation Channel changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationChannelForm.valid || conversationChannelForm.pristine  || userIsSchedulerConversationChannelWriter() == false " ngbTooltip="Save the Conversation Channel changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Conversation Channel' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

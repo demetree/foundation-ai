@@ -1216,10 +1216,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					contact.ContactInteractioninitiatingContacts = null;
 					contact.ContactTags = null;
 					contact.Documents = null;
+					contact.EventNotificationSubscriptions = null;
 					contact.EventResourceAssignments = null;
 					contact.FinancialTransactions = null;
 					contact.Invoices = null;
-					contact.NotificationSubscriptions = null;
 					contact.OfficeContacts = null;
 					contact.Receipts = null;
 					contact.ResourceContacts = null;
@@ -1364,10 +1364,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.ContactInteractioninitiatingContacts = null;
 				cloneOfExisting.ContactTags = null;
 				cloneOfExisting.Documents = null;
+				cloneOfExisting.EventNotificationSubscriptions = null;
 				cloneOfExisting.EventResourceAssignments = null;
 				cloneOfExisting.FinancialTransactions = null;
 				cloneOfExisting.Invoices = null;
-				cloneOfExisting.NotificationSubscriptions = null;
 				cloneOfExisting.OfficeContacts = null;
 				cloneOfExisting.Receipts = null;
 				cloneOfExisting.ResourceContacts = null;

@@ -1,0 +1,355 @@
+<app-call-event-log-add-edit [showAddButton]="false" [preSeededData]="preSeededData" [hiddenFields]="hiddenFields"></app-call-event-log-add-edit>
+<div class="row" *ngIf="userIsSchedulerCallEventLogReader() == true">
+    <div class="col" *showSpinner="isLoading$ | async">
+      <!-- Virtual Scrolling Table for Desktop -->
+      <div class="card shadow-sm virtual-table-container" *ngIf="!isSmallScreen">
+         <!-- Fixed Header (outside viewport) -->
+      <div class="table-header-fixed">
+        <table class="custom-table mb-0">
+        <thead>
+          <tr>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCallEventLogWriter() == true">
+              <button *ngIf="showAddButton" class="action-btn action-add" (click)="handleAdd()" ngbTooltip="Add Call Event Log">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </th>
+            <th class="header-action-button" style="width: 1rem;" *ngIf="userIsSchedulerCallEventLogWriter() == true"></th>
+
+              <!-- Dynamic columns built with rules from the columns input -->
+              <th class="sortable"
+                  scope="col"
+                  *ngFor="let col of columns"
+                  (click)="sortBy(col.key)"
+                  [style.width]="col.width || 'auto'">
+                {{ col.label }}
+                <span *ngIf="sortColumn === col.key"
+                      [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'">
+                </span>
+              </th>
+<!-- Commented block containing alternate means of defining columns by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <th class="sortable" scope="col" (click)="sortBy('call.name')">
+                Call
+                <span *ngIf="sortColumn === 'call.name'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('eventType')">
+                Event  Type
+                <span *ngIf="sortColumn === 'eventType'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('userId')">
+                User  Id
+                <span *ngIf="sortColumn === 'userId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('providerId')">
+                Provider  Id
+                <span *ngIf="sortColumn === 'providerId'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('metadata')">
+                Metadata
+                <span *ngIf="sortColumn === 'metadata'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+            <th class="sortable" scope="col" (click)="sortBy('dateTimeCreated')">
+                Date  Time  Created
+                <span *ngIf="sortColumn === 'dateTimeCreated'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
+            </th>
+End of commented block for alternate definition option -->
+          </tr>
+        </thead>
+      </table>
+      </div>
+      <cdk-virtual-scroll-viewport itemSize="48" class="viewport" minBufferPx="400" maxBufferPx="800">
+        <table class="custom-table mb-0">
+        <tbody>
+            <!-- Only visible rows are rendered -->
+          <tr *cdkVirtualFor="let callEventLog of filteredCallEventLogs; trackBy: getCallEventLogId"
+              [ngClass]="{
+                 'row-inactive': callEventLog.active == false,
+                 'row-deleted': callEventLog.deleted == true 
+                 }">
+            <td class="header-action-button" *ngIf="userIsSchedulerCallEventLogWriter() == true">
+              <button class="action-btn action-edit"
+                      (click)="handleEdit(callEventLog)"
+                      ngbTooltip="Edit" 
+                      container="body"
+                      placement="top">
+                <i class="fa fa-pen"></i>
+              </button>
+            </td>
+            <td class="header-action-button" *ngIf="userIsSchedulerCallEventLogWriter() == true">
+              <button class="action-btn action-delete"
+                      (click)="handleDelete(callEventLog)"
+                      ngbTooltip="Delete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="callEventLog.deleted == false">
+                <i class="fa fa-trash"></i>
+              </button>
+              <button class="action-btn action-undelete"
+                      (click)="handleUndelete(callEventLog)"
+                      ngbTooltip="Undelete" 
+                      container="body"
+                      placement="top"
+                      *ngIf="callEventLog.deleted == true">
+                <i class="fa fa-trash-arrow-up"></i>
+              </button>
+            </td>
+
+              <!-- Dynamic cells built with rules from the columns input -->
+              <td *ngFor="let col of columns"
+                  class="text-truncate"
+                  [style.width]="col.width || 'auto'">
+
+                <!-- Custom rendering -->
+                <ng-container [ngSwitch]="col.template">
+
+                  <!-- handle booleans -->
+                  <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(callEventLog, col.key)" />
+
+                  <!-- handle internal links -->
+                  <a *ngSwitchCase="'link'"
+                     [routerLink]="col.linkPath ? buildLink(callEventLog, col.linkPath) : null"
+                     class="btn btn-link text-left">
+                    {{ getNestedValue(callEventLog, col.key) }}
+                  </a>
+
+                  <!-- handle dates -->
+                  <span *ngSwitchCase="'date'">
+                    {{ getNestedValue(callEventLog, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  </span>
+
+                  <!-- handle colors -->
+                  <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2">
+                    <!-- Color swatch -->
+                    <span class="color-swatch"
+                            [style.background-color]="getNestedValue(callEventLog, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(callEventLog, col.key) || 'No color set' }}">
+                    </span>
+                    <!-- Hex value -->
+                    <!-- <span class="text-muted small">
+                        {{ getNestedValue(callEventLog, col.key) || '—' }}
+                    </span> -->
+                  </span>
+
+                  <!-- handle anything else -->
+                  <span *ngSwitchDefault>
+                    {{ getNestedValue(callEventLog, col.key) }}
+                  </span>
+                </ng-container>
+              </td>
+<!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
+            <td class="text-truncate"><a [routerLink]="['/call', callEventLog.callId]" class="btn btn-link text-left" ngbTooltip="Open Call details">{{callEventLog.call?.name}}</a></td>
+            <td class="text-truncate"><a [routerLink]="['/calleventlog', callEventLog.id]" class="btn btn-link text-left" ngbTooltip="Open Call Event Log details">{{callEventLog.eventType}}</a></td>
+            <td class="text-truncate">{{callEventLog.userId | bigNumberFormat : '1.0-2'}}</td>
+            <td class="text-truncate">{{callEventLog.providerId}}</td>
+            <td class="text-truncate">{{callEventLog.metadata}}</td>
+            <td class="text-truncate">{{callEventLog.dateTimeCreated | date:'YYYY-MM-dd HH:mm:ss OOOO'}}</td>
+End of commented block for alternate definition option -->
+                 </tr>
+             </tbody>
+         </table>
+         </cdk-virtual-scroll-viewport>
+      </div>
+
+      <!-- Cards for Mobile -->
+      <cdk-virtual-scroll-viewport *ngIf="isSmallScreen" itemSize="320" class="mobile-viewport" minBufferPx="600" maxBufferPx="1200">
+        <div *cdkVirtualFor="let callEventLog of filteredCallEventLogs; trackBy: getCallEventLogId" class="card my-2"
+              [ngClass]="{
+                 'row-inactive': callEventLog.active == false,
+                 'row-deleted': callEventLog.deleted == true 
+                 }">
+
+
+        <!-- Prominent field first, if defined on the columns input -->
+        <div class="card-header py-3" *ngIf="prominentColumn">
+          <strong class="d-block text-truncate fs-5">
+            
+
+            <ng-container [ngSwitch]="prominentColumn.template">
+              <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(callEventLog, prominentColumn.key)" />
+              <a *ngSwitchCase="'link'"
+                 [routerLink]="prominentColumn.linkPath ? buildLink(callEventLog, prominentColumn.linkPath) : null"
+                 class="text-primary">
+                {{ getNestedValue(callEventLog, prominentColumn.key) }}
+              </a>
+              <span *ngSwitchCase="'date'">
+                {{ getNestedValue(callEventLog, prominentColumn.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+              </span>
+              <span *ngSwitchDefault>
+                {{ getNestedValue(callEventLog, prominentColumn.key) }}
+              </span>
+            </ng-container>
+
+
+          </strong>
+        </div>
+
+        <!-- Main card body built with rules from the columns input  -->
+        <div class="card-body small">
+          <div class="row g-2">
+            <ng-container *ngFor="let col of mobileColumns">
+              <!-- Skip if it's the prominent one (already shown above) -->
+              <ng-container *ngIf="col !== prominentColumn">
+                <div class="col-5 text-muted">{{ col.label }}:</div>
+                <div class="col-7 text-end fw-medium">
+
+                  <ng-container [ngSwitch]="col.template">
+
+                    <!-- boolean handling -->
+                    <boolean-icon *ngSwitchCase="'boolean'" [value]="getNestedValue(callEventLog, col.key)" />
+
+                    <!-- internal link handling -->
+                    <a *ngSwitchCase="'link'"
+                       [routerLink]="col.linkPath ? buildLink(callEventLog, col.linkPath) : null"
+                       class="text-primary">
+                      {{ getNestedValue(callEventLog, col.key)}}
+                    </a>
+
+                    <!-- data handling -->
+                    <span *ngSwitchCase="'date'">
+                      {{ getNestedValue(callEventLog, col.key) | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                    </span>
+
+                    <!-- color handling -->
+                    <span *ngSwitchCase="'color'" class="d-inline-flex align-items-center gap-2 justify-content-end">
+                        <span class="color-swatch"
+                            [style.background-color]="getNestedValue(callEventLog, col.key) || '#cccccc'"
+                            title="{{ getNestedValue(callEventLog, col.key) || 'No color set' }}">
+                        </span>
+                        <!--
+                        <span class="small">
+                        {{ getNestedValue(callEventLog, col.key) || '—' }}
+                        </span>
+                        -->
+                    </span>
+
+                    <!-- handle everything else -->
+                    <span *ngSwitchDefault>
+                      {{ getNestedValue(callEventLog, col.key)}}
+                    </span>
+                  </ng-container>
+
+                </div>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+
+
+        <!-- Action buttons -->
+        <div class="card-footer bg-transparent border-0 pt-0">
+          <div class="btn-group w-100" role="group">
+            <button class="action-btn action-view" [routerLink]="['/calleventlog', callEventLog.id]" ngbTooltip="View">
+              <i class="fa fa-magnifying-glass"></i> View
+            </button>
+            <button class="action-btn action-edit" (click)="handleEdit(callEventLog)" *ngIf="userIsSchedulerCallEventLogWriter()" ngbTooltip="Edit">
+              <i class="fa fa-pen"></i> Edit
+            </button>
+
+            <button class="action-btn action-delete" (click)="handleDelete(callEventLog)" *ngIf="userIsSchedulerCallEventLogWriter() && callEventLog.deleted == false" ngbTooltip="Delete">
+              <i class="fa fa-trash"></i> Delete
+            </button>
+            <button class="action-btn action-undelete" (click)="handleUndelete(callEventLog)" *ngIf="userIsSchedulerCallEventLogWriter() && callEventLog.deleted == true" ngbTooltip="Undelete">
+              <i class="fa fa-trash-arrow-upp"></i> UnDelete
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+<!-- Commented block containing alternate means of defining card by manually specifying fields.  This could be useful for people making new components based on this one, so leaving in as a resource.
+           <div class="card-header d-flex justify-content-between align-items-center">
+             <div>
+               <strong>{{callEventLog.id}}</strong>
+               <small class="text-muted d-block">{{callEventLog.call?.name}}</small>
+             </div>
+             <div>
+                <button class="action-btn action-view"
+                        [routerLink]="['/calleventlog', callEventLog.id]"
+                        ngbTooltip="Call Event Log Details">
+                <i class="fa fa-magnifying-glass"></i>
+                </button>
+                <button class="action-btn action-edit"
+                        (click)="handleEdit(callEventLog)"
+                        ngbTooltip="Edit Call Event Log">
+                <i class="fa fa-pen"></i>
+                </button>
+                <button class="action-btn action-delete"
+                      (click)="handleDelete(callEventLog)"
+                      ngbTooltip="Delete Call Event Log" 
+                      placement="top"
+                      *ngIf="callEventLog.deleted == false">
+                  <i class="fa fa-trash"></i>
+                </button>
+                <button class="action-btn action-undelete"
+                      (click)="handleUndelete(callEventLog)"
+                      ngbTooltip="Undelete Call Event Log" 
+                      placement="top"
+                      *ngIf="callEventLog.deleted == true">
+                 <i class="fa fa-trash-arrow-up"></i>
+                </button>
+             </div>
+             </div>
+             <div class="card-body">
+            <p class="call-event-log-info" *ngIf="callEventLog.callId != null">
+              <strong>Call: </strong>
+              <a [routerLink]="['/call', callEventLog.callId]" class="text-left p-0 m-0" ngbTooltip="Open Call details">{{callEventLog.call?.name}}</a>
+            </p>
+            <p class="call-event-log-info" *ngIf="callEventLog.eventType != null">
+              <strong>Event Type: </strong>
+              {{callEventLog.eventType}}
+            </p>
+            <p class="call-event-log-info" *ngIf="callEventLog.userId != null">
+              <strong>User Id: </strong>
+              {{callEventLog.userId | bigNumberFormat : '1.0-2'}}
+            </p>
+            <p class="call-event-log-info" *ngIf="callEventLog.providerId != null">
+              <strong>Provider Id: </strong>
+              {{callEventLog.providerId}}
+            </p>
+            <p class="call-event-log-info" *ngIf="callEventLog.metadata != null">
+              <strong>Metadata: </strong>
+              {{callEventLog.metadata}}
+            </p>
+            <p class="call-event-log-info" *ngIf="callEventLog.dateTimeCreated != null">
+              <strong>Date Time Created: </strong>
+              {{callEventLog.dateTimeCreated | date:'YYYY-MM-dd HH:mm:ss OOOO'}}
+            </p>
+            </div>
+         </div>
+End of commented block for alternate definition option  -->
+      </cdk-virtual-scroll-viewport>
+
+      <!-- Pagination Controls -->
+      <div class="pagination-bar" *ngIf="totalPages > 1">
+        <button class="pagination-btn"
+                (click)="goToPage(1)"
+                [disabled]="currentPage === 1"
+                ngbTooltip="First Page">
+          <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="previousPage()"
+                [disabled]="currentPage === 1"
+                ngbTooltip="Previous Page">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <span class="pagination-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+
+        <button class="pagination-btn"
+                (click)="nextPage()"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Next Page">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="pagination-btn"
+                (click)="goToPage(totalPages)"
+                [disabled]="currentPage === totalPages"
+                ngbTooltip="Last Page">
+          <i class="fa-solid fa-angles-right"></i>
+        </button>
+      </div>
+
+   </div>
+</div>

@@ -19,6 +19,69 @@
       [attr.aria-expanded]="isMobileMenuOpen" aria-label="Open menu">
       <i class="fa fa-bars"></i>
     </button>
+    <!-- Messages icon (desktop/tablet) -->
+    <div *ngIf="isUserLoggedIn" class="header-icon-wrapper d-none d-md-block" id="header-messages-btn">
+      <button class="btn header-icon-btn"
+              (click)="onToggleMessaging()"
+              title="Messages">
+        <i class="fa-solid fa-comments"></i>
+        <span class="header-badge" *ngIf="unreadMessageCount > 0">
+          {{ unreadMessageCount > 99 ? '99+' : unreadMessageCount }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Notification bell (desktop/tablet) -->
+    <div *ngIf="isUserLoggedIn" class="header-icon-wrapper d-none d-md-block" id="header-notifications-btn">
+      <button class="btn header-icon-btn header-notification-bell"
+              (click)="toggleNotificationDropdown($event)"
+              [class.active]="showNotificationDropdown"
+              title="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="header-badge" *ngIf="unreadNotificationCount > 0">
+          {{ unreadNotificationCount > 99 ? '99+' : unreadNotificationCount }}
+        </span>
+      </button>
+
+      <!-- Notification dropdown panel -->
+      <div class="header-notification-dropdown" *ngIf="showNotificationDropdown">
+        <div class="notification-dropdown-header">
+          <h5>Notifications</h5>
+          <button class="btn-text" (click)="acknowledgeAllNotifications()" *ngIf="notifications.length > 0">
+            Mark all read
+          </button>
+        </div>
+
+        <div class="notification-dropdown-list">
+          <div class="notification-loading" *ngIf="isLoadingNotifications">
+            <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+          </div>
+
+          <div class="notification-item"
+               *ngFor="let notif of notifications"
+               [class.clickable]="hasNotificationLink(notif)"
+               (click)="navigateToNotificationEntity(notif)">
+            <div class="notification-content">
+              <div class="notification-message">{{ notif.message }}</div>
+              <div class="notification-meta">
+                <span class="notification-time">{{ formatNotificationTime(notif.dateTimeCreated) }}</span>
+                <span class="notification-type" *ngIf="notif.notificationType">{{ notif.notificationType }}</span>
+              </div>
+            </div>
+            <button class="notification-dismiss"
+                    (click)="acknowledgeNotification(notif); $event.stopPropagation()"
+                    title="Dismiss">
+              <i class="fa-solid fa-check"></i>
+            </button>
+          </div>
+
+          <div class="notification-empty" *ngIf="!isLoadingNotifications && notifications.length === 0">
+            <i class="fa-regular fa-bell-slash"></i>
+            <p>No notifications</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Profile dropdown (desktop/tablet) -->
     <div *ngIf="isUserLoggedIn" ngbDropdown placement="bottom-end" [autoClose]="'outside'" #profileMenu="ngbDropdown"

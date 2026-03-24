@@ -1,0 +1,76 @@
+<div class="container-fluid p-1 m-0 message-bookmark-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="message-bookmark-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Message Bookmark</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Message Bookmark' : 'Add Message Bookmark'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerMessageBookmarkReader()">
+                <div class="col m-2 message-bookmark-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="messageBookmarkForm" (ngSubmit)="submitForm()" class="message-bookmark-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="MessageBookmark-userId" id="label-MessageBookmark-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="MessageBookmark-userId" formControlName="userId" placeholder="Enter User Id" class="form-control message-bookmark-input" [disabled]="!userIsSchedulerMessageBookmarkWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="messageBookmarkForm.get('userId')?.invalid && messageBookmarkForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('conversationMessageId')">
+                                <label for="MessageBookmark-conversationMessageId" id="label-MessageBookmark-conversationMessageId"><span class="text-danger">*</span>Conversation Message</label>
+                                <select id="MessageBookmark-conversationMessageId" formControlName="conversationMessageId" class="form-select message-bookmark-select" [disabled]="!userIsSchedulerMessageBookmarkWriter()">
+                                    <option [ngValue]="null">Select Conversation Message</option>
+                                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                                </select>
+                                <div *ngIf="messageBookmarkForm.get('conversationMessageId')?.invalid && messageBookmarkForm.get('conversationMessageId')?.touched" class="text-danger">
+                                    Conversation Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('note')">
+                                <label for="MessageBookmark-note" id="label-MessageBookmark-note">Note</label>
+                                <textarea id="MessageBookmark-note" formControlName="note" placeholder="Enter Note" class="form-control message-bookmark-input" [disabled]="!userIsSchedulerMessageBookmarkWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                                <label for="MessageBookmark-dateTimeCreated" id="label-MessageBookmark-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                                <input type="datetime-local" id="MessageBookmark-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control message-bookmark-input" [disabled]="!userIsSchedulerMessageBookmarkWriter()" aria-labelledby="label-dateTimeCreated" />
+                                <div *ngIf="messageBookmarkForm.get('dateTimeCreated')?.invalid && messageBookmarkForm.get('dateTimeCreated')?.touched" class="text-danger">
+                                    Date Time Created is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MessageBookmark-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerMessageBookmarkWriter()" />
+                                <label for="MessageBookmark-active" class="form-check-label" id="label-MessageBookmark-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="MessageBookmark-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerMessageBookmarkWriter()" />
+                                <label for="MessageBookmark-deleted" class="form-check-label" id="label-MessageBookmark-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="message-bookmark-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="messageBookmarkForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Message Bookmark">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !messageBookmarkForm.valid || !messageBookmarkForm.dirty || messageBookmarkForm.pristine  || userIsSchedulerMessageBookmarkWriter() == false " ngbTooltip="Save the Message Bookmark changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Message Bookmark' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

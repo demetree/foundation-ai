@@ -1,0 +1,79 @@
+<div class="container-fluid p-1 m-0 conversation-message-reaction-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="conversation-message-reaction-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Conversation Message Reaction</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Conversation Message Reaction' : 'Add Conversation Message Reaction'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerConversationMessageReactionReader()">
+                <div class="col m-2 conversation-message-reaction-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="conversationMessageReactionForm" (ngSubmit)="submitForm()" class="conversation-message-reaction-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('conversationMessageId')">
+                                <label for="ConversationMessageReaction-conversationMessageId" id="label-ConversationMessageReaction-conversationMessageId"><span class="text-danger">*</span>Conversation Message</label>
+                                <select id="ConversationMessageReaction-conversationMessageId" formControlName="conversationMessageId" class="form-select conversation-message-reaction-select" [disabled]="!userIsSchedulerConversationMessageReactionWriter()">
+                                    <option [ngValue]="null">Select Conversation Message</option>
+                                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                                </select>
+                                <div *ngIf="conversationMessageReactionForm.get('conversationMessageId')?.invalid && conversationMessageReactionForm.get('conversationMessageId')?.touched" class="text-danger">
+                                    Conversation Message is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="ConversationMessageReaction-userId" id="label-ConversationMessageReaction-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="ConversationMessageReaction-userId" formControlName="userId" placeholder="Enter User Id" class="form-control conversation-message-reaction-input" [disabled]="!userIsSchedulerConversationMessageReactionWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="conversationMessageReactionForm.get('userId')?.invalid && conversationMessageReactionForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('reaction')">
+                                <label for="ConversationMessageReaction-reaction" id="label-ConversationMessageReaction-reaction"><span class="text-danger">*</span>Reaction</label>
+                                <input type="text" id="ConversationMessageReaction-reaction" formControlName="reaction" placeholder="Enter Reaction" class="form-control conversation-message-reaction-input" [disabled]="!userIsSchedulerConversationMessageReactionWriter()" aria-labelledby="label-reaction" />
+                                <div *ngIf="conversationMessageReactionForm.get('reaction')?.invalid && conversationMessageReactionForm.get('reaction')?.touched" class="text-danger">
+                                    Reaction is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                                <label for="ConversationMessageReaction-dateTimeCreated" id="label-ConversationMessageReaction-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                                <input type="datetime-local" id="ConversationMessageReaction-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control conversation-message-reaction-input" [disabled]="!userIsSchedulerConversationMessageReactionWriter()" aria-labelledby="label-dateTimeCreated" />
+                                <div *ngIf="conversationMessageReactionForm.get('dateTimeCreated')?.invalid && conversationMessageReactionForm.get('dateTimeCreated')?.touched" class="text-danger">
+                                    Date Time Created is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationMessageReaction-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageReactionWriter()" />
+                                <label for="ConversationMessageReaction-active" class="form-check-label" id="label-ConversationMessageReaction-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationMessageReaction-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConversationMessageReactionWriter()" />
+                                <label for="ConversationMessageReaction-deleted" class="form-check-label" id="label-ConversationMessageReaction-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="conversation-message-reaction-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="conversationMessageReactionForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Conversation Message Reaction">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationMessageReactionForm.valid || !conversationMessageReactionForm.dirty || conversationMessageReactionForm.pristine  || userIsSchedulerConversationMessageReactionWriter() == false " ngbTooltip="Save the Conversation Message Reaction changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Conversation Message Reaction' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

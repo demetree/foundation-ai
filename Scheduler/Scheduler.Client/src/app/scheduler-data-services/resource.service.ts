@@ -29,7 +29,7 @@ import { ResourceShiftService, ResourceShiftData } from './resource-shift.servic
 import { CrewMemberService, CrewMemberData } from './crew-member.service';
 import { ScheduledEventService, ScheduledEventData } from './scheduled-event.service';
 import { EventChargeService, EventChargeData } from './event-charge.service';
-import { NotificationSubscriptionService, NotificationSubscriptionData } from './notification-subscription.service';
+import { EventNotificationSubscriptionService, EventNotificationSubscriptionData } from './event-notification-subscription.service';
 import { VolunteerProfileService, VolunteerProfileData } from './volunteer-profile.service';
 import { VolunteerGroupMemberService, VolunteerGroupMemberData } from './volunteer-group-member.service';
 import { DocumentService, DocumentData } from './document.service';
@@ -232,9 +232,9 @@ export class ResourceData {
     private _eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
                 
-    private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
-    private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
-    private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+    private _eventNotificationSubscriptions: EventNotificationSubscriptionData[] | null = null;
+    private _eventNotificationSubscriptionsPromise: Promise<EventNotificationSubscriptionData[]> | null  = null;
+    private _eventNotificationSubscriptionsSubject = new BehaviorSubject<EventNotificationSubscriptionData[] | null>(null);
 
                 
     private _volunteerProfiles: VolunteerProfileData[] | null = null;
@@ -498,27 +498,27 @@ export class ResourceData {
 
 
 
-    public NotificationSubscriptions$ = this._notificationSubscriptionsSubject.asObservable().pipe(
+    public EventNotificationSubscriptions$ = this._eventNotificationSubscriptionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._notificationSubscriptions === null && this._notificationSubscriptionsPromise === null) {
-            this.loadNotificationSubscriptions(); // Private method to start fetch
+          if (this._eventNotificationSubscriptions === null && this._eventNotificationSubscriptionsPromise === null) {
+            this.loadEventNotificationSubscriptions(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
 
-    private _notificationSubscriptionsCount$: Observable<bigint | number> | null = null;
-    public get NotificationSubscriptionsCount$(): Observable<bigint | number> {
-        if (this._notificationSubscriptionsCount$ === null) {
-            this._notificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({resourceId: this.id,
+    private _eventNotificationSubscriptionsCount$: Observable<bigint | number> | null = null;
+    public get EventNotificationSubscriptionsCount$(): Observable<bigint | number> {
+        if (this._eventNotificationSubscriptionsCount$ === null) {
+            this._eventNotificationSubscriptionsCount$ = EventNotificationSubscriptionService.Instance.GetEventNotificationSubscriptionsRowCount({resourceId: this.id,
               active: true,
               deleted: false
             });
         }
-        return this._notificationSubscriptionsCount$;
+        return this._eventNotificationSubscriptionsCount$;
     }
 
 
@@ -706,10 +706,10 @@ export class ResourceData {
      this._eventChargesSubject.next(null);
      this._eventChargesCount$ = null;
 
-     this._notificationSubscriptions = null;
-     this._notificationSubscriptionsPromise = null;
-     this._notificationSubscriptionsSubject.next(null);
-     this._notificationSubscriptionsCount$ = null;
+     this._eventNotificationSubscriptions = null;
+     this._eventNotificationSubscriptionsPromise = null;
+     this._eventNotificationSubscriptionsSubject.next(null);
+     this._eventNotificationSubscriptionsCount$ = null;
 
      this._volunteerProfiles = null;
      this._volunteerProfilesPromise = null;
@@ -1327,66 +1327,66 @@ export class ResourceData {
 
     /**
      *
-     * Gets the NotificationSubscriptions for this Resource.
+     * Gets the EventNotificationSubscriptions for this Resource.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.resource.NotificationSubscriptions.then(resources => { ... })
+     *   this.resource.EventNotificationSubscriptions.then(resources => { ... })
      *   or
      *   await this.resource.resources
      *
     */
-    public get NotificationSubscriptions(): Promise<NotificationSubscriptionData[]> {
-        if (this._notificationSubscriptions !== null) {
-            return Promise.resolve(this._notificationSubscriptions);
+    public get EventNotificationSubscriptions(): Promise<EventNotificationSubscriptionData[]> {
+        if (this._eventNotificationSubscriptions !== null) {
+            return Promise.resolve(this._eventNotificationSubscriptions);
         }
 
-        if (this._notificationSubscriptionsPromise !== null) {
-            return this._notificationSubscriptionsPromise;
+        if (this._eventNotificationSubscriptionsPromise !== null) {
+            return this._eventNotificationSubscriptionsPromise;
         }
 
         // Start the load
-        this.loadNotificationSubscriptions();
+        this.loadEventNotificationSubscriptions();
 
-        return this._notificationSubscriptionsPromise!;
+        return this._eventNotificationSubscriptionsPromise!;
     }
 
 
 
-    private loadNotificationSubscriptions(): void {
+    private loadEventNotificationSubscriptions(): void {
 
-        this._notificationSubscriptionsPromise = lastValueFrom(
-            ResourceService.Instance.GetNotificationSubscriptionsForResource(this.id)
+        this._eventNotificationSubscriptionsPromise = lastValueFrom(
+            ResourceService.Instance.GetEventNotificationSubscriptionsForResource(this.id)
         )
-        .then(NotificationSubscriptions => {
-            this._notificationSubscriptions = NotificationSubscriptions ?? [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
-            return this._notificationSubscriptions;
+        .then(EventNotificationSubscriptions => {
+            this._eventNotificationSubscriptions = EventNotificationSubscriptions ?? [];
+            this._eventNotificationSubscriptionsSubject.next(this._eventNotificationSubscriptions);
+            return this._eventNotificationSubscriptions;
          })
         .catch(err => {
-            this._notificationSubscriptions = [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
+            this._eventNotificationSubscriptions = [];
+            this._eventNotificationSubscriptionsSubject.next(this._eventNotificationSubscriptions);
             throw err;
         })
         .finally(() => {
-            this._notificationSubscriptionsPromise = null; // Allow retry if needed
+            this._eventNotificationSubscriptionsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached NotificationSubscription. Call after mutations to force refresh.
+     * Clears the cached EventNotificationSubscription. Call after mutations to force refresh.
      */
-    public ClearNotificationSubscriptionsCache(): void {
-        this._notificationSubscriptions = null;
-        this._notificationSubscriptionsPromise = null;
-        this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);      // Emit to observable
+    public ClearEventNotificationSubscriptionsCache(): void {
+        this._eventNotificationSubscriptions = null;
+        this._eventNotificationSubscriptionsPromise = null;
+        this._eventNotificationSubscriptionsSubject.next(this._eventNotificationSubscriptions);      // Emit to observable
     }
 
-    public get HasNotificationSubscriptions(): Promise<boolean> {
-        return this.NotificationSubscriptions.then(notificationSubscriptions => notificationSubscriptions.length > 0);
+    public get HasEventNotificationSubscriptions(): Promise<boolean> {
+        return this.EventNotificationSubscriptions.then(eventNotificationSubscriptions => eventNotificationSubscriptions.length > 0);
     }
 
 
@@ -1737,7 +1737,7 @@ export class ResourceService extends SecureEndpointBase {
         private crewMemberService: CrewMemberService,
         private scheduledEventService: ScheduledEventService,
         private eventChargeService: EventChargeService,
-        private notificationSubscriptionService: NotificationSubscriptionService,
+        private eventNotificationSubscriptionService: EventNotificationSubscriptionService,
         private volunteerProfileService: VolunteerProfileService,
         private volunteerGroupMemberService: VolunteerGroupMemberService,
         private documentService: DocumentService,
@@ -2305,8 +2305,8 @@ export class ResourceService extends SecureEndpointBase {
     }
 
 
-    public GetNotificationSubscriptionsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<NotificationSubscriptionData[]> {
-        return this.notificationSubscriptionService.GetNotificationSubscriptionList({
+    public GetEventNotificationSubscriptionsForResource(resourceId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventNotificationSubscriptionData[]> {
+        return this.eventNotificationSubscriptionService.GetEventNotificationSubscriptionList({
             resourceId: resourceId,
             active: active,
             deleted: deleted,
@@ -2426,9 +2426,9 @@ export class ResourceService extends SecureEndpointBase {
     (revived as any)._eventChargesPromise = null;
     (revived as any)._eventChargesSubject = new BehaviorSubject<EventChargeData[] | null>(null);
 
-    (revived as any)._notificationSubscriptions = null;
-    (revived as any)._notificationSubscriptionsPromise = null;
-    (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+    (revived as any)._eventNotificationSubscriptions = null;
+    (revived as any)._eventNotificationSubscriptionsPromise = null;
+    (revived as any)._eventNotificationSubscriptionsSubject = new BehaviorSubject<EventNotificationSubscriptionData[] | null>(null);
 
     (revived as any)._volunteerProfiles = null;
     (revived as any)._volunteerProfilesPromise = null;
@@ -2566,16 +2566,16 @@ export class ResourceService extends SecureEndpointBase {
     (revived as any)._eventChargesCount$ = null;
 
 
-    (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
+    (revived as any).EventNotificationSubscriptions$ = (revived as any)._eventNotificationSubscriptionsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
-                (revived as any).loadNotificationSubscriptions();        // Need to cast to any to invoke private load method
+              if ((revived as any)._eventNotificationSubscriptions === null && (revived as any)._eventNotificationSubscriptionsPromise === null) {
+                (revived as any).loadEventNotificationSubscriptions();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any)._notificationSubscriptionsCount$ = null;
+    (revived as any)._eventNotificationSubscriptionsCount$ = null;
 
 
     (revived as any).VolunteerProfiles$ = (revived as any)._volunteerProfilesSubject.asObservable().pipe(

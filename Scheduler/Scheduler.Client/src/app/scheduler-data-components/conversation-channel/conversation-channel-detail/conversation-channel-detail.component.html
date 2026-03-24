@@ -1,0 +1,119 @@
+<div class="container-fluid p-1 m-0 conversation-channel-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="conversation-channel-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Conversation Channel</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Conversation Channel' : 'Add Conversation Channel'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerConversationChannelReader()">
+                <div class="col m-2 conversation-channel-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="conversationChannelForm" (ngSubmit)="submitForm()" class="conversation-channel-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('conversationId')">
+                                <label for="ConversationChannel-conversationId" id="label-ConversationChannel-conversationId"><span class="text-danger">*</span>Conversation</label>
+                                <select id="ConversationChannel-conversationId" formControlName="conversationId" class="form-select conversation-channel-select" [disabled]="!userIsSchedulerConversationChannelWriter()">
+                                    <option [ngValue]="null">Select Conversation</option>
+                                    <option *ngFor="let conversation of conversations$ | async" [ngValue]="conversation.id">{{conversation.entity}}</option>
+                                </select>
+                                <div *ngIf="conversationChannelForm.get('conversationId')?.invalid && conversationChannelForm.get('conversationId')?.touched" class="text-danger">
+                                    Conversation is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('name')">
+                                <label for="ConversationChannel-name" id="label-ConversationChannel-name"><span class="text-danger">*</span>Name</label>
+                                <input type="text" id="ConversationChannel-name" formControlName="name" placeholder="Enter Name" class="form-control conversation-channel-input" [disabled]="!userIsSchedulerConversationChannelWriter()" aria-labelledby="label-name" />
+                                <div *ngIf="conversationChannelForm.get('name')?.invalid && conversationChannelForm.get('name')?.touched" class="text-danger">
+                                    Name is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('topic')">
+                                <label for="ConversationChannel-topic" id="label-ConversationChannel-topic">Topic</label>
+                                <textarea id="ConversationChannel-topic" formControlName="topic" placeholder="Enter Topic" class="form-control conversation-channel-input" [disabled]="!userIsSchedulerConversationChannelWriter()"></textarea>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPrivate')">
+                                <input type="checkbox" id="ConversationChannel-isPrivate" formControlName="isPrivate" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                                <label for="ConversationChannel-isPrivate" class="form-check-label" id="label-ConversationChannel-isPrivate"><span class="text-danger">*</span>Is Private</label>
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('isPinned')">
+                                <input type="checkbox" id="ConversationChannel-isPinned" formControlName="isPinned" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                                <label for="ConversationChannel-isPinned" class="form-check-label" id="label-ConversationChannel-isPinned"><span class="text-danger">*</span>Is Pinned</label>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="ConversationChannel-versionNumber" id="label-ConversationChannel-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="ConversationChannel-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control conversation-channel-input" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationChannel-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                                <label for="ConversationChannel-active" class="form-check-label" id="label-ConversationChannel-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="ConversationChannel-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConversationChannelWriter()" />
+                                <label for="ConversationChannel-deleted" class="form-check-label" id="label-ConversationChannel-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="conversation-channel-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="conversationChannelForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Conversation Channel">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationChannelForm.valid || !conversationChannelForm.dirty || conversationChannelForm.pristine  || userIsSchedulerConversationChannelWriter() == false " ngbTooltip="Save the Conversation Channel changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Conversation Channel' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3 header-card shadow-sm" *ngIf="isEditMode && userIsSchedulerConversationChannelReader() && (isLoading$ | async) == false">
+            <div class="row flex-grow-1">
+                <div class="col m-2 conversation-channel-details-body">
+
+                    <ul ngbNav #nav="ngbNav" class="nav-tabs">
+                      <li ngbNavItem *ngIf="conversationChannelChangeHistoryService.userIsSchedulerConversationChannelChangeHistoryReader()">
+                            <button ngbNavLink>Conversation Channel Change Histories
+                                <span class="badge bg-primary ms-2">
+                                    {{ (conversationChannelData?.ConversationChannelChangeHistoriesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-conversation-channel-change-history-table [queryParams]="{ conversationChannelId: conversationChannelData?.id }" [showAddButton]="true" [preSeededData]="{ conversationChannelId: conversationChannelData?.id }" [hiddenFields]="['conversationChannelId']"></app-conversation-channel-change-history-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                      <li ngbNavItem *ngIf="conversationMessageService.userIsSchedulerConversationMessageReader()">
+                            <button ngbNavLink>Conversation Messages
+                                <span class="badge bg-primary ms-2">
+                                    {{ (conversationChannelData?.ConversationMessagesCount$ | async) ?? '-' }}
+                                </span>
+                            </button>
+                            <ng-template ngbNavContent>
+                            <div class="d-flex flex-column gap-3 p-0">
+                                <div class="flex-grow-1">
+                                    <app-conversation-message-table [queryParams]="{ conversationChannelId: conversationChannelData?.id }" [showAddButton]="true" [preSeededData]="{ conversationChannelId: conversationChannelData?.id }" [hiddenFields]="['conversationChannelId']"></app-conversation-message-table>
+                                </div>
+                            </div>
+                            </ng-template>
+                        </li>
+                    </ul>
+                     <div [ngbNavOutlet]="nav"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

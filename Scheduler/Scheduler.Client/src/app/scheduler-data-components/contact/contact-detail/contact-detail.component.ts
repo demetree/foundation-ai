@@ -39,7 +39,7 @@ import { FinancialTransactionService } from '../../../scheduler-data-services/fi
 import { InvoiceService } from '../../../scheduler-data-services/invoice.service';
 import { ReceiptService } from '../../../scheduler-data-services/receipt.service';
 import { ContactInteractionService } from '../../../scheduler-data-services/contact-interaction.service';
-import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
+import { EventNotificationSubscriptionService } from '../../../scheduler-data-services/event-notification-subscription.service';
 import { ConstituentService } from '../../../scheduler-data-services/constituent.service';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
@@ -165,7 +165,7 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
   public invoices$ = this.invoiceService.GetInvoiceList();
   public receipts$ = this.receiptService.GetReceiptList();
   public contactInteractions$ = this.contactInteractionService.GetContactInteractionList();
-  public notificationSubscriptions$ = this.notificationSubscriptionService.GetNotificationSubscriptionList();
+  public eventNotificationSubscriptions$ = this.eventNotificationSubscriptionService.GetEventNotificationSubscriptionList();
   public constituents$ = this.constituentService.GetConstituentList();
   public documents$ = this.documentService.GetDocumentList();
   public eventResourceAssignments$ = this.eventResourceAssignmentService.GetEventResourceAssignmentList();
@@ -190,7 +190,7 @@ export class ContactDetailComponent implements OnInit, CanComponentDeactivate {
     public invoiceService: InvoiceService,
     public receiptService: ReceiptService,
     public contactInteractionService: ContactInteractionService,
-    public notificationSubscriptionService: NotificationSubscriptionService,
+    public eventNotificationSubscriptionService: EventNotificationSubscriptionService,
     public constituentService: ConstituentService,
     public documentService: DocumentService,
     public eventResourceAssignmentService: EventResourceAssignmentService,

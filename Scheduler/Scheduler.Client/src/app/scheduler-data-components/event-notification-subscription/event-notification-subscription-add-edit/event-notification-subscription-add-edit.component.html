@@ -1,0 +1,88 @@
+<div class="add-event-notification-subscription" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-event-notification-subscription me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Event Notification Subscription" 
+        *ngIf="userIsSchedulerEventNotificationSubscriptionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #eventNotificationSubscriptionModal let-modal>
+   <div class="modal-header event-notification-subscription-modal-header">
+      <h5 class="modal-title mb-0" id="eventNotificationSubscriptionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Event Notification Subscription' : 'Add Event Notification Subscription' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body event-notification-subscription-modal-body">
+      <form [formGroup]="eventNotificationSubscriptionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('resourceId')">
+                <label for="EventNotificationSubscription-resourceId" id="label-EventNotificationSubscription-resourceId">Resource</label>
+                <select id="EventNotificationSubscription-resourceId" formControlName="resourceId" class="form-select event-notification-subscription-select" [disabled]="!userIsSchedulerEventNotificationSubscriptionWriter()">
+                    <option [ngValue]="null">Select Resource</option>
+                    <option *ngFor="let resource of resources$ | async" [ngValue]="resource.id">{{[resource.name] | filterAndJoin}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('contactId')">
+                <label for="EventNotificationSubscription-contactId" id="label-EventNotificationSubscription-contactId">Contact</label>
+                <select id="EventNotificationSubscription-contactId" formControlName="contactId" class="form-select event-notification-subscription-select" [disabled]="!userIsSchedulerEventNotificationSubscriptionWriter()">
+                    <option [ngValue]="null">Select Contact</option>
+                    <option *ngFor="let contact of contacts$ | async" [ngValue]="contact.id">{{contact.firstName}}</option>
+                </select>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('eventNotificationTypeId')">
+                <label for="EventNotificationSubscription-eventNotificationTypeId" id="label-EventNotificationSubscription-eventNotificationTypeId"><span class="text-danger">*</span>Event Notification Type</label>
+                <select id="EventNotificationSubscription-eventNotificationTypeId" formControlName="eventNotificationTypeId" class="form-select event-notification-subscription-select" [disabled]="!userIsSchedulerEventNotificationSubscriptionWriter()">
+                    <option [ngValue]="null">Select Event Notification Type</option>
+                    <option *ngFor="let eventNotificationType of eventNotificationTypes$ | async" [ngValue]="eventNotificationType.id">{{eventNotificationType.name}}</option>
+                </select>
+                <div *ngIf="eventNotificationSubscriptionForm.get('eventNotificationTypeId')?.invalid && eventNotificationSubscriptionForm.get('eventNotificationTypeId')?.touched" class="text-danger">
+                    Event Notification Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('triggerEvents')">
+                <label for="EventNotificationSubscription-triggerEvents" id="label-EventNotificationSubscription-triggerEvents"><span class="text-danger">*</span>Trigger Events</label>
+                <input type="number" id="EventNotificationSubscription-triggerEvents" formControlName="triggerEvents" placeholder="Enter Trigger Events" class="form-control event-notification-subscription-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionWriter()" aria-labelledby="label-triggerEvents" />
+                <div *ngIf="eventNotificationSubscriptionForm.get('triggerEvents')?.invalid && eventNotificationSubscriptionForm.get('triggerEvents')?.touched" class="text-danger">
+                    Trigger Events is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('recipientAddress')">
+                <label for="EventNotificationSubscription-recipientAddress" id="label-EventNotificationSubscription-recipientAddress"><span class="text-danger">*</span>Recipient Address</label>
+                <input type="text" id="EventNotificationSubscription-recipientAddress" formControlName="recipientAddress" placeholder="Enter Recipient Address" class="form-control event-notification-subscription-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionWriter()" aria-labelledby="label-recipientAddress" />
+                <div *ngIf="eventNotificationSubscriptionForm.get('recipientAddress')?.invalid && eventNotificationSubscriptionForm.get('recipientAddress')?.touched" class="text-danger">
+                    Recipient Address is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="EventNotificationSubscription-versionNumber" id="label-EventNotificationSubscription-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="EventNotificationSubscription-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-notification-subscription-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventNotificationSubscription-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionWriter()" />
+                <label for="EventNotificationSubscription-active" class="form-check-label" id="label-EventNotificationSubscription-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="EventNotificationSubscription-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionWriter()" />
+                <label for="EventNotificationSubscription-deleted" class="form-check-label" id="label-EventNotificationSubscription-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer event-notification-subscription-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Event Notification Subscription changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventNotificationSubscriptionForm.valid || eventNotificationSubscriptionForm.pristine  || userIsSchedulerEventNotificationSubscriptionWriter() == false " ngbTooltip="Save the Event Notification Subscription changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Event Notification Subscription' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

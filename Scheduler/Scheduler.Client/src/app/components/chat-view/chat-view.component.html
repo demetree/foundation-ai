@@ -1,0 +1,595 @@
+<!-- ─── Chat View Component ─────────────────────────────────────────────────── -->
+
+<!-- Search Bar -->
+<div class="search-bar" *ngIf="isSearchMode">
+  <div class="search-input-row">
+    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+    <input type="text"
+           [(ngModel)]="searchQuery"
+           (input)="onSearchInput()"
+           placeholder="Search messages..."
+           id="chat-view-search-input" />
+    <button class="btn-icon btn-icon-sm" (click)="toggleSearch()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <!-- Search results -->
+  <div class="search-results" *ngIf="searchResults.length > 0 || isSearching">
+    <div class="loading-state compact" *ngIf="isSearching">
+      <i class="fa-solid fa-spinner fa-spin"></i>
+      <span>Searching...</span>
+    </div>
+    <div class="search-result-item"
+         *ngFor="let result of searchResults"
+         (click)="jumpToSearchResult(result)">
+      <div class="search-result-sender">{{ result.userDisplayName }}</div>
+      <div class="search-result-text">{{ result.message }}</div>
+      <div class="search-result-time">{{ formatTime(result.dateTimeCreated) }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Chat Header Bar ────────────────────────────────────────────────────── -->
+<div class="chat-header" *ngIf="conversation">
+  <div class="chat-header-left">
+    <h4 class="chat-header-title">{{ conversation.name || 'Conversation' }}</h4>
+    <span class="chat-header-members" *ngIf="conversation.members">
+      {{ conversation.members.length }} {{ conversation.members.length === 1 ? 'member' : 'members' }}
+    </span>
+  </div>
+  <div class="chat-header-actions">
+    <!-- Voice Call -->
+    <button class="btn-icon chat-header-btn" (click)="callService.startCall(conversation.id, 'Voice')"
+            title="Voice Call" id="chat-view-voice-call-btn">
+      <i class="fa-solid fa-phone"></i>
+    </button>
+    <!-- Video Call -->
+    <button class="btn-icon chat-header-btn" (click)="callService.startCall(conversation.id, 'Video')"
+            title="Video Call" id="chat-view-video-call-btn">
+      <i class="fa-solid fa-video"></i>
+    </button>
+    <!-- Search -->
+    <button class="btn-icon chat-header-btn" (click)="toggleSearch()" title="Search Messages"
+            [class.active]="isSearchMode" id="chat-view-search-btn">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+    <!-- Pinned Messages -->
+    <button class="btn-icon chat-header-btn" (click)="toggleShowPinnedMessages()" title="Pinned Messages"
+            [class.active]="showPinnedMessages" id="chat-view-pin-btn">
+      <i class="fa-solid fa-thumbtack"></i>
+    </button>
+    <!-- Bookmarks -->
+    <button class="btn-icon chat-header-btn" (click)="toggleShowBookmarks()" title="Bookmarks"
+            [class.active]="showBookmarks" id="chat-view-bookmarks-btn">
+      <i class="fa-solid fa-bookmark"></i>
+    </button>
+    <!-- Conversation Info -->
+    <button class="btn-icon chat-header-btn" (click)="showConversationInfo = !showConversationInfo"
+            title="Conversation Info" [class.active]="showConversationInfo" id="chat-view-info-btn">
+      <i class="fa-solid fa-circle-info"></i>
+    </button>
+  </div>
+</div>
+
+
+<!-- ─── Chat View ──────────────────────────────────────────────────────────── -->
+<div class="chat-view" *ngIf="conversation && !showConversationInfo">
+
+  <!-- Channel sidebar (sub-channels within a conversation) -->
+  <div class="channel-sidebar" *ngIf="channels.length > 0 || showCreateChannel">
+    <div class="channel-sidebar-header">
+      <span>Channels</span>
+      <button class="channel-add-btn" (click)="toggleCreateChannel()" title="Create channel">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </div>
+
+    <div class="channel-list">
+      <div class="channel-item all-messages"
+           [class.active]="selectedChannel == null"
+           (click)="clearChannelFilter()">
+        <i class="fa-solid fa-comments"></i> All Messages
+      </div>
+      <div class="channel-item"
+           *ngFor="let ch of channels"
+           [class.active]="selectedChannel?.id === ch.id"
+           (click)="selectChannel(ch)">
+        <div class="channel-item-header">
+          <i class="fa-solid" [ngClass]="ch.isPrivate ? 'fa-lock' : 'fa-hashtag'"></i>
+          <span class="channel-name">{{ ch.name }}</span>
+          <span class="channel-message-count" *ngIf="ch.messageCount > 0">{{ ch.messageCount }}</span>
+        </div>
+        <div class="channel-item-preview" *ngIf="ch.lastMessagePreview">
+          {{ ch.lastMessagePreview }}
+        </div>
+        <button class="channel-delete-btn" (click)="deleteChannel(ch.id); $event.stopPropagation()" title="Delete channel">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Create channel form -->
+    <div class="create-channel-form" *ngIf="showCreateChannel">
+      <input type="text" [(ngModel)]="newChannelName" placeholder="Channel name" class="channel-input" />
+      <input type="text" [(ngModel)]="newChannelTopic" placeholder="Topic (optional)" class="channel-input" />
+      <label class="channel-private-toggle">
+        <input type="checkbox" [(ngModel)]="newChannelIsPrivate" /> Private
+      </label>
+      <div class="channel-form-actions">
+        <button class="btn-secondary" (click)="toggleCreateChannel()">Cancel</button>
+        <button class="btn-primary" (click)="createNewChannel()" [disabled]="newChannelName.trim().length === 0">Create</button>
+      </div>
+    </div>
+
+    <!-- Empty channel state -->
+    <div class="channel-empty" *ngIf="channels.length === 0 && !showCreateChannel">
+      <p>No channels yet</p>
+      <button class="btn-text" (click)="toggleCreateChannel()">Create one</button>
+    </div>
+  </div>
+
+  <!-- Chat content area (column layout for messages + composer) -->
+  <div class="chat-content">
+    <!-- Messages container with drag-and-drop and scroll -->
+    <cdk-virtual-scroll-viewport class="messages-container" #messageContainer
+         [itemSize]="52"
+         (scrolledIndexChange)="onVirtualScroll()"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave($event)"
+         (drop)="onDrop($event)">
+
+      <!-- Drag-and-drop overlay -->
+      <div class="drop-overlay" *ngIf="isDragOver">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span>Drop files here</span>
+      </div>
+
+      <!-- Load more spinner -->
+      <div class="load-more-spinner" *ngIf="isLoadingMore">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading older messages...</span>
+      </div>
+
+      <!-- Loading messages -->
+      <div class="loading-state" *ngIf="isLoadingMessages">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading messages...</span>
+      </div>
+
+      <!-- Messages -->
+      <ng-container *cdkVirtualFor="let msg of messages; let i = index">
+
+        <!-- Date separator -->
+        <div class="date-separator" *ngIf="shouldShowDateSeparator(msg, i)">
+          <span>{{ getDateLabel(msg.dateTimeCreated) }}</span>
+        </div>
+
+        <div class="message-item"
+             [id]="'msg-' + msg.id"
+             [class.own-message]="isOwnMessage(msg)"
+             [class.other-message]="!isOwnMessage(msg)"
+             [class.is-reply]="msg.parentConversationMessageId != null"
+             [class.is-grouped]="isGroupedMessage(msg, i)"
+             [class.is-pending]="msg.isPending"
+             [class.is-failed]="msg.isFailed">
+
+          <!-- Reply-to indicator for threaded messages -->
+          <div class="reply-to-indicator" *ngIf="msg.parentConversationMessageId != null" (click)="openThread(msg)">
+            <i class="fa-solid fa-reply"></i> Reply in thread
+          </div>
+
+          <!-- Sender name with presence dot — hidden for grouped messages -->
+          <div class="message-sender" *ngIf="!isOwnMessage(msg) && shouldShowSender(msg, i)">
+            <span class="presence-dot-inline" [ngClass]="getPresenceClass(msg.userId)"></span>
+            {{ msg.userDisplayName }}
+          </div>
+
+          <!--
+            Bubble wrapper — hover tracking lives here so the cursor can
+            reach the actions toolbar above the bubble without losing hover.
+          -->
+          <div class="message-bubble-wrapper"
+               (mouseenter)="hoveredMessageId = msg.id"
+               (mouseleave)="hoveredMessageId = null">
+
+            <!-- Hover action bar -->
+            <div class="message-actions" *ngIf="hoveredMessageId === msg.id && editingMessageId !== msg.id && !msg.isDeleted && !msg.isPending && !msg.isFailed">
+              <button class="msg-action-btn msg-action-react" (click)="toggleReactionPicker(msg.id)" title="React">
+                <i class="fa-regular fa-face-smile"></i>
+              </button>
+              <button class="msg-action-btn" *ngIf="isOwnMessage(msg)" (click)="startEdit(msg)" title="Edit">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="msg-action-btn msg-action-delete" *ngIf="isOwnMessage(msg)" (click)="deleteMessage(msg)"
+                      title="Delete">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+              <button class="msg-action-btn" (click)="openThread(msg)" title="Reply in thread">
+                <i class="fa-solid fa-reply"></i>
+              </button>
+              <button class="msg-action-btn" (click)="openForwardPicker(msg)" title="Forward">
+                <i class="fa-solid fa-share"></i>
+              </button>
+              <button class="msg-action-btn" (click)="togglePinMessage(msg)"
+                      [title]="isPinnedMessage(msg.id) ? 'Unpin message' : 'Pin message'">
+                <i class="fa-solid fa-thumbtack" [class.pinned]="isPinnedMessage(msg.id)"></i>
+              </button>
+              <button class="msg-action-btn" (click)="toggleBookmark(msg)"
+                      [title]="isBookmarked(msg.id) ? 'Remove bookmark' : 'Bookmark'">
+                <i class="fa-solid fa-bookmark" [class.bookmarked]="isBookmarked(msg.id)"></i>
+              </button>
+              <button class="msg-action-btn" *ngIf="!isOwnMessage(msg)" (click)="markUnread(msg)"
+                      title="Mark unread">
+                <i class="fa-solid fa-eye-slash"></i>
+              </button>
+            </div>
+
+            <!-- Reaction picker popover -->
+            <div class="reaction-picker" *ngIf="reactionPickerMessageId === msg.id">
+              <button *ngFor="let emoji of availableEmojis"
+                      class="emoji-btn"
+                      (click)="addReaction(msg.id, emoji)">
+                {{ emoji }}
+              </button>
+            </div>
+
+            <!-- Message bubble -->
+            <div class="message-bubble message-deleted" *ngIf="msg.isDeleted && editingMessageId !== msg.id">
+              <span class="deleted-text"><i class="fa-solid fa-ban"></i> This message was deleted</span>
+            </div>
+            <div class="message-bubble" *ngIf="!msg.isDeleted && editingMessageId !== msg.id"
+                 [class.message-pending]="msg.isPending"
+                 [class.message-failed]="msg.isFailed">
+              <div class="forwarded-header" *ngIf="msg.forwardedFromMessageId">
+                <i class="fa-solid fa-share"></i> Forwarded from <strong>{{ msg.forwardedFromUserDisplayName || 'Unknown' }}</strong>
+              </div>
+              <div class="message-text" [innerHTML]="msg.message | messageFormat:currentUserDisplayName"></div>
+
+              <!-- Attachments on this message -->
+              <div class="message-attachments" *ngIf="msg.attachments && msg.attachments.length > 0">
+                <ng-container *ngFor="let attachment of msg.attachments">
+
+                  <!-- Image thumbnail -->
+                  <div class="attachment-image" *ngIf="isImageAttachment(attachment.mimeType)"
+                       (click)="openLightbox(attachment.objectGuid)">
+                    <img [src]="thumbnailCache.get(attachment.objectGuid)"
+                         *ngIf="thumbnailCache.has(attachment.objectGuid)"
+                         [alt]="attachment.fileName" />
+                    <div class="attachment-image-loading" *ngIf="!thumbnailCache.has(attachment.objectGuid)">
+                      <i class="fa-solid fa-spinner fa-spin"></i>
+                    </div>
+                    <span class="attachment-image-name">{{ attachment.fileName }}</span>
+                  </div>
+
+                  <!-- Non-image file card -->
+                  <div class="attachment-file-card" *ngIf="!isImageAttachment(attachment.mimeType)"
+                       (click)="downloadAttachment(attachment.objectGuid, attachment.fileName)">
+                    <i class="fa-solid attachment-file-icon" [ngClass]="getFileIcon(attachment.mimeType)"></i>
+                    <div class="attachment-file-info">
+                      <span class="attachment-file-name">{{ attachment.fileName }}</span>
+                      <span class="attachment-file-size">{{ formatFileSize(attachment.contentLength) }}</span>
+                    </div>
+                    <i class="fa-solid fa-download attachment-download-icon"></i>
+                  </div>
+
+                </ng-container>
+              </div>
+
+              <!-- Link previews -->
+              <div class="message-link-previews" *ngIf="msg.linkPreviews && msg.linkPreviews.length > 0">
+                <app-link-preview-card
+                  *ngFor="let preview of msg.linkPreviews"
+                  [preview]="preview"
+                  [canDismiss]="msg.userId === currentUserMessagingId"
+                  (dismissed)="dismissLinkPreview($event, msg)">
+                </app-link-preview-card>
+              </div>
+
+              <div class="message-time" *ngIf="!msg.isPending && !msg.isFailed">
+                {{ formatTime(msg.dateTimeCreated) }}
+                <span *ngIf="msg.versionNumber > 1" class="edited-badge">(edited)</span>
+              </div>
+              <div class="message-time message-sending" *ngIf="msg.isPending">
+                <i class="fa-solid fa-spinner fa-spin"></i> Sending...
+              </div>
+              <div class="message-failed-bar" *ngIf="msg.isFailed">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>Failed to send</span>
+                <button class="retry-btn" (click)="retryMessage(msg)" title="Retry"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+                <button class="discard-btn" (click)="discardFailedMessage(msg)" title="Discard"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <div class="read-receipt" *ngIf="!msg.isPending && !msg.isFailed && getReadReceiptText(msg) as receiptText">
+                <i class="fa-solid fa-check-double"></i> {{ receiptText }}
+              </div>
+            </div>
+
+            <!-- Inline edit mode -->
+            <div class="editing-bubble" *ngIf="editingMessageId === msg.id">
+              <textarea [(ngModel)]="editingText"
+                        (keydown)="onEditKeyDown($event)"
+                        rows="2"
+                        class="edit-textarea"></textarea>
+              <div class="edit-actions">
+                <button class="btn-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+                <button class="btn-primary btn-sm" (click)="saveEdit()" [disabled]="!editingText.trim()">Save</button>
+              </div>
+              <span class="edit-hint">Escape to cancel · Enter to save</span>
+            </div>
+          </div>
+
+          <!-- Reaction row -->
+          <div class="reaction-row" *ngIf="msg.reactions && msg.reactions.length > 0">
+            <button class="reaction-chip"
+                    *ngFor="let reaction of msg.reactions"
+                    (click)="toggleReaction(msg.id, reaction.reaction)"
+                    [title]="reaction.userNames.join(', ')">
+              <span class="reaction-emoji">{{ reaction.reaction }}</span>
+              <span class="reaction-count">{{ reaction.count }}</span>
+            </button>
+          </div>
+
+          <!-- Reply count indicator -->
+          <div class="reply-count-link" *ngIf="msg.replyCount > 0" (click)="openThread(msg)">
+            <i class="fa-solid fa-reply"></i>
+            {{ msg.replyCount }} {{ msg.replyCount === 1 ? 'reply' : 'replies' }}
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Empty state for messages -->
+      <div class="empty-state" *ngIf="!isLoadingMessages && messages.length === 0">
+        <i class="fa-regular fa-comment-dots"></i>
+        <p>No messages yet. Start the conversation!</p>
+      </div>
+    </cdk-virtual-scroll-viewport>
+
+    <!-- Typing indicator -->
+    <div class="typing-indicator" *ngIf="typingUserNames.length > 0">
+      <div class="typing-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span class="typing-text">{{ typingIndicatorText }}</span>
+    </div>
+
+    <!-- Pending attachments preview -->
+    <div class="pending-attachments" *ngIf="pendingAttachments.length > 0">
+      <div class="pending-attachments-hint">
+        <i class="fa-solid fa-circle-info"></i>
+        {{ pendingAttachments.length }} file{{ pendingAttachments.length > 1 ? 's' : '' }} ready — press <strong>Send</strong> to upload
+      </div>
+      <div class="attachment-chip" *ngFor="let file of pendingAttachments; let i = index">
+        <i class="fa-solid fa-paperclip"></i>
+        <span class="attachment-name">{{ file.name }}</span>
+        <span class="attachment-size">{{ formatFileSize(file.size) }}</span>
+        <button class="attachment-remove" (click)="removeAttachment(i)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Message composer -->
+    <div class="message-composer">
+      <input type="file" #fileInput
+             (change)="onFilesSelected($event)"
+             multiple
+             style="display: none;"
+             id="chat-view-file-input" />
+
+      <!-- @Mention picker -->
+      <div class="mention-picker" *ngIf="showMentionPicker">
+        <div class="mention-picker-item"
+             *ngFor="let user of mentionFilteredUsers; let idx = index"
+             [class.active]="idx === mentionActiveIndex"
+             (mousedown)="insertMention(user)"
+             (mouseenter)="mentionActiveIndex = idx">
+          <div class="mention-picker-avatar">
+            <i class="fa-solid fa-user"></i>
+          </div>
+          <span class="mention-picker-name">{{ user.displayName || user.accountName }}</span>
+        </div>
+        <div class="mention-picker-empty" *ngIf="mentionFilteredUsers.length === 0">
+          No users found
+        </div>
+      </div>
+
+      <app-tiptap-editor #tiptapEditor
+                         placeholder="Type a message..."
+                         (contentChanged)="onEditorContentChanged($event)"
+                         (enterPressed)="sendMessage()"
+                         (mentionTriggered)="onEditorMentionTriggered($event)"
+                         (mentionDismissed)="onEditorMentionDismissed()"
+                         (keyPressed)="onEditorKeyPressed()">
+      </app-tiptap-editor>
+
+      <div class="composer-actions">
+        <button class="btn-icon attachment-btn" (click)="triggerFileInput()" title="Attach file"
+                id="chat-view-attach-btn">
+          <i class="fa-solid fa-paperclip"></i>
+        </button>
+        <button class="btn-icon schedule-btn" (click)="openScheduleModal()"
+                [disabled]="editorIsEmpty" title="Schedule message"
+                id="chat-view-schedule-btn">
+          <i class="fa-regular fa-clock"></i>
+        </button>
+        <button class="send-btn"
+                (click)="sendMessage()"
+                [disabled]="editorIsEmpty && pendingAttachments.length === 0"
+                title="Send"
+                id="chat-view-send-btn">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─── Pinned Messages Panel ─────────────────────────────────────────────── -->
+<app-pinned-messages
+  *ngIf="conversation && showPinnedMessages"
+  [pinnedMessages]="pinnedMessages"
+  [isLoading]="isLoadingPinnedMessages"
+  (unpinMessage)="togglePinMessage($event)"
+  (scrollToMessage)="scrollToPinnedMessage($event)"
+  (closed)="toggleShowPinnedMessages()">
+</app-pinned-messages>
+
+<!-- ─── Bookmarks Panel ────────────────────────────────────────────────── -->
+<div class="bookmarks-panel" *ngIf="conversation && showBookmarks">
+  <div class="bookmarks-panel-header">
+    <h4><i class="fa-solid fa-bookmark"></i> Bookmarks</h4>
+    <button class="btn-icon btn-icon-sm" (click)="showBookmarks = false">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <div class="loading-state compact" *ngIf="isLoadingBookmarks">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <span>Loading bookmarks...</span>
+  </div>
+
+  <div class="bookmarks-list" *ngIf="!isLoadingBookmarks">
+    <div class="bookmark-item" *ngFor="let bm of bookmarks" (click)="jumpToBookmarkedMessage(bm)">
+      <div class="bookmark-conversation-name" *ngIf="bm.conversationName">
+        {{ bm.conversationName }}
+      </div>
+      <div class="bookmark-preview">{{ bm.messagePreview || '(no preview)' }}</div>
+      <div class="bookmark-meta">
+        <span class="bookmark-date">{{ formatTime(bm.dateTimeCreated) }}</span>
+        <button class="btn-icon btn-icon-sm bookmark-remove-btn"
+                (click)="removeBookmarkFromPanel(bm); $event.stopPropagation()"
+                title="Remove bookmark">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="bookmarks-empty" *ngIf="bookmarks.length === 0">
+      <i class="fa-regular fa-bookmark"></i>
+      <p>No bookmarks yet</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Schedule Modal ─────────────────────────────────────────────────── -->
+<div class="schedule-modal-overlay" *ngIf="showScheduleModal" (click)="cancelSchedule()">
+  <div class="schedule-modal" (click)="$event.stopPropagation()">
+    <h4><i class="fa-regular fa-clock"></i> Schedule Message</h4>
+    <p class="schedule-modal-desc">Choose when this message should be sent:</p>
+    <input type="datetime-local"
+           [(ngModel)]="scheduleDateTime"
+           class="schedule-datetime-input"
+           id="schedule-datetime-input" />
+    <div class="schedule-modal-actions">
+      <button class="btn-secondary" (click)="cancelSchedule()">Cancel</button>
+      <button class="btn-primary" (click)="confirmSchedule()" [disabled]="!scheduleDateTime">
+        <i class="fa-solid fa-paper-plane"></i> Schedule
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Conversation Info Panel ───────────────────────────────────────────── -->
+<div class="conversation-info-panel" *ngIf="conversation && showConversationInfo">
+
+  <div class="info-section">
+    <h4>Members</h4>
+    <div class="member-item" *ngFor="let member of conversation.members">
+      <div class="member-avatar">
+        <i class="fa-solid fa-user"></i>
+        <span class="presence-dot" [ngClass]="getPresenceClassForMember(member)"></span>
+      </div>
+      <div class="member-info">
+        <span class="member-name">{{ member.displayName }}</span>
+        <span class="member-account">{{ member.accountName }}</span>
+        <span class="member-role-badge" [class.role-admin]="member.role === 'Admin' || member.role === 'Owner'">{{ member.role || 'Member' }}</span>
+        <span class="member-last-seen" [ngClass]="{ 'status-online': getMemberLastSeen(member.userId) === 'Online', 'status-away': getMemberLastSeen(member.userId) === 'Away' }">{{ getMemberLastSeen(member.userId) }}</span>
+      </div>
+      <select class="member-role-select" *ngIf="isCurrentUserAdmin() && member.userId !== currentUserMessagingId"
+              [value]="member.role || 'Member'"
+              (change)="updateMemberRole(member.userId, $any($event.target).value)">
+        <option value="Member">Member</option>
+        <option value="Admin">Admin</option>
+      </select>
+      <button class="btn-icon btn-icon-sm msg-action-delete"
+              (click)="removeMemberFromConversation(member.userId, member.accountName)"
+              title="Remove member">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h4>Add Member</h4>
+    <div class="add-member-row">
+      <div class="typeahead-container">
+        <input type="text"
+               [(ngModel)]="memberSearchQuery"
+               (input)="onMemberSearchInput()"
+               (focus)="onMemberSearchInput()"
+               placeholder="Search users..."
+               autocomplete="off"
+               id="chat-view-add-member-input" />
+
+        <!-- Loading indicator -->
+        <div class="typeahead-loading" *ngIf="isLoadingUsers">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        </div>
+
+        <!-- Typeahead dropdown -->
+        <div class="typeahead-dropdown" *ngIf="showMemberDropdown">
+          <div class="typeahead-item"
+               *ngFor="let user of filteredMemberCandidates"
+               (mousedown)="selectMemberToAdd(user)">
+            <div class="typeahead-item-avatar">
+              <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="typeahead-item-info">
+              <span class="typeahead-item-name">{{ user.displayName || user.accountName }}</span>
+              <span class="typeahead-item-account">{{ user.accountName }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section info-section-danger">
+    <h4>Actions</h4>
+    <button class="btn-danger" (click)="archiveCurrentConversation()">
+      <i class="fa-solid fa-box-archive"></i>
+      Archive Conversation
+    </button>
+  </div>
+</div>
+
+
+<!-- ─── Thread Panel ──────────────────────────────────────────────────────── -->
+<app-thread-panel
+  *ngIf="threadParentMessage"
+  [parentMessage]="threadParentMessage"
+  [conversationId]="conversation?.id ?? null"
+  (closed)="closeThread()"
+  (replySent)="onThreadReplySent($event)">
+</app-thread-panel>
+
+
+<!-- ─── Lightbox Overlay ────────────────────────────────────────────────────── -->
+<div class="lightbox-overlay" *ngIf="lightboxImageUrl" (click)="closeLightbox()">
+  <button class="lightbox-close">
+    <i class="fa-solid fa-xmark"></i>
+  </button>
+  <img [src]="lightboxImageUrl" class="lightbox-image" (click)="$event.stopPropagation()" />
+</div>
+
+<!-- Forward Picker Modal -->
+<app-forward-modal
+  *ngIf="showForwardModal"
+  [message]="forwardingMessage"
+  [conversations]="allConversations"
+  [currentConversationId]="conversation?.id ?? null"
+  [currentUserId]="currentUserMessagingId"
+  (forwarded)="onForwardComplete()"
+  (closed)="showForwardModal = false">
+</app-forward-modal>

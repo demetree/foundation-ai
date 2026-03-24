@@ -1,0 +1,175 @@
+<!-- ─── Notification Settings Panel ───────────────────────────────────────── -->
+<div class="notification-settings">
+
+  <!-- Header -->
+  <div class="settings-header">
+    <button class="btn-icon" (click)="close()" title="Close settings">
+      <i class="fa-solid fa-arrow-left"></i>
+    </button>
+    <h3>Notification Settings</h3>
+  </div>
+
+  <!-- Loading state -->
+  <div class="settings-loading" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <span>Loading settings...</span>
+  </div>
+
+  <!-- Settings form -->
+  <div class="settings-body" *ngIf="!isLoading">
+
+    <!-- ─── Contact Information ─────────────────────────── -->
+    <section class="settings-section">
+      <div class="section-header">
+        <i class="fa-solid fa-address-card"></i>
+        <h4>Contact Information</h4>
+      </div>
+
+      <div class="form-group">
+        <label for="settings-email">Email Address</label>
+        <div class="input-with-badge">
+          <input id="settings-email"
+                 type="email"
+                 [(ngModel)]="email"
+                 placeholder="your@email.com"
+                 [class.invalid]="email && !isEmailValid"
+                 autocomplete="off" />
+          <span class="badge badge-verified" *ngIf="profile?.emailVerified">
+            <i class="fa-solid fa-circle-check"></i> Verified
+          </span>
+          <span class="badge badge-unverified" *ngIf="email && !profile?.emailVerified">
+            <i class="fa-solid fa-circle-exclamation"></i> Unverified
+          </span>
+        </div>
+        <span class="field-hint" *ngIf="email && !isEmailValid">Please enter a valid email address</span>
+      </div>
+
+      <div class="form-group">
+        <label for="settings-phone">Phone Number</label>
+        <div class="input-with-badge">
+          <input id="settings-phone"
+                 type="tel"
+                 [(ngModel)]="phone"
+                 placeholder="+1 (555) 123-4567"
+                 [class.invalid]="phone && !isPhoneValid"
+                 autocomplete="off" />
+          <span class="badge badge-verified" *ngIf="profile?.phoneVerified">
+            <i class="fa-solid fa-circle-check"></i> Verified
+          </span>
+          <span class="badge badge-unverified" *ngIf="phone && !profile?.phoneVerified">
+            <i class="fa-solid fa-circle-exclamation"></i> Unverified
+          </span>
+        </div>
+        <span class="field-hint" *ngIf="phone && !isPhoneValid">Please enter a valid phone number</span>
+      </div>
+    </section>
+
+    <!-- ─── Delivery Channels ──────────────────────────── -->
+    <section class="settings-section">
+      <div class="section-header">
+        <i class="fa-solid fa-paper-plane"></i>
+        <h4>Delivery Channels</h4>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <i class="fa-solid fa-envelope channel-icon email"></i>
+          <div>
+            <span class="toggle-label">Email Notifications</span>
+            <span class="toggle-desc">Receive notifications via email</span>
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="emailEnabled" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="pref-row" *ngIf="emailEnabled">
+        <label for="settings-email-pref">Email for:</label>
+        <select id="settings-email-pref" [(ngModel)]="emailPreference">
+          <option *ngFor="let opt of preferenceOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <i class="fa-solid fa-comment-sms channel-icon sms"></i>
+          <div>
+            <span class="toggle-label">SMS Notifications</span>
+            <span class="toggle-desc">Receive notifications via text message</span>
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="smsEnabled" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="pref-row" *ngIf="smsEnabled">
+        <label for="settings-sms-pref">SMS for:</label>
+        <select id="settings-sms-pref" [(ngModel)]="smsPreference">
+          <option *ngFor="let opt of preferenceOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- ─── Quiet Hours ────────────────────────────────── -->
+    <section class="settings-section">
+      <div class="section-header">
+        <i class="fa-solid fa-moon"></i>
+        <h4>Quiet Hours</h4>
+      </div>
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div>
+            <span class="toggle-label">Enable Quiet Hours</span>
+            <span class="toggle-desc">Silence external notifications during set hours</span>
+          </div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" [(ngModel)]="quietHoursEnabled" />
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div class="quiet-hours-config" *ngIf="quietHoursEnabled">
+        <div class="time-row">
+          <div class="form-group compact">
+            <label for="settings-qh-start">From</label>
+            <input id="settings-qh-start" type="time" [(ngModel)]="quietHoursStart" />
+          </div>
+          <div class="time-separator">—</div>
+          <div class="form-group compact">
+            <label for="settings-qh-end">To</label>
+            <input id="settings-qh-end" type="time" [(ngModel)]="quietHoursEnd" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="settings-timezone">Timezone</label>
+          <select id="settings-timezone" [(ngModel)]="timezone">
+            <option *ngFor="let tz of timezones" [value]="tz.value">{{ tz.label }}</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Actions ────────────────────────────────────── -->
+    <div class="settings-actions">
+      <div class="save-message" *ngIf="saveMessage"
+           [class.success]="saveMessageType === 'success'"
+           [class.error]="saveMessageType === 'error'">
+        <i [ngClass]="saveMessageType === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+        {{ saveMessage }}
+      </div>
+      <button class="btn-primary"
+              (click)="saveProfile()"
+              [disabled]="isSaving || !hasChanges || !isEmailValid || !isPhoneValid">
+        <i class="fa-solid fa-spinner fa-spin" *ngIf="isSaving"></i>
+        <span *ngIf="!isSaving">Save Settings</span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -32,7 +32,7 @@ import { FinancialTransactionService, FinancialTransactionData } from './financi
 import { InvoiceService, InvoiceData } from './invoice.service';
 import { ReceiptService, ReceiptData } from './receipt.service';
 import { ContactInteractionService, ContactInteractionData } from './contact-interaction.service';
-import { NotificationSubscriptionService, NotificationSubscriptionData } from './notification-subscription.service';
+import { EventNotificationSubscriptionService, EventNotificationSubscriptionData } from './event-notification-subscription.service';
 import { ConstituentService, ConstituentData } from './constituent.service';
 import { DocumentService, DocumentData } from './document.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData } from './event-resource-assignment.service';
@@ -280,9 +280,9 @@ export class ContactData {
     private _contactInteractionInitiatingContactsPromise: Promise<ContactInteractionData[]> | null  = null;
     private _contactInteractionInitiatingContactsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
                     
-    private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
-    private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
-    private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+    private _eventNotificationSubscriptions: EventNotificationSubscriptionData[] | null = null;
+    private _eventNotificationSubscriptionsPromise: Promise<EventNotificationSubscriptionData[]> | null  = null;
+    private _eventNotificationSubscriptionsSubject = new BehaviorSubject<EventNotificationSubscriptionData[] | null>(null);
 
                 
     private _constituents: ConstituentData[] | null = null;
@@ -638,27 +638,27 @@ export class ContactData {
     }
 
 
-    public NotificationSubscriptions$ = this._notificationSubscriptionsSubject.asObservable().pipe(
+    public EventNotificationSubscriptions$ = this._eventNotificationSubscriptionsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._notificationSubscriptions === null && this._notificationSubscriptionsPromise === null) {
-            this.loadNotificationSubscriptions(); // Private method to start fetch
+          if (this._eventNotificationSubscriptions === null && this._eventNotificationSubscriptionsPromise === null) {
+            this.loadEventNotificationSubscriptions(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
 
-    private _notificationSubscriptionsCount$: Observable<bigint | number> | null = null;
-    public get NotificationSubscriptionsCount$(): Observable<bigint | number> {
-        if (this._notificationSubscriptionsCount$ === null) {
-            this._notificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({contactId: this.id,
+    private _eventNotificationSubscriptionsCount$: Observable<bigint | number> | null = null;
+    public get EventNotificationSubscriptionsCount$(): Observable<bigint | number> {
+        if (this._eventNotificationSubscriptionsCount$ === null) {
+            this._eventNotificationSubscriptionsCount$ = EventNotificationSubscriptionService.Instance.GetEventNotificationSubscriptionsRowCount({contactId: this.id,
               active: true,
               deleted: false
             });
         }
-        return this._notificationSubscriptionsCount$;
+        return this._eventNotificationSubscriptionsCount$;
     }
 
 
@@ -840,10 +840,10 @@ export class ContactData {
      this._contactInteractionInitiatingContactsSubject.next(null);
      this._contactInteractionInitiatingContactsCount$ = null;
 
-     this._notificationSubscriptions = null;
-     this._notificationSubscriptionsPromise = null;
-     this._notificationSubscriptionsSubject.next(null);
-     this._notificationSubscriptionsCount$ = null;
+     this._eventNotificationSubscriptions = null;
+     this._eventNotificationSubscriptionsPromise = null;
+     this._eventNotificationSubscriptionsSubject.next(null);
+     this._eventNotificationSubscriptionsCount$ = null;
 
      this._constituents = null;
      this._constituentsPromise = null;
@@ -1716,66 +1716,66 @@ export class ContactData {
 
     /**
      *
-     * Gets the NotificationSubscriptions for this Contact.
+     * Gets the EventNotificationSubscriptions for this Contact.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.contact.NotificationSubscriptions.then(contacts => { ... })
+     *   this.contact.EventNotificationSubscriptions.then(contacts => { ... })
      *   or
      *   await this.contact.contacts
      *
     */
-    public get NotificationSubscriptions(): Promise<NotificationSubscriptionData[]> {
-        if (this._notificationSubscriptions !== null) {
-            return Promise.resolve(this._notificationSubscriptions);
+    public get EventNotificationSubscriptions(): Promise<EventNotificationSubscriptionData[]> {
+        if (this._eventNotificationSubscriptions !== null) {
+            return Promise.resolve(this._eventNotificationSubscriptions);
         }
 
-        if (this._notificationSubscriptionsPromise !== null) {
-            return this._notificationSubscriptionsPromise;
+        if (this._eventNotificationSubscriptionsPromise !== null) {
+            return this._eventNotificationSubscriptionsPromise;
         }
 
         // Start the load
-        this.loadNotificationSubscriptions();
+        this.loadEventNotificationSubscriptions();
 
-        return this._notificationSubscriptionsPromise!;
+        return this._eventNotificationSubscriptionsPromise!;
     }
 
 
 
-    private loadNotificationSubscriptions(): void {
+    private loadEventNotificationSubscriptions(): void {
 
-        this._notificationSubscriptionsPromise = lastValueFrom(
-            ContactService.Instance.GetNotificationSubscriptionsForContact(this.id)
+        this._eventNotificationSubscriptionsPromise = lastValueFrom(
+            ContactService.Instance.GetEventNotificationSubscriptionsForContact(this.id)
         )
-        .then(NotificationSubscriptions => {
-            this._notificationSubscriptions = NotificationSubscriptions ?? [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
-            return this._notificationSubscriptions;
+        .then(EventNotificationSubscriptions => {
+            this._eventNotificationSubscriptions = EventNotificationSubscriptions ?? [];
+            this._eventNotificationSubscriptionsSubject.next(this._eventNotificationSubscriptions);
+            return this._eventNotificationSubscriptions;
          })
         .catch(err => {
-            this._notificationSubscriptions = [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
+            this._eventNotificationSubscriptions = [];
+            this._eventNotificationSubscriptionsSubject.next(this._eventNotificationSubscriptions);
             throw err;
         })
         .finally(() => {
-            this._notificationSubscriptionsPromise = null; // Allow retry if needed
+            this._eventNotificationSubscriptionsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached NotificationSubscription. Call after mutations to force refresh.
+     * Clears the cached EventNotificationSubscription. Call after mutations to force refresh.
      */
-    public ClearNotificationSubscriptionsCache(): void {
-        this._notificationSubscriptions = null;
-        this._notificationSubscriptionsPromise = null;
-        this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);      // Emit to observable
+    public ClearEventNotificationSubscriptionsCache(): void {
+        this._eventNotificationSubscriptions = null;
+        this._eventNotificationSubscriptionsPromise = null;
+        this._eventNotificationSubscriptionsSubject.next(this._eventNotificationSubscriptions);      // Emit to observable
     }
 
-    public get HasNotificationSubscriptions(): Promise<boolean> {
-        return this.NotificationSubscriptions.then(notificationSubscriptions => notificationSubscriptions.length > 0);
+    public get HasEventNotificationSubscriptions(): Promise<boolean> {
+        return this.EventNotificationSubscriptions.then(eventNotificationSubscriptions => eventNotificationSubscriptions.length > 0);
     }
 
 
@@ -2063,7 +2063,7 @@ export class ContactService extends SecureEndpointBase {
         private invoiceService: InvoiceService,
         private receiptService: ReceiptService,
         private contactInteractionService: ContactInteractionService,
-        private notificationSubscriptionService: NotificationSubscriptionService,
+        private eventNotificationSubscriptionService: EventNotificationSubscriptionService,
         private constituentService: ConstituentService,
         private documentService: DocumentService,
         private eventResourceAssignmentService: EventResourceAssignmentService,
@@ -2679,8 +2679,8 @@ export class ContactService extends SecureEndpointBase {
     }
 
 
-    public GetNotificationSubscriptionsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<NotificationSubscriptionData[]> {
-        return this.notificationSubscriptionService.GetNotificationSubscriptionList({
+    public GetEventNotificationSubscriptionsForContact(contactId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<EventNotificationSubscriptionData[]> {
+        return this.eventNotificationSubscriptionService.GetEventNotificationSubscriptionList({
             contactId: contactId,
             active: active,
             deleted: deleted,
@@ -2806,9 +2806,9 @@ export class ContactService extends SecureEndpointBase {
     (revived as any)._contactInteractionInitiatingContactsPromise = null;
     (revived as any)._contactInteractionInitiatingContactsSubject = new BehaviorSubject<ContactInteractionData[] | null>(null);
 
-    (revived as any)._notificationSubscriptions = null;
-    (revived as any)._notificationSubscriptionsPromise = null;
-    (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+    (revived as any)._eventNotificationSubscriptions = null;
+    (revived as any)._eventNotificationSubscriptionsPromise = null;
+    (revived as any)._eventNotificationSubscriptionsSubject = new BehaviorSubject<EventNotificationSubscriptionData[] | null>(null);
 
     (revived as any)._constituents = null;
     (revived as any)._constituentsPromise = null;
@@ -2990,16 +2990,16 @@ export class ContactService extends SecureEndpointBase {
     (revived as any)._contactInteractionInitiatingContactsCount$ = null;
 
 
-    (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
+    (revived as any).EventNotificationSubscriptions$ = (revived as any)._eventNotificationSubscriptionsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
-                (revived as any).loadNotificationSubscriptions();        // Need to cast to any to invoke private load method
+              if ((revived as any)._eventNotificationSubscriptions === null && (revived as any)._eventNotificationSubscriptionsPromise === null) {
+                (revived as any).loadEventNotificationSubscriptions();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any)._notificationSubscriptionsCount$ = null;
+    (revived as any)._eventNotificationSubscriptionsCount$ = null;
 
 
     (revived as any).Constituents$ = (revived as any)._constituentsSubject.asObservable().pipe(

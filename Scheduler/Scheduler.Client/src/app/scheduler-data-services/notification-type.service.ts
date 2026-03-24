@@ -16,7 +16,7 @@ import { UtilityService } from '../utility-services/utility.service'
 import { AlertService } from '../services/alert.service';
 import { AuthService } from '../services/auth.service';
 import { SecureEndpointBase } from '../services/secure-endpoint-base.service';
-import { NotificationSubscriptionService, NotificationSubscriptionData } from './notification-subscription.service';
+import { NotificationService, NotificationData } from './notification.service';
 
 const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 //
@@ -30,8 +30,6 @@ const SHARE_REPLAY_CACHE_SIZE = 1;           // To cache the last emit
 export class NotificationTypeQueryParameters {
     name: string | null | undefined = null;
     description: string | null | undefined = null;
-    sequence: bigint | number | null | undefined = null;
-    color: string | null | undefined = null;
     objectGuid: string | null | undefined = null;
     active: boolean | null | undefined = null;
     deleted: boolean | null | undefined = null;
@@ -48,9 +46,7 @@ export class NotificationTypeQueryParameters {
 export class NotificationTypeSubmitData {
     id!: bigint | number;
     name!: string;
-    description!: string;
-    sequence: bigint | number | null = null;
-    color: string | null = null;
+    description: string | null = null;
     active!: boolean;
     deleted!: boolean;
 }
@@ -101,9 +97,7 @@ export class NotificationTypeBasicListData {
 export class NotificationTypeData {
     id!: bigint | number;
     name!: string;
-    description!: string;
-    sequence!: bigint | number;
-    color!: string | null;
+    description!: string | null;
     objectGuid!: string;
     active!: boolean;
     deleted!: boolean;
@@ -111,9 +105,9 @@ export class NotificationTypeData {
     //
     // Private lazy-loading caches for related collections
     //
-    private _notificationSubscriptions: NotificationSubscriptionData[] | null = null;
-    private _notificationSubscriptionsPromise: Promise<NotificationSubscriptionData[]> | null  = null;
-    private _notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+    private _notifications: NotificationData[] | null = null;
+    private _notificationsPromise: Promise<NotificationData[]> | null  = null;
+    private _notificationsSubject = new BehaviorSubject<NotificationData[] | null>(null);
 
                 
 
@@ -123,27 +117,27 @@ export class NotificationTypeData {
     //
     // Also includes an observable for each child list to access its row count.
     //
-    public NotificationSubscriptions$ = this._notificationSubscriptionsSubject.asObservable().pipe(
+    public Notifications$ = this._notificationsSubject.asObservable().pipe(
 
         // Trigger load on first subscription if not already loaded
         tap(() => {
-          if (this._notificationSubscriptions === null && this._notificationSubscriptionsPromise === null) {
-            this.loadNotificationSubscriptions(); // Private method to start fetch
+          if (this._notifications === null && this._notificationsPromise === null) {
+            this.loadNotifications(); // Private method to start fetch
           }
         }),
         shareReplay(1) // Cache last emit
     );
 
 
-    private _notificationSubscriptionsCount$: Observable<bigint | number> | null = null;
-    public get NotificationSubscriptionsCount$(): Observable<bigint | number> {
-        if (this._notificationSubscriptionsCount$ === null) {
-            this._notificationSubscriptionsCount$ = NotificationSubscriptionService.Instance.GetNotificationSubscriptionsRowCount({notificationTypeId: this.id,
+    private _notificationsCount$: Observable<bigint | number> | null = null;
+    public get NotificationsCount$(): Observable<bigint | number> {
+        if (this._notificationsCount$ === null) {
+            this._notificationsCount$ = NotificationService.Instance.GetNotificationsRowCount({notificationTypeId: this.id,
               active: true,
               deleted: false
             });
         }
-        return this._notificationSubscriptionsCount$;
+        return this._notificationsCount$;
     }
 
 
@@ -186,10 +180,10 @@ export class NotificationTypeData {
      //
      // Reset every collection cache and notify subscribers
      //
-     this._notificationSubscriptions = null;
-     this._notificationSubscriptionsPromise = null;
-     this._notificationSubscriptionsSubject.next(null);
-     this._notificationSubscriptionsCount$ = null;
+     this._notifications = null;
+     this._notificationsPromise = null;
+     this._notificationsSubject.next(null);
+     this._notificationsCount$ = null;
 
   }
 
@@ -199,66 +193,66 @@ export class NotificationTypeData {
     //
     /**
      *
-     * Gets the NotificationSubscriptions for this NotificationType.
+     * Gets the Notifications for this NotificationType.
      *
      * If already loaded, returns cached array.
      *
      * If not, fetches from server and caches the result.
      * 
      * Usage in components:
-     *   this.notificationType.NotificationSubscriptions.then(notificationTypes => { ... })
+     *   this.notificationType.Notifications.then(notificationTypes => { ... })
      *   or
      *   await this.notificationType.notificationTypes
      *
     */
-    public get NotificationSubscriptions(): Promise<NotificationSubscriptionData[]> {
-        if (this._notificationSubscriptions !== null) {
-            return Promise.resolve(this._notificationSubscriptions);
+    public get Notifications(): Promise<NotificationData[]> {
+        if (this._notifications !== null) {
+            return Promise.resolve(this._notifications);
         }
 
-        if (this._notificationSubscriptionsPromise !== null) {
-            return this._notificationSubscriptionsPromise;
+        if (this._notificationsPromise !== null) {
+            return this._notificationsPromise;
         }
 
         // Start the load
-        this.loadNotificationSubscriptions();
+        this.loadNotifications();
 
-        return this._notificationSubscriptionsPromise!;
+        return this._notificationsPromise!;
     }
 
 
 
-    private loadNotificationSubscriptions(): void {
+    private loadNotifications(): void {
 
-        this._notificationSubscriptionsPromise = lastValueFrom(
-            NotificationTypeService.Instance.GetNotificationSubscriptionsForNotificationType(this.id)
+        this._notificationsPromise = lastValueFrom(
+            NotificationTypeService.Instance.GetNotificationsForNotificationType(this.id)
         )
-        .then(NotificationSubscriptions => {
-            this._notificationSubscriptions = NotificationSubscriptions ?? [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
-            return this._notificationSubscriptions;
+        .then(Notifications => {
+            this._notifications = Notifications ?? [];
+            this._notificationsSubject.next(this._notifications);
+            return this._notifications;
          })
         .catch(err => {
-            this._notificationSubscriptions = [];
-            this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);
+            this._notifications = [];
+            this._notificationsSubject.next(this._notifications);
             throw err;
         })
         .finally(() => {
-            this._notificationSubscriptionsPromise = null; // Allow retry if needed
+            this._notificationsPromise = null; // Allow retry if needed
         });
     }
 
     /**
-     * Clears the cached NotificationSubscription. Call after mutations to force refresh.
+     * Clears the cached Notification. Call after mutations to force refresh.
      */
-    public ClearNotificationSubscriptionsCache(): void {
-        this._notificationSubscriptions = null;
-        this._notificationSubscriptionsPromise = null;
-        this._notificationSubscriptionsSubject.next(this._notificationSubscriptions);      // Emit to observable
+    public ClearNotificationsCache(): void {
+        this._notifications = null;
+        this._notificationsPromise = null;
+        this._notificationsSubject.next(this._notifications);      // Emit to observable
     }
 
-    public get HasNotificationSubscriptions(): Promise<boolean> {
-        return this.NotificationSubscriptions.then(notificationSubscriptions => notificationSubscriptions.length > 0);
+    public get HasNotifications(): Promise<boolean> {
+        return this.Notifications.then(notifications => notifications.length > 0);
     }
 
 
@@ -297,7 +291,7 @@ export class NotificationTypeService extends SecureEndpointBase {
         authService: AuthService,
         alertService: AlertService,
         private utilityService: UtilityService,
-        private notificationSubscriptionService: NotificationSubscriptionService,
+        private notificationService: NotificationService,
         @Inject('BASE_URL') private baseUrl: string) {
         super(http, alertService, authService);
 
@@ -357,8 +351,6 @@ export class NotificationTypeService extends SecureEndpointBase {
         output.id = data.id;
         output.name = data.name;
         output.description = data.description;
-        output.sequence = data.sequence;
-        output.color = data.color;
         output.active = data.active;
         output.deleted = data.deleted;
 
@@ -624,7 +616,7 @@ export class NotificationTypeService extends SecureEndpointBase {
             const user = this.authService.currentUser;
 
             if (user != null) {
-                userIsSchedulerNotificationTypeReader = user.readPermission >= 1;
+                userIsSchedulerNotificationTypeReader = user.readPermission >= 100;
             } else {
                 userIsSchedulerNotificationTypeReader = false;
             }
@@ -648,7 +640,7 @@ export class NotificationTypeService extends SecureEndpointBase {
           let user = this.authService.currentUser;
 
           if (user != null) {
-            userIsSchedulerNotificationTypeWriter = user.writePermission >= 255;
+            userIsSchedulerNotificationTypeWriter = user.writePermission >= 100;
           } else {
             userIsSchedulerNotificationTypeWriter = false;
           }      
@@ -657,8 +649,8 @@ export class NotificationTypeService extends SecureEndpointBase {
         return userIsSchedulerNotificationTypeWriter;
     }
 
-    public GetNotificationSubscriptionsForNotificationType(notificationTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<NotificationSubscriptionData[]> {
-        return this.notificationSubscriptionService.GetNotificationSubscriptionList({
+    public GetNotificationsForNotificationType(notificationTypeId: number | bigint, active: boolean = true, deleted: boolean = false): Observable<NotificationData[]> {
+        return this.notificationService.GetNotificationList({
             notificationTypeId: notificationTypeId,
             active: active,
             deleted: deleted,
@@ -702,9 +694,9 @@ export class NotificationTypeService extends SecureEndpointBase {
     // Explicitly initialize all private caches
     // This ensures the getters work correctly on revived objects
     //
-    (revived as any)._notificationSubscriptions = null;
-    (revived as any)._notificationSubscriptionsPromise = null;
-    (revived as any)._notificationSubscriptionsSubject = new BehaviorSubject<NotificationSubscriptionData[] | null>(null);
+    (revived as any)._notifications = null;
+    (revived as any)._notificationsPromise = null;
+    (revived as any)._notificationsSubject = new BehaviorSubject<NotificationData[] | null>(null);
 
 
     //
@@ -718,16 +710,16 @@ export class NotificationTypeService extends SecureEndpointBase {
     // 2. But private methods (loadNotificationTypeXYZ, etc.) are not accessible via the typed variable
     // 3. This is a controlled revival context — safe and necessary
     //
-    (revived as any).NotificationSubscriptions$ = (revived as any)._notificationSubscriptionsSubject.asObservable().pipe(
+    (revived as any).Notifications$ = (revived as any)._notificationsSubject.asObservable().pipe(
         tap(() => {
-              if ((revived as any)._notificationSubscriptions === null && (revived as any)._notificationSubscriptionsPromise === null) {
-                (revived as any).loadNotificationSubscriptions();        // Need to cast to any to invoke private load method
+              if ((revived as any)._notifications === null && (revived as any)._notificationsPromise === null) {
+                (revived as any).loadNotifications();        // Need to cast to any to invoke private load method
               }
         }),
         shareReplay(1)
       );
 
-    (revived as any)._notificationSubscriptionsCount$ = null;
+    (revived as any)._notificationsCount$ = null;
 
 
 

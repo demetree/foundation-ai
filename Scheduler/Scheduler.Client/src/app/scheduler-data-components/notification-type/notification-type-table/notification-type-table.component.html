@@ -35,14 +35,6 @@
                 Description
                 <span *ngIf="sortColumn === 'description'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
             </th>
-            <th class="sortable" scope="col" (click)="sortBy('sequence')">
-                Sequence
-                <span *ngIf="sortColumn === 'sequence'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
-            </th>
-            <th class="sortable" scope="col" (click)="sortBy('color')">
-                Color
-                <span *ngIf="sortColumn === 'color'" [ngClass]="sortDirection === 'asc' ? 'arrow-up' : 'arrow-down'"></span>
-            </th>
 End of commented block for alternate definition option -->
           </tr>
         </thead>
@@ -130,8 +122,6 @@ End of commented block for alternate definition option -->
 <!-- Commented block containing alternate means of defining cells by manually specifying them all.  This could be useful for people making new components based on this one, so leaving in as a resource.
             <td class="text-truncate"><a [routerLink]="['/notificationtype', notificationType.id]" class="btn btn-link text-left" ngbTooltip="Open Notification Type details">{{notificationType.name}}</a></td>
             <td class="text-truncate">{{notificationType.description}}</td>
-            <td class="text-truncate">{{notificationType.sequence | bigNumberFormat : '1.0-2'}}</td>
-            <td class="text-truncate">{{notificationType.color}}</td>
 End of commented block for alternate definition option -->
                  </tr>
              </tbody>
@@ -285,14 +275,6 @@ End of commented block for alternate definition option -->
             <p class="notification-type-info" *ngIf="notificationType.description != null">
               <strong>Description: </strong>
               {{notificationType.description}}
-            </p>
-            <p class="notification-type-info" *ngIf="notificationType.sequence != null">
-              <strong>Sequence: </strong>
-              {{notificationType.sequence | bigNumberFormat : '1.0-2'}}
-            </p>
-            <p class="notification-type-info" *ngIf="notificationType.color != null">
-              <strong>Color: </strong>
-              {{notificationType.color}}
             </p>
             </div>
          </div>

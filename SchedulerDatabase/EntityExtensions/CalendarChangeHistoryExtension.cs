@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = calendarChangeHistory.timeStamp,
 				userId = calendarChangeHistory.userId,
 				data = calendarChangeHistory.data,
-				calendar = Calendar.CreateMinimalAnonymous(calendarChangeHistory.calendar),
+				calendar = Calendar.CreateMinimalAnonymous(calendarChangeHistory.calendar)
 			 };
 		}
 

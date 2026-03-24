@@ -13,15 +13,11 @@ public partial class NotificationType
 
     public string description { get; set; }
 
-    public int? sequence { get; set; }
-
-    public string color { get; set; }
-
     public Guid objectGuid { get; set; }
 
     public bool active { get; set; }
 
     public bool deleted { get; set; }
 
-    public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = new List<NotificationSubscription>();
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

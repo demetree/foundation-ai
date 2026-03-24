@@ -1,0 +1,81 @@
+<div class="add-conversation-thread-user" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-conversation-thread-user me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Conversation Thread User" 
+        *ngIf="userIsSchedulerConversationThreadUserWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #conversationThreadUserModal let-modal>
+   <div class="modal-header conversation-thread-user-modal-header">
+      <h5 class="modal-title mb-0" id="conversationThreadUserModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Conversation Thread User' : 'Add Conversation Thread User' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body conversation-thread-user-modal-body">
+      <form [formGroup]="conversationThreadUserForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('conversationId')">
+                <label for="ConversationThreadUser-conversationId" id="label-ConversationThreadUser-conversationId"><span class="text-danger">*</span>Conversation</label>
+                <select id="ConversationThreadUser-conversationId" formControlName="conversationId" class="form-select conversation-thread-user-select" [disabled]="!userIsSchedulerConversationThreadUserWriter()">
+                    <option [ngValue]="null">Select Conversation</option>
+                    <option *ngFor="let conversation of conversations$ | async" [ngValue]="conversation.id">{{conversation.entity}}</option>
+                </select>
+                <div *ngIf="conversationThreadUserForm.get('conversationId')?.invalid && conversationThreadUserForm.get('conversationId')?.touched" class="text-danger">
+                    Conversation is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('parentConversationMessageId')">
+                <label for="ConversationThreadUser-parentConversationMessageId" id="label-ConversationThreadUser-parentConversationMessageId"><span class="text-danger">*</span>Parent Conversation Message</label>
+                <select id="ConversationThreadUser-parentConversationMessageId" formControlName="parentConversationMessageId" class="form-select conversation-thread-user-select" [disabled]="!userIsSchedulerConversationThreadUserWriter()">
+                    <option [ngValue]="null">Select Conversation Message</option>
+                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                </select>
+                <div *ngIf="conversationThreadUserForm.get('parentConversationMessageId')?.invalid && conversationThreadUserForm.get('parentConversationMessageId')?.touched" class="text-danger">
+                    Parent Conversation Message is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ConversationThreadUser-userId" id="label-ConversationThreadUser-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ConversationThreadUser-userId" formControlName="userId" placeholder="Enter User Id" class="form-control conversation-thread-user-input" [disabled]="!userIsSchedulerConversationThreadUserWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="conversationThreadUserForm.get('userId')?.invalid && conversationThreadUserForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastReadMessageId')">
+                <label for="ConversationThreadUser-lastReadMessageId" id="label-ConversationThreadUser-lastReadMessageId">Last Read Message Id</label>
+                <input type="number" id="ConversationThreadUser-lastReadMessageId" formControlName="lastReadMessageId" placeholder="Enter Last Read Message Id" class="form-control conversation-thread-user-input" [disabled]="!userIsSchedulerConversationThreadUserWriter()" aria-labelledby="label-lastReadMessageId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastReadDateTime')">
+                <label for="ConversationThreadUser-lastReadDateTime" id="label-ConversationThreadUser-lastReadDateTime">Last Read Date Time</label>
+                <input type="datetime-local" id="ConversationThreadUser-lastReadDateTime" formControlName="lastReadDateTime" placeholder="Enter Last Read Date Time" class="form-control conversation-thread-user-input" [disabled]="!userIsSchedulerConversationThreadUserWriter()" aria-labelledby="label-lastReadDateTime" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConversationThreadUser-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerConversationThreadUserWriter()" />
+                <label for="ConversationThreadUser-active" class="form-check-label" id="label-ConversationThreadUser-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="ConversationThreadUser-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerConversationThreadUserWriter()" />
+                <label for="ConversationThreadUser-deleted" class="form-check-label" id="label-ConversationThreadUser-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer conversation-thread-user-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Conversation Thread User changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationThreadUserForm.valid || conversationThreadUserForm.pristine  || userIsSchedulerConversationThreadUserWriter() == false " ngbTooltip="Save the Conversation Thread User changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Conversation Thread User' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

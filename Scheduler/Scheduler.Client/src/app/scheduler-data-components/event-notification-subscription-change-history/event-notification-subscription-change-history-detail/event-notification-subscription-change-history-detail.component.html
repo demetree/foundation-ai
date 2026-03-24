@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 event-notification-subscription-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="event-notification-subscription-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Event Notification Subscription Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Event Notification Subscription Change History' : 'Add Event Notification Subscription Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerEventNotificationSubscriptionChangeHistoryReader()">
+                <div class="col m-2 event-notification-subscription-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="eventNotificationSubscriptionChangeHistoryForm" (ngSubmit)="submitForm()" class="event-notification-subscription-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('eventNotificationSubscriptionId')">
+                                <label for="EventNotificationSubscriptionChangeHistory-eventNotificationSubscriptionId" id="label-EventNotificationSubscriptionChangeHistory-eventNotificationSubscriptionId"><span class="text-danger">*</span>Event Notification Subscription</label>
+                                <select id="EventNotificationSubscriptionChangeHistory-eventNotificationSubscriptionId" formControlName="eventNotificationSubscriptionId" class="form-select event-notification-subscription-change-history-select" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Event Notification Subscription</option>
+                                    <option *ngFor="let eventNotificationSubscription of eventNotificationSubscriptions$ | async" [ngValue]="eventNotificationSubscription.id">{{eventNotificationSubscription.recipientAddress}}</option>
+                                </select>
+                                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('eventNotificationSubscriptionId')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('eventNotificationSubscriptionId')?.touched" class="text-danger">
+                                    Event Notification Subscription is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="EventNotificationSubscriptionChangeHistory-versionNumber" id="label-EventNotificationSubscriptionChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="EventNotificationSubscriptionChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control event-notification-subscription-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="EventNotificationSubscriptionChangeHistory-timeStamp" id="label-EventNotificationSubscriptionChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="EventNotificationSubscriptionChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control event-notification-subscription-change-history-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('timeStamp')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="EventNotificationSubscriptionChangeHistory-userId" id="label-EventNotificationSubscriptionChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="EventNotificationSubscriptionChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control event-notification-subscription-change-history-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('userId')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="EventNotificationSubscriptionChangeHistory-data" id="label-EventNotificationSubscriptionChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="EventNotificationSubscriptionChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control event-notification-subscription-change-history-input" [disabled]="!userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter()"></textarea>
+                                <div *ngIf="eventNotificationSubscriptionChangeHistoryForm.get('data')?.invalid && eventNotificationSubscriptionChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="event-notification-subscription-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="eventNotificationSubscriptionChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Event Notification Subscription Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !eventNotificationSubscriptionChangeHistoryForm.valid || !eventNotificationSubscriptionChangeHistoryForm.dirty || eventNotificationSubscriptionChangeHistoryForm.pristine  || userIsSchedulerEventNotificationSubscriptionChangeHistoryWriter() == false " ngbTooltip="Save the Event Notification Subscription Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Event Notification Subscription Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,484 @@
+/*
+  CALL OVERLAY STYLES
+  =========================================================================
+  Dark theme, glassmorphism effects, smooth transitions.
+  Designed to float above all other content via fixed positioning.
+*/
+
+
+// ─── Shared Variables ──────────────────────────────────────────────────────
+
+$backdrop-bg: rgba(0, 0, 0, 0.7);
+$glass-bg: rgba(30, 30, 45, 0.85);
+$glass-border: rgba(255, 255, 255, 0.08);
+$accent-green: #00d26a;
+$accent-red: #ff4757;
+$accent-blue: #4a90d9;
+$text-primary: #ffffff;
+$text-secondary: rgba(255, 255, 255, 0.6);
+$control-bg: rgba(255, 255, 255, 0.1);
+$control-hover: rgba(255, 255, 255, 0.2);
+$radius: 16px;
+$transition: all 0.25s ease;
+
+
+// ─── Backdrop ──────────────────────────────────────────────────────────────
+
+.call-overlay-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: $backdrop-bg;
+  backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+
+// ─── Incoming Call Modal ───────────────────────────────────────────────────
+
+.call-incoming-modal {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: $radius;
+  padding: 36px 48px;
+  text-align: center;
+  min-width: 340px;
+  max-width: 400px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s ease;
+}
+
+.call-incoming-header {
+  margin-bottom: 24px;
+}
+
+.call-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  i {
+    color: $accent-blue;
+  }
+}
+
+.call-incoming-body {
+  margin-bottom: 32px;
+}
+
+.caller-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $accent-blue, lighten($accent-blue, 15%));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 2rem;
+  color: $text-primary;
+  box-shadow: 0 4px 20px rgba($accent-blue, 0.3);
+
+  &.pulsing {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+}
+
+.caller-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin: 0 0 4px;
+}
+
+.call-status-text {
+  color: $text-secondary;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.connecting-spinner {
+  margin-top: 16px;
+  font-size: 1.5rem;
+  color: $accent-blue;
+}
+
+
+// ─── Incoming Actions ──────────────────────────────────────────────────────
+
+.call-incoming-actions {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+}
+
+.call-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: $text-primary;
+  transition: $transition;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
+
+.call-btn-accept {
+  background: $accent-green;
+  box-shadow: 0 4px 16px rgba($accent-green, 0.4);
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba($accent-green, 0.6);
+  }
+}
+
+.call-btn-decline {
+  background: $accent-red;
+  box-shadow: 0 4px 16px rgba($accent-red, 0.4);
+
+  &:hover {
+    box-shadow: 0 6px 24px rgba($accent-red, 0.6);
+  }
+}
+
+
+// ─── Active Call View ──────────────────────────────────────────────────────
+
+.call-active-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #0a0a14;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.3s ease;
+}
+
+.call-video-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+
+  &.hidden {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+.remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #111;
+}
+
+.local-video {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 180px;
+  height: 135px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+.remote-camera-off {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+  z-index: 1;
+
+  .camera-off-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: $text-secondary;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: $text-secondary;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+}
+
+.call-audio-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
+
+  .audio-call-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $accent-blue, lighten($accent-blue, 12%));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: $text-primary;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 32px rgba($accent-blue, 0.3);
+  }
+
+  .audio-call-name {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+  }
+}
+
+
+// ─── Call Info Bar ─────────────────────────────────────────────────────────
+
+.call-info-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 12px 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.call-timer {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: $text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.call-type-label {
+  font-size: 0.8rem;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+
+// ─── Call Controls ─────────────────────────────────────────────────────────
+
+.call-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  background: $glass-bg;
+  border-top: 1px solid $glass-border;
+}
+
+.call-control-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: $control-bg;
+  color: $text-primary;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: $transition;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: $control-hover;
+  }
+
+  &.active {
+    background: rgba($accent-red, 0.3);
+    color: $accent-red;
+  }
+}
+
+.call-end-btn {
+  background: $accent-red;
+  width: 56px;
+  height: 56px;
+  font-size: 1.2rem;
+
+  &:hover {
+    background: darken($accent-red, 8%);
+    transform: scale(1.05);
+  }
+}
+
+.call-minimize-btn {
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+
+// ─── Minimized Call Bar ────────────────────────────────────────────────────
+
+.call-minimized-bar {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 10000;
+  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: $transition;
+  animation: slideIn 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+    transform: translateY(-2px);
+  }
+}
+
+.minimized-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  i {
+    color: $accent-green;
+  }
+}
+
+.minimized-name {
+  color: $text-primary;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.minimized-timer {
+  color: $accent-green;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.minimized-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.minimized-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: $text-primary;
+  transition: $transition;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.minimized-mute {
+  background: $control-bg;
+
+  &:hover {
+    background: $control-hover;
+  }
+}
+
+.minimized-end {
+  background: $accent-red;
+
+  &:hover {
+    background: darken($accent-red, 8%);
+  }
+}
+
+
+// ─── Animations ────────────────────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba($accent-blue, 0.3);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 8px 32px rgba($accent-blue, 0.5);
+  }
+}

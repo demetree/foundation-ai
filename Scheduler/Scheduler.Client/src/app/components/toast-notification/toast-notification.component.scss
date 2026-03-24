@@ -1,0 +1,168 @@
+/* ─── Toast Notification Styles ─────────────────────────────────────────────── */
+
+$toast-bg: #1e2226;
+$toast-border: rgba(255, 255, 255, 0.1);
+$text-primary: #f1f1f2;
+$text-secondary: #a0a3a8;
+$text-muted: #71747a;
+$accent: #4d8df7;
+$success: #2ecc71;
+$warning: #f1c40f;
+$danger: #e63946;
+
+
+.toast-container {
+  position: fixed;
+  top: 72px;
+  right: 20px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 380px;
+  pointer-events: none;
+}
+
+.toast-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: $toast-bg;
+  border: 1px solid $toast-border;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  pointer-events: all;
+  animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.2s, transform 0.2s;
+
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      background: lighten($toast-bg, 4%);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+  }
+
+  &.toast-message {
+    border-left: 3px solid $accent;
+  }
+
+  &.toast-info {
+    border-left: 3px solid $accent;
+  }
+
+  &.toast-success {
+    border-left: 3px solid $success;
+    .toast-icon i { color: $success; }
+  }
+
+  &.toast-warning {
+    border-left: 3px solid $warning;
+    .toast-icon i { color: $warning; }
+  }
+
+  &.toast-error {
+    border-left: 3px solid $danger;
+    .toast-icon i { color: $danger; }
+  }
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba($accent, 0.12);
+  display: grid;
+  place-items: center;
+
+  i {
+    font-size: 13px;
+    color: $accent;
+  }
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-sender {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 2px;
+}
+
+.toast-text {
+  font-size: 13px;
+  color: $text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.toast-dismiss {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: $text-muted;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  transition: background 0.15s, color 0.15s;
+  margin-top: -2px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: $text-primary;
+  }
+}
+
+
+/* ─── Progress Bar (auto-dismiss countdown) ────────────────────────────────── */
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.toast-progress-bar {
+  height: 100%;
+  background: $accent;
+  animation: toastCountdown linear forwards;
+  border-radius: 0 0 0 12px;
+}
+
+
+/* ─── Animations ───────────────────────────────────────────────────────────── */
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastCountdown {
+  from { width: 100%; }
+  to { width: 0%; }
+}

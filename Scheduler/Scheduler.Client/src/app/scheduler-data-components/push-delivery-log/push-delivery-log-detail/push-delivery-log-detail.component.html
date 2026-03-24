@@ -1,0 +1,104 @@
+<div class="container-fluid p-1 m-0 push-delivery-log-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="push-delivery-log-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Push Delivery Log</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Push Delivery Log' : 'Add Push Delivery Log'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerPushDeliveryLogReader()">
+                <div class="col m-2 push-delivery-log-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="pushDeliveryLogForm" (ngSubmit)="submitForm()" class="push-delivery-log-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="PushDeliveryLog-userId" id="label-PushDeliveryLog-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="PushDeliveryLog-userId" formControlName="userId" placeholder="Enter User Id" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="pushDeliveryLogForm.get('userId')?.invalid && pushDeliveryLogForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('providerId')">
+                                <label for="PushDeliveryLog-providerId" id="label-PushDeliveryLog-providerId"><span class="text-danger">*</span>Provider Id</label>
+                                <input type="text" id="PushDeliveryLog-providerId" formControlName="providerId" placeholder="Enter Provider Id" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-providerId" />
+                                <div *ngIf="pushDeliveryLogForm.get('providerId')?.invalid && pushDeliveryLogForm.get('providerId')?.touched" class="text-danger">
+                                    Provider Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('destination')">
+                                <label for="PushDeliveryLog-destination" id="label-PushDeliveryLog-destination">Destination</label>
+                                <input type="text" id="PushDeliveryLog-destination" formControlName="destination" placeholder="Enter Destination" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-destination" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceType')">
+                                <label for="PushDeliveryLog-sourceType" id="label-PushDeliveryLog-sourceType">Source Type</label>
+                                <input type="text" id="PushDeliveryLog-sourceType" formControlName="sourceType" placeholder="Enter Source Type" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-sourceType" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceNotificationId')">
+                                <label for="PushDeliveryLog-sourceNotificationId" id="label-PushDeliveryLog-sourceNotificationId">Source Notification Id</label>
+                                <input type="number" id="PushDeliveryLog-sourceNotificationId" formControlName="sourceNotificationId" placeholder="Enter Source Notification Id" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-sourceNotificationId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('sourceConversationMessageId')">
+                                <label for="PushDeliveryLog-sourceConversationMessageId" id="label-PushDeliveryLog-sourceConversationMessageId">Source Conversation Message Id</label>
+                                <input type="number" id="PushDeliveryLog-sourceConversationMessageId" formControlName="sourceConversationMessageId" placeholder="Enter Source Conversation Message Id" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-sourceConversationMessageId" />
+                            </div>
+                            <div class="form-check my-2" *ngIf="!isFieldHidden('success')">
+                                <input type="checkbox" id="PushDeliveryLog-success" formControlName="success" class="form-check-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" />
+                                <label for="PushDeliveryLog-success" class="form-check-label" id="label-PushDeliveryLog-success"><span class="text-danger">*</span>Success</label>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('externalId')">
+                                <label for="PushDeliveryLog-externalId" id="label-PushDeliveryLog-externalId">External Id</label>
+                                <input type="text" id="PushDeliveryLog-externalId" formControlName="externalId" placeholder="Enter External Id" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-externalId" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                                <label for="PushDeliveryLog-errorMessage" id="label-PushDeliveryLog-errorMessage">Error Message</label>
+                                <textarea id="PushDeliveryLog-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()"></textarea>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('attemptNumber')">
+                                <label for="PushDeliveryLog-attemptNumber" id="label-PushDeliveryLog-attemptNumber"><span class="text-danger">*</span>Attempt Number</label>
+                                <input type="number" id="PushDeliveryLog-attemptNumber" formControlName="attemptNumber" placeholder="Enter Attempt Number" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-attemptNumber" />
+                                <div *ngIf="pushDeliveryLogForm.get('attemptNumber')?.invalid && pushDeliveryLogForm.get('attemptNumber')?.touched" class="text-danger">
+                                    Attempt Number is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('dateTimeCreated')">
+                                <label for="PushDeliveryLog-dateTimeCreated" id="label-PushDeliveryLog-dateTimeCreated"><span class="text-danger">*</span>Date Time Created</label>
+                                <input type="datetime-local" id="PushDeliveryLog-dateTimeCreated" formControlName="dateTimeCreated" placeholder="Enter Date Time Created" class="form-control push-delivery-log-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" aria-labelledby="label-dateTimeCreated" />
+                                <div *ngIf="pushDeliveryLogForm.get('dateTimeCreated')?.invalid && pushDeliveryLogForm.get('dateTimeCreated')?.touched" class="text-danger">
+                                    Date Time Created is required
+                                </div>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PushDeliveryLog-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" />
+                                <label for="PushDeliveryLog-active" class="form-check-label" id="label-PushDeliveryLog-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="PushDeliveryLog-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPushDeliveryLogWriter()" />
+                                <label for="PushDeliveryLog-deleted" class="form-check-label" id="label-PushDeliveryLog-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="push-delivery-log-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="pushDeliveryLogForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Push Delivery Log">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !pushDeliveryLogForm.valid || !pushDeliveryLogForm.dirty || pushDeliveryLogForm.pristine  || userIsSchedulerPushDeliveryLogWriter() == false " ngbTooltip="Save the Push Delivery Log changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Push Delivery Log' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

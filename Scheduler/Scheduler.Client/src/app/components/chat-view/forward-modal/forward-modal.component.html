@@ -1,0 +1,28 @@
+<!-- Forward Picker Modal -->
+<div class="forward-modal-backdrop" (click)="close()">
+  <div class="forward-modal" (click)="$event.stopPropagation()">
+    <div class="forward-modal-header">
+      <h4><i class="fa-solid fa-share"></i> Forward Message</h4>
+      <button class="btn-icon btn-icon-sm" (click)="close()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="forward-modal-search">
+      <input type="text"
+             placeholder="Search conversations..."
+             [(ngModel)]="searchQuery"
+             id="forward-search-input" />
+    </div>
+    <div class="forward-modal-list">
+      <div class="forward-conv-item"
+           *ngFor="let conv of filteredConversations"
+           (click)="forwardTo(conv.id)">
+        <span class="forward-conv-name">{{ getConversationName(conv) }}</span>
+        <span class="forward-conv-members">{{ conv.members.length || 0 }} members</span>
+      </div>
+      <div class="forward-empty" *ngIf="filteredConversations.length === 0">
+        No conversations found
+      </div>
+    </div>
+  </div>
+</div>

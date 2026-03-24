@@ -247,7 +247,7 @@
         <button ngbNavLink>
           Notifications
           <span class="badge bg-secondary ms-2">
-            {{ (resource?.NotificationSubscriptionsCount$| async) ?? '-' }}
+            {{ (resource?.EventNotificationSubscriptionsCount$| async) ?? '-' }}
           </span>
         </button>
         <ng-template ngbNavContent>

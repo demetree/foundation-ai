@@ -55,9 +55,9 @@ public partial class Resource
 
     public virtual ICollection<EventCharge> EventCharges { get; set; } = new List<EventCharge>();
 
-    public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
+    public virtual ICollection<EventNotificationSubscription> EventNotificationSubscriptions { get; set; } = new List<EventNotificationSubscription>();
 
-    public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = new List<NotificationSubscription>();
+    public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
 
     public virtual ICollection<RateSheet> RateSheets { get; set; } = new List<RateSheet>();
 

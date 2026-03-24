@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = resourceChangeHistory.timeStamp,
 				userId = resourceChangeHistory.userId,
 				data = resourceChangeHistory.data,
-				resource = Resource.CreateMinimalAnonymous(resourceChangeHistory.resource),
+				resource = Resource.CreateMinimalAnonymous(resourceChangeHistory.resource)
 			 };
 		}
 

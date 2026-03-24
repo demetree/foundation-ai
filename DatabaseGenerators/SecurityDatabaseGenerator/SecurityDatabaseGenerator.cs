@@ -1079,46 +1079,46 @@ This will ensure that the Security system's configuration controls the Data Visi
 
 
         /*
-         * 
-         *  This adds tables for a notification system.  It depends on the multi tenancy to exist first.
-         *  
-         *  The notification table will not have foreign key fields to any other entity.
-         *  
-         *  Instead, it has an entity name field, and an entity ID field to make it very general.
-         *  
-         *  This is done on purpose because notification data is not intended to be filed alongside real data.
-         *  
-         *  It is a transient system of sending a message to a user, not to add anything to the database in and of itself.  
-         *  As such, these tables sit slightly outside the model, with the exception of linking to the user table, and other data visibility tables, but
-         *  it only does that to figure out which users to distribute the notifications to.
-         * 
-         * The basic data flow for this is as follows:
-         * 
-         * 1.) A situation that should generate a notification arises, and the code calls a utility method  in the application base class called 'GenerateNotification'
-         *     The notification would be intended to go to one user, one team, one department, one organization, or the whole tenant 
-         *     
-         *     a record is added to the notification table with the message details, the entity to link to and the id on a click, and an external URL if need be to inform
-         *     the UI of what do to.
-         *     
-         *     If all of the 4 data visibility field are left null would imply distribution to all users in the tenant.  fields are (orgid, depid, teamid, userid),
-         *     
-         *          If a userId is provided the distribution is meant only to that user
-         *          
-         *     The distributed field is set to false, until the distribution process is done, and then it can flip it to true.  If the distribution is built into the creation process
-         *     then the distributed flag can be created with a value of true.
-         *          
-         *     
-         *      The distribution logic will do this:
-         *      
-         *      for any non distributed notifications, it will decide where to distribute to, based on which of the 4 fields are set.  List of user ids are determined.
-         *      
-         *      For each user that needs the notification, a new record is created in notificationDistribution.  
-         *      
-         *      The end user UI calls a method to get the current user's notifications, and the notificationDistributions for that usr that have not been acknowledge are to
-         *      be returned.
-         *      
-         * 
-         * */
+          * 
+          *  This adds tables for a notification system.  It depends on the multi tenancy to exist first.
+          *  
+          *  The notification table will not have foreign key fields to any other entity.
+          *  
+          *  Instead, it has an entity name field, and an entity ID field to make it very general.
+          *  
+          *  This is done on purpose because notification data is not intended to be filed alongside real data.
+          *  
+          *  It is a transient system of sending a message to a user, not to add anything to the database in and of itself.  
+          *  As such, these tables sit slightly outside the model, with the exception of linking to the user table, and other data visibility tables, but
+          *  it only does that to figure out which users to distribute the notifications to.
+          * 
+          * The basic data flow for this is as follows:
+          * 
+          * 1.) A situation that should generate a notification arises, and the code calls a utility method  in the application base class called 'GenerateNotification'
+          *     The notification would be intended to go to one user, one team, one department, one organization, or the whole tenant 
+          *     
+          *     a record is added to the notification table with the message details, the entity to link to and the id on a click, and an external URL if need be to inform
+          *     the UI of what do to.
+          *     
+          *     If all of the 4 data visibility field are left null would imply distribution to all users in the tenant.  fields are (orgid, depid, teamid, userid),
+          *     
+          *          If a userId is provided the distribution is meant only to that user
+          *          
+          *     The distributed field is set to false, until the distribution process is done, and then it can flip it to true.  If the distribution is built into the creation process
+          *     then the distributed flag can be created with a value of true.
+          *          
+          *     
+          *      The distribution logic will do this:
+          *      
+          *      for any non distributed notifications, it will decide where to distribute to, based on which of the 4 fields are set.  List of user ids are determined.
+          *      
+          *      For each user that needs the notification, a new record is created in notificationDistribution.  
+          *      
+          *      The end user UI calls a method to get the current user's notifications, and the notificationDistributions for that usr that have not been acknowledge are to
+          *      be returned.
+          *      
+          * 
+          * */
         public static void AddNotificationTablesToDatabase(DatabaseGenerator.Database database)
         {
 
@@ -1330,6 +1330,7 @@ It is part of the Foundation's Conversation/Messaging system.";
             conversationUserTable.AddMultiTenantSupport();
             conversationUserTable.AddForeignKeyField("conversationId", conversationTable, false);
             conversationUserTable.AddIntField("userId", false).AddScriptComments("The user in this conversation.  Resolved by IMessagingUserResolver.");
+            conversationUserTable.AddString50Field("role", false).defaultValue = "Member";  // Phase 2B: Channel admin roles (Owner, Admin, Member)
             conversationUserTable.AddDateTimeField("dateTimeAdded", false).AddScriptComments("When this user was added to the conversation.");
             conversationUserTable.AddControlFields();
 
@@ -1388,9 +1389,22 @@ and adds channel-specific fields like name, topic, and privacy.";
             conversationMessageTable.AddForeignKeyField("conversationChannelId", conversationChannelTable, true).AddScriptComments("Optional channel that this message belongs to.  NULL = conversation-level (no channel).");
             conversationMessageTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this message was created.");
             conversationMessageTable.AddTextField("message", false);
+            conversationMessageTable.AddString50Field("messageType", true).AddScriptComments("The type of message: null/'text' (default), 'voice', 'video', 'call_event'. Determines how the client renders the message content.");
             conversationMessageTable.AddString250Field("entity", true).AddScriptComments("The in case the conversation message is to do with an entity, it is named here");
             conversationMessageTable.AddIntField("entityId", true).AddScriptComments("The id of the entity that the message is about");
             conversationMessageTable.AddString1000Field("externalURL", true);
+            //
+            // Forwarding support: These nullable int columns track the provenance of forwarded messages.
+            // No FK constraint because the source message may be in a different conversation or deleted.
+            //
+            conversationMessageTable.AddIntField("forwardedFromMessageId", true).AddScriptComments("The ID of the original message that was forwarded.  NULL if the message is not a forward.");
+            conversationMessageTable.AddIntField("forwardedFromUserId", true).AddScriptComments("The user ID of the original sender whose message was forwarded.  Resolved by IMessagingUserResolver.");
+            //
+            // Phase 3A: Scheduled message delivery — messages can be created with isScheduled=true
+            // and a future scheduledDateTime.  ScheduledMessageService polls for due messages.
+            //
+            conversationMessageTable.AddBoolField("isScheduled", false, false).AddScriptComments("Whether this message is scheduled for future delivery.");
+            conversationMessageTable.AddDateTimeField("scheduledDateTime", true).AddScriptComments("When the scheduled message should be released.  Null if not scheduled.");
             conversationMessageTable.AddVersionControl();       // so message records can be edited, and the changes are recorded.
             conversationMessageTable.AddControlFields();
 
@@ -1540,6 +1554,41 @@ important messages, decisions, or reference information within a conversation.";
 
 
             //
+            // ConversationMessageLinkPreview - Stores Open Graph / meta tag data for URLs found in messages.
+            // Created asynchronously after a message is saved, then pushed to clients via SignalR.
+            //
+            Database.Table conversationMessageLinkPreviewTable = database.AddTable("ConversationMessageLinkPreview");
+            conversationMessageLinkPreviewTable.comment = @"This table stores link preview data (Open Graph metadata) for URLs found in conversation messages.  It is part of the Foundation's Messaging system.
+
+When a message containing URLs is sent, the system asynchronously fetches Open Graph / meta tag data for each URL and stores the results here.  
+The preview data is then pushed to connected clients via SignalR so link preview cards appear below the message bubble.";
+
+            conversationMessageLinkPreviewTable.minimumReadPermissionLevel = 50;
+            conversationMessageLinkPreviewTable.minimumWritePermissionLevel = 50;
+            conversationMessageLinkPreviewTable.adminAccessNeededToWrite = true;
+            conversationMessageLinkPreviewTable.AddIdField();
+            conversationMessageLinkPreviewTable.AddMultiTenantSupport();
+            conversationMessageLinkPreviewTable.AddForeignKeyField("conversationMessageId", conversationMessageTable, false).AddScriptComments("The message that contains this URL.");
+            conversationMessageLinkPreviewTable.AddString1000Field("url", false).AddScriptComments("The original URL found in the message.");
+            conversationMessageLinkPreviewTable.AddString500Field("title", true).AddScriptComments("The page title from og:title or <title> tag.");
+            conversationMessageLinkPreviewTable.AddString1000Field("description", true).AddScriptComments("The page description from og:description or meta description.");
+            conversationMessageLinkPreviewTable.AddString1000Field("imageUrl", true).AddScriptComments("The preview image URL from og:image.");
+            conversationMessageLinkPreviewTable.AddString250Field("siteName", true).AddScriptComments("The site name from og:site_name.");
+            conversationMessageLinkPreviewTable.AddDateTimeField("fetchedDateTime", false).AddScriptComments("When the preview data was fetched from the URL.");
+            conversationMessageLinkPreviewTable.AddVersionControl();
+            conversationMessageLinkPreviewTable.AddControlFields();
+
+            Database.Table.Index conversationMessageLinkPreviewIdActiveDeletedIndex = conversationMessageLinkPreviewTable.CreateIndex("I_ConversationMessageLinkPreview_id_active_deleted");
+            conversationMessageLinkPreviewIdActiveDeletedIndex.AddField("id");
+            conversationMessageLinkPreviewIdActiveDeletedIndex.AddField("active");
+            conversationMessageLinkPreviewIdActiveDeletedIndex.AddField("deleted");
+
+            // Composite index to efficiently query link previews for a message
+            conversationMessageLinkPreviewTable.CreateIndexForFields(new List<string> { "conversationMessageId", "active", "deleted" });
+
+
+
+            //
             // UserPresence - Track user online/offline status and activity.
             // This table is updated on SignalR hub connect/disconnect events.
             //
@@ -1570,7 +1619,455 @@ When connectionCount drops to 0, the user is considered offline.";
             // Index to quickly look up presence by user
             userPresenceTable.CreateIndexForFields(new List<string> { "userId", "active", "deleted" });
 
+
+
+            //
+            // ConversationThreadUser - Tracks per-user last-read position within a thread (reply chain).
+            // Enables per-thread unread badges in the UI.
+            //
+
+            Database.Table conversationThreadUserTable = database.AddTable("ConversationThreadUser");
+            conversationThreadUserTable.comment = @"This table tracks a user's last-read position within a message thread (reply chain).  It is part of the Foundation's Messaging system.
+
+When a user views a thread panel, the client calls UpdateThreadReadPosition to update the lastReadMessageId.  
+The unread reply count is then computed by counting messages in that thread with an ID greater than lastReadMessageId.";
+
+            conversationThreadUserTable.minimumReadPermissionLevel = 50;
+            conversationThreadUserTable.minimumWritePermissionLevel = 50;
+            conversationThreadUserTable.AddIdField();
+            conversationThreadUserTable.AddMultiTenantSupport();
+            conversationThreadUserTable.AddForeignKeyField("conversationId", conversationTable, false).AddScriptComments("The conversation that contains this thread.");
+            conversationThreadUserTable.AddForeignKeyField("parentConversationMessageId", conversationMessageTable, false).AddScriptComments("The root message of the thread.");
+            conversationThreadUserTable.AddIntField("userId", false).AddScriptComments("The user being tracked.  Resolved by IMessagingUserResolver.");
+            conversationThreadUserTable.AddIntField("lastReadMessageId", true).AddScriptComments("The last message in this thread that the user has read.");
+            conversationThreadUserTable.AddDateTimeField("lastReadDateTime", true).AddScriptComments("When the user last read the thread.");
+            conversationThreadUserTable.AddControlFields();
+
+            Database.Table.Index conversationThreadUserIdActiveDeletedIndex = conversationThreadUserTable.CreateIndex("I_ConversationThreadUser_id_active_deleted");
+            conversationThreadUserIdActiveDeletedIndex.AddField("id");
+            conversationThreadUserIdActiveDeletedIndex.AddField("active");
+            conversationThreadUserIdActiveDeletedIndex.AddField("deleted");
+
+            // Composite index for efficient per-user per-thread lookups
+            conversationThreadUserTable.CreateIndexForFields(new List<string> { "userId", "parentConversationMessageId" });
+            conversationThreadUserTable.CreateIndexForFields(new List<string> { "conversationId", "active", "deleted" });
+
+
+
+            //
+            // MessageBookmark - Personal message bookmarks.
+            // Allows users to save messages for later reference with an optional note.
+            //
+            Database.Table messageBookmarkTable = database.AddTable("MessageBookmark");
+            messageBookmarkTable.comment = @"This table stores personal message bookmarks.  It is part of the Foundation's Messaging system.
+
+Users can bookmark any message for later reference and optionally add a personal note explaining why they saved it.  
+Bookmarks are per-user and private — each user sees only their own bookmarks.";
+
+            messageBookmarkTable.minimumReadPermissionLevel = 50;
+            messageBookmarkTable.minimumWritePermissionLevel = 50;
+            messageBookmarkTable.AddIdField();
+            messageBookmarkTable.AddMultiTenantSupport();
+            messageBookmarkTable.AddIntField("userId", false).AddScriptComments("The user who bookmarked the message.  Resolved by IMessagingUserResolver.");
+            messageBookmarkTable.AddForeignKeyField("conversationMessageId", conversationMessageTable, false).AddScriptComments("The bookmarked message.");
+            messageBookmarkTable.AddString500Field("note", true).AddScriptComments("Optional personal note about why the message was bookmarked.");
+            messageBookmarkTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When the bookmark was created.");
+            messageBookmarkTable.AddControlFields();
+
+            Database.Table.Index messageBookmarkIdActiveDeletedIndex = messageBookmarkTable.CreateIndex("I_MessageBookmark_id_active_deleted");
+            messageBookmarkIdActiveDeletedIndex.AddField("id");
+            messageBookmarkIdActiveDeletedIndex.AddField("active");
+            messageBookmarkIdActiveDeletedIndex.AddField("deleted");
+
+            // Indexes for efficient per-user bookmark retrieval
+            messageBookmarkTable.CreateIndexForFields(new List<string> { "userId", "active", "deleted" });
+            messageBookmarkTable.CreateIndexForFields(new List<string> { "conversationMessageId", "active", "deleted" });
+
         }
 
+
+        /*
+         * 
+         *  This adds tables for the messaging platform layer (Phase 3).
+         *  It depends on the conversation tables to exist first.
+         *  
+         *  These tables extend the messaging system with:
+         *  - Push delivery logging (email, SMS delivery tracking)
+         *  - Push provider configuration (per-tenant provider settings)
+         *  - Message flags (user-reported content for admin review)
+         *  - Messaging audit log (administrative action tracking)
+         *  
+         *  AI-developed as part of Foundation.Messaging Phase 3, March 2026.
+         * 
+         * */
+        public static void AddMessagingPlatformTablesToDatabase(DatabaseGenerator.Database database)
+        {
+
+            Database.Table conversationMessageTable = database.GetTable("ConversationMessage");
+
+            if (conversationMessageTable == null)
+            {
+                throw new Exception("Conversation tables must be in schema before messaging platform tables are added");
+            }
+
+
+            //
+            // PushDeliveryLog - Tracks external push delivery attempts (email, SMS) for notifications and messages.
+            //
+            Database.Table pushDeliveryLogTable = database.AddTable("PushDeliveryLog");
+            pushDeliveryLogTable.comment = @"This table tracks external push delivery attempts for notifications and messages.  It is part of the Foundation's Messaging Platform system.
+
+Each time a notification or message triggers an external delivery (email, SMS), a record is created here to track 
+the delivery attempt, its success or failure, and any error messages.";
+
+            pushDeliveryLogTable.minimumReadPermissionLevel = 50;
+            pushDeliveryLogTable.minimumWritePermissionLevel = 50;
+            pushDeliveryLogTable.adminAccessNeededToWrite = true;
+            pushDeliveryLogTable.AddIdField();
+            pushDeliveryLogTable.AddMultiTenantSupport();
+            pushDeliveryLogTable.AddIntField("userId", false).AddScriptComments("The target user for this delivery attempt.  Resolved by IMessagingUserResolver.");
+            pushDeliveryLogTable.AddString50Field("providerId", false).AddScriptComments("The push provider that handled this delivery, for example 'smtp', 'sms', 'webhook'.");
+            pushDeliveryLogTable.AddString250Field("destination", true).AddScriptComments("The masked destination address (email or phone number).  Partially masked for privacy.");
+            pushDeliveryLogTable.AddString50Field("sourceType", true).AddScriptComments("The source type: 'notification' or 'message'.");
+            pushDeliveryLogTable.AddIntField("sourceNotificationId", true).AddScriptComments("The notification ID that triggered this delivery attempt, if applicable.");
+            pushDeliveryLogTable.AddIntField("sourceConversationMessageId", true).AddScriptComments("The conversation message ID that triggered this delivery attempt, if applicable.");
+            pushDeliveryLogTable.AddBoolField("success", false, false).AddScriptComments("Whether the delivery attempt was successful.");
+            pushDeliveryLogTable.AddString250Field("externalId", true).AddScriptComments("The external ID returned by the provider (e.g., SMTP message ID, SMS provider ID).");
+            pushDeliveryLogTable.AddString1000Field("errorMessage", true).AddScriptComments("The error message if the delivery attempt failed.");
+            pushDeliveryLogTable.AddIntField("attemptNumber", false, 1).AddScriptComments("The attempt number for retry scenarios.");
+            pushDeliveryLogTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When this delivery attempt was made.");
+            pushDeliveryLogTable.AddControlFields();
+
+            Database.Table.Index pushDeliveryLogIdActiveDeletedIndex = pushDeliveryLogTable.CreateIndex("I_PushDeliveryLog_id_active_deleted");
+            pushDeliveryLogIdActiveDeletedIndex.AddField("id");
+            pushDeliveryLogIdActiveDeletedIndex.AddField("active");
+            pushDeliveryLogIdActiveDeletedIndex.AddField("deleted");
+
+            // Indexes for common query patterns
+            pushDeliveryLogTable.CreateIndexForFields(new List<string> { "userId", "active", "deleted" });
+            pushDeliveryLogTable.CreateIndexForFields(new List<string> { "providerId", "active", "deleted" });
+            pushDeliveryLogTable.CreateIndexForFields(new List<string> { "success", "active", "deleted" });
+
+
+
+            //
+            // PushProviderConfiguration - Per-tenant push provider settings.
+            // Admin configures which providers (SMTP, SMS, webhook) are active for their tenant.
+            //
+            Database.Table pushProviderConfigTable = database.AddTable("PushProviderConfiguration");
+            pushProviderConfigTable.comment = @"This table stores per-tenant push provider configuration.  It is part of the Foundation's Messaging Platform system.
+
+Each tenant can enable/disable individual push providers (SMTP, SMS, webhooks) and store provider-specific 
+configuration as JSON.  This allows tenant administrators to control which external delivery channels are active.";
+
+            pushProviderConfigTable.minimumReadPermissionLevel = 50;
+            pushProviderConfigTable.minimumWritePermissionLevel = 100;
+            pushProviderConfigTable.adminAccessNeededToWrite = true;
+            pushProviderConfigTable.AddIdField();
+            pushProviderConfigTable.AddMultiTenantSupport();
+            pushProviderConfigTable.AddString50Field("providerId", false).AddScriptComments("The push provider identifier, for example 'smtp', 'sms', 'webhook'.");
+            pushProviderConfigTable.AddBoolField("enabled", false, false).AddScriptComments("Whether this provider is enabled for this tenant.");
+            pushProviderConfigTable.AddTextField("configurationJson", true).AddScriptComments("Provider-specific configuration stored as JSON.  Structure varies by provider type.");
+            pushProviderConfigTable.AddDateTimeField("dateTimeModified", false).AddScriptComments("When this configuration was last modified.");
+            pushProviderConfigTable.AddIntField("modifiedByUserId", false).AddScriptComments("The user who last modified this configuration.  Resolved by IMessagingUserResolver.");
+            pushProviderConfigTable.AddControlFields();
+
+            Database.Table.Index pushProviderConfigIdActiveDeletedIndex = pushProviderConfigTable.CreateIndex("I_PushProviderConfiguration_id_active_deleted");
+            pushProviderConfigIdActiveDeletedIndex.AddField("id");
+            pushProviderConfigIdActiveDeletedIndex.AddField("active");
+            pushProviderConfigIdActiveDeletedIndex.AddField("deleted");
+
+            // Index for looking up providers by tenant
+            pushProviderConfigTable.CreateIndexForFields(new List<string> { "providerId", "active", "deleted" });
+
+
+
+            //
+            // MessageFlag - Message flagging/reporting for admin review.
+            // Users can flag messages for abuse, spam, or other concerns.
+            //
+            Database.Table messageFlagTable = database.AddTable("MessageFlag");
+            messageFlagTable.comment = @"This table tracks message flags/reports for administrative review.  It is part of the Foundation's Messaging Platform system.
+
+Users can flag messages that they believe violate policies or require administrative attention.  Each flag tracks 
+the reason, the review status (open/reviewed/resolved/dismissed), and any resolution notes from the reviewer.";
+
+            messageFlagTable.minimumReadPermissionLevel = 50;
+            messageFlagTable.minimumWritePermissionLevel = 50;
+            messageFlagTable.AddIdField();
+            messageFlagTable.AddMultiTenantSupport();
+            messageFlagTable.AddForeignKeyField("conversationMessageId", conversationMessageTable, false).AddScriptComments("The message that was flagged.");
+            messageFlagTable.AddIntField("flaggedByUserId", false).AddScriptComments("The user who flagged the message.  Resolved by IMessagingUserResolver.");
+            messageFlagTable.AddString100Field("reason", false).AddScriptComments("The reason for flagging: 'abuse', 'spam', 'harassment', 'inappropriate', 'other'.");
+            messageFlagTable.AddString1000Field("details", true).AddScriptComments("Additional details provided by the reporting user.");
+            messageFlagTable.AddString50Field("status", false).AddScriptComments("The review status: 'open', 'reviewed', 'resolved', 'dismissed'.");
+            messageFlagTable.AddIntField("reviewedByUserId", true).AddScriptComments("The admin user who reviewed the flag.  Resolved by IMessagingUserResolver.");
+            messageFlagTable.AddDateTimeField("dateTimeReviewed", true).AddScriptComments("When the flag was reviewed.");
+            messageFlagTable.AddString1000Field("resolutionNotes", true).AddScriptComments("Notes from the reviewer about the resolution.");
+            messageFlagTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When the flag was created.");
+            messageFlagTable.AddControlFields();
+
+            Database.Table.Index messageFlagIdActiveDeletedIndex = messageFlagTable.CreateIndex("I_MessageFlag_id_active_deleted");
+            messageFlagIdActiveDeletedIndex.AddField("id");
+            messageFlagIdActiveDeletedIndex.AddField("active");
+            messageFlagIdActiveDeletedIndex.AddField("deleted");
+
+            // Indexes for common admin query patterns
+            messageFlagTable.CreateIndexForFields(new List<string> { "status", "active", "deleted" });
+            messageFlagTable.CreateIndexForFields(new List<string> { "conversationMessageId", "active", "deleted" });
+            messageFlagTable.CreateIndexForFields(new List<string> { "flaggedByUserId", "active", "deleted" });
+
+
+
+            //
+            // MessagingAuditLog - Administrative action audit trail.
+            // Records all administrative actions for accountability and compliance.
+            //
+            Database.Table messagingAuditLogTable = database.AddTable("MessagingAuditLog");
+            messagingAuditLogTable.comment = @"This table records administrative actions within the messaging system.  It is part of the Foundation's Messaging Platform system.
+
+All administrative actions (flag resolutions, message deletions, user bans, configuration changes) are logged here 
+for accountability and compliance.  Each entry records who performed the action, what was affected, and when.";
+
+            messagingAuditLogTable.minimumReadPermissionLevel = 50;
+            messagingAuditLogTable.minimumWritePermissionLevel = 100;
+            messagingAuditLogTable.adminAccessNeededToWrite = true;
+            messagingAuditLogTable.AddIdField();
+            messagingAuditLogTable.AddMultiTenantSupport();
+            messagingAuditLogTable.AddIntField("performedByUserId", false).AddScriptComments("The admin user who performed the action.  Resolved by IMessagingUserResolver.");
+            messagingAuditLogTable.AddString100Field("action", false).AddScriptComments("The action performed: 'ResolveFlag', 'DeleteMessage', 'BanUser', 'ConfigChange', etc.");
+            messagingAuditLogTable.AddString100Field("entityType", true).AddScriptComments("The type of entity affected: 'MessageFlag', 'ConversationMessage', 'User', etc.");
+            messagingAuditLogTable.AddIntField("entityId", true).AddScriptComments("The ID of the entity that was affected.");
+            messagingAuditLogTable.AddTextField("details", true).AddScriptComments("JSON or descriptive details about the action taken.");
+            messagingAuditLogTable.AddString50Field("ipAddress", true).AddScriptComments("The IP address of the admin when the action was performed.");
+            messagingAuditLogTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When the action was performed.");
+            messagingAuditLogTable.AddControlFields();
+
+            Database.Table.Index messagingAuditLogIdActiveDeletedIndex = messagingAuditLogTable.CreateIndex("I_MessagingAuditLog_id_active_deleted");
+            messagingAuditLogIdActiveDeletedIndex.AddField("id");
+            messagingAuditLogIdActiveDeletedIndex.AddField("active");
+            messagingAuditLogIdActiveDeletedIndex.AddField("deleted");
+
+            // Indexes for common audit query patterns
+            messagingAuditLogTable.CreateIndexForFields(new List<string> { "performedByUserId", "active", "deleted" });
+            messagingAuditLogTable.CreateIndexForFields(new List<string> { "action", "active", "deleted" });
+
+        }
+
+
+        /*
+         * 
+         *  This adds tables for the voice & video calling system.
+         *  It depends on the conversation tables to exist first.
+         *  
+         *  These tables extend the messaging system with:
+         *  - Call type and status lookups
+         *  - Call records (voice, video, screen share)
+         *  - Call participant tracking
+         *  - Call event audit log
+         *  
+         *  The calling system supports pluggable providers (WebRTC, Azure Communication Services, etc.)
+         *  via the ICallProvider interface in Foundation.Messaging.
+         *  
+         *  AI-developed as part of Foundation.Messaging Phase 4 (Calling), March 2026.
+         * 
+         * */
+        public static void AddCallingTablesToDatabase(DatabaseGenerator.Database database)
+        {
+
+            Database.Table conversationTable = database.GetTable("Conversation");
+
+            if (conversationTable == null)
+            {
+                throw new Exception("Conversation tables must be in schema before calling tables are added");
+            }
+
+
+            //
+            // CallType - Lookup table for the type of call.
+            //
+            Database.Table callTypeTable = database.AddTable("CallType");
+            callTypeTable.comment = @"This table defines the types of calls that can be made.  It is part of the Foundation's Calling system.
+
+Call types include voice, video, and screen share.";
+
+            callTypeTable.isWritable = false;
+            callTypeTable.SetMinimumPermissionLevels(100, 100);
+            callTypeTable.AddIdField();
+            callTypeTable.AddNameAndDescriptionFields(true, true);
+            callTypeTable.AddControlFields();
+
+            Database.Table.Index callTypeIdActiveDeletedIndex = callTypeTable.CreateIndex("I_CallType_id_active_deleted");
+            callTypeIdActiveDeletedIndex.AddField("id");
+            callTypeIdActiveDeletedIndex.AddField("active");
+            callTypeIdActiveDeletedIndex.AddField("deleted");
+
+            callTypeTable.AddData(new Dictionary<string, string> { { "name", "Voice" },
+                                                                    { "description", "Voice call" },
+                                                                    { "objectGuid", "b1c3d4e5-f6a7-4890-b123-456789abcde0" } });
+
+            callTypeTable.AddData(new Dictionary<string, string> { { "name", "Video" },
+                                                                    { "description", "Video call" },
+                                                                    { "objectGuid", "c2d4e5f6-a7b8-4901-c234-56789abcdef1" } });
+
+            callTypeTable.AddData(new Dictionary<string, string> { { "name", "ScreenShare" },
+                                                                    { "description", "Screen sharing session" },
+                                                                    { "objectGuid", "d3e5f6a7-b8c9-4012-d345-6789abcdef02" } });
+
+
+            //
+            // CallStatus - Lookup table for call states.
+            //
+            Database.Table callStatusTable = database.AddTable("CallStatus");
+            callStatusTable.comment = @"This table defines the possible statuses for a call.  It is part of the Foundation's Calling system.
+
+Call statuses track the lifecycle of a call from initiation through to completion.";
+
+            callStatusTable.isWritable = false;
+            callStatusTable.SetMinimumPermissionLevels(100, 100);
+            callStatusTable.AddIdField();
+            callStatusTable.AddNameAndDescriptionFields(true, true);
+            callStatusTable.AddControlFields();
+
+            Database.Table.Index callStatusIdActiveDeletedIndex = callStatusTable.CreateIndex("I_CallStatus_id_active_deleted");
+            callStatusIdActiveDeletedIndex.AddField("id");
+            callStatusIdActiveDeletedIndex.AddField("active");
+            callStatusIdActiveDeletedIndex.AddField("deleted");
+
+            callStatusTable.AddData(new Dictionary<string, string> { { "name", "Ringing" },
+                                                                     { "description", "The call has been initiated and is ringing" },
+                                                                     { "objectGuid", "e4f6a7b8-c9d0-4123-e456-789abcdef034" } });
+
+            callStatusTable.AddData(new Dictionary<string, string> { { "name", "Active" },
+                                                                     { "description", "The call is currently active" },
+                                                                     { "objectGuid", "f5a7b8c9-d0e1-4234-f567-89abcdef0145" } });
+
+            callStatusTable.AddData(new Dictionary<string, string> { { "name", "Ended" },
+                                                                     { "description", "The call ended normally" },
+                                                                     { "objectGuid", "a6b8c9d0-e1f2-4345-a678-9abcdef01256" } });
+
+            callStatusTable.AddData(new Dictionary<string, string> { { "name", "Missed" },
+                                                                     { "description", "The call was not answered" },
+                                                                     { "objectGuid", "b7c9d0e1-f2a3-4456-b789-abcdef012367" } });
+
+            callStatusTable.AddData(new Dictionary<string, string> { { "name", "Declined" },
+                                                                     { "description", "The call was declined by the recipient" },
+                                                                     { "objectGuid", "c8d0e1f2-a3b4-4567-c890-bcdef0123478" } });
+
+            callStatusTable.AddData(new Dictionary<string, string> { { "name", "Failed" },
+                                                                     { "description", "The call failed due to a technical error" },
+                                                                     { "objectGuid", "d9e1f2a3-b4c5-4678-d901-cdef01234589" } });
+
+
+
+            //
+            // Call - Main call record.
+            // Links to a conversation, tracks the call provider, timing, and overall state.
+            //
+            Database.Table callTable = database.AddTable("Call");
+            callTable.comment = @"This is the main Call table.  It records voice, video, and screen share calls.  It is part of the Foundation's Calling system.
+
+Each call is linked to a conversation and tracks the call provider used, timing information, and overall call state.  
+The providerId field identifies which ICallProvider implementation handled the call (e.g. 'webrtc', 'azure-acs').";
+
+            callTable.minimumReadPermissionLevel = 50;
+            callTable.minimumWritePermissionLevel = 50;
+            callTable.adminAccessNeededToWrite = true;
+            callTable.AddIdField();
+            callTable.AddMultiTenantSupport();
+            callTable.AddForeignKeyField("callTypeId", callTypeTable, false).AddScriptComments("The type of call: voice, video, or screen share.");
+            callTable.AddForeignKeyField("callStatusId", callStatusTable, false).AddScriptComments("The current status of the call.");
+            callTable.AddString50Field("providerId", false).AddScriptComments("The call provider that is handling this call, for example 'webrtc', 'azure-acs'.");
+            callTable.AddString250Field("providerCallId", true).AddScriptComments("The provider-specific call identifier.  Used for correlation with external systems like Azure Communication Services.");
+            callTable.AddForeignKeyField("conversationId", conversationTable, false).AddScriptComments("The conversation that this call belongs to.");
+            callTable.AddIntField("initiatorUserId", false).AddScriptComments("The user who initiated the call.  Resolved by IMessagingUserResolver.");
+            callTable.AddDateTimeField("startDateTime", false).AddScriptComments("When the call was initiated.");
+            callTable.AddDateTimeField("answerDateTime", true).AddScriptComments("When the call was answered.  Null if the call was never answered.");
+            callTable.AddDateTimeField("endDateTime", true).AddScriptComments("When the call ended.  Null if the call is still active or was never connected.");
+            callTable.AddIntField("durationSeconds", true).AddScriptComments("The duration of the call in seconds.  Calculated from answerDateTime to endDateTime.");
+            callTable.AddControlFields();
+
+            Database.Table.Index callIdActiveDeletedIndex = callTable.CreateIndex("I_Call_id_active_deleted");
+            callIdActiveDeletedIndex.AddField("id");
+            callIdActiveDeletedIndex.AddField("active");
+            callIdActiveDeletedIndex.AddField("deleted");
+
+            // Indexes for common query patterns
+            callTable.CreateIndexForFields(new List<string> { "conversationId", "active", "deleted" });
+            callTable.CreateIndexForFields(new List<string> { "initiatorUserId", "active", "deleted" });
+            callTable.CreateIndexForFields(new List<string> { "callStatusId", "active", "deleted" });
+            callTable.CreateIndexForFields(new List<string> { "providerId", "active", "deleted" });
+
+
+
+            //
+            // CallParticipant - Per-user call participation tracking.
+            // Records when each user joined, left, and their role in the call.
+            //
+            Database.Table callParticipantTable = database.AddTable("CallParticipant");
+            callParticipantTable.comment = @"This table tracks individual user participation in calls.  It is part of the Foundation's Calling system.
+
+Each participant record tracks the user's role (initiator or recipient), their participation status (ringing, joined, 
+declined, missed), and when they joined and left the call.  Supports multi-party calls.";
+
+            callParticipantTable.minimumReadPermissionLevel = 50;
+            callParticipantTable.minimumWritePermissionLevel = 50;
+            callParticipantTable.adminAccessNeededToWrite = true;
+            callParticipantTable.AddIdField();
+            callParticipantTable.AddMultiTenantSupport();
+            callParticipantTable.AddForeignKeyField("callId", callTable, false).AddScriptComments("The call that this participant belongs to.");
+            callParticipantTable.AddIntField("userId", false).AddScriptComments("The user participating in the call.  Resolved by IMessagingUserResolver.");
+            callParticipantTable.AddString50Field("role", false).AddScriptComments("The participant's role: 'initiator' or 'recipient'.");
+            callParticipantTable.AddString50Field("status", false).AddScriptComments("The participant's status: 'ringing', 'joined', 'declined', 'missed', 'left'.");
+            callParticipantTable.AddDateTimeField("joinedDateTime", true).AddScriptComments("When the participant joined the call.  Null if they never joined.");
+            callParticipantTable.AddDateTimeField("leftDateTime", true).AddScriptComments("When the participant left the call.  Null if they are still in the call or never joined.");
+            callParticipantTable.AddControlFields();
+
+            Database.Table.Index callParticipantIdActiveDeletedIndex = callParticipantTable.CreateIndex("I_CallParticipant_id_active_deleted");
+            callParticipantIdActiveDeletedIndex.AddField("id");
+            callParticipantIdActiveDeletedIndex.AddField("active");
+            callParticipantIdActiveDeletedIndex.AddField("deleted");
+
+            // Indexes for common query patterns
+            callParticipantTable.CreateIndexForFields(new List<string> { "callId", "active", "deleted" });
+            callParticipantTable.CreateIndexForFields(new List<string> { "userId", "active", "deleted" });
+            callParticipantTable.CreateIndexForFields(new List<string> { "status", "active", "deleted" });
+
+
+
+            //
+            // CallEventLog - Audit trail for call lifecycle events.
+            // Records significant events during a call for debugging, analytics, and compliance.
+            //
+            Database.Table callEventLogTable = database.AddTable("CallEventLog");
+            callEventLogTable.comment = @"This table records significant events during the lifecycle of a call.  It is part of the Foundation's Calling system.
+
+Each event records what happened (initiated, joined, left, ended, failed), who performed the action, which provider 
+was involved, and any additional metadata as JSON.  Used for debugging, analytics, and compliance.";
+
+            callEventLogTable.minimumReadPermissionLevel = 50;
+            callEventLogTable.minimumWritePermissionLevel = 100;
+            callEventLogTable.adminAccessNeededToWrite = true;
+            callEventLogTable.AddIdField();
+            callEventLogTable.AddMultiTenantSupport();
+            callEventLogTable.AddForeignKeyField("callId", callTable, false).AddScriptComments("The call that this event belongs to.");
+            callEventLogTable.AddString100Field("eventType", false).AddScriptComments("The type of event: 'initiated', 'ringing', 'joined', 'left', 'ended', 'failed', 'declined', 'missed', 'ice_connected', 'ice_failed', 'media_started', 'media_stopped'.");
+            callEventLogTable.AddIntField("userId", true).AddScriptComments("The user associated with this event.  Resolved by IMessagingUserResolver.  Nullable for system-level events.");
+            callEventLogTable.AddString50Field("providerId", true).AddScriptComments("The call provider associated with this event.");
+            callEventLogTable.AddTextField("metadata", true).AddScriptComments("Additional event metadata stored as JSON.  Structure varies by event type.");
+            callEventLogTable.AddDateTimeField("dateTimeCreated", false).AddScriptComments("When the event occurred.");
+            callEventLogTable.AddControlFields();
+
+            Database.Table.Index callEventLogIdActiveDeletedIndex = callEventLogTable.CreateIndex("I_CallEventLog_id_active_deleted");
+            callEventLogIdActiveDeletedIndex.AddField("id");
+            callEventLogIdActiveDeletedIndex.AddField("active");
+            callEventLogIdActiveDeletedIndex.AddField("deleted");
+
+            // Indexes for common query patterns
+            callEventLogTable.CreateIndexForFields(new List<string> { "callId", "active", "deleted" });
+            callEventLogTable.CreateIndexForFields(new List<string> { "eventType", "active", "deleted" });
+            callEventLogTable.CreateIndexForFields(new List<string> { "userId", "active", "deleted" });
+
+        }
     }
 }

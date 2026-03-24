@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = eventTypeChangeHistory.timeStamp,
 				userId = eventTypeChangeHistory.userId,
 				data = eventTypeChangeHistory.data,
-				eventType = EventType.CreateMinimalAnonymous(eventTypeChangeHistory.eventType),
+				eventType = EventType.CreateMinimalAnonymous(eventTypeChangeHistory.eventType)
 			 };
 		}
 

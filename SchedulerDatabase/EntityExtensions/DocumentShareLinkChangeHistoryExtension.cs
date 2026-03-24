@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = documentShareLinkChangeHistory.timeStamp,
 				userId = documentShareLinkChangeHistory.userId,
 				data = documentShareLinkChangeHistory.data,
-				documentShareLink = DocumentShareLink.CreateMinimalAnonymous(documentShareLinkChangeHistory.documentShareLink),
+				documentShareLink = DocumentShareLink.CreateMinimalAnonymous(documentShareLinkChangeHistory.documentShareLink)
 			 };
 		}
 

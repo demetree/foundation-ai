@@ -1,0 +1,87 @@
+<div class="container-fluid p-1 m-0 call-participant-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="call-participant-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Call Participant</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Call Participant' : 'Add Call Participant'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerCallParticipantReader()">
+                <div class="col m-2 call-participant-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="callParticipantForm" (ngSubmit)="submitForm()" class="call-participant-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('callId')">
+                                <label for="CallParticipant-callId" id="label-CallParticipant-callId"><span class="text-danger">*</span>Call</label>
+                                <select id="CallParticipant-callId" formControlName="callId" class="form-select call-participant-select" [disabled]="!userIsSchedulerCallParticipantWriter()">
+                                    <option [ngValue]="null">Select Call</option>
+                                    <option *ngFor="let call of calls$ | async" [ngValue]="call.id">{{call.providerId}}</option>
+                                </select>
+                                <div *ngIf="callParticipantForm.get('callId')?.invalid && callParticipantForm.get('callId')?.touched" class="text-danger">
+                                    Call is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="CallParticipant-userId" id="label-CallParticipant-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="CallParticipant-userId" formControlName="userId" placeholder="Enter User Id" class="form-control call-participant-input" [disabled]="!userIsSchedulerCallParticipantWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="callParticipantForm.get('userId')?.invalid && callParticipantForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('role')">
+                                <label for="CallParticipant-role" id="label-CallParticipant-role"><span class="text-danger">*</span>Role</label>
+                                <input type="text" id="CallParticipant-role" formControlName="role" placeholder="Enter Role" class="form-control call-participant-input" [disabled]="!userIsSchedulerCallParticipantWriter()" aria-labelledby="label-role" />
+                                <div *ngIf="callParticipantForm.get('role')?.invalid && callParticipantForm.get('role')?.touched" class="text-danger">
+                                    Role is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                                <label for="CallParticipant-status" id="label-CallParticipant-status"><span class="text-danger">*</span>Status</label>
+                                <input type="text" id="CallParticipant-status" formControlName="status" placeholder="Enter Status" class="form-control call-participant-input" [disabled]="!userIsSchedulerCallParticipantWriter()" aria-labelledby="label-status" />
+                                <div *ngIf="callParticipantForm.get('status')?.invalid && callParticipantForm.get('status')?.touched" class="text-danger">
+                                    Status is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('joinedDateTime')">
+                                <label for="CallParticipant-joinedDateTime" id="label-CallParticipant-joinedDateTime">Joined Date Time</label>
+                                <input type="datetime-local" id="CallParticipant-joinedDateTime" formControlName="joinedDateTime" placeholder="Enter Joined Date Time" class="form-control call-participant-input" [disabled]="!userIsSchedulerCallParticipantWriter()" aria-labelledby="label-joinedDateTime" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('leftDateTime')">
+                                <label for="CallParticipant-leftDateTime" id="label-CallParticipant-leftDateTime">Left Date Time</label>
+                                <input type="datetime-local" id="CallParticipant-leftDateTime" formControlName="leftDateTime" placeholder="Enter Left Date Time" class="form-control call-participant-input" [disabled]="!userIsSchedulerCallParticipantWriter()" aria-labelledby="label-leftDateTime" />
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="CallParticipant-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerCallParticipantWriter()" />
+                                <label for="CallParticipant-active" class="form-check-label" id="label-CallParticipant-active"><span class="text-danger">*</span>Active</label>
+                            </div>
+                            <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <input type="checkbox" id="CallParticipant-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerCallParticipantWriter()" />
+                                <label for="CallParticipant-deleted" class="form-check-label" id="label-CallParticipant-deleted"><span class="text-danger">*</span>Deleted</label>
+                            </div>
+                            <div class="call-participant-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="callParticipantForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Call Participant">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !callParticipantForm.valid || !callParticipantForm.dirty || callParticipantForm.pristine  || userIsSchedulerCallParticipantWriter() == false " ngbTooltip="Save the Call Participant changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Call Participant' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

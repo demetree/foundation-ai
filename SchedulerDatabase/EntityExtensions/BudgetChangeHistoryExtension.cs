@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = budgetChangeHistory.timeStamp,
 				userId = budgetChangeHistory.userId,
 				data = budgetChangeHistory.data,
-				budget = Budget.CreateMinimalAnonymous(budgetChangeHistory.budget),
+				budget = Budget.CreateMinimalAnonymous(budgetChangeHistory.budget)
 			 };
 		}
 

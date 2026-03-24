@@ -1,0 +1,32 @@
+<div class="pinned-messages-panel">
+
+  <div class="pinned-panel-header">
+    <h4><i class="fa-solid fa-thumbtack"></i> Pinned Messages</h4>
+    <button class="btn-icon" (click)="closed.emit()">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    <span>Loading pinned messages...</span>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && pinnedMessages.length === 0">
+    <i class="fa-solid fa-thumbtack"></i>
+    <p>No pinned messages yet</p>
+    <p class="text-muted" style="font-size: 12px;">Pin important messages to keep them handy</p>
+  </div>
+
+  <div class="pinned-message-list">
+    <div class="pinned-message-item" *ngFor="let msg of pinnedMessages" (click)="scrollToMessage.emit(msg)">
+      <div class="pinned-msg-sender">{{ msg.userDisplayName }}</div>
+      <div class="pinned-msg-text">{{ msg.message }}</div>
+      <div class="pinned-msg-time">{{ formatTime(msg.dateTimeCreated) }}</div>
+      <button class="pinned-msg-unpin" (click)="unpinMessage.emit(msg); $event.stopPropagation()" title="Unpin">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+</div>

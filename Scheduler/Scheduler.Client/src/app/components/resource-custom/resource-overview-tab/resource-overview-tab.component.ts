@@ -11,7 +11,7 @@ import { ScheduledEventService } from '../../../scheduler-data-services/schedule
 import { ResourceContactService } from '../../../scheduler-data-services/resource-contact.service';
 import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.service';
 import { ResourceShiftService } from '../../../scheduler-data-services/resource-shift.service';
-import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
+import { EventNotificationSubscriptionService } from '../../../scheduler-data-services/event-notification-subscription.service';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 
 /**
@@ -55,7 +55,7 @@ export class ResourceOverviewTabComponent implements OnChanges, OnDestroy {
     private resourceContactService: ResourceContactService,
     private rateSheetService: RateSheetService,
     private resourceShiftService: ResourceShiftService,
-    private notificationSubscriptionService: NotificationSubscriptionService,
+    private notificationSubscriptionService: EventNotificationSubscriptionService,
     private schedulerHelperService: SchedulerHelperService,
     private scheduledEventService: ScheduledEventService
   ) { }
@@ -147,7 +147,7 @@ export class ResourceOverviewTabComponent implements OnChanges, OnDestroy {
       startWith(0)
     );
 
-    const notificationCount$ = this.notificationSubscriptionService.GetNotificationSubscriptionsRowCount({
+    const notificationCount$ = this.notificationSubscriptionService.GetEventNotificationSubscriptionsRowCount({
       resourceId: resourceId,
       active: true,
       deleted: false

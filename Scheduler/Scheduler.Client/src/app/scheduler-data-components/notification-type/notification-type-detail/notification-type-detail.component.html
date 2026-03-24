@@ -25,37 +25,8 @@
                                 </div>
                             </div>
                             <div class="form-group" *ngIf="!isFieldHidden('description')">
-                                <label for="NotificationType-description" id="label-NotificationType-description"><span class="text-danger">*</span>Description</label>
+                                <label for="NotificationType-description" id="label-NotificationType-description">Description</label>
                                 <textarea id="NotificationType-description" formControlName="description" placeholder="Enter Description" class="form-control notification-type-input" [disabled]="!userIsSchedulerNotificationTypeWriter()"></textarea>
-                                <div *ngIf="notificationTypeForm.get('description')?.invalid && notificationTypeForm.get('description')?.touched" class="text-danger">
-                                    Description is required
-                                </div>
-                            </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('sequence')">
-                                <label for="NotificationType-sequence" id="label-NotificationType-sequence">Sequence</label>
-                                <input type="number" id="NotificationType-sequence" formControlName="sequence" placeholder="Enter Sequence" class="form-control notification-type-input" [disabled]="!userIsSchedulerNotificationTypeWriter()" aria-labelledby="label-sequence" />
-                            </div>
-                            <div class="form-group" *ngIf="!isFieldHidden('color')">
-                                <label for="NotificationType-color" id="label-NotificationType-color">Color</label>
-                                <div class="d-flex align-items-center gap-3">
-                    <!-- Native color picker input (type="color") -->
-                    <input 
-                        type="color" 
-                        id="NotificationType-color" 
-                        formControlName="color" 
-                        class="form-control form-control-color color-picker" 
-                        [disabled]="!userIsSchedulerNotificationTypeWriter()"
-                        aria-labelledby="label-color"
-                        title="Choose Color">
-                    
-                    <!-- Usually this isn't needed
-                    <input 
-                        type="text" 
-                        [value]="notificationTypeForm.get('color')?.value || '#000000'" 
-                        readonly 
-                        class="form-control input-color-display"
-                        style="width: 120px;">-->
-                </div>
                             </div>
                             <div class="form-check my-2"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
                                 <input type="checkbox" id="NotificationType-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerNotificationTypeWriter()" />
@@ -88,16 +59,16 @@
                 <div class="col m-2 notification-type-details-body">
 
                     <ul ngbNav #nav="ngbNav" class="nav-tabs">
-                      <li ngbNavItem *ngIf="notificationSubscriptionService.userIsSchedulerNotificationSubscriptionReader()">
-                            <button ngbNavLink>Notification Subscriptions
+                      <li ngbNavItem *ngIf="notificationService.userIsSchedulerNotificationReader()">
+                            <button ngbNavLink>Notifications
                                 <span class="badge bg-primary ms-2">
-                                    {{ (notificationTypeData?.NotificationSubscriptionsCount$ | async) ?? '-' }}
+                                    {{ (notificationTypeData?.NotificationsCount$ | async) ?? '-' }}
                                 </span>
                             </button>
                             <ng-template ngbNavContent>
                             <div class="d-flex flex-column gap-3 p-0">
                                 <div class="flex-grow-1">
-                                    <app-notification-subscription-table [queryParams]="{ notificationTypeId: notificationTypeData?.id }" [showAddButton]="true" [preSeededData]="{ notificationTypeId: notificationTypeData?.id }" [hiddenFields]="['notificationTypeId']"></app-notification-subscription-table>
+                                    <app-notification-table [queryParams]="{ notificationTypeId: notificationTypeData?.id }" [showAddButton]="true" [preSeededData]="{ notificationTypeId: notificationTypeData?.id }" [hiddenFields]="['notificationTypeId']"></app-notification-table>
                                 </div>
                             </div>
                             </ng-template>

@@ -1,0 +1,180 @@
+<!-- Entity Conversations Component -->
+
+<!-- LIST VIEW -->
+<div class="entity-conversations" *ngIf="viewMode === 'list'">
+
+  <!-- Header -->
+  <div class="ec-header">
+    <div class="ec-header-title">
+      <i class="fa-solid fa-comments"></i>
+      <span>{{ entityName }} Conversations</span>
+      <span class="badge bg-primary ms-2" *ngIf="conversations.length > 0">{{ conversations.length }}</span>
+    </div>
+    <button class="btn btn-sm btn-primary"
+            (click)="startCreateFlow()"
+            [disabled]="isCreating || !entityId">
+      <i class="fa-solid fa-plus me-1"></i>
+      New Conversation
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="ec-loading" *ngIf="isLoading">
+    <i class="fa-solid fa-spinner fa-spin me-2"></i>
+    Loading conversations...
+  </div>
+
+  <!-- Conversation List -->
+  <div class="ec-list" *ngIf="!isLoading && conversations.length > 0">
+    <div class="ec-conversation-card"
+         *ngFor="let conv of conversations"
+         (click)="selectConversation(conv)">
+
+      <div class="ec-card-icon">
+        <i class="fa-solid fa-message"></i>
+      </div>
+
+      <div class="ec-card-content">
+        <div class="ec-card-header">
+          <span class="ec-card-name">{{ getConversationDisplayName(conv) }}</span>
+          <span class="ec-card-time">{{ getTimeAgo(conv.lastMessageDateTime) }}</span>
+        </div>
+        <div class="ec-card-preview" *ngIf="conv.lastMessagePreview">
+          <span class="ec-card-sender" *ngIf="conv.lastMessageUserName">{{ conv.lastMessageUserName }}:</span>
+          {{ conv.lastMessagePreview }}
+        </div>
+        <div class="ec-card-preview ec-card-no-messages" *ngIf="!conv.lastMessagePreview">
+          No messages yet
+        </div>
+      </div>
+
+      <div class="ec-card-badge" *ngIf="conv.unreadCount > 0">
+        <span class="badge bg-danger rounded-pill">{{ conv.unreadCount }}</span>
+      </div>
+
+      <div class="ec-card-arrow">
+        <i class="fa-solid fa-chevron-right"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zero State -->
+  <div class="ec-zero-state" *ngIf="!isLoading && conversations.length === 0 && entityId">
+    <i class="fa-regular fa-comments"></i>
+    <p>No conversations yet for this {{ entityName.toLowerCase() }}.</p>
+    <button class="btn btn-sm btn-outline-primary"
+            (click)="startCreateFlow()"
+            [disabled]="isCreating">
+      <i class="fa-solid fa-plus me-1"></i>
+      Start a Conversation
+    </button>
+  </div>
+
+  <div class="ec-zero-state" *ngIf="!isLoading && !entityId">
+    <i class="fa-regular fa-comments"></i>
+    <p>Save this {{ entityName.toLowerCase() }} to enable conversations.</p>
+  </div>
+
+</div>
+
+
+<!-- CREATE VIEW -->
+<div class="entity-create-view" *ngIf="viewMode === 'create'">
+
+  <div class="ec-create-header">
+    <button class="btn btn-sm btn-light" (click)="backToList()">
+      <i class="fa-solid fa-arrow-left me-1"></i>
+      Back
+    </button>
+    <span class="ec-create-title">New {{ entityName }} Conversation</span>
+  </div>
+
+  <div class="ec-create-options">
+    <button class="btn btn-outline-primary w-100 mb-2" (click)="createOpenDiscussion()" [disabled]="isCreating">
+      <i class="fa-solid fa-users me-2"></i>
+      <span *ngIf="!isCreating">Open Discussion</span>
+      <span *ngIf="isCreating"><span class="spinner-border spinner-border-sm me-1"></span> Creating...</span>
+    </button>
+    <small class="text-muted d-block mb-3 text-center">Anyone on the team can participate</small>
+
+    <div class="ec-divider">
+      <span>or invite specific people</span>
+    </div>
+  </div>
+
+  <!-- Selected Members Chips -->
+  <div class="ec-selected-members" *ngIf="selectedMembers.length > 0">
+    <span class="ec-member-chip" *ngFor="let m of selectedMembers" (click)="toggleMember(m)">
+      {{ m.displayName }}
+      <i class="fa-solid fa-xmark ms-1"></i>
+    </span>
+  </div>
+
+  <!-- Member Search -->
+  <div class="ec-member-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text"
+           placeholder="Search people..."
+           [(ngModel)]="memberSearch"
+           autocomplete="off" />
+  </div>
+
+  <!-- User List -->
+  <div class="ec-member-list">
+    <div class="ec-loading" *ngIf="isLoadingUsers">
+      <i class="fa-solid fa-spinner fa-spin me-2"></i>
+      Loading people...
+    </div>
+
+    <div class="ec-member-item"
+         *ngFor="let user of filteredUsers"
+         [class.selected]="isMemberSelected(user)"
+         (click)="toggleMember(user)">
+      <div class="ec-member-avatar">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="ec-member-info">
+        <span class="ec-member-name">{{ user.displayName }}</span>
+        <span class="ec-member-account">{{ user.accountName }}</span>
+      </div>
+      <i class="fa-solid fa-check ec-member-check" *ngIf="isMemberSelected(user)"></i>
+    </div>
+
+    <div class="ec-empty-search" *ngIf="!isLoadingUsers && filteredUsers.length === 0">
+      No people found
+    </div>
+  </div>
+
+  <!-- Create Private Button -->
+  <div class="ec-create-footer" *ngIf="selectedMembers.length > 0">
+    <button class="btn btn-primary w-100" (click)="createPrivateConversation()" [disabled]="isCreating">
+      <i class="fa-solid fa-lock me-2"></i>
+      <span *ngIf="!isCreating">Start Private Conversation ({{ selectedMembers.length }})</span>
+      <span *ngIf="isCreating"><span class="spinner-border spinner-border-sm me-1"></span> Creating...</span>
+    </button>
+  </div>
+
+</div>
+
+
+<!-- CHAT VIEW -->
+<div class="entity-chat-view" *ngIf="viewMode === 'chat' && selectedConversation">
+
+  <!-- Back Button -->
+  <div class="ec-chat-header">
+    <button class="btn btn-sm btn-light" (click)="backToList()">
+      <i class="fa-solid fa-arrow-left me-1"></i>
+      Back to Conversations
+    </button>
+    <span class="ec-chat-title">{{ getConversationDisplayName(selectedConversation) }}</span>
+  </div>
+
+  <!-- Embedded Chat -->
+  <app-chat-view
+    [conversation]="selectedConversation"
+    [displayMode]="'panel'"
+    (conversationUpdated)="onConversationUpdated($event)"
+    (backRequested)="backToList()">
+  </app-chat-view>
+
+</div>

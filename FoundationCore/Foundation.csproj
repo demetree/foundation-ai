@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>disable</Nullable>
@@ -45,6 +45,7 @@
     <ProjectReference Include="..\DatabaseGenerators\AuditorDatabaseGenerator\AuditorDatabaseGenerator.csproj" />
     <ProjectReference Include="..\DatabaseGenerators\SecurityDatabaseGenerator\SecurityDatabaseGenerator.csproj" />
     <ProjectReference Include="..\FoundationCommon\FoundationCommon.csproj" />
+    <ProjectReference Include="..\Foundation.IndexedDB\Foundation.IndexedDB.csproj" />
   </ItemGroup>
 
 </Project>

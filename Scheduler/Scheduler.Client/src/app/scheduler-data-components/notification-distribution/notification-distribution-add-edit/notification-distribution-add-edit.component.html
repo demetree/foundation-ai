@@ -1,0 +1,71 @@
+<div class="add-notification-distribution" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-notification-distribution me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Notification Distribution" 
+        *ngIf="userIsSchedulerNotificationDistributionWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #notificationDistributionModal let-modal>
+   <div class="modal-header notification-distribution-modal-header">
+      <h5 class="modal-title mb-0" id="notificationDistributionModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Notification Distribution' : 'Add Notification Distribution' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body notification-distribution-modal-body">
+      <form [formGroup]="notificationDistributionForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('notificationId')">
+                <label for="NotificationDistribution-notificationId" id="label-NotificationDistribution-notificationId"><span class="text-danger">*</span>Notification</label>
+                <select id="NotificationDistribution-notificationId" formControlName="notificationId" class="form-select notification-distribution-select" [disabled]="!userIsSchedulerNotificationDistributionWriter()">
+                    <option [ngValue]="null">Select Notification</option>
+                    <option *ngFor="let notification of notifications$ | async" [ngValue]="notification.id">{{notification.message}}</option>
+                </select>
+                <div *ngIf="notificationDistributionForm.get('notificationId')?.invalid && notificationDistributionForm.get('notificationId')?.touched" class="text-danger">
+                    Notification is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="NotificationDistribution-userId" id="label-NotificationDistribution-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="NotificationDistribution-userId" formControlName="userId" placeholder="Enter User Id" class="form-control notification-distribution-input" [disabled]="!userIsSchedulerNotificationDistributionWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="notificationDistributionForm.get('userId')?.invalid && notificationDistributionForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('acknowledged')">
+                <input type="checkbox" id="NotificationDistribution-acknowledged" formControlName="acknowledged" class="form-check-input" [disabled]="!userIsSchedulerNotificationDistributionWriter()" />
+                <label for="NotificationDistribution-acknowledged" class="form-check-label" id="label-NotificationDistribution-acknowledged"><span class="text-danger">*</span>Acknowledged</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dateTimeAcknowledged')">
+                <label for="NotificationDistribution-dateTimeAcknowledged" id="label-NotificationDistribution-dateTimeAcknowledged">Date Time Acknowledged</label>
+                <input type="datetime-local" id="NotificationDistribution-dateTimeAcknowledged" formControlName="dateTimeAcknowledged" placeholder="Enter Date Time Acknowledged" class="form-control notification-distribution-input" [disabled]="!userIsSchedulerNotificationDistributionWriter()" aria-labelledby="label-dateTimeAcknowledged" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="NotificationDistribution-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerNotificationDistributionWriter()" />
+                <label for="NotificationDistribution-active" class="form-check-label" id="label-NotificationDistribution-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="NotificationDistribution-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerNotificationDistributionWriter()" />
+                <label for="NotificationDistribution-deleted" class="form-check-label" id="label-NotificationDistribution-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer notification-distribution-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Notification Distribution changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !notificationDistributionForm.valid || notificationDistributionForm.pristine  || userIsSchedulerNotificationDistributionWriter() == false " ngbTooltip="Save the Notification Distribution changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Notification Distribution' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

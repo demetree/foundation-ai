@@ -5,8 +5,8 @@ import { finalize } from 'rxjs';
 
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ResourceData } from '../../../scheduler-data-services/resource.service';
-import { NotificationSubscriptionData, NotificationSubscriptionService, NotificationSubscriptionSubmitData } from '../../../scheduler-data-services/notification-subscription.service';
-import { NotificationTypeService } from '../../../scheduler-data-services/notification-type.service';
+import { EventNotificationSubscriptionData, EventNotificationSubscriptionService, EventNotificationSubscriptionSubmitData } from '../../../scheduler-data-services/event-notification-subscription.service';
+import { EventNotificationTypeService } from '../../../scheduler-data-services/event-notification-type.service';
 
 /**
  * Modal for adding or editing a NotificationSubscription for a Resource.
@@ -25,16 +25,16 @@ import { NotificationTypeService } from '../../../scheduler-data-services/notifi
 })
 export class NotificationSubscriptionCustomAddEditModalComponent {
   @Input() resource!: ResourceData;
-  @Input() existingSubscription: NotificationSubscriptionData | null = null;
+  @Input() existingSubscription: EventNotificationSubscriptionData | null = null;
 
-  @Output() subscriptionChanged = new EventEmitter<NotificationSubscriptionData>();
+  @Output() subscriptionChanged = new EventEmitter<EventNotificationSubscriptionData>();
 
   public subscriptionForm: FormGroup;
   public isEditMode = false;
   public isSaving = false;
 
   // Dropdown data
-  public notificationTypes$ = this.notificationTypeService.GetNotificationTypeList();
+  public notificationTypes$ = this.notificationTypeService.GetEventNotificationTypeList();
 
   // Bitmask constants for triggerEvents
   private readonly TRIGGER_ASSIGNED = 1;
@@ -45,8 +45,8 @@ export class NotificationSubscriptionCustomAddEditModalComponent {
   constructor(
     public activeModal: NgbActiveModal,
     private fb: FormBuilder,
-    private notificationSubscriptionService: NotificationSubscriptionService,
-    private notificationTypeService: NotificationTypeService,
+    private notificationSubscriptionService: EventNotificationSubscriptionService,
+    private notificationTypeService: EventNotificationTypeService,
     private alertService: AlertService
   ) {
     this.subscriptionForm = this.fb.group({
@@ -69,7 +69,7 @@ export class NotificationSubscriptionCustomAddEditModalComponent {
       const triggerEvents = this.existingSubscription.triggerEvents as number;
 
       this.subscriptionForm.patchValue({
-        notificationTypeId: this.existingSubscription.notificationTypeId,
+        notificationTypeId: this.existingSubscription.eventNotificationTypeId,
         recipientAddress: this.existingSubscription.recipientAddress,
         triggerAssigned: this.hasTrigger(triggerEvents, this.TRIGGER_ASSIGNED),
         triggerCanceled: this.hasTrigger(triggerEvents, this.TRIGGER_CANCELED),
@@ -114,11 +114,11 @@ export class NotificationSubscriptionCustomAddEditModalComponent {
 
     const formValue = this.subscriptionForm.getRawValue();
 
-    const submitData: NotificationSubscriptionSubmitData = {
+    const submitData: EventNotificationSubscriptionSubmitData = {
       id: this.existingSubscription?.id || 0,
       resourceId: this.resource.id,
       contactId: null,      // this needs to be null in this context
-      notificationTypeId: Number(formValue.notificationTypeId),
+      eventNotificationTypeId: Number(formValue.notificationTypeId),
       triggerEvents: this.buildTriggerEvents(),
       recipientAddress: formValue.recipientAddress.trim(),
       versionNumber: this.existingSubscription?.versionNumber ?? 0,
@@ -127,8 +127,8 @@ export class NotificationSubscriptionCustomAddEditModalComponent {
     };
 
     const operation$ = this.isEditMode
-      ? this.notificationSubscriptionService.PutNotificationSubscription(submitData.id, submitData)
-      : this.notificationSubscriptionService.PostNotificationSubscription(submitData);
+      ? this.notificationSubscriptionService.PutEventNotificationSubscription(submitData.id, submitData)
+      : this.notificationSubscriptionService.PostEventNotificationSubscription(submitData);
 
     operation$.pipe(
       finalize(() => this.isSaving = false)

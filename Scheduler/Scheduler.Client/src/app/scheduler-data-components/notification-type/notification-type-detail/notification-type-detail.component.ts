@@ -23,7 +23,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { NotificationTypeService, NotificationTypeData, NotificationTypeSubmitData } from '../../../scheduler-data-services/notification-type.service';
-import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
+import { NotificationService } from '../../../scheduler-data-services/notification.service';
 import { AuthService } from '../../../services/auth.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../utility/foundation.utility';
@@ -36,9 +36,7 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
 //
 interface NotificationTypeFormValues {
   name: string,
-  description: string,
-  sequence: string | null,     // Stored as string for form input, converted to number on submit.
-  color: string | null,
+  description: string | null,
   active: boolean,
   deleted: boolean,
 };
@@ -69,9 +67,7 @@ export class NotificationTypeDetailComponent implements OnInit, CanComponentDeac
 
   public notificationTypeForm: FormGroup = this.fb.group({
         name: ['', Validators.required],
-        description: ['', Validators.required],
-        sequence: [''],
-        color: [''],
+        description: [''],
         active: [true],
         deleted: [false],
       });
@@ -88,13 +84,13 @@ export class NotificationTypeDetailComponent implements OnInit, CanComponentDeac
   public isEditMode = true;   // Defaults to true (edit).  Gets set to false in ngOnInit if route is 'new'
 
   notificationTypes$ = this.notificationTypeService.GetNotificationTypeList();
-  public notificationSubscriptions$ = this.notificationSubscriptionService.GetNotificationSubscriptionList();
+  public notifications$ = this.notificationService.GetNotificationList();
 
   private destroy$ = new Subject<void>();
 
   constructor(
     public notificationTypeService: NotificationTypeService,
-    public notificationSubscriptionService: NotificationSubscriptionService,
+    public notificationService: NotificationService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -378,8 +374,6 @@ export class NotificationTypeDetailComponent implements OnInit, CanComponentDeac
       this.notificationTypeForm.reset({
         name: '',
         description: '',
-        sequence: '',
-        color: '',
         active: true,
         deleted: false,
    }, { emitEvent: false});
@@ -393,8 +387,6 @@ export class NotificationTypeDetailComponent implements OnInit, CanComponentDeac
         this.notificationTypeForm.reset({
         name: notificationTypeData.name ?? '',
         description: notificationTypeData.description ?? '',
-        sequence: notificationTypeData.sequence?.toString() ?? '',
-        color: notificationTypeData.color ?? '',
         active: notificationTypeData.active ?? true,
         deleted: notificationTypeData.deleted ?? false,
       }, { emitEvent: false});
@@ -457,9 +449,7 @@ export class NotificationTypeDetailComponent implements OnInit, CanComponentDeac
     const notificationTypeSubmitData: NotificationTypeSubmitData = {
         id: this.notificationTypeData?.id || 0,
         name: formValue.name!.trim(),
-        description: formValue.description!.trim(),
-        sequence: formValue.sequence ? Number(formValue.sequence) : null,
-        color: formValue.color?.trim() || null,
+        description: formValue.description?.trim() || null,
         active: !!formValue.active,
         deleted: !!formValue.deleted,
    };

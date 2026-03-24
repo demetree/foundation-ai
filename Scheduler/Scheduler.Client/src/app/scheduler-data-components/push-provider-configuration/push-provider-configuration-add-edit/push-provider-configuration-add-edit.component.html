@@ -1,0 +1,75 @@
+<div class="add-push-provider-configuration" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-push-provider-configuration me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Push Provider Configuration" 
+        *ngIf="userIsSchedulerPushProviderConfigurationWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #pushProviderConfigurationModal let-modal>
+   <div class="modal-header push-provider-configuration-modal-header">
+      <h5 class="modal-title mb-0" id="pushProviderConfigurationModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Push Provider Configuration' : 'Add Push Provider Configuration' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body push-provider-configuration-modal-body">
+      <form [formGroup]="pushProviderConfigurationForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('providerId')">
+                <label for="PushProviderConfiguration-providerId" id="label-PushProviderConfiguration-providerId"><span class="text-danger">*</span>Provider Id</label>
+                <input type="text" id="PushProviderConfiguration-providerId" formControlName="providerId" placeholder="Enter Provider Id" class="form-control push-provider-configuration-input" [disabled]="!userIsSchedulerPushProviderConfigurationWriter()" aria-labelledby="label-providerId" />
+                <div *ngIf="pushProviderConfigurationForm.get('providerId')?.invalid && pushProviderConfigurationForm.get('providerId')?.touched" class="text-danger">
+                    Provider Id is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="!isFieldHidden('enabled')">
+                <input type="checkbox" id="PushProviderConfiguration-enabled" formControlName="enabled" class="form-check-input" [disabled]="!userIsSchedulerPushProviderConfigurationWriter()" />
+                <label for="PushProviderConfiguration-enabled" class="form-check-label" id="label-PushProviderConfiguration-enabled"><span class="text-danger">*</span>Enabled</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('configurationJson')">
+                <label for="PushProviderConfiguration-configurationJson" id="label-PushProviderConfiguration-configurationJson">Configuration Json</label>
+                <textarea id="PushProviderConfiguration-configurationJson" formControlName="configurationJson" placeholder="Enter Configuration Json" class="form-control push-provider-configuration-input" [disabled]="!userIsSchedulerPushProviderConfigurationWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('dateTimeModified')">
+                <label for="PushProviderConfiguration-dateTimeModified" id="label-PushProviderConfiguration-dateTimeModified"><span class="text-danger">*</span>Date Time Modified</label>
+                <input type="datetime-local" id="PushProviderConfiguration-dateTimeModified" formControlName="dateTimeModified" placeholder="Enter Date Time Modified" class="form-control push-provider-configuration-input" [disabled]="!userIsSchedulerPushProviderConfigurationWriter()" aria-labelledby="label-dateTimeModified" />
+                <div *ngIf="pushProviderConfigurationForm.get('dateTimeModified')?.invalid && pushProviderConfigurationForm.get('dateTimeModified')?.touched" class="text-danger">
+                    Date Time Modified is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('modifiedByUserId')">
+                <label for="PushProviderConfiguration-modifiedByUserId" id="label-PushProviderConfiguration-modifiedByUserId"><span class="text-danger">*</span>Modified By User Id</label>
+                <input type="number" id="PushProviderConfiguration-modifiedByUserId" formControlName="modifiedByUserId" placeholder="Enter Modified By User Id" class="form-control push-provider-configuration-input" [disabled]="!userIsSchedulerPushProviderConfigurationWriter()" aria-labelledby="label-modifiedByUserId" />
+                <div *ngIf="pushProviderConfigurationForm.get('modifiedByUserId')?.invalid && pushProviderConfigurationForm.get('modifiedByUserId')?.touched" class="text-danger">
+                    Modified By User Id is required
+                </div>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PushProviderConfiguration-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerPushProviderConfigurationWriter()" />
+                <label for="PushProviderConfiguration-active" class="form-check-label" id="label-PushProviderConfiguration-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="PushProviderConfiguration-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerPushProviderConfigurationWriter()" />
+                <label for="PushProviderConfiguration-deleted" class="form-check-label" id="label-PushProviderConfiguration-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer push-provider-configuration-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Push Provider Configuration changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !pushProviderConfigurationForm.valid || pushProviderConfigurationForm.pristine  || userIsSchedulerPushProviderConfigurationWriter() == false " ngbTooltip="Save the Push Provider Configuration changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Push Provider Configuration' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

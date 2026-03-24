@@ -1,0 +1,15 @@
+<div class="link-preview-card" (click)="onOpen()" *ngIf="preview">
+  <div class="link-preview-content">
+    <div class="link-preview-meta">
+      <span class="link-preview-site">{{ preview.siteName || getDomain() }}</span>
+      <button class="link-preview-dismiss" *ngIf="canDismiss" (click)="onDismiss($event)" title="Remove preview">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="link-preview-title" *ngIf="preview.title">{{ preview.title }}</div>
+    <div class="link-preview-description" *ngIf="preview.description">{{ preview.description }}</div>
+  </div>
+  <div class="link-preview-thumbnail" *ngIf="preview.imageUrl">
+    <img [src]="preview.imageUrl" [alt]="preview.title || 'Preview'" loading="lazy" />
+  </div>
+</div>

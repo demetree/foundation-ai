@@ -30,8 +30,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
     /// </summary>
 	public partial class NotificationTypesController : SecureWebAPIController
 	{
-		public const int READ_PERMISSION_LEVEL_REQUIRED = 1;
-		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 255;
+		public const int READ_PERMISSION_LEVEL_REQUIRED = 100;
+		public const int WRITE_PERMISSION_LEVEL_REQUIRED = 100;
 
 		private SchedulerContext _context;
 
@@ -64,8 +64,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetNotificationTypes(
 			string name = null,
 			string description = null,
-			int? sequence = null,
-			string color = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -88,7 +86,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			if (pageNumber.HasValue == true &&
@@ -111,14 +109,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(description) == false)
 			{
 				query = query.Where(nt => nt.description == description);
-			}
-			if (sequence.HasValue == true)
-			{
-				query = query.Where(nt => nt.sequence == sequence.Value);
-			}
-			if (string.IsNullOrEmpty(color) == false)
-			{
-				query = query.Where(nt => nt.color == color);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -149,7 +139,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				query = query.Where(nt => nt.deleted == false);
 			}
 
-			query = query.OrderBy(nt => nt.sequence).ThenBy(nt => nt.name).ThenBy(nt => nt.description).ThenBy(nt => nt.color);
+			query = query.OrderBy(nt => nt.name).ThenBy(nt => nt.description);
 
 
 			//
@@ -162,7 +152,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
-			       || x.color.Contains(anyStringContains)
 			   );
 			}
 
@@ -218,8 +207,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetRowCount(
 			string name = null,
 			string description = null,
-			int? sequence = null,
-			string color = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -236,7 +223,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			IQueryable<Database.NotificationType> query = (from nt in _context.NotificationTypes select nt);
@@ -247,14 +234,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (description != null)
 			{
 				query = query.Where(nt => nt.description == description);
-			}
-			if (sequence.HasValue == true)
-			{
-				query = query.Where(nt => nt.sequence == sequence.Value);
-			}
-			if (color != null)
-			{
-				query = query.Where(nt => nt.color == color);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -295,7 +274,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
-			       || x.color.Contains(anyStringContains)
 			   );
 			}
 
@@ -331,7 +309,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
 
 			try
@@ -384,293 +362,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
-		/// <summary>
-		/// 
-		/// This updates an existing NotificationType record
-        ///
-        /// The rate limit is 2 per second per user.
-		/// 
-		/// </summary>
-		[Route("api/NotificationType/{id}")]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[HttpPost]
-		[HttpPut]
-		public async Task<IActionResult> PutNotificationType(int id, [FromBody]Database.NotificationType.NotificationTypeDTO notificationTypeDTO, CancellationToken cancellationToken = default)
-		{
-			if (notificationTypeDTO == null)
-			{
-			   return BadRequest();
-			}
-
-			StartAuditEventClock();
-
-			//
-			// Scheduler Writer role needed to write to this table, as well as the minimum write permission level.
-			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-			{
-			   return Forbid();
-			}
-
-
-
-			if (id != notificationTypeDTO.id)
-			{
-				return BadRequest();
-			}
-
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
-			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			IQueryable<Database.NotificationType> query = (from x in _context.NotificationTypes
-				where
-				(x.id == id)
-				select x);
-
-
-			Database.NotificationType existing = await query.FirstOrDefaultAsync(cancellationToken);
-
-			if (existing == null)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.NotificationType PUT", id.ToString(), new Exception("No Scheduler.NotificationType entity could be found with the primary key provided."));
-				return NotFound();
-			}
-
-
-            //
-            // Validate the object guid.  If it comes in as empty Guid in the DTO, then set it to the actual value from the existing record.  If the DTO has a value then it must match the existing value.
-            // 
-            if (notificationTypeDTO.objectGuid == Guid.Empty)
-            {
-                notificationTypeDTO.objectGuid = existing.objectGuid;
-            }
-            else if (notificationTypeDTO.objectGuid != existing.objectGuid)
-            {
-                await CreateAuditEventAsync(AuditEngine.AuditType.Error, $"Attempt was made to change object guid on a NotificationType record.  This is not allowed.  The User is " + securityUser.accountName, existing.id.ToString());
-                return Problem("Invalid Operation.");
-            }
-
-
-			// Copy the existing object so it can be serialized as-is in the audit and history logs.
-			Database.NotificationType cloneOfExisting = (Database.NotificationType)_context.Entry(existing).GetDatabaseValues().ToObject();
-
-			//
-			// Create a new NotificationType object using the data from the existing record, updated with what is in the DTO.
-			//
-			Database.NotificationType notificationType = (Database.NotificationType)_context.Entry(existing).GetDatabaseValues().ToObject();
-			notificationType.ApplyDTO(notificationTypeDTO);
-
-			// Is user who is not an admin trying to delete, or to work on a deleted record, or to delete a record by flipping it's deleted flag to true?
-			if (userIsAdmin == false && (notificationType.deleted == true || existing.deleted == true))
-			{
-				// we're not recording state here because it is not being changed.
-				CreateAuditEvent(AuditEngine.AuditType.UnauthorizedAccessAttempt, "Attempt to delete a record or work on a deleted Scheduler.NotificationType record.", id.ToString());
-				DestroySessionAndAuthentication();
-				return Forbid();
-			}
-
-			if (notificationType.name != null && notificationType.name.Length > 100)
-			{
-				notificationType.name = notificationType.name.Substring(0, 100);
-			}
-
-			if (notificationType.description != null && notificationType.description.Length > 500)
-			{
-				notificationType.description = notificationType.description.Substring(0, 500);
-			}
-
-			if (notificationType.color != null && notificationType.color.Length > 10)
-			{
-				notificationType.color = notificationType.color.Substring(0, 10);
-			}
-
-			EntityEntry<Database.NotificationType> attached = _context.Entry(existing);
-			attached.CurrentValues.SetValues(notificationType);
-
-			try
-			{
-				await _context.SaveChangesAsync(cancellationToken);
-
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-					"Scheduler.NotificationType entity successfully updated.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(notificationType)),
-					null);
-
-
-				return Ok(Database.NotificationType.CreateAnonymous(notificationType));
-			}
-			catch (Exception ex)
-			{
-				CreateAuditEvent(AuditEngine.AuditType.UpdateEntity,
-					"Scheduler.NotificationType entity update failed",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(notificationType)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-
-		}
-
-        /// <summary>
-        /// 
-        /// This creates a new NotificationType record
-        ///
-        /// The rate limit is 2 per second per user.
-        /// 
-        /// </summary>
-		[HttpPost]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/NotificationType", Name = "NotificationType")]
-		public async Task<IActionResult> PostNotificationType([FromBody]Database.NotificationType.NotificationTypeDTO notificationTypeDTO, CancellationToken cancellationToken = default)
-		{
-			if (notificationTypeDTO == null)
-			{
-			   return BadRequest();
-			}
-
-			StartAuditEventClock();
-
-			//
-			// Scheduler Writer role needed to write to this table, as well as the minimum write permission level.
-			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-			{
-			   return Forbid();
-			}
-
-
-
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-
-			//
-			// Create a new NotificationType object using the data from the DTO
-			//
-			Database.NotificationType notificationType = Database.NotificationType.FromDTO(notificationTypeDTO);
-
-			try
-			{
-				if (notificationType.name != null && notificationType.name.Length > 100)
-				{
-					notificationType.name = notificationType.name.Substring(0, 100);
-				}
-
-				if (notificationType.description != null && notificationType.description.Length > 500)
-				{
-					notificationType.description = notificationType.description.Substring(0, 500);
-				}
-
-				if (notificationType.color != null && notificationType.color.Length > 10)
-				{
-					notificationType.color = notificationType.color.Substring(0, 10);
-				}
-
-				notificationType.objectGuid = Guid.NewGuid();
-				_context.NotificationTypes.Add(notificationType);
-				await _context.SaveChangesAsync(cancellationToken);
-
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity,
-					"Scheduler.NotificationType entity successfully created.",
-					true,
-					notificationType.id.ToString(),
-					"",
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(notificationType)),
-					null);
-
-			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.CreateEntity, "Scheduler.NotificationType entity creation failed.", false, notificationType.id.ToString(), "", JsonSerializer.Serialize(notificationType), ex);
-
-				return Problem(ex.Message);
-			}
-
-
-			BackgroundJob.Enqueue(() => SecurityLogic.AddToUserMostRecents(securityUser.id, "NotificationType", notificationType.id, notificationType.name));
-
-			return CreatedAtRoute("NotificationType", new { id = notificationType.id }, Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(notificationType));
-		}
-
-
-
-        /// <summary>
-        /// 
-        /// This deletes a NotificationType record
-		/// 
-		/// The rate limit is 2 per second per user.
-        /// 
-        /// </summary>
-		[HttpDelete]
-		[RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
-		[Route("api/NotificationType/{id}")]
-		[Route("api/NotificationType")]
-		public async Task<IActionResult> DeleteNotificationType(int id, CancellationToken cancellationToken = default)
-		{
-			StartAuditEventClock();
-
-			//
-			// Scheduler Writer role needed to write to this table, as well as the minimum write permission level.
-			//
-			if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
-			{
-			   return Forbid();
-			}
-
-
-			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
-
-			IQueryable<Database.NotificationType> query = (from x in _context.NotificationTypes
-				where
-				(x.id == id)
-				select x);
-
-
-			Database.NotificationType notificationType = await query.FirstOrDefaultAsync(cancellationToken);
-
-			if (notificationType == null)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity, "Invalid primary key provided for Scheduler.NotificationType DELETE", id.ToString(), new Exception("No Scheduler.NotificationType entity could be find with the primary key provided."));
-				return NotFound();
-			}
-			Database.NotificationType cloneOfExisting = (Database.NotificationType)_context.Entry(notificationType).GetDatabaseValues().ToObject();
-
-
-			try
-			{
-				notificationType.deleted = true;
-				await _context.SaveChangesAsync(cancellationToken);
-
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"Scheduler.NotificationType entity successfully deleted.",
-					true,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(notificationType)),
-					null);
-
-			}
-			catch (Exception ex)
-			{
-				await CreateAuditEventAsync(AuditEngine.AuditType.DeleteEntity,
-					"Scheduler.NotificationType entity delete failed.",
-					false,
-					id.ToString(),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(cloneOfExisting)),
-					JsonSerializer.Serialize(Database.NotificationType.CreateAnonymousWithFirstLevelSubObjects(notificationType)),
-					ex);
-
-				return Problem(ex.Message);
-			}
-			return Ok();
-		}
-
-
         /// <summary>
         /// 
         /// This gets a list of NotificationType records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.
@@ -686,8 +377,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		public async Task<IActionResult> GetListData(
 			string name = null,
 			string description = null,
-			int? sequence = null,
-			string color = null,
 			Guid? objectGuid = null,
 			bool? active = null,
 			bool? deleted = null,
@@ -708,7 +397,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
 
 			bool userIsAdmin = await UserCanAdministerAsync(securityUser, cancellationToken);
-			bool userIsWriter = await UserCanWriteAsync(securityUser, 255, cancellationToken);
+			bool userIsWriter = await UserCanWriteAsync(securityUser, 100, cancellationToken);
 
 
 			if (pageNumber.HasValue == true &&
@@ -731,14 +420,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			if (string.IsNullOrEmpty(description) == false)
 			{
 				query = query.Where(nt => nt.description == description);
-			}
-			if (sequence.HasValue == true)
-			{
-				query = query.Where(nt => nt.sequence == sequence.Value);
-			}
-			if (string.IsNullOrEmpty(color) == false)
-			{
-				query = query.Where(nt => nt.color == color);
 			}
 			if (objectGuid.HasValue == true)
 			{
@@ -780,12 +461,11 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			   query = query.Where(x =>
 			       x.name.Contains(anyStringContains)
 			       || x.description.Contains(anyStringContains)
-			       || x.color.Contains(anyStringContains)
 			   );
 			}
 
 
-			query = query.OrderBy(x => x.sequence).ThenBy(x => x.name).ThenBy(x => x.description).ThenBy(x => x.color);
+			query = query.OrderBy(x => x.name).ThenBy(x => x.description);
 			if (pageNumber.HasValue == true &&
 			    pageSize.HasValue == true)
 			{

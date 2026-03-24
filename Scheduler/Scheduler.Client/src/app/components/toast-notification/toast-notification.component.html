@@ -1,0 +1,30 @@
+<!-- Toast notification stack — positioned fixed top-right -->
+<div class="toast-container">
+  <div class="toast-item"
+       *ngFor="let toast of toasts"
+       [class.toast-message]="toast.type === 'message'"
+       [class.toast-info]="toast.type === 'info'"
+       [class.toast-success]="toast.type === 'success'"
+       [class.toast-warning]="toast.type === 'warning'"
+       [class.toast-error]="toast.type === 'error'"
+       [class.clickable]="toast.routerLink != null || toast.data != null"
+       (click)="onToastClick(toast)">
+
+    <div class="toast-icon">
+      <i [class]="getIcon(toast)"></i>
+    </div>
+
+    <div class="toast-content">
+      <div class="toast-sender" *ngIf="toast.senderName">{{ toast.senderName }}</div>
+      <div class="toast-text">{{ toast.message }}</div>
+    </div>
+
+    <button class="toast-dismiss" (click)="dismiss(toast.id); $event.stopPropagation()" title="Dismiss">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="toast-progress">
+      <div class="toast-progress-bar" [style.animation-duration.ms]="toast.duration"></div>
+    </div>
+  </div>
+</div>

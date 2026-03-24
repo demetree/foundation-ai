@@ -1,0 +1,75 @@
+<div class="container-fluid p-1 m-0 notification-attachment-change-history-details-container">
+    <div class="p-2 detail-background">
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="notification-attachment-change-history-details-header">
+                <div class="header-left">
+                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <div>
+                        <h3 class="page-title mb-0">Notification Attachment Change History</h3>
+                        <small class="text-muted">{{ isEditMode ? 'Edit Notification Attachment Change History' : 'Add Notification Attachment Change History'}}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-3 header-card shadow-sm">
+            <div class="row flex-grow-1" *ngIf="userIsSchedulerNotificationAttachmentChangeHistoryReader()">
+                <div class="col m-2 notification-attachment-change-history-details-body">
+                    <div *showSpinner="isLoading$ | async">
+                        <form [class.hidden]="isLoading$ | async" [formGroup]="notificationAttachmentChangeHistoryForm" (ngSubmit)="submitForm()" class="notification-attachment-change-history-details-form">
+                            <div class="form-group" *ngIf="!isFieldHidden('notificationAttachmentId')">
+                                <label for="NotificationAttachmentChangeHistory-notificationAttachmentId" id="label-NotificationAttachmentChangeHistory-notificationAttachmentId"><span class="text-danger">*</span>Notification Attachment</label>
+                                <select id="NotificationAttachmentChangeHistory-notificationAttachmentId" formControlName="notificationAttachmentId" class="form-select notification-attachment-change-history-select" [disabled]="!userIsSchedulerNotificationAttachmentChangeHistoryWriter()">
+                                    <option [ngValue]="null">Select Notification Attachment</option>
+                                    <option *ngFor="let notificationAttachment of notificationAttachments$ | async" [ngValue]="notificationAttachment.id">{{notificationAttachment.contentFileName}}</option>
+                                </select>
+                                <div *ngIf="notificationAttachmentChangeHistoryForm.get('notificationAttachmentId')?.invalid && notificationAttachmentChangeHistoryForm.get('notificationAttachmentId')?.touched" class="text-danger">
+                                    Notification Attachment is required
+                                </div>
+                            </div>
+                            <div class="form-group"*ngIf="!isFieldHidden('{fc.camelCaseName}')" )>
+                                <label for="NotificationAttachmentChangeHistory-versionNumber" id="label-NotificationAttachmentChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                                <input type="number" id="NotificationAttachmentChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control notification-attachment-change-history-input" />
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                                <label for="NotificationAttachmentChangeHistory-timeStamp" id="label-NotificationAttachmentChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                                <input type="datetime-local" id="NotificationAttachmentChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control notification-attachment-change-history-input" [disabled]="!userIsSchedulerNotificationAttachmentChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                                <div *ngIf="notificationAttachmentChangeHistoryForm.get('timeStamp')?.invalid && notificationAttachmentChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                                    Time Stamp is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                                <label for="NotificationAttachmentChangeHistory-userId" id="label-NotificationAttachmentChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                                <input type="number" id="NotificationAttachmentChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control notification-attachment-change-history-input" [disabled]="!userIsSchedulerNotificationAttachmentChangeHistoryWriter()" aria-labelledby="label-userId" />
+                                <div *ngIf="notificationAttachmentChangeHistoryForm.get('userId')?.invalid && notificationAttachmentChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                                    User Id is required
+                                </div>
+                            </div>
+                            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                                <label for="NotificationAttachmentChangeHistory-data" id="label-NotificationAttachmentChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                                <textarea id="NotificationAttachmentChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control notification-attachment-change-history-input" [disabled]="!userIsSchedulerNotificationAttachmentChangeHistoryWriter()"></textarea>
+                                <div *ngIf="notificationAttachmentChangeHistoryForm.get('data')?.invalid && notificationAttachmentChangeHistoryForm.get('data')?.touched" class="text-danger">
+                                    Data is required
+                                </div>
+                            </div>
+                            <div class="notification-attachment-change-history-details-footer">
+                                <button *ngIf="isEditMode" type="button" class="btn btm-sm btn-secondary" [disabled]="notificationAttachmentChangeHistoryForm.pristine" (click)="loadData(true)" ngbTooltip="Reload Notification Attachment Change History">Reset</button>
+                                <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !notificationAttachmentChangeHistoryForm.valid || !notificationAttachmentChangeHistoryForm.dirty || notificationAttachmentChangeHistoryForm.pristine  || userIsSchedulerNotificationAttachmentChangeHistoryWriter() == false " ngbTooltip="Save the Notification Attachment Change History changes">
+                                    <span *ngIf="isSaving">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                        Saving...
+                                    </span>
+                                    <span *ngIf="!isSaving">
+                                        <i class="fa-solid fa-check me-1"></i>
+                                        {{ isEditMode ? 'Save Changes' : 'Add Notification Attachment Change History' }}
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

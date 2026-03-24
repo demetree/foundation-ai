@@ -85,13 +85,13 @@ public partial class Contact
 
     public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
 
+    public virtual ICollection<EventNotificationSubscription> EventNotificationSubscriptions { get; set; } = new List<EventNotificationSubscription>();
+
     public virtual ICollection<EventResourceAssignment> EventResourceAssignments { get; set; } = new List<EventResourceAssignment>();
 
     public virtual ICollection<FinancialTransaction> FinancialTransactions { get; set; } = new List<FinancialTransaction>();
 
     public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
-
-    public virtual ICollection<NotificationSubscription> NotificationSubscriptions { get; set; } = new List<NotificationSubscription>();
 
     public virtual ICollection<OfficeContact> OfficeContacts { get; set; } = new List<OfficeContact>();
 

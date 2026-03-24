@@ -1060,8 +1060,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 					resource.CrewMembers = null;
 					resource.Documents = null;
 					resource.EventCharges = null;
+					resource.EventNotificationSubscriptions = null;
 					resource.EventResourceAssignments = null;
-					resource.NotificationSubscriptions = null;
 					resource.RateSheets = null;
 					resource.ResourceAvailabilities = null;
 					resource.ResourceChangeHistories = null;
@@ -1204,8 +1204,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				cloneOfExisting.CrewMembers = null;
 				cloneOfExisting.Documents = null;
 				cloneOfExisting.EventCharges = null;
+				cloneOfExisting.EventNotificationSubscriptions = null;
 				cloneOfExisting.EventResourceAssignments = null;
-				cloneOfExisting.NotificationSubscriptions = null;
 				cloneOfExisting.RateSheets = null;
 				cloneOfExisting.ResourceAvailabilities = null;
 				cloneOfExisting.ResourceChangeHistories = null;

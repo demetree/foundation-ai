@@ -28,6 +28,11 @@ import {BudgetService} from  './budget.service';
 import {BudgetChangeHistoryService} from  './budget-change-history.service';
 import {CalendarService} from  './calendar.service';
 import {CalendarChangeHistoryService} from  './calendar-change-history.service';
+import {CallService} from  './call.service';
+import {CallEventLogService} from  './call-event-log.service';
+import {CallParticipantService} from  './call-participant.service';
+import {CallStatusService} from  './call-status.service';
+import {CallTypeService} from  './call-type.service';
 import {CampaignService} from  './campaign.service';
 import {CampaignChangeHistoryService} from  './campaign-change-history.service';
 import {ChargeStatusService} from  './charge-status.service';
@@ -53,6 +58,21 @@ import {ContactMethodService} from  './contact-method.service';
 import {ContactTagService} from  './contact-tag.service';
 import {ContactTagChangeHistoryService} from  './contact-tag-change-history.service';
 import {ContactTypeService} from  './contact-type.service';
+import {ConversationService} from  './conversation.service';
+import {ConversationChannelService} from  './conversation-channel.service';
+import {ConversationChannelChangeHistoryService} from  './conversation-channel-change-history.service';
+import {ConversationMessageService} from  './conversation-message.service';
+import {ConversationMessageAttachmentService} from  './conversation-message-attachment.service';
+import {ConversationMessageAttachmentChangeHistoryService} from  './conversation-message-attachment-change-history.service';
+import {ConversationMessageChangeHistoryService} from  './conversation-message-change-history.service';
+import {ConversationMessageLinkPreviewService} from  './conversation-message-link-preview.service';
+import {ConversationMessageLinkPreviewChangeHistoryService} from  './conversation-message-link-preview-change-history.service';
+import {ConversationMessageReactionService} from  './conversation-message-reaction.service';
+import {ConversationMessageUserService} from  './conversation-message-user.service';
+import {ConversationPinService} from  './conversation-pin.service';
+import {ConversationThreadUserService} from  './conversation-thread-user.service';
+import {ConversationTypeService} from  './conversation-type.service';
+import {ConversationUserService} from  './conversation-user.service';
 import {CountryService} from  './country.service';
 import {CrewService} from  './crew.service';
 import {CrewChangeHistoryService} from  './crew-change-history.service';
@@ -74,6 +94,9 @@ import {DocumentTypeService} from  './document-type.service';
 import {EventCalendarService} from  './event-calendar.service';
 import {EventChargeService} from  './event-charge.service';
 import {EventChargeChangeHistoryService} from  './event-charge-change-history.service';
+import {EventNotificationSubscriptionService} from  './event-notification-subscription.service';
+import {EventNotificationSubscriptionChangeHistoryService} from  './event-notification-subscription-change-history.service';
+import {EventNotificationTypeService} from  './event-notification-type.service';
 import {EventResourceAssignmentService} from  './event-resource-assignment.service';
 import {EventResourceAssignmentChangeHistoryService} from  './event-resource-assignment-change-history.service';
 import {EventStatusService} from  './event-status.service';
@@ -101,8 +124,14 @@ import {InvoiceService} from  './invoice.service';
 import {InvoiceChangeHistoryService} from  './invoice-change-history.service';
 import {InvoiceLineItemService} from  './invoice-line-item.service';
 import {InvoiceStatusService} from  './invoice-status.service';
-import {NotificationSubscriptionService} from  './notification-subscription.service';
-import {NotificationSubscriptionChangeHistoryService} from  './notification-subscription-change-history.service';
+import {MessageBookmarkService} from  './message-bookmark.service';
+import {MessageFlagService} from  './message-flag.service';
+import {MessagingAuditLogService} from  './messaging-audit-log.service';
+import {NotificationService} from  './notification.service';
+import {NotificationAttachmentService} from  './notification-attachment.service';
+import {NotificationAttachmentChangeHistoryService} from  './notification-attachment-change-history.service';
+import {NotificationChangeHistoryService} from  './notification-change-history.service';
+import {NotificationDistributionService} from  './notification-distribution.service';
 import {NotificationTypeService} from  './notification-type.service';
 import {OfficeService} from  './office.service';
 import {OfficeChangeHistoryService} from  './office-change-history.service';
@@ -120,6 +149,8 @@ import {PeriodStatusService} from  './period-status.service';
 import {PledgeService} from  './pledge.service';
 import {PledgeChangeHistoryService} from  './pledge-change-history.service';
 import {PriorityService} from  './priority.service';
+import {PushDeliveryLogService} from  './push-delivery-log.service';
+import {PushProviderConfigurationService} from  './push-provider-configuration.service';
 import {QualificationService} from  './qualification.service';
 import {RateSheetService} from  './rate-sheet.service';
 import {RateSheetChangeHistoryService} from  './rate-sheet-change-history.service';
@@ -182,6 +213,7 @@ import {TimeZoneService} from  './time-zone.service';
 import {TributeService} from  './tribute.service';
 import {TributeChangeHistoryService} from  './tribute-change-history.service';
 import {TributeTypeService} from  './tribute-type.service';
+import {UserPresenceService} from  './user-presence.service';
 import {VolunteerGroupService} from  './volunteer-group.service';
 import {VolunteerGroupChangeHistoryService} from  './volunteer-group-change-history.service';
 import {VolunteerGroupMemberService} from  './volunteer-group-member.service';
@@ -215,6 +247,11 @@ export class SchedulerDataServiceManagerService  {
               , public budgetChangeHistoryService: BudgetChangeHistoryService
               , public calendarService: CalendarService
               , public calendarChangeHistoryService: CalendarChangeHistoryService
+              , public callService: CallService
+              , public callEventLogService: CallEventLogService
+              , public callParticipantService: CallParticipantService
+              , public callStatusService: CallStatusService
+              , public callTypeService: CallTypeService
               , public campaignService: CampaignService
               , public campaignChangeHistoryService: CampaignChangeHistoryService
               , public chargeStatusService: ChargeStatusService
@@ -240,6 +277,21 @@ export class SchedulerDataServiceManagerService  {
               , public contactTagService: ContactTagService
               , public contactTagChangeHistoryService: ContactTagChangeHistoryService
               , public contactTypeService: ContactTypeService
+              , public conversationService: ConversationService
+              , public conversationChannelService: ConversationChannelService
+              , public conversationChannelChangeHistoryService: ConversationChannelChangeHistoryService
+              , public conversationMessageService: ConversationMessageService
+              , public conversationMessageAttachmentService: ConversationMessageAttachmentService
+              , public conversationMessageAttachmentChangeHistoryService: ConversationMessageAttachmentChangeHistoryService
+              , public conversationMessageChangeHistoryService: ConversationMessageChangeHistoryService
+              , public conversationMessageLinkPreviewService: ConversationMessageLinkPreviewService
+              , public conversationMessageLinkPreviewChangeHistoryService: ConversationMessageLinkPreviewChangeHistoryService
+              , public conversationMessageReactionService: ConversationMessageReactionService
+              , public conversationMessageUserService: ConversationMessageUserService
+              , public conversationPinService: ConversationPinService
+              , public conversationThreadUserService: ConversationThreadUserService
+              , public conversationTypeService: ConversationTypeService
+              , public conversationUserService: ConversationUserService
               , public countryService: CountryService
               , public crewService: CrewService
               , public crewChangeHistoryService: CrewChangeHistoryService
@@ -261,6 +313,9 @@ export class SchedulerDataServiceManagerService  {
               , public eventCalendarService: EventCalendarService
               , public eventChargeService: EventChargeService
               , public eventChargeChangeHistoryService: EventChargeChangeHistoryService
+              , public eventNotificationSubscriptionService: EventNotificationSubscriptionService
+              , public eventNotificationSubscriptionChangeHistoryService: EventNotificationSubscriptionChangeHistoryService
+              , public eventNotificationTypeService: EventNotificationTypeService
               , public eventResourceAssignmentService: EventResourceAssignmentService
               , public eventResourceAssignmentChangeHistoryService: EventResourceAssignmentChangeHistoryService
               , public eventStatusService: EventStatusService
@@ -288,8 +343,14 @@ export class SchedulerDataServiceManagerService  {
               , public invoiceChangeHistoryService: InvoiceChangeHistoryService
               , public invoiceLineItemService: InvoiceLineItemService
               , public invoiceStatusService: InvoiceStatusService
-              , public notificationSubscriptionService: NotificationSubscriptionService
-              , public notificationSubscriptionChangeHistoryService: NotificationSubscriptionChangeHistoryService
+              , public messageBookmarkService: MessageBookmarkService
+              , public messageFlagService: MessageFlagService
+              , public messagingAuditLogService: MessagingAuditLogService
+              , public notificationService: NotificationService
+              , public notificationAttachmentService: NotificationAttachmentService
+              , public notificationAttachmentChangeHistoryService: NotificationAttachmentChangeHistoryService
+              , public notificationChangeHistoryService: NotificationChangeHistoryService
+              , public notificationDistributionService: NotificationDistributionService
               , public notificationTypeService: NotificationTypeService
               , public officeService: OfficeService
               , public officeChangeHistoryService: OfficeChangeHistoryService
@@ -307,6 +368,8 @@ export class SchedulerDataServiceManagerService  {
               , public pledgeService: PledgeService
               , public pledgeChangeHistoryService: PledgeChangeHistoryService
               , public priorityService: PriorityService
+              , public pushDeliveryLogService: PushDeliveryLogService
+              , public pushProviderConfigurationService: PushProviderConfigurationService
               , public qualificationService: QualificationService
               , public rateSheetService: RateSheetService
               , public rateSheetChangeHistoryService: RateSheetChangeHistoryService
@@ -369,6 +432,7 @@ export class SchedulerDataServiceManagerService  {
               , public tributeService: TributeService
               , public tributeChangeHistoryService: TributeChangeHistoryService
               , public tributeTypeService: TributeTypeService
+              , public userPresenceService: UserPresenceService
               , public volunteerGroupService: VolunteerGroupService
               , public volunteerGroupChangeHistoryService: VolunteerGroupChangeHistoryService
               , public volunteerGroupMemberService: VolunteerGroupMemberService
@@ -400,6 +464,11 @@ export class SchedulerDataServiceManagerService  {
         this.budgetChangeHistoryService.ClearAllCaches();
         this.calendarService.ClearAllCaches();
         this.calendarChangeHistoryService.ClearAllCaches();
+        this.callService.ClearAllCaches();
+        this.callEventLogService.ClearAllCaches();
+        this.callParticipantService.ClearAllCaches();
+        this.callStatusService.ClearAllCaches();
+        this.callTypeService.ClearAllCaches();
         this.campaignService.ClearAllCaches();
         this.campaignChangeHistoryService.ClearAllCaches();
         this.chargeStatusService.ClearAllCaches();
@@ -425,6 +494,21 @@ export class SchedulerDataServiceManagerService  {
         this.contactTagService.ClearAllCaches();
         this.contactTagChangeHistoryService.ClearAllCaches();
         this.contactTypeService.ClearAllCaches();
+        this.conversationService.ClearAllCaches();
+        this.conversationChannelService.ClearAllCaches();
+        this.conversationChannelChangeHistoryService.ClearAllCaches();
+        this.conversationMessageService.ClearAllCaches();
+        this.conversationMessageAttachmentService.ClearAllCaches();
+        this.conversationMessageAttachmentChangeHistoryService.ClearAllCaches();
+        this.conversationMessageChangeHistoryService.ClearAllCaches();
+        this.conversationMessageLinkPreviewService.ClearAllCaches();
+        this.conversationMessageLinkPreviewChangeHistoryService.ClearAllCaches();
+        this.conversationMessageReactionService.ClearAllCaches();
+        this.conversationMessageUserService.ClearAllCaches();
+        this.conversationPinService.ClearAllCaches();
+        this.conversationThreadUserService.ClearAllCaches();
+        this.conversationTypeService.ClearAllCaches();
+        this.conversationUserService.ClearAllCaches();
         this.countryService.ClearAllCaches();
         this.crewService.ClearAllCaches();
         this.crewChangeHistoryService.ClearAllCaches();
@@ -446,6 +530,9 @@ export class SchedulerDataServiceManagerService  {
         this.eventCalendarService.ClearAllCaches();
         this.eventChargeService.ClearAllCaches();
         this.eventChargeChangeHistoryService.ClearAllCaches();
+        this.eventNotificationSubscriptionService.ClearAllCaches();
+        this.eventNotificationSubscriptionChangeHistoryService.ClearAllCaches();
+        this.eventNotificationTypeService.ClearAllCaches();
         this.eventResourceAssignmentService.ClearAllCaches();
         this.eventResourceAssignmentChangeHistoryService.ClearAllCaches();
         this.eventStatusService.ClearAllCaches();
@@ -473,8 +560,14 @@ export class SchedulerDataServiceManagerService  {
         this.invoiceChangeHistoryService.ClearAllCaches();
         this.invoiceLineItemService.ClearAllCaches();
         this.invoiceStatusService.ClearAllCaches();
-        this.notificationSubscriptionService.ClearAllCaches();
-        this.notificationSubscriptionChangeHistoryService.ClearAllCaches();
+        this.messageBookmarkService.ClearAllCaches();
+        this.messageFlagService.ClearAllCaches();
+        this.messagingAuditLogService.ClearAllCaches();
+        this.notificationService.ClearAllCaches();
+        this.notificationAttachmentService.ClearAllCaches();
+        this.notificationAttachmentChangeHistoryService.ClearAllCaches();
+        this.notificationChangeHistoryService.ClearAllCaches();
+        this.notificationDistributionService.ClearAllCaches();
         this.notificationTypeService.ClearAllCaches();
         this.officeService.ClearAllCaches();
         this.officeChangeHistoryService.ClearAllCaches();
@@ -492,6 +585,8 @@ export class SchedulerDataServiceManagerService  {
         this.pledgeService.ClearAllCaches();
         this.pledgeChangeHistoryService.ClearAllCaches();
         this.priorityService.ClearAllCaches();
+        this.pushDeliveryLogService.ClearAllCaches();
+        this.pushProviderConfigurationService.ClearAllCaches();
         this.qualificationService.ClearAllCaches();
         this.rateSheetService.ClearAllCaches();
         this.rateSheetChangeHistoryService.ClearAllCaches();
@@ -554,6 +649,7 @@ export class SchedulerDataServiceManagerService  {
         this.tributeService.ClearAllCaches();
         this.tributeChangeHistoryService.ClearAllCaches();
         this.tributeTypeService.ClearAllCaches();
+        this.userPresenceService.ClearAllCaches();
         this.volunteerGroupService.ClearAllCaches();
         this.volunteerGroupChangeHistoryService.ClearAllCaches();
         this.volunteerGroupMemberService.ClearAllCaches();

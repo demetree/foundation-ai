@@ -1,0 +1,890 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     Messaging Admin Dashboard
+     ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="admin-dashboard">
+
+  <!-- Header -->
+  <div class="admin-header">
+    <div class="header-title">
+      <i class="fa-solid fa-shield-halved"></i>
+      <h1>Messaging Administration</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="loadMetrics()" title="Refresh metrics">
+        <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isLoadingMetrics"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="admin-tabs">
+    <button class="tab-btn" [class.active]="activeTab === 'overview'" (click)="switchTab('overview')">
+      <i class="fa-solid fa-chart-line"></i>
+      Overview
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'messages'" (click)="switchTab('messages')">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      Messages
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'users'" (click)="switchTab('users')">
+      <i class="fa-solid fa-users"></i>
+      Users
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'channels'" (click)="switchTab('channels')">
+      <i class="fa-solid fa-hashtag"></i>
+      Channels
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'entities'" (click)="switchTab('entities')">
+      <i class="fa-solid fa-link"></i>
+      Entities
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'moderation'" (click)="switchTab('moderation')">
+      <i class="fa-solid fa-flag"></i>
+      Moderation
+      <span class="tab-badge" *ngIf="metrics && metrics.openFlags > 0">{{ metrics.openFlags }}</span>
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'audit'" (click)="switchTab('audit')">
+      <i class="fa-solid fa-clipboard-list"></i>
+      Audit Log
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'delivery'" (click)="switchTab('delivery')">
+      <i class="fa-solid fa-paper-plane"></i>
+      Delivery Log
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="admin-content">
+
+    <!-- ═══ OVERVIEW TAB ═══════════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'overview'">
+
+      <div class="loading-state" *ngIf="isLoadingMetrics">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading metrics...</span>
+      </div>
+
+      <div class="metrics-grid" *ngIf="!isLoadingMetrics && metrics">
+        <div class="metric-card">
+          <div class="metric-icon conversations"><i class="fa-solid fa-comments"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.totalConversations }}</span>
+            <span class="metric-label">Total Conversations</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon messages"><i class="fa-solid fa-message"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.totalMessages }}</span>
+            <span class="metric-label">Total Messages</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon users"><i class="fa-solid fa-users"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.totalActiveUsers }}</span>
+            <span class="metric-label">Active Users</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon today"><i class="fa-solid fa-calendar-day"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.messagesToday }}</span>
+            <span class="metric-label">Messages Today</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon week"><i class="fa-solid fa-calendar-week"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.messagesThisWeek }}</span>
+            <span class="metric-label">Messages This Week</span>
+          </div>
+        </div>
+
+        <div class="metric-card" [class.metric-alert]="metrics.openFlags > 0">
+          <div class="metric-icon flags"><i class="fa-solid fa-flag"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.openFlags }}</span>
+            <span class="metric-label">Open Flags</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon delivery"><i class="fa-solid fa-paper-plane"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.deliveryAttemptsToday }}</span>
+            <span class="metric-label">Deliveries Today</span>
+          </div>
+        </div>
+
+        <div class="metric-card" [class.metric-alert]="metrics.deliveryFailuresToday > 0">
+          <div class="metric-icon failures"><i class="fa-solid fa-circle-exclamation"></i></div>
+          <div class="metric-info">
+            <span class="metric-value">{{ metrics.deliveryFailuresToday }}</span>
+            <span class="metric-label">Failures Today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Analytics Charts (loaded below KPI cards) -->
+      <div style="margin-top: 28px;"></div>
+      <div class="loading-state" *ngIf="isLoadingAnalytics && !isLoadingMetrics">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading analytics...</span>
+      </div>
+
+      <div class="analytics-grid" *ngIf="!isLoadingAnalytics && analytics">
+
+        <!-- Messages Over Time -->
+        <div class="chart-card chart-wide">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-chart-area"></i> Messages Over Time</h3>
+            <span class="chart-subtitle">Last 30 days</span>
+          </div>
+          <div class="chart-body chart-tall">
+            <canvas #messagesChart></canvas>
+          </div>
+        </div>
+
+        <!-- Top Users -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-user-group"></i> Most Active Users</h3>
+          </div>
+          <div class="chart-body" [style.height.px]="(analytics.topUsers.length || 5) * 32 + 20">
+            <canvas #topUsersChart></canvas>
+          </div>
+        </div>
+
+        <!-- Top Channels -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-hashtag"></i> Most Active Channels</h3>
+          </div>
+          <div class="chart-body" [style.height.px]="(analytics.topChannels.length || 5) * 32 + 20">
+            <canvas #topChannelsChart></canvas>
+          </div>
+        </div>
+
+        <!-- Sankey Diagram -->
+        <div class="chart-card chart-wide">
+          <div class="chart-header">
+            <h3><i class="fa-solid fa-diagram-project"></i> User Messaging Flows</h3>
+            <span class="chart-subtitle">Who messages whom (top 30 flows)</span>
+          </div>
+          <div class="chart-body sankey-body">
+            <svg viewBox="0 0 700 400" class="sankey-svg" *ngIf="sankeyPaths.length > 0">
+              <path *ngFor="let path of sankeyPaths"
+                    [attr.d]="path.d"
+                    [attr.fill]="path.color"
+                    [attr.fill-opacity]="path.opacity"
+                    stroke="none">
+                <title>{{ path.fromLabel }} → {{ path.toLabel }} ({{ path.weight }} messages)</title>
+              </path>
+              <text *ngFor="let label of sankeyLabels"
+                    [attr.x]="label.x"
+                    [attr.y]="label.y"
+                    [attr.text-anchor]="label.align"
+                    fill="#a0a3a8"
+                    font-size="11"
+                    dominant-baseline="middle">
+                {{ label.text }}
+              </text>
+            </svg>
+            <div class="empty-state" *ngIf="sankeyPaths.length === 0">
+              <i class="fa-solid fa-diagram-project"></i>
+              <p>Not enough messaging data for flow visualization.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ═══ CHANNELS TAB ═══════════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'channels'">
+
+      <div class="loading-state" *ngIf="isLoadingChannels">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading channels...</span>
+      </div>
+
+      <div *ngIf="!isLoadingChannels">
+        <div class="tab-toolbar">
+          <span class="search-results-count">{{ channels.length }} channel{{ channels.length !== 1 ? 's' : '' }}</span>
+          <div class="toolbar-spacer"></div>
+          <button class="btn-primary" (click)="openCreateChannel()">
+            <i class="fa-solid fa-plus"></i> Create Channel
+          </button>
+        </div>
+
+        <div class="data-table-container">
+          <table class="data-table" *ngIf="channels.length > 0">
+            <thead>
+              <tr>
+                <th>Channel</th>
+                <th>Type</th>
+                <th>Members</th>
+                <th>Last Activity</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ch of channels">
+                <td class="name-cell">
+                  <i class="fa-solid fa-hashtag channel-hash"></i>
+                  {{ ch.name || 'Unnamed Channel' }}
+                </td>
+                <td>
+                  <span class="badge" [ngClass]="ch.isPublic ? 'badge-public' : 'badge-private'">
+                    {{ ch.isPublic ? 'Public' : 'Private' }}
+                  </span>
+                </td>
+                <td>{{ ch.memberCount || 0 }}</td>
+                <td>{{ formatDate(ch.lastMessageDateTime || '') }}</td>
+                <td>
+                  <span class="badge" [ngClass]="ch.isArchived ? 'badge-archived' : 'badge-active'">
+                    {{ ch.isArchived ? 'Archived' : 'Active' }}
+                  </span>
+                </td>
+                <td class="actions-cell">
+                  <button class="btn-action" (click)="openEditChannel(ch)" title="Edit">
+                    <i class="fa-solid fa-pen"></i>
+                  </button>
+                  <button class="btn-action" (click)="downloadChannelTranscript(ch)" title="Download Transcript"
+                          [disabled]="downloadingTranscripts[ch.id]">
+                    <i class="fa-solid fa-spinner fa-spin" *ngIf="downloadingTranscripts[ch.id]"></i>
+                    <i class="fa-solid fa-download" *ngIf="!downloadingTranscripts[ch.id]"></i>
+                  </button>
+                  <button class="btn-action btn-action-danger" (click)="confirmDeleteChannel(ch)" title="Delete">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-state" *ngIf="channels.length === 0">
+            <i class="fa-solid fa-hashtag"></i>
+            <p>No channels found</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channel Create/Edit Dialog -->
+      <div class="flag-overlay" *ngIf="showChannelDialog">
+        <div class="flag-dialog">
+          <h3>{{ channelDialogMode === 'create' ? 'Create Channel' : 'Edit Channel' }}</h3>
+
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" [(ngModel)]="channelName" placeholder="Channel name" />
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <textarea [(ngModel)]="channelDescription" placeholder="Channel description..." rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="toggle-label">
+              <input type="checkbox" [(ngModel)]="channelIsPublic" />
+              Public channel
+            </label>
+          </div>
+
+          <div class="dialog-actions">
+            <button class="btn-secondary" (click)="closeChannelDialog()">Cancel</button>
+            <button class="btn-primary" (click)="saveChannel()" [disabled]="isSavingChannel || !channelName.trim()">
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="isSavingChannel"></i>
+              <span *ngIf="!isSavingChannel">{{ channelDialogMode === 'create' ? 'Create' : 'Save' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Confirmation -->
+      <div class="flag-overlay" *ngIf="showDeleteConfirm">
+        <div class="flag-dialog">
+          <h3>Delete Channel</h3>
+          <p class="resolve-preview">Are you sure you want to delete <strong>{{ deletingChannel?.name }}</strong>? This action cannot be undone.</p>
+
+          <div class="dialog-actions">
+            <button class="btn-secondary" (click)="cancelDelete()">Cancel</button>
+            <button class="btn-danger" (click)="executeDeleteChannel()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ MESSAGES TAB ═══════════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'messages'">
+
+      <div class="tab-toolbar messages-toolbar">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text"
+                 [(ngModel)]="messageSearchQuery"
+                 (input)="onMessageSearchChange()"
+                 placeholder="Search messages across all conversations..."
+                 class="search-input" />
+        </div>
+
+        <input type="number"
+               [(ngModel)]="messageConversationFilter"
+               (change)="onMessageFilterChange()"
+               placeholder="Conversation ID"
+               class="filter-number" />
+
+        <input type="date"
+               [(ngModel)]="messageDateFilter"
+               (change)="onMessageFilterChange()"
+               placeholder="From date" />
+
+        <button class="btn-action" (click)="loadMessages()" title="Refresh">
+          <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isLoadingMessages"></i>
+        </button>
+        <button class="btn-action" (click)="downloadSearchResultsCsv()" title="Export CSV"
+                *ngIf="messageSearchResults.length > 0">
+          <i class="fa-solid fa-file-csv"></i>
+        </button>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoadingMessages">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Searching messages...</span>
+      </div>
+
+      <div class="search-results-count" *ngIf="!isLoadingMessages && messageSearchResults.length > 0">
+        {{ messageSearchResults.length }} result{{ messageSearchResults.length !== 1 ? 's' : '' }}
+      </div>
+
+      <div class="data-table-container" *ngIf="!isLoadingMessages">
+        <table class="data-table" *ngIf="messageSearchResults.length > 0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Conversation</th>
+              <th>Sender</th>
+              <th>Message</th>
+              <th>Entity</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let msg of messageSearchResults">
+              <tr [class.deleted-row]="msg.isDeleted"
+                  [class.flagged-row]="isFlagged(msg.id)">
+                <td class="date-cell">{{ formatDate(msg.dateTimeCreated) }}</td>
+                <td>
+                  <span class="conversation-name">
+                    <i class="fa-solid fa-comments"></i>
+                    {{ msg.conversationName }}
+                  </span>
+                </td>
+                <td class="sender-cell">{{ msg.userDisplayName }}</td>
+                <td class="message-preview-cell">
+                  <span *ngIf="msg.isDeleted" class="deleted-badge">[deleted]</span>
+                  <span *ngIf="isFlagged(msg.id)" class="flagged-indicator" (click)="toggleFlagDetails(msg.id)" title="Click to view flag details">
+                    <i class="fa-solid fa-flag"></i> Flagged
+                  </span>
+                  {{ truncateMessage(msg.message) }}
+                </td>
+                <td class="entity-cell">
+                  <span class="badge badge-entity" *ngIf="msg.entity">
+                    {{ msg.entity }}
+                    <span *ngIf="msg.entityId">#{{ msg.entityId }}</span>
+                  </span>
+                  <span *ngIf="!msg.entity" class="text-muted">—</span>
+                </td>
+                <td class="actions-cell">
+                  <button class="btn-action" *ngIf="!isFlagged(msg.id)" (click)="flagMessageFromSearch(msg)" title="Flag for review">
+                    <i class="fa-solid fa-flag"></i>
+                  </button>
+                  <button class="btn-action" *ngIf="isFlagged(msg.id)" (click)="toggleFlagDetails(msg.id)" title="View flag details">
+                    <i class="fa-solid fa-eye"></i>
+                  </button>
+                </td>
+              </tr>
+              <!-- Expanded flag details row (immediately after its parent row) -->
+              <tr class="flag-details-row" *ngIf="isFlagged(msg.id) && expandedFlagId === msg.id">
+                <td colspan="6">
+                  <div class="flag-details-content">
+                    <div class="flag-detail-item">
+                      <span class="flag-detail-label">Reason:</span>
+                      <span class="badge badge-reason">{{ getFlagInfo(msg.id)?.reason }}</span>
+                    </div>
+                    <div class="flag-detail-item" *ngIf="getFlagInfo(msg.id)?.details">
+                      <span class="flag-detail-label">Notes:</span>
+                      <span class="flag-detail-notes">{{ getFlagInfo(msg.id)?.details }}</span>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="messageSearchResults.length === 0">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <p>No messages found. Try adjusting your search.</p>
+        </div>
+      </div>
+
+      <!-- Flag Dialog -->
+      <div class="flag-overlay" *ngIf="showFlagDialog">
+        <div class="flag-dialog">
+          <h3><i class="fa-solid fa-flag"></i> Flag Message</h3>
+
+          <div class="flag-message-preview">
+            <span class="flag-preview-sender">{{ flaggingMessage?.userDisplayName }}</span>
+            <span class="flag-preview-conv">in {{ flaggingMessage?.conversationName }}</span>
+            <p class="flag-preview-text">{{ truncateMessage(flaggingMessage?.message || '', 200) }}</p>
+          </div>
+
+          <div class="form-group">
+            <label>Reason *</label>
+            <select [(ngModel)]="flagReason">
+              <option value="" disabled>Select a reason...</option>
+              <option *ngFor="let opt of flagReasonOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Details <span class="optional">(optional)</span></label>
+            <textarea [(ngModel)]="flagDetails" placeholder="Provide additional context..." rows="3"></textarea>
+          </div>
+
+          <div class="dialog-actions">
+            <button class="btn-secondary" (click)="closeFlagDialog()">Cancel</button>
+            <button class="btn-danger" (click)="submitFlag()" [disabled]="isFlagging || !flagReason">
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="isFlagging"></i>
+              <i class="fa-solid fa-flag" *ngIf="!isFlagging"></i>
+              <span>{{ isFlagging ? 'Flagging...' : 'Submit Flag' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- ═══ USERS TAB ═════════════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'users'">
+
+      <div class="loading-state" *ngIf="isLoadingAnalytics">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading user data...</span>
+      </div>
+
+      <div *ngIf="!isLoadingAnalytics && analytics">
+        <div class="tab-toolbar">
+          <div class="search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text"
+                   [(ngModel)]="userSearchFilter"
+                   placeholder="Search users..."
+                   class="search-input" />
+          </div>
+        </div>
+
+        <div class="search-results-count" *ngIf="filteredUsers.length > 0">
+          {{ filteredUsers.length }} user{{ filteredUsers.length !== 1 ? 's' : '' }}
+        </div>
+
+        <div class="data-table-container">
+          <table class="data-table" *ngIf="filteredUsers.length > 0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>User</th>
+                <th>Messages (30d)</th>
+                <th>Conversations</th>
+                <th>Last Active</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of filteredUsers; let i = index">
+                <td class="rank-cell">
+                  <span class="rank-badge" [class.rank-gold]="i === 0" [class.rank-silver]="i === 1" [class.rank-bronze]="i === 2">
+                    {{ i + 1 }}
+                  </span>
+                </td>
+                <td class="user-cell">
+                  <span class="user-avatar">{{ user.displayName.charAt(0).toUpperCase() }}</span>
+                  <span class="user-name">{{ user.displayName }}</span>
+                </td>
+                <td class="stat-cell">
+                  <span class="stat-value">{{ user.messageCount }}</span>
+                </td>
+                <td class="stat-cell">
+                  <span class="stat-value">{{ user.conversationCount }}</span>
+                </td>
+                <td class="date-cell">{{ formatDate(user.lastActive) }}</td>
+                <td class="actions-cell">
+                  <button class="btn-action" (click)="messageUser(user.userId, user.displayName)" title="Message User">
+                    <i class="fa-solid fa-paper-plane"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="empty-state" *ngIf="filteredUsers.length === 0">
+            <i class="fa-solid fa-users"></i>
+            <p>No user activity data found.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ ENTITIES TAB ══════════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'entities'">
+
+      <div class="tab-toolbar">
+        <select [(ngModel)]="entityTypeFilter">
+          <option value="">All Entity Types</option>
+          <option *ngFor="let t of entityTypes" [value]="t">{{ t }}</option>
+        </select>
+
+        <input type="number"
+               [(ngModel)]="entityIdFilter"
+               placeholder="Entity ID"
+               class="filter-number" />
+
+        <button class="btn-primary" (click)="searchByEntity()" [disabled]="isLoadingEntities || (!entityTypeFilter && !entityIdFilter)">
+          <i class="fa-solid fa-spinner fa-spin" *ngIf="isLoadingEntities"></i>
+          <i class="fa-solid fa-magnifying-glass" *ngIf="!isLoadingEntities"></i>
+          Search
+        </button>
+      </div>
+
+      <!-- Matching Conversations -->
+      <div *ngIf="filteredEntityConversations.length > 0" class="entity-conversations">
+        <h4 class="section-label">Linked Conversations ({{ filteredEntityConversations.length }})</h4>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Conversation</th>
+                <th>Entity</th>
+                <th>Entity ID</th>
+                <th>Members</th>
+                <th>Last Activity</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let conv of filteredEntityConversations">
+                <td class="name-cell">
+                  <i class="fa-solid fa-comments"></i>
+                  {{ conv.name || 'Conversation #' + conv.id }}
+                </td>
+                <td><span class="badge badge-entity">{{ conv.entity }}</span></td>
+                <td>#{{ conv.entityId }}</td>
+                <td>{{ conv.memberCount || 0 }}</td>
+                <td>{{ formatDate(conv.lastMessageDateTime || '') }}</td>
+                <td class="actions-cell">
+                  <button class="btn-action" (click)="downloadChannelTranscript(conv)" title="Download Transcript"
+                          [disabled]="downloadingTranscripts[conv.id]">
+                    <i class="fa-solid fa-spinner fa-spin" *ngIf="downloadingTranscripts[conv.id]"></i>
+                    <i class="fa-solid fa-download" *ngIf="!downloadingTranscripts[conv.id]"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Entity Message Results -->
+      <div *ngIf="entityResults.length > 0" class="entity-messages">
+        <h4 class="section-label">Messages ({{ entityResults.length }})</h4>
+        <div class="data-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Conversation</th>
+                <th>Sender</th>
+                <th>Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let msg of entityResults" [class.deleted-row]="msg.isDeleted">
+                <td class="date-cell">{{ formatDate(msg.dateTimeCreated) }}</td>
+                <td><span class="conversation-name"><i class="fa-solid fa-comments"></i> {{ msg.conversationName }}</span></td>
+                <td class="sender-cell">{{ msg.userDisplayName }}</td>
+                <td class="message-preview-cell">{{ truncateMessage(msg.message) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="entityConversations.length === 0">
+        <i class="fa-solid fa-link"></i>
+        <p>No entity-linked conversations found.</p>
+      </div>
+    </div>
+
+
+    <!-- ═══ MODERATION TAB ═══════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'moderation'">
+
+      <div class="tab-toolbar">
+        <select [(ngModel)]="flagStatusFilter" (change)="onFlagFilterChange()">
+          <option value="all">All Flags</option>
+          <option value="open">Open</option>
+          <option value="resolved">Resolved</option>
+        </select>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoadingFlags">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading flags...</span>
+      </div>
+
+      <div class="data-table-container" *ngIf="!isLoadingFlags">
+        <table class="data-table" *ngIf="filteredFlags.length > 0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Message</th>
+              <th>Flagged By</th>
+              <th>Reason</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let flag of filteredFlags" [class]="getFlagStatusClass(flag)">
+              <td>#{{ flag.id }}</td>
+              <td class="message-preview-cell">{{ flag.messagePreview || '(deleted)' }}</td>
+              <td>{{ flag.flaggedByUserName || 'User #' + flag.flaggedByUserId }}</td>
+              <td>
+                <span class="badge badge-reason">{{ flag.reason }}</span>
+              </td>
+              <td>{{ formatDate(flag.dateTimeCreated) }}</td>
+              <td>
+                <span class="badge" [ngClass]="flag.status === 'open' ? 'badge-open' : 'badge-resolved'">
+                  {{ flag.status }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button class="btn-action" *ngIf="flag.status === 'open'"
+                        (click)="openResolveDialog(flag)" title="Resolve">
+                  <i class="fa-solid fa-gavel"></i>
+                </button>
+                <button class="btn-action" (click)="openEditFlag(flag)" title="Edit">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="filteredFlags.length === 0">
+          <i class="fa-solid fa-check-circle"></i>
+          <p>No flagged messages</p>
+        </div>
+      </div>
+
+      <!-- Resolve Dialog -->
+      <div class="flag-overlay" *ngIf="showResolveDialog">
+        <div class="flag-dialog">
+          <h3>Resolve Flag #{{ resolvingFlag?.id }}</h3>
+          <p class="resolve-preview">{{ resolvingFlag?.messagePreview }}</p>
+
+          <div class="form-group">
+            <label>Resolution</label>
+            <select [(ngModel)]="resolveStatus">
+              <option value="dismissed">Dismiss — No action needed</option>
+              <option value="warned">Warn — User warned</option>
+              <option value="deleted">Delete — Message removed</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea [(ngModel)]="resolveNotes" placeholder="Optional admin notes..." rows="3"></textarea>
+          </div>
+
+          <div class="dialog-actions">
+            <button class="btn-secondary" (click)="closeResolveDialog()">Cancel</button>
+            <button class="btn-primary" (click)="submitResolve()" [disabled]="isResolving">
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="isResolving"></i>
+              <span *ngIf="!isResolving">Resolve</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Flag Dialog -->
+      <div class="flag-overlay" *ngIf="showEditFlagDialog">
+        <div class="flag-dialog">
+          <h3>Edit Flag #{{ editingFlag?.id }}</h3>
+          <p class="resolve-preview">{{ editingFlag?.messagePreview }}</p>
+
+          <div class="form-group">
+            <label>Reason</label>
+            <select [(ngModel)]="editFlagReason">
+              <option *ngFor="let opt of flagReasonOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Details</label>
+            <textarea [(ngModel)]="editFlagDetails" placeholder="Flag details..." rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select [(ngModel)]="editFlagStatus">
+              <option value="open">Open</option>
+              <option value="pending">Pending</option>
+              <option value="dismissed">Dismissed</option>
+              <option value="warned">Warned</option>
+              <option value="deleted">Deleted</option>
+            </select>
+          </div>
+
+          <div class="dialog-actions">
+            <button class="btn-secondary" (click)="closeEditFlagDialog()">Cancel</button>
+            <button class="btn-primary" (click)="saveEditFlag()" [disabled]="isSavingFlag">
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="isSavingFlag"></i>
+              <span *ngIf="!isSavingFlag">Save Changes</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ AUDIT LOG TAB ════════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'audit'">
+
+      <div class="tab-toolbar">
+        <select [(ngModel)]="auditActionFilter" (change)="onAuditFilterChange()">
+          <option value="">All Actions</option>
+          <option value="ViewConversation">View Conversation</option>
+          <option value="SearchMessages">Search Messages</option>
+          <option value="DeleteMessage">Delete Message</option>
+          <option value="ResolveFlag">Resolve Flag</option>
+          <option value="ViewProfile">View Profile</option>
+        </select>
+
+        <input type="date" [(ngModel)]="auditDateFilter" (change)="onAuditFilterChange()" placeholder="From date" />
+      </div>
+
+      <div class="loading-state" *ngIf="isLoadingAudit">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading audit log...</span>
+      </div>
+
+      <div class="data-table-container" *ngIf="!isLoadingAudit">
+        <table class="data-table" *ngIf="auditLog.length > 0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Admin</th>
+              <th>Action</th>
+              <th>Entity</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let entry of auditLog">
+              <td>{{ formatDate(entry.dateTimeCreated) }}</td>
+              <td>{{ entry.performedByUserName || 'User #' + entry.performedByUserId }}</td>
+              <td>
+                <span class="badge badge-action">{{ entry.action }}</span>
+              </td>
+              <td>{{ entry.entityType }} <span *ngIf="entry.entityId">#{{ entry.entityId }}</span></td>
+              <td class="details-cell">{{ entry.details || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="auditLog.length === 0">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <p>No audit log entries</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ DELIVERY LOG TAB ═════════════════════════════════════════════ -->
+    <div class="tab-pane" *ngIf="activeTab === 'delivery'">
+
+      <div class="tab-toolbar">
+        <select [(ngModel)]="deliveryProviderFilter" (change)="onDeliveryFilterChange()">
+          <option value="">All Providers</option>
+          <option value="email">Email</option>
+          <option value="sms">SMS</option>
+        </select>
+
+        <select [(ngModel)]="deliveryStatusFilter" (change)="onDeliveryFilterChange()">
+          <option value="">All Status</option>
+          <option value="success">Success</option>
+          <option value="failure">Failed</option>
+        </select>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoadingDelivery">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Loading delivery logs...</span>
+      </div>
+
+      <div class="data-table-container" *ngIf="!isLoadingDelivery">
+        <table class="data-table" *ngIf="deliveryLogs.length > 0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>User</th>
+              <th>Provider</th>
+              <th>Destination</th>
+              <th>Status</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of deliveryLogs">
+              <td>{{ formatDate(log.dateTimeCreated) }}</td>
+              <td>{{ log.userName || 'User #' + log.userId }}</td>
+              <td>
+                <span class="badge badge-provider">
+                  <i [ngClass]="log.providerId === 'email' ? 'fa-solid fa-envelope' : 'fa-solid fa-comment-sms'"></i>
+                  {{ log.providerId }}
+                </span>
+              </td>
+              <td class="destination-cell">{{ log.destination || '—' }}</td>
+              <td>
+                <span class="badge" [ngClass]="log.success ? 'badge-success' : 'badge-failure'">
+                  {{ log.success ? 'Delivered' : 'Failed' }}
+                </span>
+              </td>
+              <td class="error-cell">{{ log.errorMessage || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="empty-state" *ngIf="deliveryLogs.length === 0">
+          <i class="fa-solid fa-paper-plane"></i>
+          <p>No delivery logs</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

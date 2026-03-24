@@ -36,7 +36,7 @@ import { ResourceShiftService } from '../../../scheduler-data-services/resource-
 import { CrewMemberService } from '../../../scheduler-data-services/crew-member.service';
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventChargeService } from '../../../scheduler-data-services/event-charge.service';
-import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
+import { EventNotificationSubscriptionService } from '../../../scheduler-data-services/event-notification-subscription.service';
 import { VolunteerProfileService } from '../../../scheduler-data-services/volunteer-profile.service';
 import { VolunteerGroupMemberService } from '../../../scheduler-data-services/volunteer-group-member.service';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
@@ -142,7 +142,7 @@ export class ResourceDetailComponent implements OnInit, CanComponentDeactivate {
   public crewMembers$ = this.crewMemberService.GetCrewMemberList();
   public scheduledEvents$ = this.scheduledEventService.GetScheduledEventList();
   public eventCharges$ = this.eventChargeService.GetEventChargeList();
-  public notificationSubscriptions$ = this.notificationSubscriptionService.GetNotificationSubscriptionList();
+  public eventNotificationSubscriptions$ = this.eventNotificationSubscriptionService.GetEventNotificationSubscriptionList();
   public volunteerProfiles$ = this.volunteerProfileService.GetVolunteerProfileList();
   public volunteerGroupMembers$ = this.volunteerGroupMemberService.GetVolunteerGroupMemberList();
   public documents$ = this.documentService.GetDocumentList();
@@ -165,7 +165,7 @@ export class ResourceDetailComponent implements OnInit, CanComponentDeactivate {
     public crewMemberService: CrewMemberService,
     public scheduledEventService: ScheduledEventService,
     public eventChargeService: EventChargeService,
-    public notificationSubscriptionService: NotificationSubscriptionService,
+    public eventNotificationSubscriptionService: EventNotificationSubscriptionService,
     public volunteerProfileService: VolunteerProfileService,
     public volunteerGroupMemberService: VolunteerGroupMemberService,
     public documentService: DocumentService,

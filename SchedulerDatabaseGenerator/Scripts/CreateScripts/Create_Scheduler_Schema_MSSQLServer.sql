@@ -61,9 +61,9 @@ GO
 -- DROP TABLE [Scheduler].[Campaign]
 -- DROP TABLE [Scheduler].[FundChangeHistory]
 -- DROP TABLE [Scheduler].[Fund]
--- DROP TABLE [Scheduler].[NotificationSubscriptionChangeHistory]
--- DROP TABLE [Scheduler].[NotificationSubscription]
--- DROP TABLE [Scheduler].[NotificationType]
+-- DROP TABLE [Scheduler].[EventNotificationSubscriptionChangeHistory]
+-- DROP TABLE [Scheduler].[EventNotificationSubscription]
+-- DROP TABLE [Scheduler].[EventNotificationType]
 -- DROP TABLE [Scheduler].[RecurrenceExceptionChangeHistory]
 -- DROP TABLE [Scheduler].[RecurrenceException]
 -- DROP TABLE [Scheduler].[ScheduledEventQualificationRequirementChangeHistory]
@@ -198,6 +198,38 @@ GO
 -- DROP TABLE [Scheduler].[AttributeDefinition]
 -- DROP TABLE [Scheduler].[AttributeDefinitionEntity]
 -- DROP TABLE [Scheduler].[AttributeDefinitionType]
+-- DROP TABLE [Scheduler].[CallEventLog]
+-- DROP TABLE [Scheduler].[CallParticipant]
+-- DROP TABLE [Scheduler].[Call]
+-- DROP TABLE [Scheduler].[CallStatus]
+-- DROP TABLE [Scheduler].[CallType]
+-- DROP TABLE [Scheduler].[MessagingAuditLog]
+-- DROP TABLE [Scheduler].[MessageFlag]
+-- DROP TABLE [Scheduler].[PushProviderConfiguration]
+-- DROP TABLE [Scheduler].[PushDeliveryLog]
+-- DROP TABLE [Scheduler].[MessageBookmark]
+-- DROP TABLE [Scheduler].[ConversationThreadUser]
+-- DROP TABLE [Scheduler].[UserPresence]
+-- DROP TABLE [Scheduler].[ConversationMessageLinkPreviewChangeHistory]
+-- DROP TABLE [Scheduler].[ConversationMessageLinkPreview]
+-- DROP TABLE [Scheduler].[ConversationPin]
+-- DROP TABLE [Scheduler].[ConversationMessageReaction]
+-- DROP TABLE [Scheduler].[ConversationMessageUser]
+-- DROP TABLE [Scheduler].[ConversationMessageAttachmentChangeHistory]
+-- DROP TABLE [Scheduler].[ConversationMessageAttachment]
+-- DROP TABLE [Scheduler].[ConversationMessageChangeHistory]
+-- DROP TABLE [Scheduler].[ConversationMessage]
+-- DROP TABLE [Scheduler].[ConversationChannelChangeHistory]
+-- DROP TABLE [Scheduler].[ConversationChannel]
+-- DROP TABLE [Scheduler].[ConversationUser]
+-- DROP TABLE [Scheduler].[Conversation]
+-- DROP TABLE [Scheduler].[ConversationType]
+-- DROP TABLE [Scheduler].[NotificationDistribution]
+-- DROP TABLE [Scheduler].[NotificationAttachmentChangeHistory]
+-- DROP TABLE [Scheduler].[NotificationAttachment]
+-- DROP TABLE [Scheduler].[NotificationChangeHistory]
+-- DROP TABLE [Scheduler].[Notification]
+-- DROP TABLE [Scheduler].[NotificationType]
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] DISABLE
@@ -243,9 +275,9 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[Campaign] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[FundChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[Fund] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[NotificationSubscriptionChangeHistory] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[NotificationSubscription] DISABLE
--- ALTER INDEX ALL ON [Scheduler].[NotificationType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[EventNotificationSubscriptionChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[EventNotificationSubscription] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[EventNotificationType] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceExceptionChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceException] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEventQualificationRequirementChangeHistory] DISABLE
@@ -380,6 +412,38 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinition] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionEntity] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[CallEventLog] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[CallParticipant] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[Call] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[CallStatus] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[CallType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[MessagingAuditLog] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[MessageFlag] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PushProviderConfiguration] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[PushDeliveryLog] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[MessageBookmark] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationThreadUser] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[UserPresence] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageLinkPreviewChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageLinkPreview] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationPin] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageReaction] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageUser] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageAttachmentChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageAttachment] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessage] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationChannelChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationChannel] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationUser] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[Conversation] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[ConversationType] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[NotificationDistribution] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[NotificationAttachmentChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[NotificationAttachment] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[NotificationChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[Notification] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[NotificationType] DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] REBUILD
@@ -425,9 +489,9 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[Campaign] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[FundChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[Fund] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[NotificationSubscriptionChangeHistory] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[NotificationSubscription] REBUILD
--- ALTER INDEX ALL ON [Scheduler].[NotificationType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[EventNotificationSubscriptionChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[EventNotificationSubscription] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[EventNotificationType] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceExceptionChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[RecurrenceException] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[ScheduledEventQualificationRequirementChangeHistory] REBUILD
@@ -562,6 +626,1529 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinition] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionEntity] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[AttributeDefinitionType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[CallEventLog] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[CallParticipant] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[Call] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[CallStatus] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[CallType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[MessagingAuditLog] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[MessageFlag] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PushProviderConfiguration] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[PushDeliveryLog] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[MessageBookmark] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationThreadUser] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[UserPresence] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageLinkPreviewChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageLinkPreview] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationPin] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageReaction] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageUser] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageAttachmentChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageAttachment] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessageChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationMessage] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationChannelChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationChannel] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationUser] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[Conversation] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[ConversationType] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[NotificationDistribution] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[NotificationAttachmentChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[NotificationAttachment] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[NotificationChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[Notification] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[NotificationType] REBUILD
+
+-- This table defines the types of notifications that are available.  It is part of the Foundation Notification system.
+CREATE TABLE [Scheduler].[NotificationType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NULL,
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the NotificationType table's name field.
+CREATE INDEX [I_NotificationType_name] ON [Scheduler].[NotificationType] ([name])
+GO
+
+-- Index on the NotificationType table's active field.
+CREATE INDEX [I_NotificationType_active] ON [Scheduler].[NotificationType] ([active])
+GO
+
+-- Index on the NotificationType table's deleted field.
+CREATE INDEX [I_NotificationType_deleted] ON [Scheduler].[NotificationType] ([deleted])
+GO
+
+-- Index on the NotificationType table's id,active,deleted fields.
+CREATE INDEX [I_NotificationType_id_active_deleted] ON [Scheduler].[NotificationType] ([id], [active], [deleted])
+GO
+
+INSERT INTO [Scheduler].[NotificationType] ( [name], [description], [objectGuid] ) VALUES  ( 'Informative', 'Informative', '065c2b74-dae1-4450-b8ee-bc5500ce64eb' )
+GO
+
+INSERT INTO [Scheduler].[NotificationType] ( [name], [description], [objectGuid] ) VALUES  ( 'Regular', 'Regular', 'e7c40dde-461f-41d1-8a9b-32e128179baa' )
+GO
+
+INSERT INTO [Scheduler].[NotificationType] ( [name], [description], [objectGuid] ) VALUES  ( 'Urgent', 'Urgent', '825c0094-f3bb-45da-aa22-da459f4593b4' )
+GO
+
+
+-- This table store Notifications.  It is part of the Foundation Notification system.
+CREATE TABLE [Scheduler].[Notification]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[notificationTypeId] INT NULL,		-- Link to the NotificationType table.
+	[createdByUserId] INT NULL,		-- The user that created this notification.  Nullable so that the 'system' can create them too.  Resolved by IMessagingUserResolver.
+	[message] NVARCHAR(MAX) NOT NULL,
+	[priority] INT NOT NULL DEFAULT 100,		-- The intent here is that the lower the priority number, the more urgent the notification is.
+	[entity] NVARCHAR(250) NULL,		-- The name of the entity that this notification is about.
+	[entityId] INT NULL,		-- The ID for the entity that this notification is about.
+	[externalURL] NVARCHAR(1000) NULL,		-- Ad-hoc external URL to be used if helpful.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When the notification was created.
+	[dateTimeDistributed] DATETIME2(7) NULL,		-- When the notification was distributed.
+	[distributionCompleted] BIT NOT NULL DEFAULT 0,		-- Control flag to mark whether or not this notification has been distributed to the notificationUser table or not
+	[userId] INT NULL,		-- Optional target user for this notification.  Resolved by IMessagingUserResolver.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_Notification_NotificationType_notificationTypeId] FOREIGN KEY ([notificationTypeId]) REFERENCES [Scheduler].[NotificationType] ([id])		-- Foreign key to the NotificationType table.
+)
+GO
+
+-- Index on the Notification table's tenantGuid field.
+CREATE INDEX [I_Notification_tenantGuid] ON [Scheduler].[Notification] ([tenantGuid])
+GO
+
+-- Index on the Notification table's tenantGuid,notificationTypeId fields.
+CREATE INDEX [I_Notification_tenantGuid_notificationTypeId] ON [Scheduler].[Notification] ([tenantGuid], [notificationTypeId])
+GO
+
+-- Index on the Notification table's tenantGuid,active fields.
+CREATE INDEX [I_Notification_tenantGuid_active] ON [Scheduler].[Notification] ([tenantGuid], [active])
+GO
+
+-- Index on the Notification table's tenantGuid,deleted fields.
+CREATE INDEX [I_Notification_tenantGuid_deleted] ON [Scheduler].[Notification] ([tenantGuid], [deleted])
+GO
+
+-- Index on the Notification table's id,active,deleted fields.
+CREATE INDEX [I_Notification_id_active_deleted] ON [Scheduler].[Notification] ([id], [active], [deleted])
+GO
+
+
+-- The change history for records from the Notification table.
+CREATE TABLE [Scheduler].[NotificationChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[notificationId] INT NOT NULL,		-- Link to the Notification table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_NotificationChangeHistory_Notification_notificationId] FOREIGN KEY ([notificationId]) REFERENCES [Scheduler].[Notification] ([id])		-- Foreign key to the Notification table.
+)
+GO
+
+-- Index on the NotificationChangeHistory table's tenantGuid field.
+CREATE INDEX [I_NotificationChangeHistory_tenantGuid] ON [Scheduler].[NotificationChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the NotificationChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_NotificationChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[NotificationChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the NotificationChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_NotificationChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[NotificationChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the NotificationChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_NotificationChangeHistory_tenantGuid_userId] ON [Scheduler].[NotificationChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the NotificationChangeHistory table's tenantGuid,notificationId fields.
+CREATE INDEX [I_NotificationChangeHistory_tenantGuid_notificationId] ON [Scheduler].[NotificationChangeHistory] ([tenantGuid], [notificationId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- This table stores attachments for notifications.  It is part of the Foundation Notification system.
+CREATE TABLE [Scheduler].[NotificationAttachment]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[notificationId] INT NOT NULL,		-- The notification for this attachment.
+	[userId] INT NOT NULL,		-- The user that created this attachment.  Resolved by IMessagingUserResolver.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When this notification attachment was created.
+	[contentFileName] NVARCHAR(250) NOT NULL,		-- Part of the binary data field setup
+	[contentSize] BIGINT NOT NULL,		-- Part of the binary data field setup
+	[contentData] VARBINARY(MAX) NOT NULL,		-- Part of the binary data field setup
+	[contentMimeType] NVARCHAR(100) NOT NULL,		-- Part of the binary data field setup
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_NotificationAttachment_Notification_notificationId] FOREIGN KEY ([notificationId]) REFERENCES [Scheduler].[Notification] ([id])		-- Foreign key to the Notification table.
+)
+GO
+
+-- Index on the NotificationAttachment table's tenantGuid field.
+CREATE INDEX [I_NotificationAttachment_tenantGuid] ON [Scheduler].[NotificationAttachment] ([tenantGuid])
+GO
+
+-- Index on the NotificationAttachment table's tenantGuid,notificationId fields.
+CREATE INDEX [I_NotificationAttachment_tenantGuid_notificationId] ON [Scheduler].[NotificationAttachment] ([tenantGuid], [notificationId])
+GO
+
+-- Index on the NotificationAttachment table's tenantGuid,active fields.
+CREATE INDEX [I_NotificationAttachment_tenantGuid_active] ON [Scheduler].[NotificationAttachment] ([tenantGuid], [active])
+GO
+
+-- Index on the NotificationAttachment table's tenantGuid,deleted fields.
+CREATE INDEX [I_NotificationAttachment_tenantGuid_deleted] ON [Scheduler].[NotificationAttachment] ([tenantGuid], [deleted])
+GO
+
+-- Index on the NotificationAttachment table's id,active,deleted fields.
+CREATE INDEX [I_NotificationAttachment_id_active_deleted] ON [Scheduler].[NotificationAttachment] ([id], [active], [deleted])
+GO
+
+
+-- The change history for records from the NotificationAttachment table.
+CREATE TABLE [Scheduler].[NotificationAttachmentChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[notificationAttachmentId] INT NOT NULL,		-- Link to the NotificationAttachment table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_NotificationAttachmentChangeHistory_NotificationAttachment_notificationAttachmentId] FOREIGN KEY ([notificationAttachmentId]) REFERENCES [Scheduler].[NotificationAttachment] ([id])		-- Foreign key to the NotificationAttachment table.
+)
+GO
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid field.
+CREATE INDEX [I_NotificationAttachmentChangeHistory_tenantGuid] ON [Scheduler].[NotificationAttachmentChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_NotificationAttachmentChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[NotificationAttachmentChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_NotificationAttachmentChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[NotificationAttachmentChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_NotificationAttachmentChangeHistory_tenantGuid_userId] ON [Scheduler].[NotificationAttachmentChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the NotificationAttachmentChangeHistory table's tenantGuid,notificationAttachmentId fields.
+CREATE INDEX [I_NotificationAttachmentChangeHistory_tenantGuid_notificationAttachmentId] ON [Scheduler].[NotificationAttachmentChangeHistory] ([tenantGuid], [notificationAttachmentId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- This table defines the distribution for a notification.  It is part of the Foundation Notification system.
+CREATE TABLE [Scheduler].[NotificationDistribution]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[notificationId] INT NOT NULL,		-- The notification that is being distributed.
+	[userId] INT NOT NULL,		-- The user to distribute the notification to.  Resolved by IMessagingUserResolver.
+	[acknowledged] BIT NOT NULL DEFAULT 0,		-- Whether or not the notification has been acknowledged.
+	[dateTimeAcknowledged] DATETIME2(7) NULL,		-- When the notification was acknowledged.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_NotificationDistribution_Notification_notificationId] FOREIGN KEY ([notificationId]) REFERENCES [Scheduler].[Notification] ([id])		-- Foreign key to the Notification table.
+)
+GO
+
+-- Index on the NotificationDistribution table's tenantGuid field.
+CREATE INDEX [I_NotificationDistribution_tenantGuid] ON [Scheduler].[NotificationDistribution] ([tenantGuid])
+GO
+
+-- Index on the NotificationDistribution table's tenantGuid,notificationId fields.
+CREATE INDEX [I_NotificationDistribution_tenantGuid_notificationId] ON [Scheduler].[NotificationDistribution] ([tenantGuid], [notificationId])
+GO
+
+-- Index on the NotificationDistribution table's tenantGuid,active fields.
+CREATE INDEX [I_NotificationDistribution_tenantGuid_active] ON [Scheduler].[NotificationDistribution] ([tenantGuid], [active])
+GO
+
+-- Index on the NotificationDistribution table's tenantGuid,deleted fields.
+CREATE INDEX [I_NotificationDistribution_tenantGuid_deleted] ON [Scheduler].[NotificationDistribution] ([tenantGuid], [deleted])
+GO
+
+-- Index on the NotificationDistribution table's id,active,deleted fields.
+CREATE INDEX [I_NotificationDistribution_id_active_deleted] ON [Scheduler].[NotificationDistribution] ([id], [active], [deleted])
+GO
+
+
+/*
+This is the main Conversation Type table.  It provides the types of conversations that can be created.
+
+It is part of the Foundation's Conversation/Messaging system.
+*/
+CREATE TABLE [Scheduler].[ConversationType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NULL,
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the ConversationType table's name field.
+CREATE INDEX [I_ConversationType_name] ON [Scheduler].[ConversationType] ([name])
+GO
+
+-- Index on the ConversationType table's active field.
+CREATE INDEX [I_ConversationType_active] ON [Scheduler].[ConversationType] ([active])
+GO
+
+-- Index on the ConversationType table's deleted field.
+CREATE INDEX [I_ConversationType_deleted] ON [Scheduler].[ConversationType] ([deleted])
+GO
+
+-- Index on the ConversationType table's id,active,deleted fields.
+CREATE INDEX [I_ConversationType_id_active_deleted] ON [Scheduler].[ConversationType] ([id], [active], [deleted])
+GO
+
+INSERT INTO [Scheduler].[ConversationType] ( [name], [description], [objectGuid] ) VALUES  ( 'Regular', 'Regular', '70174fce-f8de-4c44-b11f-db68b314204b' )
+GO
+
+INSERT INTO [Scheduler].[ConversationType] ( [name], [description], [objectGuid] ) VALUES  ( 'Urgent', 'Urgent', '987ea6eb-155a-44ed-ac57-15a72ad2ae27' )
+GO
+
+INSERT INTO [Scheduler].[ConversationType] ( [name], [description], [objectGuid] ) VALUES  ( 'Channel', 'A persistent named conversation (like a Teams/Slack channel)', '54883c38-7860-40bf-a6e4-ce5535db7ed4' )
+GO
+
+INSERT INTO [Scheduler].[ConversationType] ( [name], [description], [objectGuid] ) VALUES  ( 'Direct Message', 'A 1:1 or small group direct message conversation', 'd45cfb49-0dbc-4c05-a8b7-f17a6e71a926' )
+GO
+
+
+-- This is the main Conversation table.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE [Scheduler].[Conversation]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[createdByUserId] INT NULL,		-- The user that started the conversation.  Resolved by IMessagingUserResolver.  Nullable for system-started conversations.
+	[conversationTypeId] INT NULL,		-- Link to the ConversationType table.
+	[priority] INT NOT NULL DEFAULT 100,		-- The intent here is that the lower the priority number, the more urgent the conversation is.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When the conversation was created.
+	[entity] NVARCHAR(250) NULL,		-- The in case the conversation is to do with an entity, it is named here
+	[entityId] INT NULL,		-- The id of the entity that the conversation is about
+	[externalURL] NVARCHAR(1000) NULL,
+	[name] NVARCHAR(250) NULL,		-- The name of the conversation.  A named conversation is a channel.  Optional because not all conversations will be channels.
+	[description] NVARCHAR(1000) NULL,		-- The description of the channel conversation.  Optional because not all conversations need to have a description, but if it does have one, this is where it goes.
+	[isPublic] BIT NULL,		-- Whether or not the conversation is public
+	[userId] INT NULL,		-- Optional target user for this conversation.  Resolved by IMessagingUserResolver.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_Conversation_ConversationType_conversationTypeId] FOREIGN KEY ([conversationTypeId]) REFERENCES [Scheduler].[ConversationType] ([id])		-- Foreign key to the ConversationType table.
+)
+GO
+
+-- Index on the Conversation table's tenantGuid field.
+CREATE INDEX [I_Conversation_tenantGuid] ON [Scheduler].[Conversation] ([tenantGuid])
+GO
+
+-- Index on the Conversation table's tenantGuid,conversationTypeId fields.
+CREATE INDEX [I_Conversation_tenantGuid_conversationTypeId] ON [Scheduler].[Conversation] ([tenantGuid], [conversationTypeId])
+GO
+
+-- Index on the Conversation table's tenantGuid,active fields.
+CREATE INDEX [I_Conversation_tenantGuid_active] ON [Scheduler].[Conversation] ([tenantGuid], [active])
+GO
+
+-- Index on the Conversation table's tenantGuid,deleted fields.
+CREATE INDEX [I_Conversation_tenantGuid_deleted] ON [Scheduler].[Conversation] ([tenantGuid], [deleted])
+GO
+
+-- Index on the Conversation table's id,active,deleted fields.
+CREATE INDEX [I_Conversation_id_active_deleted] ON [Scheduler].[Conversation] ([id], [active], [deleted])
+GO
+
+
+-- This is the ConversationUser table.  It tracks the users that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE [Scheduler].[ConversationUser]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationId] INT NOT NULL,		-- Link to the Conversation table.
+	[userId] INT NOT NULL,		-- The user in this conversation.  Resolved by IMessagingUserResolver.
+	[role] NVARCHAR(50) NOT NULL DEFAULT 'Member',
+	[dateTimeAdded] DATETIME2(7) NOT NULL,		-- When this user was added to the conversation.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationUser_Conversation_conversationId] FOREIGN KEY ([conversationId]) REFERENCES [Scheduler].[Conversation] ([id])		-- Foreign key to the Conversation table.
+)
+GO
+
+-- Index on the ConversationUser table's tenantGuid field.
+CREATE INDEX [I_ConversationUser_tenantGuid] ON [Scheduler].[ConversationUser] ([tenantGuid])
+GO
+
+-- Index on the ConversationUser table's tenantGuid,conversationId fields.
+CREATE INDEX [I_ConversationUser_tenantGuid_conversationId] ON [Scheduler].[ConversationUser] ([tenantGuid], [conversationId])
+GO
+
+-- Index on the ConversationUser table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationUser_tenantGuid_active] ON [Scheduler].[ConversationUser] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationUser table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationUser_tenantGuid_deleted] ON [Scheduler].[ConversationUser] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationUser table's id,active,deleted fields.
+CREATE INDEX [I_ConversationUser_id_active_deleted] ON [Scheduler].[ConversationUser] ([id], [active], [deleted])
+GO
+
+
+/*
+This table extends a Conversation record to be a named Channel.  It is part of the Foundation's Messaging system.
+
+A channel is a persistent, named conversation that users can browse and join.  It links to the base Conversation record 
+and adds channel-specific fields like name, topic, and privacy.
+*/
+CREATE TABLE [Scheduler].[ConversationChannel]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationId] INT NOT NULL,		-- The base conversation record that this channel extends.
+	[name] NVARCHAR(250) NOT NULL,		-- The display name for the channel.
+	[topic] NVARCHAR(1000) NULL,		-- The current topic or description of the channel.  Can be changed over time.
+	[isPrivate] BIT NOT NULL DEFAULT 0,		-- Whether or not this channel is private.  Private channels are invitation-only and do not appear in the channel browser.
+	[isPinned] BIT NOT NULL DEFAULT 0,		-- Whether or not this channel is pinned in the UI.  Pinned channels appear at the top of the channel list.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationChannel_Conversation_conversationId] FOREIGN KEY ([conversationId]) REFERENCES [Scheduler].[Conversation] ([id])		-- Foreign key to the Conversation table.
+)
+GO
+
+-- Index on the ConversationChannel table's tenantGuid field.
+CREATE INDEX [I_ConversationChannel_tenantGuid] ON [Scheduler].[ConversationChannel] ([tenantGuid])
+GO
+
+-- Index on the ConversationChannel table's tenantGuid,conversationId fields.
+CREATE INDEX [I_ConversationChannel_tenantGuid_conversationId] ON [Scheduler].[ConversationChannel] ([tenantGuid], [conversationId])
+GO
+
+-- Index on the ConversationChannel table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationChannel_tenantGuid_active] ON [Scheduler].[ConversationChannel] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationChannel table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationChannel_tenantGuid_deleted] ON [Scheduler].[ConversationChannel] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationChannel table's id,active,deleted fields.
+CREATE INDEX [I_ConversationChannel_id_active_deleted] ON [Scheduler].[ConversationChannel] ([id], [active], [deleted])
+GO
+
+
+-- The change history for records from the ConversationChannel table.
+CREATE TABLE [Scheduler].[ConversationChannelChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationChannelId] INT NOT NULL,		-- Link to the ConversationChannel table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ConversationChannelChangeHistory_ConversationChannel_conversationChannelId] FOREIGN KEY ([conversationChannelId]) REFERENCES [Scheduler].[ConversationChannel] ([id])		-- Foreign key to the ConversationChannel table.
+)
+GO
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid field.
+CREATE INDEX [I_ConversationChannelChangeHistory_tenantGuid] ON [Scheduler].[ConversationChannelChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_ConversationChannelChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[ConversationChannelChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_ConversationChannelChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[ConversationChannelChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_ConversationChannelChangeHistory_tenantGuid_userId] ON [Scheduler].[ConversationChannelChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the ConversationChannelChangeHistory table's tenantGuid,conversationChannelId fields.
+CREATE INDEX [I_ConversationChannelChangeHistory_tenantGuid_conversationChannelId] ON [Scheduler].[ConversationChannelChangeHistory] ([tenantGuid], [conversationChannelId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- This is the ConversationMessage table.  It tracks the messages that belong to a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE [Scheduler].[ConversationMessage]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationId] INT NOT NULL,		-- Link to the Conversation table.
+	[userId] INT NOT NULL,		-- The user that sent this message.  Resolved by IMessagingUserResolver.
+	[parentConversationMessageId] INT NULL,		-- Link to the ConversationMessage table.
+	[conversationChannelId] INT NULL,		-- Optional channel that this message belongs to.  NULL = conversation-level (no channel).
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When this message was created.
+	[message] NVARCHAR(MAX) NOT NULL,
+	[messageType] NVARCHAR(50) NULL,		-- The type of message: null/'text' (default), 'voice', 'video', 'call_event'. Determines how the client renders the message content.
+	[entity] NVARCHAR(250) NULL,		-- The in case the conversation message is to do with an entity, it is named here
+	[entityId] INT NULL,		-- The id of the entity that the message is about
+	[externalURL] NVARCHAR(1000) NULL,
+	[forwardedFromMessageId] INT NULL,		-- The ID of the original message that was forwarded.  NULL if the message is not a forward.
+	[forwardedFromUserId] INT NULL,		-- The user ID of the original sender whose message was forwarded.  Resolved by IMessagingUserResolver.
+	[isScheduled] BIT NOT NULL DEFAULT 0,		-- Whether this message is scheduled for future delivery.
+	[scheduledDateTime] DATETIME2(7) NULL,		-- When the scheduled message should be released.  Null if not scheduled.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationMessage_Conversation_conversationId] FOREIGN KEY ([conversationId]) REFERENCES [Scheduler].[Conversation] ([id]),		-- Foreign key to the Conversation table.
+	CONSTRAINT [FK_ConversationMessage_ConversationMessage_parentConversationMessageId] FOREIGN KEY ([parentConversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id]),		-- Foreign key to the ConversationMessage table.
+	CONSTRAINT [FK_ConversationMessage_ConversationChannel_conversationChannelId] FOREIGN KEY ([conversationChannelId]) REFERENCES [Scheduler].[ConversationChannel] ([id])		-- Foreign key to the ConversationChannel table.
+)
+GO
+
+-- Index on the ConversationMessage table's tenantGuid field.
+CREATE INDEX [I_ConversationMessage_tenantGuid] ON [Scheduler].[ConversationMessage] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessage table's tenantGuid,conversationId fields.
+CREATE INDEX [I_ConversationMessage_tenantGuid_conversationId] ON [Scheduler].[ConversationMessage] ([tenantGuid], [conversationId])
+GO
+
+-- Index on the ConversationMessage table's tenantGuid,parentConversationMessageId fields.
+CREATE INDEX [I_ConversationMessage_tenantGuid_parentConversationMessageId] ON [Scheduler].[ConversationMessage] ([tenantGuid], [parentConversationMessageId])
+GO
+
+-- Index on the ConversationMessage table's tenantGuid,conversationChannelId fields.
+CREATE INDEX [I_ConversationMessage_tenantGuid_conversationChannelId] ON [Scheduler].[ConversationMessage] ([tenantGuid], [conversationChannelId])
+GO
+
+-- Index on the ConversationMessage table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationMessage_tenantGuid_active] ON [Scheduler].[ConversationMessage] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationMessage table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationMessage_tenantGuid_deleted] ON [Scheduler].[ConversationMessage] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationMessage table's id,active,deleted fields.
+CREATE INDEX [I_ConversationMessage_id_active_deleted] ON [Scheduler].[ConversationMessage] ([id], [active], [deleted])
+GO
+
+
+-- The change history for records from the ConversationMessage table.
+CREATE TABLE [Scheduler].[ConversationMessageChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageId] INT NOT NULL,		-- Link to the ConversationMessage table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ConversationMessageChangeHistory_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid field.
+CREATE INDEX [I_ConversationMessageChangeHistory_tenantGuid] ON [Scheduler].[ConversationMessageChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_ConversationMessageChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[ConversationMessageChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_ConversationMessageChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[ConversationMessageChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_ConversationMessageChangeHistory_tenantGuid_userId] ON [Scheduler].[ConversationMessageChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the ConversationMessageChangeHistory table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_ConversationMessageChangeHistory_tenantGuid_conversationMessageId] ON [Scheduler].[ConversationMessageChangeHistory] ([tenantGuid], [conversationMessageId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- This is the ConversationMessageAttachment table.  It tracks the attachments that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE [Scheduler].[ConversationMessageAttachment]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageId] INT NOT NULL,		-- Link to the ConversationMessage table.
+	[userId] INT NOT NULL,		-- The user that uploaded this attachment.  Resolved by IMessagingUserResolver.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When this conversation message attachment was created.
+	[contentFileName] NVARCHAR(250) NOT NULL,		-- Part of the binary data field setup
+	[contentSize] BIGINT NOT NULL,		-- Part of the binary data field setup
+	[contentData] VARBINARY(MAX) NOT NULL,		-- Part of the binary data field setup
+	[contentMimeType] NVARCHAR(100) NOT NULL,		-- Part of the binary data field setup
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationMessageAttachment_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the ConversationMessageAttachment table's tenantGuid field.
+CREATE INDEX [I_ConversationMessageAttachment_tenantGuid] ON [Scheduler].[ConversationMessageAttachment] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessageAttachment table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_ConversationMessageAttachment_tenantGuid_conversationMessageId] ON [Scheduler].[ConversationMessageAttachment] ([tenantGuid], [conversationMessageId])
+GO
+
+-- Index on the ConversationMessageAttachment table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationMessageAttachment_tenantGuid_active] ON [Scheduler].[ConversationMessageAttachment] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationMessageAttachment table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationMessageAttachment_tenantGuid_deleted] ON [Scheduler].[ConversationMessageAttachment] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationMessageAttachment table's id,active,deleted fields.
+CREATE INDEX [I_ConversationMessageAttachment_id_active_deleted] ON [Scheduler].[ConversationMessageAttachment] ([id], [active], [deleted])
+GO
+
+
+-- The change history for records from the ConversationMessageAttachment table.
+CREATE TABLE [Scheduler].[ConversationMessageAttachmentChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageAttachmentId] INT NOT NULL,		-- Link to the ConversationMessageAttachment table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ConversationMessageAttachmentChangeHistory_ConversationMessageAttachment_conversationMessageAttachmentId] FOREIGN KEY ([conversationMessageAttachmentId]) REFERENCES [Scheduler].[ConversationMessageAttachment] ([id])		-- Foreign key to the ConversationMessageAttachment table.
+)
+GO
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid field.
+CREATE INDEX [I_ConversationMessageAttachmentChangeHistory_tenantGuid] ON [Scheduler].[ConversationMessageAttachmentChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_ConversationMessageAttachmentChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[ConversationMessageAttachmentChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_ConversationMessageAttachmentChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[ConversationMessageAttachmentChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_ConversationMessageAttachmentChangeHistory_tenantGuid_userId] ON [Scheduler].[ConversationMessageAttachmentChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the ConversationMessageAttachmentChangeHistory table's tenantGuid,conversationMessageAttachmentId fields.
+CREATE INDEX [I_ConversationMessageAttachmentChangeHistory_tenantGuid_conversationMessageAttachmentId] ON [Scheduler].[ConversationMessageAttachmentChangeHistory] ([tenantGuid], [conversationMessageAttachmentId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+-- This is the ConversationMessageUser table.  It tracks the users that belong to a message in a conversation.  It is part of the Foundation's Conversation/Messaging system.
+CREATE TABLE [Scheduler].[ConversationMessageUser]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageId] INT NOT NULL,		-- Link to the ConversationMessage table.
+	[userId] INT NOT NULL,		-- The target user for this message.  Resolved by IMessagingUserResolver.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When this conversation message user was created.
+	[acknowledged] BIT NOT NULL DEFAULT 0,
+	[dateTimeAcknowledged] DATETIME2(7) NOT NULL,		-- When this conversation message user was acknowledge by the user.  For messages, this may be auto acknowledged once the data is read and shown.  Up to the UI to decide when to mark it as acknowledged..
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationMessageUser_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the ConversationMessageUser table's tenantGuid field.
+CREATE INDEX [I_ConversationMessageUser_tenantGuid] ON [Scheduler].[ConversationMessageUser] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessageUser table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_ConversationMessageUser_tenantGuid_conversationMessageId] ON [Scheduler].[ConversationMessageUser] ([tenantGuid], [conversationMessageId])
+GO
+
+-- Index on the ConversationMessageUser table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationMessageUser_tenantGuid_active] ON [Scheduler].[ConversationMessageUser] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationMessageUser table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationMessageUser_tenantGuid_deleted] ON [Scheduler].[ConversationMessageUser] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationMessageUser table's id,active,deleted fields.
+CREATE INDEX [I_ConversationMessageUser_id_active_deleted] ON [Scheduler].[ConversationMessageUser] ([id], [active], [deleted])
+GO
+
+
+/*
+This table stores emoji reactions to conversation messages.  It is part of the Foundation's Messaging system.
+
+Reactions provide a lightweight way for users to respond to messages without creating additional message records.  
+Each reaction is a short string representing an emoji code or shortname.
+*/
+CREATE TABLE [Scheduler].[ConversationMessageReaction]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageId] INT NOT NULL,		-- The message that this reaction is for.
+	[userId] INT NOT NULL,		-- The user who reacted.  Resolved by IMessagingUserResolver.
+	[reaction] NVARCHAR(50) NOT NULL,		-- The emoji code or shortname for the reaction, for example 'thumbsup', 'heart', 'laughing'.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When this reaction was created.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationMessageReaction_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the ConversationMessageReaction table's tenantGuid field.
+CREATE INDEX [I_ConversationMessageReaction_tenantGuid] ON [Scheduler].[ConversationMessageReaction] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessageReaction table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_ConversationMessageReaction_tenantGuid_conversationMessageId] ON [Scheduler].[ConversationMessageReaction] ([tenantGuid], [conversationMessageId])
+GO
+
+-- Index on the ConversationMessageReaction table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationMessageReaction_tenantGuid_active] ON [Scheduler].[ConversationMessageReaction] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationMessageReaction table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationMessageReaction_tenantGuid_deleted] ON [Scheduler].[ConversationMessageReaction] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationMessageReaction table's id,active,deleted fields.
+CREATE INDEX [I_ConversationMessageReaction_id_active_deleted] ON [Scheduler].[ConversationMessageReaction] ([id], [active], [deleted])
+GO
+
+-- Index on the ConversationMessageReaction table's conversationMessageId,active,deleted fields.
+CREATE INDEX [I_ConversationMessageReaction_conversationMessageId_active_deleted] ON [Scheduler].[ConversationMessageReaction] ([conversationMessageId], [active], [deleted])
+GO
+
+
+/*
+This table tracks pinned messages within a conversation.  It is part of the Foundation's Messaging system.
+
+Pinned messages are highlighted in the conversation and can be browsed separately, providing a way to bookmark 
+important messages, decisions, or reference information within a conversation.
+*/
+CREATE TABLE [Scheduler].[ConversationPin]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationId] INT NOT NULL,		-- The conversation that this pin belongs to.
+	[conversationMessageId] INT NOT NULL,		-- The message that is pinned.
+	[pinnedByUserId] INT NOT NULL,		-- The user who pinned this message.  Resolved by IMessagingUserResolver.
+	[dateTimePinned] DATETIME2(7) NOT NULL,		-- When this message was pinned.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationPin_Conversation_conversationId] FOREIGN KEY ([conversationId]) REFERENCES [Scheduler].[Conversation] ([id]),		-- Foreign key to the Conversation table.
+	CONSTRAINT [FK_ConversationPin_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the ConversationPin table's tenantGuid field.
+CREATE INDEX [I_ConversationPin_tenantGuid] ON [Scheduler].[ConversationPin] ([tenantGuid])
+GO
+
+-- Index on the ConversationPin table's tenantGuid,conversationId fields.
+CREATE INDEX [I_ConversationPin_tenantGuid_conversationId] ON [Scheduler].[ConversationPin] ([tenantGuid], [conversationId])
+GO
+
+-- Index on the ConversationPin table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_ConversationPin_tenantGuid_conversationMessageId] ON [Scheduler].[ConversationPin] ([tenantGuid], [conversationMessageId])
+GO
+
+-- Index on the ConversationPin table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationPin_tenantGuid_active] ON [Scheduler].[ConversationPin] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationPin table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationPin_tenantGuid_deleted] ON [Scheduler].[ConversationPin] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationPin table's id,active,deleted fields.
+CREATE INDEX [I_ConversationPin_id_active_deleted] ON [Scheduler].[ConversationPin] ([id], [active], [deleted])
+GO
+
+-- Index on the ConversationPin table's conversationId,active,deleted fields.
+CREATE INDEX [I_ConversationPin_conversationId_active_deleted] ON [Scheduler].[ConversationPin] ([conversationId], [active], [deleted])
+GO
+
+
+/*
+This table stores link preview data (Open Graph metadata) for URLs found in conversation messages.  It is part of the Foundation's Messaging system.
+
+When a message containing URLs is sent, the system asynchronously fetches Open Graph / meta tag data for each URL and stores the results here.  
+The preview data is then pushed to connected clients via SignalR so link preview cards appear below the message bubble.
+*/
+CREATE TABLE [Scheduler].[ConversationMessageLinkPreview]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageId] INT NOT NULL,		-- The message that contains this URL.
+	[url] NVARCHAR(1000) NOT NULL,		-- The original URL found in the message.
+	[title] NVARCHAR(500) NULL,		-- The page title from og:title or <title> tag.
+	[description] NVARCHAR(1000) NULL,		-- The page description from og:description or meta description.
+	[imageUrl] NVARCHAR(1000) NULL,		-- The preview image URL from og:image.
+	[siteName] NVARCHAR(250) NULL,		-- The site name from og:site_name.
+	[fetchedDateTime] DATETIME2(7) NOT NULL,		-- When the preview data was fetched from the URL.
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationMessageLinkPreview_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the ConversationMessageLinkPreview table's tenantGuid field.
+CREATE INDEX [I_ConversationMessageLinkPreview_tenantGuid] ON [Scheduler].[ConversationMessageLinkPreview] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessageLinkPreview table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_ConversationMessageLinkPreview_tenantGuid_conversationMessageId] ON [Scheduler].[ConversationMessageLinkPreview] ([tenantGuid], [conversationMessageId])
+GO
+
+-- Index on the ConversationMessageLinkPreview table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationMessageLinkPreview_tenantGuid_active] ON [Scheduler].[ConversationMessageLinkPreview] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationMessageLinkPreview table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationMessageLinkPreview_tenantGuid_deleted] ON [Scheduler].[ConversationMessageLinkPreview] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationMessageLinkPreview table's id,active,deleted fields.
+CREATE INDEX [I_ConversationMessageLinkPreview_id_active_deleted] ON [Scheduler].[ConversationMessageLinkPreview] ([id], [active], [deleted])
+GO
+
+-- Index on the ConversationMessageLinkPreview table's conversationMessageId,active,deleted fields.
+CREATE INDEX [I_ConversationMessageLinkPreview_conversationMessageId_active_deleted] ON [Scheduler].[ConversationMessageLinkPreview] ([conversationMessageId], [active], [deleted])
+GO
+
+
+-- The change history for records from the ConversationMessageLinkPreview table.
+CREATE TABLE [Scheduler].[ConversationMessageLinkPreviewChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageLinkPreviewId] INT NOT NULL,		-- Link to the ConversationMessageLinkPreview table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_ConversationMessageLinkPreviewChangeHistory_ConversationMessageLinkPreview_conversationMessageLinkPreviewId] FOREIGN KEY ([conversationMessageLinkPreviewId]) REFERENCES [Scheduler].[ConversationMessageLinkPreview] ([id])		-- Foreign key to the ConversationMessageLinkPreview table.
+)
+GO
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid field.
+CREATE INDEX [I_ConversationMessageLinkPreviewChangeHistory_tenantGuid] ON [Scheduler].[ConversationMessageLinkPreviewChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_ConversationMessageLinkPreviewChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[ConversationMessageLinkPreviewChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_ConversationMessageLinkPreviewChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[ConversationMessageLinkPreviewChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_ConversationMessageLinkPreviewChangeHistory_tenantGuid_userId] ON [Scheduler].[ConversationMessageLinkPreviewChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the ConversationMessageLinkPreviewChangeHistory table's tenantGuid,conversationMessageLinkPreviewId fields.
+CREATE INDEX [I_ConversationMessageLinkPreviewChangeHistory_tenantGuid_conversationMessageLinkPreviewId] ON [Scheduler].[ConversationMessageLinkPreviewChangeHistory] ([tenantGuid], [conversationMessageLinkPreviewId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+This table tracks user online/offline status and activity for the messaging system.  It is part of the Foundation's Messaging system.
+
+Presence records are updated when users connect to or disconnect from the MessagingHub.  The connectionCount field supports 
+multi-device presence (a user connected from both a browser and a mobile app would have connectionCount = 2).  
+When connectionCount drops to 0, the user is considered offline.
+*/
+CREATE TABLE [Scheduler].[UserPresence]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userId] INT NOT NULL,		-- The user whose presence is being tracked.  Resolved by IMessagingUserResolver.
+	[status] NVARCHAR(50) NOT NULL,		-- The current status: 'online', 'away', 'busy', 'offline', 'doNotDisturb'.
+	[customStatusMessage] NVARCHAR(250) NULL,		-- Optional custom status message, for example 'In a meeting until 3pm'.
+	[lastSeenDateTime] DATETIME2(7) NOT NULL,		-- The last time this user was seen connected.
+	[lastActivityDateTime] DATETIME2(7) NOT NULL,		-- The last time this user performed an action (sent a message, reacted, etc).
+	[connectionCount] INT NOT NULL DEFAULT 0,		-- The number of active connections for this user.  Supports multi-device presence.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the UserPresence table's tenantGuid field.
+CREATE INDEX [I_UserPresence_tenantGuid] ON [Scheduler].[UserPresence] ([tenantGuid])
+GO
+
+-- Index on the UserPresence table's tenantGuid,active fields.
+CREATE INDEX [I_UserPresence_tenantGuid_active] ON [Scheduler].[UserPresence] ([tenantGuid], [active])
+GO
+
+-- Index on the UserPresence table's tenantGuid,deleted fields.
+CREATE INDEX [I_UserPresence_tenantGuid_deleted] ON [Scheduler].[UserPresence] ([tenantGuid], [deleted])
+GO
+
+-- Index on the UserPresence table's id,active,deleted fields.
+CREATE INDEX [I_UserPresence_id_active_deleted] ON [Scheduler].[UserPresence] ([id], [active], [deleted])
+GO
+
+-- Index on the UserPresence table's userId,active,deleted fields.
+CREATE INDEX [I_UserPresence_userId_active_deleted] ON [Scheduler].[UserPresence] ([userId], [active], [deleted])
+GO
+
+
+/*
+This table tracks a user's last-read position within a message thread (reply chain).  It is part of the Foundation's Messaging system.
+
+When a user views a thread panel, the client calls UpdateThreadReadPosition to update the lastReadMessageId.  
+The unread reply count is then computed by counting messages in that thread with an ID greater than lastReadMessageId.
+*/
+CREATE TABLE [Scheduler].[ConversationThreadUser]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationId] INT NOT NULL,		-- The conversation that contains this thread.
+	[parentConversationMessageId] INT NOT NULL,		-- The root message of the thread.
+	[userId] INT NOT NULL,		-- The user being tracked.  Resolved by IMessagingUserResolver.
+	[lastReadMessageId] INT NULL,		-- The last message in this thread that the user has read.
+	[lastReadDateTime] DATETIME2(7) NULL,		-- When the user last read the thread.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_ConversationThreadUser_Conversation_conversationId] FOREIGN KEY ([conversationId]) REFERENCES [Scheduler].[Conversation] ([id]),		-- Foreign key to the Conversation table.
+	CONSTRAINT [FK_ConversationThreadUser_ConversationMessage_parentConversationMessageId] FOREIGN KEY ([parentConversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the ConversationThreadUser table's tenantGuid field.
+CREATE INDEX [I_ConversationThreadUser_tenantGuid] ON [Scheduler].[ConversationThreadUser] ([tenantGuid])
+GO
+
+-- Index on the ConversationThreadUser table's tenantGuid,conversationId fields.
+CREATE INDEX [I_ConversationThreadUser_tenantGuid_conversationId] ON [Scheduler].[ConversationThreadUser] ([tenantGuid], [conversationId])
+GO
+
+-- Index on the ConversationThreadUser table's tenantGuid,parentConversationMessageId fields.
+CREATE INDEX [I_ConversationThreadUser_tenantGuid_parentConversationMessageId] ON [Scheduler].[ConversationThreadUser] ([tenantGuid], [parentConversationMessageId])
+GO
+
+-- Index on the ConversationThreadUser table's tenantGuid,active fields.
+CREATE INDEX [I_ConversationThreadUser_tenantGuid_active] ON [Scheduler].[ConversationThreadUser] ([tenantGuid], [active])
+GO
+
+-- Index on the ConversationThreadUser table's tenantGuid,deleted fields.
+CREATE INDEX [I_ConversationThreadUser_tenantGuid_deleted] ON [Scheduler].[ConversationThreadUser] ([tenantGuid], [deleted])
+GO
+
+-- Index on the ConversationThreadUser table's id,active,deleted fields.
+CREATE INDEX [I_ConversationThreadUser_id_active_deleted] ON [Scheduler].[ConversationThreadUser] ([id], [active], [deleted])
+GO
+
+-- Index on the ConversationThreadUser table's userId,parentConversationMessageId fields.
+CREATE INDEX [I_ConversationThreadUser_userId_parentConversationMessageId] ON [Scheduler].[ConversationThreadUser] ([userId], [parentConversationMessageId])
+GO
+
+-- Index on the ConversationThreadUser table's conversationId,active,deleted fields.
+CREATE INDEX [I_ConversationThreadUser_conversationId_active_deleted] ON [Scheduler].[ConversationThreadUser] ([conversationId], [active], [deleted])
+GO
+
+
+/*
+This table stores personal message bookmarks.  It is part of the Foundation's Messaging system.
+
+Users can bookmark any message for later reference and optionally add a personal note explaining why they saved it.  
+Bookmarks are per-user and private — each user sees only their own bookmarks.
+*/
+CREATE TABLE [Scheduler].[MessageBookmark]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userId] INT NOT NULL,		-- The user who bookmarked the message.  Resolved by IMessagingUserResolver.
+	[conversationMessageId] INT NOT NULL,		-- The bookmarked message.
+	[note] NVARCHAR(500) NULL,		-- Optional personal note about why the message was bookmarked.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When the bookmark was created.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_MessageBookmark_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the MessageBookmark table's tenantGuid field.
+CREATE INDEX [I_MessageBookmark_tenantGuid] ON [Scheduler].[MessageBookmark] ([tenantGuid])
+GO
+
+-- Index on the MessageBookmark table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_MessageBookmark_tenantGuid_conversationMessageId] ON [Scheduler].[MessageBookmark] ([tenantGuid], [conversationMessageId])
+GO
+
+-- Index on the MessageBookmark table's tenantGuid,active fields.
+CREATE INDEX [I_MessageBookmark_tenantGuid_active] ON [Scheduler].[MessageBookmark] ([tenantGuid], [active])
+GO
+
+-- Index on the MessageBookmark table's tenantGuid,deleted fields.
+CREATE INDEX [I_MessageBookmark_tenantGuid_deleted] ON [Scheduler].[MessageBookmark] ([tenantGuid], [deleted])
+GO
+
+-- Index on the MessageBookmark table's id,active,deleted fields.
+CREATE INDEX [I_MessageBookmark_id_active_deleted] ON [Scheduler].[MessageBookmark] ([id], [active], [deleted])
+GO
+
+-- Index on the MessageBookmark table's userId,active,deleted fields.
+CREATE INDEX [I_MessageBookmark_userId_active_deleted] ON [Scheduler].[MessageBookmark] ([userId], [active], [deleted])
+GO
+
+-- Index on the MessageBookmark table's conversationMessageId,active,deleted fields.
+CREATE INDEX [I_MessageBookmark_conversationMessageId_active_deleted] ON [Scheduler].[MessageBookmark] ([conversationMessageId], [active], [deleted])
+GO
+
+
+/*
+This table tracks external push delivery attempts for notifications and messages.  It is part of the Foundation's Messaging Platform system.
+
+Each time a notification or message triggers an external delivery (email, SMS), a record is created here to track 
+the delivery attempt, its success or failure, and any error messages.
+*/
+CREATE TABLE [Scheduler].[PushDeliveryLog]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[userId] INT NOT NULL,		-- The target user for this delivery attempt.  Resolved by IMessagingUserResolver.
+	[providerId] NVARCHAR(50) NOT NULL,		-- The push provider that handled this delivery, for example 'smtp', 'sms', 'webhook'.
+	[destination] NVARCHAR(250) NULL,		-- The masked destination address (email or phone number).  Partially masked for privacy.
+	[sourceType] NVARCHAR(50) NULL,		-- The source type: 'notification' or 'message'.
+	[sourceNotificationId] INT NULL,		-- The notification ID that triggered this delivery attempt, if applicable.
+	[sourceConversationMessageId] INT NULL,		-- The conversation message ID that triggered this delivery attempt, if applicable.
+	[success] BIT NOT NULL DEFAULT 0,		-- Whether the delivery attempt was successful.
+	[externalId] NVARCHAR(250) NULL,		-- The external ID returned by the provider (e.g., SMTP message ID, SMS provider ID).
+	[errorMessage] NVARCHAR(1000) NULL,		-- The error message if the delivery attempt failed.
+	[attemptNumber] INT NOT NULL DEFAULT 1,		-- The attempt number for retry scenarios.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When this delivery attempt was made.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the PushDeliveryLog table's tenantGuid field.
+CREATE INDEX [I_PushDeliveryLog_tenantGuid] ON [Scheduler].[PushDeliveryLog] ([tenantGuid])
+GO
+
+-- Index on the PushDeliveryLog table's tenantGuid,active fields.
+CREATE INDEX [I_PushDeliveryLog_tenantGuid_active] ON [Scheduler].[PushDeliveryLog] ([tenantGuid], [active])
+GO
+
+-- Index on the PushDeliveryLog table's tenantGuid,deleted fields.
+CREATE INDEX [I_PushDeliveryLog_tenantGuid_deleted] ON [Scheduler].[PushDeliveryLog] ([tenantGuid], [deleted])
+GO
+
+-- Index on the PushDeliveryLog table's id,active,deleted fields.
+CREATE INDEX [I_PushDeliveryLog_id_active_deleted] ON [Scheduler].[PushDeliveryLog] ([id], [active], [deleted])
+GO
+
+-- Index on the PushDeliveryLog table's userId,active,deleted fields.
+CREATE INDEX [I_PushDeliveryLog_userId_active_deleted] ON [Scheduler].[PushDeliveryLog] ([userId], [active], [deleted])
+GO
+
+-- Index on the PushDeliveryLog table's providerId,active,deleted fields.
+CREATE INDEX [I_PushDeliveryLog_providerId_active_deleted] ON [Scheduler].[PushDeliveryLog] ([providerId], [active], [deleted])
+GO
+
+-- Index on the PushDeliveryLog table's success,active,deleted fields.
+CREATE INDEX [I_PushDeliveryLog_success_active_deleted] ON [Scheduler].[PushDeliveryLog] ([success], [active], [deleted])
+GO
+
+
+/*
+This table stores per-tenant push provider configuration.  It is part of the Foundation's Messaging Platform system.
+
+Each tenant can enable/disable individual push providers (SMTP, SMS, webhooks) and store provider-specific 
+configuration as JSON.  This allows tenant administrators to control which external delivery channels are active.
+*/
+CREATE TABLE [Scheduler].[PushProviderConfiguration]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[providerId] NVARCHAR(50) NOT NULL,		-- The push provider identifier, for example 'smtp', 'sms', 'webhook'.
+	[enabled] BIT NOT NULL DEFAULT 0,		-- Whether this provider is enabled for this tenant.
+	[configurationJson] NVARCHAR(MAX) NULL,		-- Provider-specific configuration stored as JSON.  Structure varies by provider type.
+	[dateTimeModified] DATETIME2(7) NOT NULL,		-- When this configuration was last modified.
+	[modifiedByUserId] INT NOT NULL,		-- The user who last modified this configuration.  Resolved by IMessagingUserResolver.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the PushProviderConfiguration table's tenantGuid field.
+CREATE INDEX [I_PushProviderConfiguration_tenantGuid] ON [Scheduler].[PushProviderConfiguration] ([tenantGuid])
+GO
+
+-- Index on the PushProviderConfiguration table's tenantGuid,active fields.
+CREATE INDEX [I_PushProviderConfiguration_tenantGuid_active] ON [Scheduler].[PushProviderConfiguration] ([tenantGuid], [active])
+GO
+
+-- Index on the PushProviderConfiguration table's tenantGuid,deleted fields.
+CREATE INDEX [I_PushProviderConfiguration_tenantGuid_deleted] ON [Scheduler].[PushProviderConfiguration] ([tenantGuid], [deleted])
+GO
+
+-- Index on the PushProviderConfiguration table's id,active,deleted fields.
+CREATE INDEX [I_PushProviderConfiguration_id_active_deleted] ON [Scheduler].[PushProviderConfiguration] ([id], [active], [deleted])
+GO
+
+-- Index on the PushProviderConfiguration table's providerId,active,deleted fields.
+CREATE INDEX [I_PushProviderConfiguration_providerId_active_deleted] ON [Scheduler].[PushProviderConfiguration] ([providerId], [active], [deleted])
+GO
+
+
+/*
+This table tracks message flags/reports for administrative review.  It is part of the Foundation's Messaging Platform system.
+
+Users can flag messages that they believe violate policies or require administrative attention.  Each flag tracks 
+the reason, the review status (open/reviewed/resolved/dismissed), and any resolution notes from the reviewer.
+*/
+CREATE TABLE [Scheduler].[MessageFlag]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[conversationMessageId] INT NOT NULL,		-- The message that was flagged.
+	[flaggedByUserId] INT NOT NULL,		-- The user who flagged the message.  Resolved by IMessagingUserResolver.
+	[reason] NVARCHAR(100) NOT NULL,		-- The reason for flagging: 'abuse', 'spam', 'harassment', 'inappropriate', 'other'.
+	[details] NVARCHAR(1000) NULL,		-- Additional details provided by the reporting user.
+	[status] NVARCHAR(50) NOT NULL,		-- The review status: 'open', 'reviewed', 'resolved', 'dismissed'.
+	[reviewedByUserId] INT NULL,		-- The admin user who reviewed the flag.  Resolved by IMessagingUserResolver.
+	[dateTimeReviewed] DATETIME2(7) NULL,		-- When the flag was reviewed.
+	[resolutionNotes] NVARCHAR(1000) NULL,		-- Notes from the reviewer about the resolution.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When the flag was created.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_MessageFlag_ConversationMessage_conversationMessageId] FOREIGN KEY ([conversationMessageId]) REFERENCES [Scheduler].[ConversationMessage] ([id])		-- Foreign key to the ConversationMessage table.
+)
+GO
+
+-- Index on the MessageFlag table's tenantGuid field.
+CREATE INDEX [I_MessageFlag_tenantGuid] ON [Scheduler].[MessageFlag] ([tenantGuid])
+GO
+
+-- Index on the MessageFlag table's tenantGuid,conversationMessageId fields.
+CREATE INDEX [I_MessageFlag_tenantGuid_conversationMessageId] ON [Scheduler].[MessageFlag] ([tenantGuid], [conversationMessageId])
+GO
+
+-- Index on the MessageFlag table's tenantGuid,active fields.
+CREATE INDEX [I_MessageFlag_tenantGuid_active] ON [Scheduler].[MessageFlag] ([tenantGuid], [active])
+GO
+
+-- Index on the MessageFlag table's tenantGuid,deleted fields.
+CREATE INDEX [I_MessageFlag_tenantGuid_deleted] ON [Scheduler].[MessageFlag] ([tenantGuid], [deleted])
+GO
+
+-- Index on the MessageFlag table's id,active,deleted fields.
+CREATE INDEX [I_MessageFlag_id_active_deleted] ON [Scheduler].[MessageFlag] ([id], [active], [deleted])
+GO
+
+-- Index on the MessageFlag table's status,active,deleted fields.
+CREATE INDEX [I_MessageFlag_status_active_deleted] ON [Scheduler].[MessageFlag] ([status], [active], [deleted])
+GO
+
+-- Index on the MessageFlag table's conversationMessageId,active,deleted fields.
+CREATE INDEX [I_MessageFlag_conversationMessageId_active_deleted] ON [Scheduler].[MessageFlag] ([conversationMessageId], [active], [deleted])
+GO
+
+-- Index on the MessageFlag table's flaggedByUserId,active,deleted fields.
+CREATE INDEX [I_MessageFlag_flaggedByUserId_active_deleted] ON [Scheduler].[MessageFlag] ([flaggedByUserId], [active], [deleted])
+GO
+
+
+/*
+This table records administrative actions within the messaging system.  It is part of the Foundation's Messaging Platform system.
+
+All administrative actions (flag resolutions, message deletions, user bans, configuration changes) are logged here 
+for accountability and compliance.  Each entry records who performed the action, what was affected, and when.
+*/
+CREATE TABLE [Scheduler].[MessagingAuditLog]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[performedByUserId] INT NOT NULL,		-- The admin user who performed the action.  Resolved by IMessagingUserResolver.
+	[action] NVARCHAR(100) NOT NULL,		-- The action performed: 'ResolveFlag', 'DeleteMessage', 'BanUser', 'ConfigChange', etc.
+	[entityType] NVARCHAR(100) NULL,		-- The type of entity affected: 'MessageFlag', 'ConversationMessage', 'User', etc.
+	[entityId] INT NULL,		-- The ID of the entity that was affected.
+	[details] NVARCHAR(MAX) NULL,		-- JSON or descriptive details about the action taken.
+	[ipAddress] NVARCHAR(50) NULL,		-- The IP address of the admin when the action was performed.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When the action was performed.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the MessagingAuditLog table's tenantGuid field.
+CREATE INDEX [I_MessagingAuditLog_tenantGuid] ON [Scheduler].[MessagingAuditLog] ([tenantGuid])
+GO
+
+-- Index on the MessagingAuditLog table's tenantGuid,active fields.
+CREATE INDEX [I_MessagingAuditLog_tenantGuid_active] ON [Scheduler].[MessagingAuditLog] ([tenantGuid], [active])
+GO
+
+-- Index on the MessagingAuditLog table's tenantGuid,deleted fields.
+CREATE INDEX [I_MessagingAuditLog_tenantGuid_deleted] ON [Scheduler].[MessagingAuditLog] ([tenantGuid], [deleted])
+GO
+
+-- Index on the MessagingAuditLog table's id,active,deleted fields.
+CREATE INDEX [I_MessagingAuditLog_id_active_deleted] ON [Scheduler].[MessagingAuditLog] ([id], [active], [deleted])
+GO
+
+-- Index on the MessagingAuditLog table's performedByUserId,active,deleted fields.
+CREATE INDEX [I_MessagingAuditLog_performedByUserId_active_deleted] ON [Scheduler].[MessagingAuditLog] ([performedByUserId], [active], [deleted])
+GO
+
+-- Index on the MessagingAuditLog table's action,active,deleted fields.
+CREATE INDEX [I_MessagingAuditLog_action_active_deleted] ON [Scheduler].[MessagingAuditLog] ([action], [active], [deleted])
+GO
+
+
+/*
+This table defines the types of calls that can be made.  It is part of the Foundation's Calling system.
+
+Call types include voice, video, and screen share.
+*/
+CREATE TABLE [Scheduler].[CallType]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NULL,
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the CallType table's name field.
+CREATE INDEX [I_CallType_name] ON [Scheduler].[CallType] ([name])
+GO
+
+-- Index on the CallType table's active field.
+CREATE INDEX [I_CallType_active] ON [Scheduler].[CallType] ([active])
+GO
+
+-- Index on the CallType table's deleted field.
+CREATE INDEX [I_CallType_deleted] ON [Scheduler].[CallType] ([deleted])
+GO
+
+-- Index on the CallType table's id,active,deleted fields.
+CREATE INDEX [I_CallType_id_active_deleted] ON [Scheduler].[CallType] ([id], [active], [deleted])
+GO
+
+INSERT INTO [Scheduler].[CallType] ( [name], [description], [objectGuid] ) VALUES  ( 'Voice', 'Voice call', 'b1c3d4e5-f6a7-4890-b123-456789abcde0' )
+GO
+
+INSERT INTO [Scheduler].[CallType] ( [name], [description], [objectGuid] ) VALUES  ( 'Video', 'Video call', 'c2d4e5f6-a7b8-4901-c234-56789abcdef1' )
+GO
+
+INSERT INTO [Scheduler].[CallType] ( [name], [description], [objectGuid] ) VALUES  ( 'ScreenShare', 'Screen sharing session', 'd3e5f6a7-b8c9-4012-d345-6789abcdef02' )
+GO
+
+
+/*
+This table defines the possible statuses for a call.  It is part of the Foundation's Calling system.
+
+Call statuses track the lifecycle of a call from initiation through to completion.
+*/
+CREATE TABLE [Scheduler].[CallStatus]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[name] NVARCHAR(100) NOT NULL UNIQUE,
+	[description] NVARCHAR(500) NULL,
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the CallStatus table's name field.
+CREATE INDEX [I_CallStatus_name] ON [Scheduler].[CallStatus] ([name])
+GO
+
+-- Index on the CallStatus table's active field.
+CREATE INDEX [I_CallStatus_active] ON [Scheduler].[CallStatus] ([active])
+GO
+
+-- Index on the CallStatus table's deleted field.
+CREATE INDEX [I_CallStatus_deleted] ON [Scheduler].[CallStatus] ([deleted])
+GO
+
+-- Index on the CallStatus table's id,active,deleted fields.
+CREATE INDEX [I_CallStatus_id_active_deleted] ON [Scheduler].[CallStatus] ([id], [active], [deleted])
+GO
+
+INSERT INTO [Scheduler].[CallStatus] ( [name], [description], [objectGuid] ) VALUES  ( 'Ringing', 'The call has been initiated and is ringing', 'e4f6a7b8-c9d0-4123-e456-789abcdef034' )
+GO
+
+INSERT INTO [Scheduler].[CallStatus] ( [name], [description], [objectGuid] ) VALUES  ( 'Active', 'The call is currently active', 'f5a7b8c9-d0e1-4234-f567-89abcdef0145' )
+GO
+
+INSERT INTO [Scheduler].[CallStatus] ( [name], [description], [objectGuid] ) VALUES  ( 'Ended', 'The call ended normally', 'a6b8c9d0-e1f2-4345-a678-9abcdef01256' )
+GO
+
+INSERT INTO [Scheduler].[CallStatus] ( [name], [description], [objectGuid] ) VALUES  ( 'Missed', 'The call was not answered', 'b7c9d0e1-f2a3-4456-b789-abcdef012367' )
+GO
+
+INSERT INTO [Scheduler].[CallStatus] ( [name], [description], [objectGuid] ) VALUES  ( 'Declined', 'The call was declined by the recipient', 'c8d0e1f2-a3b4-4567-c890-bcdef0123478' )
+GO
+
+INSERT INTO [Scheduler].[CallStatus] ( [name], [description], [objectGuid] ) VALUES  ( 'Failed', 'The call failed due to a technical error', 'd9e1f2a3-b4c5-4678-d901-cdef01234589' )
+GO
+
+
+/*
+This is the main Call table.  It records voice, video, and screen share calls.  It is part of the Foundation's Calling system.
+
+Each call is linked to a conversation and tracks the call provider used, timing information, and overall call state.  
+The providerId field identifies which ICallProvider implementation handled the call (e.g. 'webrtc', 'azure-acs').
+*/
+CREATE TABLE [Scheduler].[Call]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[callTypeId] INT NOT NULL,		-- The type of call: voice, video, or screen share.
+	[callStatusId] INT NOT NULL,		-- The current status of the call.
+	[providerId] NVARCHAR(50) NOT NULL,		-- The call provider that is handling this call, for example 'webrtc', 'azure-acs'.
+	[providerCallId] NVARCHAR(250) NULL,		-- The provider-specific call identifier.  Used for correlation with external systems like Azure Communication Services.
+	[conversationId] INT NOT NULL,		-- The conversation that this call belongs to.
+	[initiatorUserId] INT NOT NULL,		-- The user who initiated the call.  Resolved by IMessagingUserResolver.
+	[startDateTime] DATETIME2(7) NOT NULL,		-- When the call was initiated.
+	[answerDateTime] DATETIME2(7) NULL,		-- When the call was answered.  Null if the call was never answered.
+	[endDateTime] DATETIME2(7) NULL,		-- When the call ended.  Null if the call is still active or was never connected.
+	[durationSeconds] INT NULL,		-- The duration of the call in seconds.  Calculated from answerDateTime to endDateTime.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_Call_CallType_callTypeId] FOREIGN KEY ([callTypeId]) REFERENCES [Scheduler].[CallType] ([id]),		-- Foreign key to the CallType table.
+	CONSTRAINT [FK_Call_CallStatus_callStatusId] FOREIGN KEY ([callStatusId]) REFERENCES [Scheduler].[CallStatus] ([id]),		-- Foreign key to the CallStatus table.
+	CONSTRAINT [FK_Call_Conversation_conversationId] FOREIGN KEY ([conversationId]) REFERENCES [Scheduler].[Conversation] ([id])		-- Foreign key to the Conversation table.
+)
+GO
+
+-- Index on the Call table's tenantGuid field.
+CREATE INDEX [I_Call_tenantGuid] ON [Scheduler].[Call] ([tenantGuid])
+GO
+
+-- Index on the Call table's tenantGuid,callTypeId fields.
+CREATE INDEX [I_Call_tenantGuid_callTypeId] ON [Scheduler].[Call] ([tenantGuid], [callTypeId])
+GO
+
+-- Index on the Call table's tenantGuid,callStatusId fields.
+CREATE INDEX [I_Call_tenantGuid_callStatusId] ON [Scheduler].[Call] ([tenantGuid], [callStatusId])
+GO
+
+-- Index on the Call table's tenantGuid,conversationId fields.
+CREATE INDEX [I_Call_tenantGuid_conversationId] ON [Scheduler].[Call] ([tenantGuid], [conversationId])
+GO
+
+-- Index on the Call table's tenantGuid,active fields.
+CREATE INDEX [I_Call_tenantGuid_active] ON [Scheduler].[Call] ([tenantGuid], [active])
+GO
+
+-- Index on the Call table's tenantGuid,deleted fields.
+CREATE INDEX [I_Call_tenantGuid_deleted] ON [Scheduler].[Call] ([tenantGuid], [deleted])
+GO
+
+-- Index on the Call table's id,active,deleted fields.
+CREATE INDEX [I_Call_id_active_deleted] ON [Scheduler].[Call] ([id], [active], [deleted])
+GO
+
+-- Index on the Call table's conversationId,active,deleted fields.
+CREATE INDEX [I_Call_conversationId_active_deleted] ON [Scheduler].[Call] ([conversationId], [active], [deleted])
+GO
+
+-- Index on the Call table's initiatorUserId,active,deleted fields.
+CREATE INDEX [I_Call_initiatorUserId_active_deleted] ON [Scheduler].[Call] ([initiatorUserId], [active], [deleted])
+GO
+
+-- Index on the Call table's callStatusId,active,deleted fields.
+CREATE INDEX [I_Call_callStatusId_active_deleted] ON [Scheduler].[Call] ([callStatusId], [active], [deleted])
+GO
+
+-- Index on the Call table's providerId,active,deleted fields.
+CREATE INDEX [I_Call_providerId_active_deleted] ON [Scheduler].[Call] ([providerId], [active], [deleted])
+GO
+
+
+/*
+This table tracks individual user participation in calls.  It is part of the Foundation's Calling system.
+
+Each participant record tracks the user's role (initiator or recipient), their participation status (ringing, joined, 
+declined, missed), and when they joined and left the call.  Supports multi-party calls.
+*/
+CREATE TABLE [Scheduler].[CallParticipant]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[callId] INT NOT NULL,		-- The call that this participant belongs to.
+	[userId] INT NOT NULL,		-- The user participating in the call.  Resolved by IMessagingUserResolver.
+	[role] NVARCHAR(50) NOT NULL,		-- The participant's role: 'initiator' or 'recipient'.
+	[status] NVARCHAR(50) NOT NULL,		-- The participant's status: 'ringing', 'joined', 'declined', 'missed', 'left'.
+	[joinedDateTime] DATETIME2(7) NULL,		-- When the participant joined the call.  Null if they never joined.
+	[leftDateTime] DATETIME2(7) NULL,		-- When the participant left the call.  Null if they are still in the call or never joined.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_CallParticipant_Call_callId] FOREIGN KEY ([callId]) REFERENCES [Scheduler].[Call] ([id])		-- Foreign key to the Call table.
+)
+GO
+
+-- Index on the CallParticipant table's tenantGuid field.
+CREATE INDEX [I_CallParticipant_tenantGuid] ON [Scheduler].[CallParticipant] ([tenantGuid])
+GO
+
+-- Index on the CallParticipant table's tenantGuid,callId fields.
+CREATE INDEX [I_CallParticipant_tenantGuid_callId] ON [Scheduler].[CallParticipant] ([tenantGuid], [callId])
+GO
+
+-- Index on the CallParticipant table's tenantGuid,active fields.
+CREATE INDEX [I_CallParticipant_tenantGuid_active] ON [Scheduler].[CallParticipant] ([tenantGuid], [active])
+GO
+
+-- Index on the CallParticipant table's tenantGuid,deleted fields.
+CREATE INDEX [I_CallParticipant_tenantGuid_deleted] ON [Scheduler].[CallParticipant] ([tenantGuid], [deleted])
+GO
+
+-- Index on the CallParticipant table's id,active,deleted fields.
+CREATE INDEX [I_CallParticipant_id_active_deleted] ON [Scheduler].[CallParticipant] ([id], [active], [deleted])
+GO
+
+-- Index on the CallParticipant table's callId,active,deleted fields.
+CREATE INDEX [I_CallParticipant_callId_active_deleted] ON [Scheduler].[CallParticipant] ([callId], [active], [deleted])
+GO
+
+-- Index on the CallParticipant table's userId,active,deleted fields.
+CREATE INDEX [I_CallParticipant_userId_active_deleted] ON [Scheduler].[CallParticipant] ([userId], [active], [deleted])
+GO
+
+-- Index on the CallParticipant table's status,active,deleted fields.
+CREATE INDEX [I_CallParticipant_status_active_deleted] ON [Scheduler].[CallParticipant] ([status], [active], [deleted])
+GO
+
+
+/*
+This table records significant events during the lifecycle of a call.  It is part of the Foundation's Calling system.
+
+Each event records what happened (initiated, joined, left, ended, failed), who performed the action, which provider 
+was involved, and any additional metadata as JSON.  Used for debugging, analytics, and compliance.
+*/
+CREATE TABLE [Scheduler].[CallEventLog]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[callId] INT NOT NULL,		-- The call that this event belongs to.
+	[eventType] NVARCHAR(100) NOT NULL,		-- The type of event: 'initiated', 'ringing', 'joined', 'left', 'ended', 'failed', 'declined', 'missed', 'ice_connected', 'ice_failed', 'media_started', 'media_stopped'.
+	[userId] INT NULL,		-- The user associated with this event.  Resolved by IMessagingUserResolver.  Nullable for system-level events.
+	[providerId] NVARCHAR(50) NULL,		-- The call provider associated with this event.
+	[metadata] NVARCHAR(MAX) NULL,		-- Additional event metadata stored as JSON.  Structure varies by event type.
+	[dateTimeCreated] DATETIME2(7) NOT NULL,		-- When the event occurred.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [FK_CallEventLog_Call_callId] FOREIGN KEY ([callId]) REFERENCES [Scheduler].[Call] ([id])		-- Foreign key to the Call table.
+)
+GO
+
+-- Index on the CallEventLog table's tenantGuid field.
+CREATE INDEX [I_CallEventLog_tenantGuid] ON [Scheduler].[CallEventLog] ([tenantGuid])
+GO
+
+-- Index on the CallEventLog table's tenantGuid,callId fields.
+CREATE INDEX [I_CallEventLog_tenantGuid_callId] ON [Scheduler].[CallEventLog] ([tenantGuid], [callId])
+GO
+
+-- Index on the CallEventLog table's tenantGuid,active fields.
+CREATE INDEX [I_CallEventLog_tenantGuid_active] ON [Scheduler].[CallEventLog] ([tenantGuid], [active])
+GO
+
+-- Index on the CallEventLog table's tenantGuid,deleted fields.
+CREATE INDEX [I_CallEventLog_tenantGuid_deleted] ON [Scheduler].[CallEventLog] ([tenantGuid], [deleted])
+GO
+
+-- Index on the CallEventLog table's id,active,deleted fields.
+CREATE INDEX [I_CallEventLog_id_active_deleted] ON [Scheduler].[CallEventLog] ([id], [active], [deleted])
+GO
+
+-- Index on the CallEventLog table's callId,active,deleted fields.
+CREATE INDEX [I_CallEventLog_callId_active_deleted] ON [Scheduler].[CallEventLog] ([callId], [active], [deleted])
+GO
+
+-- Index on the CallEventLog table's eventType,active,deleted fields.
+CREATE INDEX [I_CallEventLog_eventType_active_deleted] ON [Scheduler].[CallEventLog] ([eventType], [active], [deleted])
+GO
+
+-- Index on the CallEventLog table's userId,active,deleted fields.
+CREATE INDEX [I_CallEventLog_userId_active_deleted] ON [Scheduler].[CallEventLog] ([userId], [active], [deleted])
+GO
+
 
 -- Master list of available attribute data types.
 CREATE TABLE [Scheduler].[AttributeDefinitionType]
@@ -7390,8 +8977,8 @@ CREATE INDEX [I_RecurrenceExceptionChangeHistory_tenantGuid_recurrenceExceptionI
 GO
 
 
--- Master list of notification types
-CREATE TABLE [Scheduler].[NotificationType]
+-- Master list of event notification types
+CREATE TABLE [Scheduler].[EventNotificationType]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[name] NVARCHAR(100) NOT NULL UNIQUE,
@@ -7405,36 +8992,36 @@ CREATE TABLE [Scheduler].[NotificationType]
 )
 GO
 
--- Index on the NotificationType table's name field.
-CREATE INDEX [I_NotificationType_name] ON [Scheduler].[NotificationType] ([name])
+-- Index on the EventNotificationType table's name field.
+CREATE INDEX [I_EventNotificationType_name] ON [Scheduler].[EventNotificationType] ([name])
 GO
 
--- Index on the NotificationType table's active field.
-CREATE INDEX [I_NotificationType_active] ON [Scheduler].[NotificationType] ([active])
+-- Index on the EventNotificationType table's active field.
+CREATE INDEX [I_EventNotificationType_active] ON [Scheduler].[EventNotificationType] ([active])
 GO
 
--- Index on the NotificationType table's deleted field.
-CREATE INDEX [I_NotificationType_deleted] ON [Scheduler].[NotificationType] ([deleted])
+-- Index on the EventNotificationType table's deleted field.
+CREATE INDEX [I_EventNotificationType_deleted] ON [Scheduler].[EventNotificationType] ([deleted])
 GO
 
-INSERT INTO [Scheduler].[NotificationType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Email', 'Send to email address', 1, '73ff7b17-3fd7-40ce-91bf-c91daca7b4ce' )
+INSERT INTO [Scheduler].[EventNotificationType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Email', 'Send to email address', 1, '73ff7b17-3fd7-40ce-91bf-c91daca7b4ce' )
 GO
 
-INSERT INTO [Scheduler].[NotificationType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'SMS', 'Sent to cell phone via SMS message', 2, '89391299-4427-43f6-bcf2-0266e47e83a7' )
+INSERT INTO [Scheduler].[EventNotificationType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'SMS', 'Sent to cell phone via SMS message', 2, '89391299-4427-43f6-bcf2-0266e47e83a7' )
 GO
 
-INSERT INTO [Scheduler].[NotificationType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Push', 'Sent to cell phone via Push notification', 3, '0395ddde-58dc-4577-9dae-07614680c386' )
+INSERT INTO [Scheduler].[EventNotificationType] ( [name], [description], [sequence], [objectGuid] ) VALUES  ( 'Push', 'Sent to cell phone via Push notification', 3, '0395ddde-58dc-4577-9dae-07614680c386' )
 GO
 
 
 -- Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration
-CREATE TABLE [Scheduler].[NotificationSubscription]
+CREATE TABLE [Scheduler].[EventNotificationSubscription]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
 	[resourceId] INT NULL,		-- Optional resource for this notification subscription.  Needs either this or contact to be valid.
 	[contactId] INT NULL,		-- Optional contact for this notification subscription.  Needs either this or resource to be valid.
-	[notificationTypeId] INT NOT NULL,		-- Link to the NotificationType table.
+	[eventNotificationTypeId] INT NOT NULL,		-- Link to the EventNotificationType table.
 	[triggerEvents] INT NOT NULL DEFAULT 1,		-- Bitmask: 1=Assigned, 2=Canceled, 4=Modified, 8=Reminder
 	[recipientAddress] NVARCHAR(250) NOT NULL,		-- Email address or Phone #
 	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
@@ -7442,70 +9029,70 @@ CREATE TABLE [Scheduler].[NotificationSubscription]
 	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
 	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
 
-	CONSTRAINT [FK_NotificationSubscription_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id]),		-- Foreign key to the Resource table.
-	CONSTRAINT [FK_NotificationSubscription_Contact_contactId] FOREIGN KEY ([contactId]) REFERENCES [Scheduler].[Contact] ([id]),		-- Foreign key to the Contact table.
-	CONSTRAINT [FK_NotificationSubscription_NotificationType_notificationTypeId] FOREIGN KEY ([notificationTypeId]) REFERENCES [Scheduler].[NotificationType] ([id])		-- Foreign key to the NotificationType table.
+	CONSTRAINT [FK_EventNotificationSubscription_Resource_resourceId] FOREIGN KEY ([resourceId]) REFERENCES [Scheduler].[Resource] ([id]),		-- Foreign key to the Resource table.
+	CONSTRAINT [FK_EventNotificationSubscription_Contact_contactId] FOREIGN KEY ([contactId]) REFERENCES [Scheduler].[Contact] ([id]),		-- Foreign key to the Contact table.
+	CONSTRAINT [FK_EventNotificationSubscription_EventNotificationType_eventNotificationTypeId] FOREIGN KEY ([eventNotificationTypeId]) REFERENCES [Scheduler].[EventNotificationType] ([id])		-- Foreign key to the EventNotificationType table.
 )
 GO
 
--- Index on the NotificationSubscription table's tenantGuid field.
-CREATE INDEX [I_NotificationSubscription_tenantGuid] ON [Scheduler].[NotificationSubscription] ([tenantGuid])
+-- Index on the EventNotificationSubscription table's tenantGuid field.
+CREATE INDEX [I_EventNotificationSubscription_tenantGuid] ON [Scheduler].[EventNotificationSubscription] ([tenantGuid])
 GO
 
--- Index on the NotificationSubscription table's tenantGuid,resourceId fields.
-CREATE INDEX [I_NotificationSubscription_tenantGuid_resourceId] ON [Scheduler].[NotificationSubscription] ([tenantGuid], [resourceId])
+-- Index on the EventNotificationSubscription table's tenantGuid,resourceId fields.
+CREATE INDEX [I_EventNotificationSubscription_tenantGuid_resourceId] ON [Scheduler].[EventNotificationSubscription] ([tenantGuid], [resourceId])
 GO
 
--- Index on the NotificationSubscription table's tenantGuid,contactId fields.
-CREATE INDEX [I_NotificationSubscription_tenantGuid_contactId] ON [Scheduler].[NotificationSubscription] ([tenantGuid], [contactId])
+-- Index on the EventNotificationSubscription table's tenantGuid,contactId fields.
+CREATE INDEX [I_EventNotificationSubscription_tenantGuid_contactId] ON [Scheduler].[EventNotificationSubscription] ([tenantGuid], [contactId])
 GO
 
--- Index on the NotificationSubscription table's tenantGuid,notificationTypeId fields.
-CREATE INDEX [I_NotificationSubscription_tenantGuid_notificationTypeId] ON [Scheduler].[NotificationSubscription] ([tenantGuid], [notificationTypeId])
+-- Index on the EventNotificationSubscription table's tenantGuid,eventNotificationTypeId fields.
+CREATE INDEX [I_EventNotificationSubscription_tenantGuid_eventNotificationTypeId] ON [Scheduler].[EventNotificationSubscription] ([tenantGuid], [eventNotificationTypeId])
 GO
 
--- Index on the NotificationSubscription table's tenantGuid,active fields.
-CREATE INDEX [I_NotificationSubscription_tenantGuid_active] ON [Scheduler].[NotificationSubscription] ([tenantGuid], [active])
+-- Index on the EventNotificationSubscription table's tenantGuid,active fields.
+CREATE INDEX [I_EventNotificationSubscription_tenantGuid_active] ON [Scheduler].[EventNotificationSubscription] ([tenantGuid], [active])
 GO
 
--- Index on the NotificationSubscription table's tenantGuid,deleted fields.
-CREATE INDEX [I_NotificationSubscription_tenantGuid_deleted] ON [Scheduler].[NotificationSubscription] ([tenantGuid], [deleted])
+-- Index on the EventNotificationSubscription table's tenantGuid,deleted fields.
+CREATE INDEX [I_EventNotificationSubscription_tenantGuid_deleted] ON [Scheduler].[EventNotificationSubscription] ([tenantGuid], [deleted])
 GO
 
 
--- The change history for records from the NotificationSubscription table.
-CREATE TABLE [Scheduler].[NotificationSubscriptionChangeHistory]
+-- The change history for records from the EventNotificationSubscription table.
+CREATE TABLE [Scheduler].[EventNotificationSubscriptionChangeHistory]
 (
 	[id] INT IDENTITY PRIMARY KEY NOT NULL,
 	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
-	[notificationSubscriptionId] INT NOT NULL,		-- Link to the NotificationSubscription table.
+	[eventNotificationSubscriptionId] INT NOT NULL,		-- Link to the EventNotificationSubscription table.
 	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
 	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
 	[userId] INT NOT NULL,
 	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
 
-	CONSTRAINT [FK_NotificationSubscriptionChangeHistory_NotificationSubscription_notificationSubscriptionId] FOREIGN KEY ([notificationSubscriptionId]) REFERENCES [Scheduler].[NotificationSubscription] ([id])		-- Foreign key to the NotificationSubscription table.
+	CONSTRAINT [FK_EventNotificationSubscriptionChangeHistory_EventNotificationSubscription_eventNotificationSubscriptionId] FOREIGN KEY ([eventNotificationSubscriptionId]) REFERENCES [Scheduler].[EventNotificationSubscription] ([id])		-- Foreign key to the EventNotificationSubscription table.
 )
 GO
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid field.
-CREATE INDEX [I_NotificationSubscriptionChangeHistory_tenantGuid] ON [Scheduler].[NotificationSubscriptionChangeHistory] ([tenantGuid])
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid field.
+CREATE INDEX [I_EventNotificationSubscriptionChangeHistory_tenantGuid] ON [Scheduler].[EventNotificationSubscriptionChangeHistory] ([tenantGuid])
 GO
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,versionNumber fields.
-CREATE INDEX [I_NotificationSubscriptionChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[NotificationSubscriptionChangeHistory] ([tenantGuid], [versionNumber])
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_EventNotificationSubscriptionChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[EventNotificationSubscriptionChangeHistory] ([tenantGuid], [versionNumber])
 GO
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,timeStamp fields.
-CREATE INDEX [I_NotificationSubscriptionChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[NotificationSubscriptionChangeHistory] ([tenantGuid], [timeStamp])
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_EventNotificationSubscriptionChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[EventNotificationSubscriptionChangeHistory] ([tenantGuid], [timeStamp])
 GO
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,userId fields.
-CREATE INDEX [I_NotificationSubscriptionChangeHistory_tenantGuid_userId] ON [Scheduler].[NotificationSubscriptionChangeHistory] ([tenantGuid], [userId])
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_EventNotificationSubscriptionChangeHistory_tenantGuid_userId] ON [Scheduler].[EventNotificationSubscriptionChangeHistory] ([tenantGuid], [userId])
 GO
 
--- Index on the NotificationSubscriptionChangeHistory table's tenantGuid,notificationSubscriptionId fields.
-CREATE INDEX [I_NotificationSubscriptionChangeHistory_tenantGuid_notificationSubscriptionId] ON [Scheduler].[NotificationSubscriptionChangeHistory] ([tenantGuid], [notificationSubscriptionId]) INCLUDE ( versionNumber, timeStamp, userId )
+-- Index on the EventNotificationSubscriptionChangeHistory table's tenantGuid,eventNotificationSubscriptionId fields.
+CREATE INDEX [I_EventNotificationSubscriptionChangeHistory_tenantGuid_eventNotificationSubscriptionId] ON [Scheduler].[EventNotificationSubscriptionChangeHistory] ([tenantGuid], [eventNotificationSubscriptionId]) INCLUDE ( versionNumber, timeStamp, userId )
 GO
 
 

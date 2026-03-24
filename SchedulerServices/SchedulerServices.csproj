@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Intuit.TSheets" Version="1.4.3" />
     <PackageReference Include="IppDotNetSdkForQuickBooksApiV3" Version="14.7.0.3" />
-    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.2" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.*" />
   </ItemGroup>
 
   <ItemGroup>

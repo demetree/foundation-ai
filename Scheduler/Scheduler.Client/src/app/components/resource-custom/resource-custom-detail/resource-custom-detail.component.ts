@@ -5,7 +5,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
 import { CrewMemberService } from '../../../scheduler-data-services/crew-member.service';
 import { ResourceQualificationService } from '../../../scheduler-data-services/resource-qualification.service';
-import { NotificationSubscriptionService } from '../../../scheduler-data-services/notification-subscription.service';
+import { EventNotificationSubscriptionService } from '../../../scheduler-data-services/event-notification-subscription.service';
 import { ResourceContactService } from '../../../scheduler-data-services/resource-contact.service';
 import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.service';
 import { ResourceAvailabilityService } from '../../../scheduler-data-services/resource-availability.service';
@@ -58,7 +58,7 @@ export class ResourceCustomDetailComponent implements OnInit {
     public resourceService: ResourceService,
     private crewMemberService: CrewMemberService,
     private resourceQualificationService: ResourceQualificationService,
-    private notificationSubscriptionService: NotificationSubscriptionService,
+    private notificationSubscriptionService: EventNotificationSubscriptionService,
     private resourceContactService: ResourceContactService,
     private rateSheetService: RateSheetService,
     private resourceAvailabilityService: ResourceAvailabilityService,

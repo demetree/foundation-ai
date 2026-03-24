@@ -58,6 +58,14 @@ All operational tables include multi-tenant support, versioning where appropriat
 
             this.database.SetSchemaName("Scheduler");
 
+            // Add tables in for the standard notification and conversation systems.
+            Foundation.Security.Database.SecurityDatabaseGenerator.AddNotificationTablesToDatabase(this.database);
+            Foundation.Security.Database.SecurityDatabaseGenerator.AddConversationTablesToDatabase(this.database);
+            Foundation.Security.Database.SecurityDatabaseGenerator.AddMessagingTablesToDatabase(this.database);
+            Foundation.Security.Database.SecurityDatabaseGenerator.AddMessagingPlatformTablesToDatabase(this.database);
+            Foundation.Security.Database.SecurityDatabaseGenerator.AddCallingTablesToDatabase(this.database);
+
+
             // Register custom roles for granular write access control
             this.database.AddCustomRole(SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME} Role");                      // Admin config: types, templates, calendars, qualifications
             this.database.AddCustomRole(SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME} Role");                    // Contact management
@@ -3735,28 +3743,28 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
             #region Notification subscripion rules
 
-            Database.Table notificationTypeTable = database.AddTable("NotificationType");
-            notificationTypeTable.comment = "Master list of notification types";
-            notificationTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
-            notificationTypeTable.AddIdField();
-            notificationTypeTable.AddNameAndDescriptionFields(true, true, false);
-            notificationTypeTable.AddSequenceField();
-            notificationTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
-            notificationTypeTable.AddControlFields();
+            Database.Table eventNotificationTypeTable = database.AddTable("EventNotificationType");
+            eventNotificationTypeTable.comment = "Master list of event notification types";
+            eventNotificationTypeTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            eventNotificationTypeTable.AddIdField();
+            eventNotificationTypeTable.AddNameAndDescriptionFields(true, true, false);
+            eventNotificationTypeTable.AddSequenceField();
+            eventNotificationTypeTable.AddHTMLColorField("color", true).AddScriptComments("Hex color for UI display");
+            eventNotificationTypeTable.AddControlFields();
 
-            notificationTypeTable.AddData(new Dictionary<string, string> {
+            eventNotificationTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "Email" },
                 { "description", "Send to email address" },
                 { "sequence", "1" },
                 { "objectGuid", "73ff7b17-3fd7-40ce-91bf-c91daca7b4ce" } });
 
-            notificationTypeTable.AddData(new Dictionary<string, string> {
+            eventNotificationTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "SMS" },
                 { "description", "Sent to cell phone via SMS message" },
                 { "sequence", "2" },
                 { "objectGuid", "89391299-4427-43f6-bcf2-0266e47e83a7" } });
 
-            notificationTypeTable.AddData(new Dictionary<string, string> {
+            eventNotificationTypeTable.AddData(new Dictionary<string, string> {
                 { "name", "Push" },
                 { "description", "Sent to cell phone via Push notification" },
                 { "sequence", "3" },
@@ -3764,19 +3772,19 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
 
 
 
-            Database.Table notificationSubscriptionTable = database.AddTable("NotificationSubscription");
-            notificationSubscriptionTable.comment = @"Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration";
-            notificationSubscriptionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
-            notificationSubscriptionTable.AddIdField();
-            notificationSubscriptionTable.AddMultiTenantSupport();
-            notificationSubscriptionTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional resource for this notification subscription.  Needs either this or contact to be valid.");
-            notificationSubscriptionTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional contact for this notification subscription.  Needs either this or resource to be valid.");
-            notificationSubscriptionTable.AddForeignKeyField(notificationTypeTable, false, true);
-            notificationSubscriptionTable.AddIntField("triggerEvents", false, 1).AddScriptComments("Bitmask: 1=Assigned, 2=Canceled, 4=Modified, 8=Reminder");
-            notificationSubscriptionTable.AddString250Field("recipientAddress", false).AddScriptComments("Email address or Phone #");
+            Database.Table eventNotificationSubscriptionTable = database.AddTable("EventNotificationSubscription");
+            eventNotificationSubscriptionTable.comment = @"Links resources (or entire crews) to events.  Supports partial assignments and role designation.  - If crewId is non-NULL → this row represents assignment of the whole crew - If resourceId is non-NULL and crewId is NULL → individual resource assignment - assignmentStart/End NULL → uses full event duration";
+            eventNotificationSubscriptionTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_READER_PERMISSION_LEVEL);
+            eventNotificationSubscriptionTable.AddIdField();
+            eventNotificationSubscriptionTable.AddMultiTenantSupport();
+            eventNotificationSubscriptionTable.AddForeignKeyField(resourceTable, true, true).AddScriptComments("Optional resource for this notification subscription.  Needs either this or contact to be valid.");
+            eventNotificationSubscriptionTable.AddForeignKeyField(contactTable, true, true).AddScriptComments("Optional contact for this notification subscription.  Needs either this or resource to be valid.");
+            eventNotificationSubscriptionTable.AddForeignKeyField(eventNotificationTypeTable, false, true);
+            eventNotificationSubscriptionTable.AddIntField("triggerEvents", false, 1).AddScriptComments("Bitmask: 1=Assigned, 2=Canceled, 4=Modified, 8=Reminder");
+            eventNotificationSubscriptionTable.AddString250Field("recipientAddress", false).AddScriptComments("Email address or Phone #");
 
-            notificationSubscriptionTable.AddVersionControl();
-            notificationSubscriptionTable.AddControlFields();
+            eventNotificationSubscriptionTable.AddVersionControl();
+            eventNotificationSubscriptionTable.AddControlFields();
 
             #endregion
 

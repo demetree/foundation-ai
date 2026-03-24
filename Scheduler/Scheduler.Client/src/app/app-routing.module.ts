@@ -57,6 +57,7 @@ import { ContactCustomListingComponent } from './components/contact-custom/conta
 import { ContactCustomDetailComponent } from './components/contact-custom/contact-custom-detail/contact-custom-detail.component';
 
 import { FileManagerComponent } from './components/file-manager/file-manager.component';
+import { MessagingPageComponent } from './components/messaging-page/messaging-page.component';
 
 
 //
@@ -169,6 +170,16 @@ import { CalendarListingComponent } from './scheduler-data-components/calendar/c
 import { CalendarDetailComponent } from './scheduler-data-components/calendar/calendar-detail/calendar-detail.component';
 import { CalendarChangeHistoryListingComponent } from './scheduler-data-components/calendar-change-history/calendar-change-history-listing/calendar-change-history-listing.component';
 import { CalendarChangeHistoryDetailComponent } from './scheduler-data-components/calendar-change-history/calendar-change-history-detail/calendar-change-history-detail.component';
+import { CallListingComponent } from './scheduler-data-components/call/call-listing/call-listing.component';
+import { CallDetailComponent } from './scheduler-data-components/call/call-detail/call-detail.component';
+import { CallEventLogListingComponent } from './scheduler-data-components/call-event-log/call-event-log-listing/call-event-log-listing.component';
+import { CallEventLogDetailComponent } from './scheduler-data-components/call-event-log/call-event-log-detail/call-event-log-detail.component';
+import { CallParticipantListingComponent } from './scheduler-data-components/call-participant/call-participant-listing/call-participant-listing.component';
+import { CallParticipantDetailComponent } from './scheduler-data-components/call-participant/call-participant-detail/call-participant-detail.component';
+import { CallStatusListingComponent } from './scheduler-data-components/call-status/call-status-listing/call-status-listing.component';
+import { CallStatusDetailComponent } from './scheduler-data-components/call-status/call-status-detail/call-status-detail.component';
+import { CallTypeListingComponent } from './scheduler-data-components/call-type/call-type-listing/call-type-listing.component';
+import { CallTypeDetailComponent } from './scheduler-data-components/call-type/call-type-detail/call-type-detail.component';
 import { CampaignListingComponent } from './scheduler-data-components/campaign/campaign-listing/campaign-listing.component';
 import { CampaignDetailComponent } from './scheduler-data-components/campaign/campaign-detail/campaign-detail.component';
 import { CampaignChangeHistoryListingComponent } from './scheduler-data-components/campaign-change-history/campaign-change-history-listing/campaign-change-history-listing.component';
@@ -219,6 +230,36 @@ import { ContactTagChangeHistoryListingComponent } from './scheduler-data-compon
 import { ContactTagChangeHistoryDetailComponent } from './scheduler-data-components/contact-tag-change-history/contact-tag-change-history-detail/contact-tag-change-history-detail.component';
 import { ContactTypeListingComponent } from './scheduler-data-components/contact-type/contact-type-listing/contact-type-listing.component';
 import { ContactTypeDetailComponent } from './scheduler-data-components/contact-type/contact-type-detail/contact-type-detail.component';
+import { ConversationListingComponent } from './scheduler-data-components/conversation/conversation-listing/conversation-listing.component';
+import { ConversationDetailComponent } from './scheduler-data-components/conversation/conversation-detail/conversation-detail.component';
+import { ConversationChannelListingComponent } from './scheduler-data-components/conversation-channel/conversation-channel-listing/conversation-channel-listing.component';
+import { ConversationChannelDetailComponent } from './scheduler-data-components/conversation-channel/conversation-channel-detail/conversation-channel-detail.component';
+import { ConversationChannelChangeHistoryListingComponent } from './scheduler-data-components/conversation-channel-change-history/conversation-channel-change-history-listing/conversation-channel-change-history-listing.component';
+import { ConversationChannelChangeHistoryDetailComponent } from './scheduler-data-components/conversation-channel-change-history/conversation-channel-change-history-detail/conversation-channel-change-history-detail.component';
+import { ConversationMessageListingComponent } from './scheduler-data-components/conversation-message/conversation-message-listing/conversation-message-listing.component';
+import { ConversationMessageDetailComponent } from './scheduler-data-components/conversation-message/conversation-message-detail/conversation-message-detail.component';
+import { ConversationMessageAttachmentListingComponent } from './scheduler-data-components/conversation-message-attachment/conversation-message-attachment-listing/conversation-message-attachment-listing.component';
+import { ConversationMessageAttachmentDetailComponent } from './scheduler-data-components/conversation-message-attachment/conversation-message-attachment-detail/conversation-message-attachment-detail.component';
+import { ConversationMessageAttachmentChangeHistoryListingComponent } from './scheduler-data-components/conversation-message-attachment-change-history/conversation-message-attachment-change-history-listing/conversation-message-attachment-change-history-listing.component';
+import { ConversationMessageAttachmentChangeHistoryDetailComponent } from './scheduler-data-components/conversation-message-attachment-change-history/conversation-message-attachment-change-history-detail/conversation-message-attachment-change-history-detail.component';
+import { ConversationMessageChangeHistoryListingComponent } from './scheduler-data-components/conversation-message-change-history/conversation-message-change-history-listing/conversation-message-change-history-listing.component';
+import { ConversationMessageChangeHistoryDetailComponent } from './scheduler-data-components/conversation-message-change-history/conversation-message-change-history-detail/conversation-message-change-history-detail.component';
+import { ConversationMessageLinkPreviewListingComponent } from './scheduler-data-components/conversation-message-link-preview/conversation-message-link-preview-listing/conversation-message-link-preview-listing.component';
+import { ConversationMessageLinkPreviewDetailComponent } from './scheduler-data-components/conversation-message-link-preview/conversation-message-link-preview-detail/conversation-message-link-preview-detail.component';
+import { ConversationMessageLinkPreviewChangeHistoryListingComponent } from './scheduler-data-components/conversation-message-link-preview-change-history/conversation-message-link-preview-change-history-listing/conversation-message-link-preview-change-history-listing.component';
+import { ConversationMessageLinkPreviewChangeHistoryDetailComponent } from './scheduler-data-components/conversation-message-link-preview-change-history/conversation-message-link-preview-change-history-detail/conversation-message-link-preview-change-history-detail.component';
+import { ConversationMessageReactionListingComponent } from './scheduler-data-components/conversation-message-reaction/conversation-message-reaction-listing/conversation-message-reaction-listing.component';
+import { ConversationMessageReactionDetailComponent } from './scheduler-data-components/conversation-message-reaction/conversation-message-reaction-detail/conversation-message-reaction-detail.component';
+import { ConversationMessageUserListingComponent } from './scheduler-data-components/conversation-message-user/conversation-message-user-listing/conversation-message-user-listing.component';
+import { ConversationMessageUserDetailComponent } from './scheduler-data-components/conversation-message-user/conversation-message-user-detail/conversation-message-user-detail.component';
+import { ConversationPinListingComponent } from './scheduler-data-components/conversation-pin/conversation-pin-listing/conversation-pin-listing.component';
+import { ConversationPinDetailComponent } from './scheduler-data-components/conversation-pin/conversation-pin-detail/conversation-pin-detail.component';
+import { ConversationThreadUserListingComponent } from './scheduler-data-components/conversation-thread-user/conversation-thread-user-listing/conversation-thread-user-listing.component';
+import { ConversationThreadUserDetailComponent } from './scheduler-data-components/conversation-thread-user/conversation-thread-user-detail/conversation-thread-user-detail.component';
+import { ConversationTypeListingComponent } from './scheduler-data-components/conversation-type/conversation-type-listing/conversation-type-listing.component';
+import { ConversationTypeDetailComponent } from './scheduler-data-components/conversation-type/conversation-type-detail/conversation-type-detail.component';
+import { ConversationUserListingComponent } from './scheduler-data-components/conversation-user/conversation-user-listing/conversation-user-listing.component';
+import { ConversationUserDetailComponent } from './scheduler-data-components/conversation-user/conversation-user-detail/conversation-user-detail.component';
 import { CountryListingComponent } from './scheduler-data-components/country/country-listing/country-listing.component';
 import { CountryDetailComponent } from './scheduler-data-components/country/country-detail/country-detail.component';
 import { CrewListingComponent } from './scheduler-data-components/crew/crew-listing/crew-listing.component';
@@ -261,6 +302,12 @@ import { EventChargeListingComponent } from './scheduler-data-components/event-c
 import { EventChargeDetailComponent } from './scheduler-data-components/event-charge/event-charge-detail/event-charge-detail.component';
 import { EventChargeChangeHistoryListingComponent } from './scheduler-data-components/event-charge-change-history/event-charge-change-history-listing/event-charge-change-history-listing.component';
 import { EventChargeChangeHistoryDetailComponent } from './scheduler-data-components/event-charge-change-history/event-charge-change-history-detail/event-charge-change-history-detail.component';
+import { EventNotificationSubscriptionListingComponent } from './scheduler-data-components/event-notification-subscription/event-notification-subscription-listing/event-notification-subscription-listing.component';
+import { EventNotificationSubscriptionDetailComponent } from './scheduler-data-components/event-notification-subscription/event-notification-subscription-detail/event-notification-subscription-detail.component';
+import { EventNotificationSubscriptionChangeHistoryListingComponent } from './scheduler-data-components/event-notification-subscription-change-history/event-notification-subscription-change-history-listing/event-notification-subscription-change-history-listing.component';
+import { EventNotificationSubscriptionChangeHistoryDetailComponent } from './scheduler-data-components/event-notification-subscription-change-history/event-notification-subscription-change-history-detail/event-notification-subscription-change-history-detail.component';
+import { EventNotificationTypeListingComponent } from './scheduler-data-components/event-notification-type/event-notification-type-listing/event-notification-type-listing.component';
+import { EventNotificationTypeDetailComponent } from './scheduler-data-components/event-notification-type/event-notification-type-detail/event-notification-type-detail.component';
 import { EventResourceAssignmentListingComponent } from './scheduler-data-components/event-resource-assignment/event-resource-assignment-listing/event-resource-assignment-listing.component';
 import { EventResourceAssignmentDetailComponent } from './scheduler-data-components/event-resource-assignment/event-resource-assignment-detail/event-resource-assignment-detail.component';
 import { EventResourceAssignmentChangeHistoryListingComponent } from './scheduler-data-components/event-resource-assignment-change-history/event-resource-assignment-change-history-listing/event-resource-assignment-change-history-listing.component';
@@ -315,10 +362,22 @@ import { InvoiceLineItemListingComponent } from './scheduler-data-components/inv
 import { InvoiceLineItemDetailComponent } from './scheduler-data-components/invoice-line-item/invoice-line-item-detail/invoice-line-item-detail.component';
 import { InvoiceStatusListingComponent } from './scheduler-data-components/invoice-status/invoice-status-listing/invoice-status-listing.component';
 import { InvoiceStatusDetailComponent } from './scheduler-data-components/invoice-status/invoice-status-detail/invoice-status-detail.component';
-import { NotificationSubscriptionListingComponent } from './scheduler-data-components/notification-subscription/notification-subscription-listing/notification-subscription-listing.component';
-import { NotificationSubscriptionDetailComponent } from './scheduler-data-components/notification-subscription/notification-subscription-detail/notification-subscription-detail.component';
-import { NotificationSubscriptionChangeHistoryListingComponent } from './scheduler-data-components/notification-subscription-change-history/notification-subscription-change-history-listing/notification-subscription-change-history-listing.component';
-import { NotificationSubscriptionChangeHistoryDetailComponent } from './scheduler-data-components/notification-subscription-change-history/notification-subscription-change-history-detail/notification-subscription-change-history-detail.component';
+import { MessageBookmarkListingComponent } from './scheduler-data-components/message-bookmark/message-bookmark-listing/message-bookmark-listing.component';
+import { MessageBookmarkDetailComponent } from './scheduler-data-components/message-bookmark/message-bookmark-detail/message-bookmark-detail.component';
+import { MessageFlagListingComponent } from './scheduler-data-components/message-flag/message-flag-listing/message-flag-listing.component';
+import { MessageFlagDetailComponent } from './scheduler-data-components/message-flag/message-flag-detail/message-flag-detail.component';
+import { MessagingAuditLogListingComponent } from './scheduler-data-components/messaging-audit-log/messaging-audit-log-listing/messaging-audit-log-listing.component';
+import { MessagingAuditLogDetailComponent } from './scheduler-data-components/messaging-audit-log/messaging-audit-log-detail/messaging-audit-log-detail.component';
+import { NotificationListingComponent } from './scheduler-data-components/notification/notification-listing/notification-listing.component';
+import { NotificationDetailComponent } from './scheduler-data-components/notification/notification-detail/notification-detail.component';
+import { NotificationAttachmentListingComponent } from './scheduler-data-components/notification-attachment/notification-attachment-listing/notification-attachment-listing.component';
+import { NotificationAttachmentDetailComponent } from './scheduler-data-components/notification-attachment/notification-attachment-detail/notification-attachment-detail.component';
+import { NotificationAttachmentChangeHistoryListingComponent } from './scheduler-data-components/notification-attachment-change-history/notification-attachment-change-history-listing/notification-attachment-change-history-listing.component';
+import { NotificationAttachmentChangeHistoryDetailComponent } from './scheduler-data-components/notification-attachment-change-history/notification-attachment-change-history-detail/notification-attachment-change-history-detail.component';
+import { NotificationChangeHistoryListingComponent } from './scheduler-data-components/notification-change-history/notification-change-history-listing/notification-change-history-listing.component';
+import { NotificationChangeHistoryDetailComponent } from './scheduler-data-components/notification-change-history/notification-change-history-detail/notification-change-history-detail.component';
+import { NotificationDistributionListingComponent } from './scheduler-data-components/notification-distribution/notification-distribution-listing/notification-distribution-listing.component';
+import { NotificationDistributionDetailComponent } from './scheduler-data-components/notification-distribution/notification-distribution-detail/notification-distribution-detail.component';
 import { NotificationTypeListingComponent } from './scheduler-data-components/notification-type/notification-type-listing/notification-type-listing.component';
 import { NotificationTypeDetailComponent } from './scheduler-data-components/notification-type/notification-type-detail/notification-type-detail.component';
 import { OfficeListingComponent } from './scheduler-data-components/office/office-listing/office-listing.component';
@@ -353,6 +412,10 @@ import { PledgeChangeHistoryListingComponent } from './scheduler-data-components
 import { PledgeChangeHistoryDetailComponent } from './scheduler-data-components/pledge-change-history/pledge-change-history-detail/pledge-change-history-detail.component';
 import { PriorityListingComponent } from './scheduler-data-components/priority/priority-listing/priority-listing.component';
 import { PriorityDetailComponent } from './scheduler-data-components/priority/priority-detail/priority-detail.component';
+import { PushDeliveryLogListingComponent } from './scheduler-data-components/push-delivery-log/push-delivery-log-listing/push-delivery-log-listing.component';
+import { PushDeliveryLogDetailComponent } from './scheduler-data-components/push-delivery-log/push-delivery-log-detail/push-delivery-log-detail.component';
+import { PushProviderConfigurationListingComponent } from './scheduler-data-components/push-provider-configuration/push-provider-configuration-listing/push-provider-configuration-listing.component';
+import { PushProviderConfigurationDetailComponent } from './scheduler-data-components/push-provider-configuration/push-provider-configuration-detail/push-provider-configuration-detail.component';
 import { QualificationListingComponent } from './scheduler-data-components/qualification/qualification-listing/qualification-listing.component';
 import { QualificationDetailComponent } from './scheduler-data-components/qualification/qualification-detail/qualification-detail.component';
 import { RateSheetListingComponent } from './scheduler-data-components/rate-sheet/rate-sheet-listing/rate-sheet-listing.component';
@@ -477,6 +540,8 @@ import { TributeChangeHistoryListingComponent } from './scheduler-data-component
 import { TributeChangeHistoryDetailComponent } from './scheduler-data-components/tribute-change-history/tribute-change-history-detail/tribute-change-history-detail.component';
 import { TributeTypeListingComponent } from './scheduler-data-components/tribute-type/tribute-type-listing/tribute-type-listing.component';
 import { TributeTypeDetailComponent } from './scheduler-data-components/tribute-type/tribute-type-detail/tribute-type-detail.component';
+import { UserPresenceListingComponent } from './scheduler-data-components/user-presence/user-presence-listing/user-presence-listing.component';
+import { UserPresenceDetailComponent } from './scheduler-data-components/user-presence/user-presence-detail/user-presence-detail.component';
 import { VolunteerGroupListingComponent } from './scheduler-data-components/volunteer-group/volunteer-group-listing/volunteer-group-listing.component';
 import { VolunteerGroupDetailComponent } from './scheduler-data-components/volunteer-group/volunteer-group-detail/volunteer-group-detail.component';
 import { VolunteerGroupChangeHistoryListingComponent } from './scheduler-data-components/volunteer-group-change-history/volunteer-group-change-history-listing/volunteer-group-change-history-listing.component';
@@ -518,6 +583,7 @@ export class LowerCaseUrlSerializer extends DefaultUrlSerializer {
 }
 
 
+// @ts-ignore TS2590 — route array exceeds TypeScript union-type limit after entity expansion
 const routes: Routes = [
 
   //
@@ -657,6 +723,10 @@ const routes: Routes = [
 
   { path: 'system-health', component: SystemHealthComponent, canActivate: [AuthGuard], title: 'System Health' },
 
+  //
+  // Foundation Messaging routes — AI-Developed
+  //
+  { path: 'messaging', component: MessagingPageComponent, canActivate: [AuthGuard], title: 'Messaging' },
 
 
 
@@ -758,6 +828,31 @@ const routes: Routes = [
   {path: 'calendarchangehistories/:calendarChangeHistoryId', component: CalendarChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Calendar Change History' },
   {path: 'calendarchangehistory/:calendarChangeHistoryId', component: CalendarChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Calendar Change History' },
   {path: 'calendarchangehistory',  redirectTo: 'calendarchangehistories'},
+  {path: 'calls', component: CallListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Calls' },
+  {path: 'calls/new', component: CallDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Call' },
+  {path: 'calls/:callId', component: CallDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call' },
+  {path: 'call/:callId', component: CallDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call' },
+  {path: 'call',  redirectTo: 'calls'},
+  {path: 'calleventlogs', component: CallEventLogListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Call Event Logs' },
+  {path: 'calleventlogs/new', component: CallEventLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Call Event Log' },
+  {path: 'calleventlogs/:callEventLogId', component: CallEventLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Event Log' },
+  {path: 'calleventlog/:callEventLogId', component: CallEventLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Event Log' },
+  {path: 'calleventlog',  redirectTo: 'calleventlogs'},
+  {path: 'callparticipants', component: CallParticipantListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Call Participants' },
+  {path: 'callparticipants/new', component: CallParticipantDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Call Participant' },
+  {path: 'callparticipants/:callParticipantId', component: CallParticipantDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Participant' },
+  {path: 'callparticipant/:callParticipantId', component: CallParticipantDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Participant' },
+  {path: 'callparticipant',  redirectTo: 'callparticipants'},
+  {path: 'callstatuses', component: CallStatusListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Call Statuses' },
+  {path: 'callstatuses/new', component: CallStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Call Status' },
+  {path: 'callstatuses/:callStatusId', component: CallStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Status' },
+  {path: 'callstatus/:callStatusId', component: CallStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Status' },
+  {path: 'callstatus',  redirectTo: 'callstatuses'},
+  {path: 'calltypes', component: CallTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Call Types' },
+  {path: 'calltypes/new', component: CallTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Call Type' },
+  {path: 'calltypes/:callTypeId', component: CallTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Type' },
+  {path: 'calltype/:callTypeId', component: CallTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Call Type' },
+  {path: 'calltype',  redirectTo: 'calltypes'},
   {path: 'campaigns', component: CampaignListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Campaigns' },
   {path: 'campaigns/new', component: CampaignDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Campaign' },
   {path: 'campaigns/:campaignId', component: CampaignDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Campaign' },
@@ -883,6 +978,81 @@ const routes: Routes = [
   {path: 'contacttypes/:contactTypeId', component: ContactTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Contact Type' },
   {path: 'contacttype/:contactTypeId', component: ContactTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Contact Type' },
   {path: 'contacttype',  redirectTo: 'contacttypes'},
+  {path: 'conversations', component: ConversationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversations' },
+  {path: 'conversations/new', component: ConversationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation' },
+  {path: 'conversations/:conversationId', component: ConversationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation' },
+  {path: 'conversation/:conversationId', component: ConversationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation' },
+  {path: 'conversation',  redirectTo: 'conversations'},
+  {path: 'conversationchannels', component: ConversationChannelListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Channels' },
+  {path: 'conversationchannels/new', component: ConversationChannelDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Channel' },
+  {path: 'conversationchannels/:conversationChannelId', component: ConversationChannelDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Channel' },
+  {path: 'conversationchannel/:conversationChannelId', component: ConversationChannelDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Channel' },
+  {path: 'conversationchannel',  redirectTo: 'conversationchannels'},
+  {path: 'conversationchannelchangehistories', component: ConversationChannelChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Channel Change Histories' },
+  {path: 'conversationchannelchangehistories/new', component: ConversationChannelChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Channel Change History' },
+  {path: 'conversationchannelchangehistories/:conversationChannelChangeHistoryId', component: ConversationChannelChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Channel Change History' },
+  {path: 'conversationchannelchangehistory/:conversationChannelChangeHistoryId', component: ConversationChannelChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Channel Change History' },
+  {path: 'conversationchannelchangehistory',  redirectTo: 'conversationchannelchangehistories'},
+  {path: 'conversationmessages', component: ConversationMessageListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Messages' },
+  {path: 'conversationmessages/new', component: ConversationMessageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message' },
+  {path: 'conversationmessages/:conversationMessageId', component: ConversationMessageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message' },
+  {path: 'conversationmessage/:conversationMessageId', component: ConversationMessageDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message' },
+  {path: 'conversationmessage',  redirectTo: 'conversationmessages'},
+  {path: 'conversationmessageattachments', component: ConversationMessageAttachmentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Message Attachments' },
+  {path: 'conversationmessageattachments/new', component: ConversationMessageAttachmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message Attachment' },
+  {path: 'conversationmessageattachments/:conversationMessageAttachmentId', component: ConversationMessageAttachmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Attachment' },
+  {path: 'conversationmessageattachment/:conversationMessageAttachmentId', component: ConversationMessageAttachmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Attachment' },
+  {path: 'conversationmessageattachment',  redirectTo: 'conversationmessageattachments'},
+  {path: 'conversationmessageattachmentchangehistories', component: ConversationMessageAttachmentChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Message Attachment Change Histories' },
+  {path: 'conversationmessageattachmentchangehistories/new', component: ConversationMessageAttachmentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message Attachment Change History' },
+  {path: 'conversationmessageattachmentchangehistories/:conversationMessageAttachmentChangeHistoryId', component: ConversationMessageAttachmentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Attachment Change History' },
+  {path: 'conversationmessageattachmentchangehistory/:conversationMessageAttachmentChangeHistoryId', component: ConversationMessageAttachmentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Attachment Change History' },
+  {path: 'conversationmessageattachmentchangehistory',  redirectTo: 'conversationmessageattachmentchangehistories'},
+  {path: 'conversationmessagechangehistories', component: ConversationMessageChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Message Change Histories' },
+  {path: 'conversationmessagechangehistories/new', component: ConversationMessageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message Change History' },
+  {path: 'conversationmessagechangehistories/:conversationMessageChangeHistoryId', component: ConversationMessageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Change History' },
+  {path: 'conversationmessagechangehistory/:conversationMessageChangeHistoryId', component: ConversationMessageChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Change History' },
+  {path: 'conversationmessagechangehistory',  redirectTo: 'conversationmessagechangehistories'},
+  {path: 'conversationmessagelinkpreviews', component: ConversationMessageLinkPreviewListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Message Link Previews' },
+  {path: 'conversationmessagelinkpreviews/new', component: ConversationMessageLinkPreviewDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message Link Preview' },
+  {path: 'conversationmessagelinkpreviews/:conversationMessageLinkPreviewId', component: ConversationMessageLinkPreviewDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Link Preview' },
+  {path: 'conversationmessagelinkpreview/:conversationMessageLinkPreviewId', component: ConversationMessageLinkPreviewDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Link Preview' },
+  {path: 'conversationmessagelinkpreview',  redirectTo: 'conversationmessagelinkpreviews'},
+  {path: 'conversationmessagelinkpreviewchangehistories', component: ConversationMessageLinkPreviewChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Message Link Preview Change Histories' },
+  {path: 'conversationmessagelinkpreviewchangehistories/new', component: ConversationMessageLinkPreviewChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message Link Preview Change History' },
+  {path: 'conversationmessagelinkpreviewchangehistories/:conversationMessageLinkPreviewChangeHistoryId', component: ConversationMessageLinkPreviewChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Link Preview Change History' },
+  {path: 'conversationmessagelinkpreviewchangehistory/:conversationMessageLinkPreviewChangeHistoryId', component: ConversationMessageLinkPreviewChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Link Preview Change History' },
+  {path: 'conversationmessagelinkpreviewchangehistory',  redirectTo: 'conversationmessagelinkpreviewchangehistories'},
+  {path: 'conversationmessagereactions', component: ConversationMessageReactionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Message Reactions' },
+  {path: 'conversationmessagereactions/new', component: ConversationMessageReactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message Reaction' },
+  {path: 'conversationmessagereactions/:conversationMessageReactionId', component: ConversationMessageReactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Reaction' },
+  {path: 'conversationmessagereaction/:conversationMessageReactionId', component: ConversationMessageReactionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message Reaction' },
+  {path: 'conversationmessagereaction',  redirectTo: 'conversationmessagereactions'},
+  {path: 'conversationmessageusers', component: ConversationMessageUserListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Message Users' },
+  {path: 'conversationmessageusers/new', component: ConversationMessageUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Message User' },
+  {path: 'conversationmessageusers/:conversationMessageUserId', component: ConversationMessageUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message User' },
+  {path: 'conversationmessageuser/:conversationMessageUserId', component: ConversationMessageUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Message User' },
+  {path: 'conversationmessageuser',  redirectTo: 'conversationmessageusers'},
+  {path: 'conversationpins', component: ConversationPinListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Pins' },
+  {path: 'conversationpins/new', component: ConversationPinDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Pin' },
+  {path: 'conversationpins/:conversationPinId', component: ConversationPinDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Pin' },
+  {path: 'conversationpin/:conversationPinId', component: ConversationPinDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Pin' },
+  {path: 'conversationpin',  redirectTo: 'conversationpins'},
+  {path: 'conversationthreadusers', component: ConversationThreadUserListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Thread Users' },
+  {path: 'conversationthreadusers/new', component: ConversationThreadUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Thread User' },
+  {path: 'conversationthreadusers/:conversationThreadUserId', component: ConversationThreadUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Thread User' },
+  {path: 'conversationthreaduser/:conversationThreadUserId', component: ConversationThreadUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Thread User' },
+  {path: 'conversationthreaduser',  redirectTo: 'conversationthreadusers'},
+  {path: 'conversationtypes', component: ConversationTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Types' },
+  {path: 'conversationtypes/new', component: ConversationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation Type' },
+  {path: 'conversationtypes/:conversationTypeId', component: ConversationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Type' },
+  {path: 'conversationtype/:conversationTypeId', component: ConversationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation Type' },
+  {path: 'conversationtype',  redirectTo: 'conversationtypes'},
+  {path: 'conversationusers', component: ConversationUserListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Conversation Users' },
+  {path: 'conversationusers/new', component: ConversationUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Conversation User' },
+  {path: 'conversationusers/:conversationUserId', component: ConversationUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation User' },
+  {path: 'conversationuser/:conversationUserId', component: ConversationUserDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Conversation User' },
+  {path: 'conversationuser',  redirectTo: 'conversationusers'},
   {path: 'countries', component: CountryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Countries' },
   {path: 'countries/new', component: CountryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Country' },
   {path: 'countries/:countryId', component: CountryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Country' },
@@ -988,6 +1158,21 @@ const routes: Routes = [
   {path: 'eventchargechangehistories/:eventChargeChangeHistoryId', component: EventChargeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Charge Change History' },
   {path: 'eventchargechangehistory/:eventChargeChangeHistoryId', component: EventChargeChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Charge Change History' },
   {path: 'eventchargechangehistory',  redirectTo: 'eventchargechangehistories'},
+  {path: 'eventnotificationsubscriptions', component: EventNotificationSubscriptionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Event Notification Subscriptions' },
+  {path: 'eventnotificationsubscriptions/new', component: EventNotificationSubscriptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Event Notification Subscription' },
+  {path: 'eventnotificationsubscriptions/:eventNotificationSubscriptionId', component: EventNotificationSubscriptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Notification Subscription' },
+  {path: 'eventnotificationsubscription/:eventNotificationSubscriptionId', component: EventNotificationSubscriptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Notification Subscription' },
+  {path: 'eventnotificationsubscription',  redirectTo: 'eventnotificationsubscriptions'},
+  {path: 'eventnotificationsubscriptionchangehistories', component: EventNotificationSubscriptionChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Event Notification Subscription Change Histories' },
+  {path: 'eventnotificationsubscriptionchangehistories/new', component: EventNotificationSubscriptionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Event Notification Subscription Change History' },
+  {path: 'eventnotificationsubscriptionchangehistories/:eventNotificationSubscriptionChangeHistoryId', component: EventNotificationSubscriptionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Notification Subscription Change History' },
+  {path: 'eventnotificationsubscriptionchangehistory/:eventNotificationSubscriptionChangeHistoryId', component: EventNotificationSubscriptionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Notification Subscription Change History' },
+  {path: 'eventnotificationsubscriptionchangehistory',  redirectTo: 'eventnotificationsubscriptionchangehistories'},
+  {path: 'eventnotificationtypes', component: EventNotificationTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Event Notification Types' },
+  {path: 'eventnotificationtypes/new', component: EventNotificationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Event Notification Type' },
+  {path: 'eventnotificationtypes/:eventNotificationTypeId', component: EventNotificationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Notification Type' },
+  {path: 'eventnotificationtype/:eventNotificationTypeId', component: EventNotificationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Notification Type' },
+  {path: 'eventnotificationtype',  redirectTo: 'eventnotificationtypes'},
   {path: 'eventresourceassignments', component: EventResourceAssignmentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Event Resource Assignments' },
   {path: 'eventresourceassignments/new', component: EventResourceAssignmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Event Resource Assignment' },
   {path: 'eventresourceassignments/:eventResourceAssignmentId', component: EventResourceAssignmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Event Resource Assignment' },
@@ -1123,16 +1308,46 @@ const routes: Routes = [
   {path: 'invoicestatuses/:invoiceStatusId', component: InvoiceStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Invoice Status' },
   {path: 'invoicestatus/:invoiceStatusId', component: InvoiceStatusDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Invoice Status' },
   {path: 'invoicestatus',  redirectTo: 'invoicestatuses'},
-  {path: 'notificationsubscriptions', component: NotificationSubscriptionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Subscriptions' },
-  {path: 'notificationsubscriptions/new', component: NotificationSubscriptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification Subscription' },
-  {path: 'notificationsubscriptions/:notificationSubscriptionId', component: NotificationSubscriptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Subscription' },
-  {path: 'notificationsubscription/:notificationSubscriptionId', component: NotificationSubscriptionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Subscription' },
-  {path: 'notificationsubscription',  redirectTo: 'notificationsubscriptions'},
-  {path: 'notificationsubscriptionchangehistories', component: NotificationSubscriptionChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Subscription Change Histories' },
-  {path: 'notificationsubscriptionchangehistories/new', component: NotificationSubscriptionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification Subscription Change History' },
-  {path: 'notificationsubscriptionchangehistories/:notificationSubscriptionChangeHistoryId', component: NotificationSubscriptionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Subscription Change History' },
-  {path: 'notificationsubscriptionchangehistory/:notificationSubscriptionChangeHistoryId', component: NotificationSubscriptionChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Subscription Change History' },
-  {path: 'notificationsubscriptionchangehistory',  redirectTo: 'notificationsubscriptionchangehistories'},
+  {path: 'messagebookmarks', component: MessageBookmarkListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Message Bookmarks' },
+  {path: 'messagebookmarks/new', component: MessageBookmarkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Message Bookmark' },
+  {path: 'messagebookmarks/:messageBookmarkId', component: MessageBookmarkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Message Bookmark' },
+  {path: 'messagebookmark/:messageBookmarkId', component: MessageBookmarkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Message Bookmark' },
+  {path: 'messagebookmark',  redirectTo: 'messagebookmarks'},
+  {path: 'messageflags', component: MessageFlagListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Message Flags' },
+  {path: 'messageflags/new', component: MessageFlagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Message Flag' },
+  {path: 'messageflags/:messageFlagId', component: MessageFlagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Message Flag' },
+  {path: 'messageflag/:messageFlagId', component: MessageFlagDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Message Flag' },
+  {path: 'messageflag',  redirectTo: 'messageflags'},
+  {path: 'messagingauditlogs', component: MessagingAuditLogListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Messaging Audit Logs' },
+  {path: 'messagingauditlogs/new', component: MessagingAuditLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Messaging Audit Log' },
+  {path: 'messagingauditlogs/:messagingAuditLogId', component: MessagingAuditLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Messaging Audit Log' },
+  {path: 'messagingauditlog/:messagingAuditLogId', component: MessagingAuditLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Messaging Audit Log' },
+  {path: 'messagingauditlog',  redirectTo: 'messagingauditlogs'},
+  {path: 'notifications', component: NotificationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notifications' },
+  {path: 'notifications/new', component: NotificationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification' },
+  {path: 'notifications/:notificationId', component: NotificationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification' },
+  {path: 'notification/:notificationId', component: NotificationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification' },
+  {path: 'notification',  redirectTo: 'notifications'},
+  {path: 'notificationattachments', component: NotificationAttachmentListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Attachments' },
+  {path: 'notificationattachments/new', component: NotificationAttachmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification Attachment' },
+  {path: 'notificationattachments/:notificationAttachmentId', component: NotificationAttachmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Attachment' },
+  {path: 'notificationattachment/:notificationAttachmentId', component: NotificationAttachmentDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Attachment' },
+  {path: 'notificationattachment',  redirectTo: 'notificationattachments'},
+  {path: 'notificationattachmentchangehistories', component: NotificationAttachmentChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Attachment Change Histories' },
+  {path: 'notificationattachmentchangehistories/new', component: NotificationAttachmentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification Attachment Change History' },
+  {path: 'notificationattachmentchangehistories/:notificationAttachmentChangeHistoryId', component: NotificationAttachmentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Attachment Change History' },
+  {path: 'notificationattachmentchangehistory/:notificationAttachmentChangeHistoryId', component: NotificationAttachmentChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Attachment Change History' },
+  {path: 'notificationattachmentchangehistory',  redirectTo: 'notificationattachmentchangehistories'},
+  {path: 'notificationchangehistories', component: NotificationChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Change Histories' },
+  {path: 'notificationchangehistories/new', component: NotificationChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification Change History' },
+  {path: 'notificationchangehistories/:notificationChangeHistoryId', component: NotificationChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Change History' },
+  {path: 'notificationchangehistory/:notificationChangeHistoryId', component: NotificationChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Change History' },
+  {path: 'notificationchangehistory',  redirectTo: 'notificationchangehistories'},
+  {path: 'notificationdistributions', component: NotificationDistributionListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Distributions' },
+  {path: 'notificationdistributions/new', component: NotificationDistributionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification Distribution' },
+  {path: 'notificationdistributions/:notificationDistributionId', component: NotificationDistributionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Distribution' },
+  {path: 'notificationdistribution/:notificationDistributionId', component: NotificationDistributionDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Distribution' },
+  {path: 'notificationdistribution',  redirectTo: 'notificationdistributions'},
   {path: 'notificationtypes', component: NotificationTypeListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Notification Types' },
   {path: 'notificationtypes/new', component: NotificationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Notification Type' },
   {path: 'notificationtypes/:notificationTypeId', component: NotificationTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Notification Type' },
@@ -1218,6 +1433,16 @@ const routes: Routes = [
   {path: 'priorities/:priorityId', component: PriorityDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Priority' },
   {path: 'priority/:priorityId', component: PriorityDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Priority' },
   {path: 'priority',  redirectTo: 'priorities'},
+  {path: 'pushdeliverylogs', component: PushDeliveryLogListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Push Delivery Logs' },
+  {path: 'pushdeliverylogs/new', component: PushDeliveryLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Push Delivery Log' },
+  {path: 'pushdeliverylogs/:pushDeliveryLogId', component: PushDeliveryLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Push Delivery Log' },
+  {path: 'pushdeliverylog/:pushDeliveryLogId', component: PushDeliveryLogDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Push Delivery Log' },
+  {path: 'pushdeliverylog',  redirectTo: 'pushdeliverylogs'},
+  {path: 'pushproviderconfigurations', component: PushProviderConfigurationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Push Provider Configurations' },
+  {path: 'pushproviderconfigurations/new', component: PushProviderConfigurationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Push Provider Configuration' },
+  {path: 'pushproviderconfigurations/:pushProviderConfigurationId', component: PushProviderConfigurationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Push Provider Configuration' },
+  {path: 'pushproviderconfiguration/:pushProviderConfigurationId', component: PushProviderConfigurationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Push Provider Configuration' },
+  {path: 'pushproviderconfiguration',  redirectTo: 'pushproviderconfigurations'},
   {path: 'qualifications', component: QualificationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Qualifications' },
   {path: 'qualifications/new', component: QualificationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Qualification' },
   {path: 'qualifications/:qualificationId', component: QualificationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Qualification' },
@@ -1528,6 +1753,11 @@ const routes: Routes = [
   {path: 'tributetypes/:tributeTypeId', component: TributeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tribute Type' },
   {path: 'tributetype/:tributeTypeId', component: TributeTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Tribute Type' },
   {path: 'tributetype',  redirectTo: 'tributetypes'},
+  {path: 'userpresences', component: UserPresenceListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'User Presences' },
+  {path: 'userpresences/new', component: UserPresenceDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create User Presence' },
+  {path: 'userpresences/:userPresenceId', component: UserPresenceDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Presence' },
+  {path: 'userpresence/:userPresenceId', component: UserPresenceDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit User Presence' },
+  {path: 'userpresence',  redirectTo: 'userpresences'},
   {path: 'volunteergroups', component: VolunteerGroupListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Volunteer Groups' },
   {path: 'volunteergroups/new', component: VolunteerGroupDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Volunteer Group' },
   {path: 'volunteergroups/:volunteerGroupId', component: VolunteerGroupDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Volunteer Group' },

@@ -1,0 +1,105 @@
+@use '../messaging/messaging-common' as msg;
+
+.link-preview-card {
+  display: flex;
+  gap: 12px;
+  background: #2a2d35;
+  border: 1px solid #3a3d45;
+  border-left: 3px solid msg.$accent;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-top: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  max-width: 420px;
+
+  &:hover {
+    background: #32353e;
+    border-color: #4a4d55;
+  }
+}
+
+.link-preview-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.link-preview-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.link-preview-site {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.link-preview-dismiss {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 10px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transition: all 0.12s;
+
+  .link-preview-card:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: rgba(msg.$danger, 0.15);
+    color: msg.$danger;
+  }
+}
+
+.link-preview-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #60a5fa;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.link-preview-description {
+  font-size: 12px;
+  color: #d1d5db;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.link-preview-thumbnail {
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

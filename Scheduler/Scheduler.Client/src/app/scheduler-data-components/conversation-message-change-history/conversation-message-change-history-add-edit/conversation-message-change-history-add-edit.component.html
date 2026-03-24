@@ -1,0 +1,73 @@
+<div class="add-conversation-message-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-conversation-message-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Conversation Message Change History" 
+        *ngIf="userIsSchedulerConversationMessageChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #conversationMessageChangeHistoryModal let-modal>
+   <div class="modal-header conversation-message-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="conversationMessageChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Conversation Message Change History' : 'Add Conversation Message Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body conversation-message-change-history-modal-body">
+      <form [formGroup]="conversationMessageChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('conversationMessageId')">
+                <label for="ConversationMessageChangeHistory-conversationMessageId" id="label-ConversationMessageChangeHistory-conversationMessageId"><span class="text-danger">*</span>Conversation Message</label>
+                <select id="ConversationMessageChangeHistory-conversationMessageId" formControlName="conversationMessageId" class="form-select conversation-message-change-history-select" [disabled]="!userIsSchedulerConversationMessageChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Conversation Message</option>
+                    <option *ngFor="let conversationMessage of conversationMessages$ | async" [ngValue]="conversationMessage.id">{{conversationMessage.message}}</option>
+                </select>
+                <div *ngIf="conversationMessageChangeHistoryForm.get('conversationMessageId')?.invalid && conversationMessageChangeHistoryForm.get('conversationMessageId')?.touched" class="text-danger">
+                    Conversation Message is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="ConversationMessageChangeHistory-versionNumber" id="label-ConversationMessageChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="ConversationMessageChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control conversation-message-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="ConversationMessageChangeHistory-timeStamp" id="label-ConversationMessageChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="ConversationMessageChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control conversation-message-change-history-input" [disabled]="!userIsSchedulerConversationMessageChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="conversationMessageChangeHistoryForm.get('timeStamp')?.invalid && conversationMessageChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="ConversationMessageChangeHistory-userId" id="label-ConversationMessageChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="ConversationMessageChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control conversation-message-change-history-input" [disabled]="!userIsSchedulerConversationMessageChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="conversationMessageChangeHistoryForm.get('userId')?.invalid && conversationMessageChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="ConversationMessageChangeHistory-data" id="label-ConversationMessageChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="ConversationMessageChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control conversation-message-change-history-input" [disabled]="!userIsSchedulerConversationMessageChangeHistoryWriter()"></textarea>
+                <div *ngIf="conversationMessageChangeHistoryForm.get('data')?.invalid && conversationMessageChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer conversation-message-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Conversation Message Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !conversationMessageChangeHistoryForm.valid || conversationMessageChangeHistoryForm.pristine  || userIsSchedulerConversationMessageChangeHistoryWriter() == false " ngbTooltip="Save the Conversation Message Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Conversation Message Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>
