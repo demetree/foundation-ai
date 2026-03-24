@@ -83,6 +83,15 @@ namespace Scheduler.Server.Services
         Task<Document> UpdateDocumentMetadataAsync(Document document, int securityUserId, CancellationToken ct = default);
 
         /// <summary>
+        /// Replaces a document's binary content in-place (used for new version uploads
+        /// and text editor saves).  Delegates binary storage to the configured
+        /// IDocumentStorageProvider, creates version history via ChangeHistoryToolset,
+        /// and returns the updated Document entity.
+        /// </summary>
+        Task<Document> UpdateDocumentContentAsync(int documentId, Guid tenantGuid, byte[] newContent,
+            string fileName, string mimeType, int securityUserId, CancellationToken ct = default);
+
+        /// <summary>
         /// Moves a document to a different folder.
         /// </summary>
         Task MoveDocumentAsync(int documentId, int? targetFolderId, Guid tenantGuid, int securityUserId, CancellationToken ct = default);

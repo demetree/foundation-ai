@@ -1161,18 +1161,6 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 SecurityUser securityUser = await GetSecurityUserAsync();
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
-                //
-                // Load the existing document from the DB context so we can update it in-place.
-                //
-                Document existing = await _db.Documents
-                    .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == false)
-                    .FirstOrDefaultAsync();
-
-                if (existing == null)
-                {
-                    return NotFound("Document not found.");
-                }
-
                 IFormFileCollection files = Request.Form.Files;
                 if (files == null || files.Count == 0)
                 {
@@ -1188,32 +1176,27 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 }
 
                 //
-                // Update the existing document's file content in-place.
-                // The ChangeHistoryToolset will snapshot the old state for version history.
+                // Delegate content update to the service layer.
+                // UpdateDocumentContentAsync handles provider delegation, version history,
+                // and all metadata field updates.
                 //
-                existing.name = Path.GetFileNameWithoutExtension(file.FileName);
-                existing.fileName = file.FileName;
-                existing.mimeType = file.ContentType ?? "application/octet-stream";
-                existing.fileSizeBytes = file.Length;
-                existing.fileDataFileName = file.FileName;
-                existing.fileDataSize = file.Length;
-                existing.fileDataData = fileBytes;
-                existing.fileDataMimeType = file.ContentType ?? "application/octet-stream";
-                existing.uploadedBy = securityUser.accountName;
-                existing.uploadedDate = DateTime.UtcNow;
-
-                var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(
-                    _db, securityUser.id, false);
-                await chts.SaveEntityAsync(existing).ConfigureAwait(false);
+                Document updated = await _fileStorage.UpdateDocumentContentAsync(
+                    documentId, tenantGuid, fileBytes,
+                    file.FileName, file.ContentType ?? "application/octet-stream",
+                    securityUser.id);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-                    $"Uploaded new version (v{existing.versionNumber}) for document {documentId}",
+                    $"Uploaded new version (v{updated.versionNumber}) for document {documentId}",
                     securityUser.accountName);
                 _cache.InvalidateDocuments(tenantGuid);
                 _cache.InvalidateThumbnail(documentId, tenantGuid);
-                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "newVersion", documentId, versionNumber = existing.versionNumber });
+                await BroadcastDocumentChangedAsync(tenantGuid, new { action = "newVersion", documentId, versionNumber = updated.versionNumber });
 
-                return Ok(existing.ToDTO());
+                return Ok(updated.ToDTO());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {
@@ -1301,20 +1284,20 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 Guid tenantGuid = await UserTenantGuidAsync(securityUser);
 
                 //
-                // Load the existing document from the DB context so we can update it in-place.
-                // This is important — we must use the tracked entity for ChangeHistoryToolset
-                // to properly snapshot the old state before saving.
+                // Pre-check: verify the document is a text-based file before committing the update.
                 //
-                Document existing = await _db.Documents
+                Document check = await _db.Documents
                     .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == false)
+                    .Select(d => new Document { id = d.id, mimeType = d.mimeType })
+                    .AsNoTracking()
                     .FirstOrDefaultAsync();
 
-                if (existing == null)
+                if (check == null)
                 {
                     return NotFound("Document not found.");
                 }
 
-                string mime = existing.mimeType ?? "";
+                string mime = check.mimeType ?? "";
                 if (!EditableMimeTypes.Contains(mime) && !mime.StartsWith("text/", StringComparison.OrdinalIgnoreCase))
                 {
                     return BadRequest("Document is not a text-based file and cannot be edited.");
@@ -1323,32 +1306,28 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 byte[] contentBytes = System.Text.Encoding.UTF8.GetBytes(request.Content ?? "");
 
                 //
-                // Update the existing document's content fields in-place.
-                // The ChangeHistoryToolset will snapshot the old state automatically.
+                // Delegate content update to the service layer.
+                // UpdateDocumentContentAsync handles provider delegation, version history,
+                // and all metadata field updates.
                 //
-                existing.fileDataData = contentBytes;
-                existing.fileDataSize = contentBytes.Length;
-                existing.fileSizeBytes = contentBytes.Length;
-                existing.uploadedBy = securityUser.accountName;
-                existing.uploadedDate = DateTime.UtcNow;
-
-                //
-                // Use ChangeHistoryToolset to save — this creates a DocumentChangeHistory
-                // record with the previous state, providing proper version control.
-                //
-                var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(
-                    _db, securityUser.id, false);
-                await chts.SaveEntityAsync(existing).ConfigureAwait(false);
+                Document updated = await _fileStorage.UpdateDocumentContentAsync(
+                    documentId, tenantGuid, contentBytes,
+                    null, null,  // Keep existing fileName and mimeType
+                    securityUser.id);
 
                 await CreateAuditEventAsync(AuditEngine.AuditType.UpdateEntity,
-                    $"Saved text content (v{existing.versionNumber}) for document {documentId}",
+                    $"Saved text content (v{updated.versionNumber}) for document {documentId}",
                     securityUser.accountName);
                 _cache.InvalidateDocuments(tenantGuid);
 
                 await BroadcastDocumentChangedAsync(tenantGuid,
-                    new { action = "contentSaved", documentId, versionNumber = existing.versionNumber });
+                    new { action = "contentSaved", documentId, versionNumber = updated.versionNumber });
 
-                return Ok(existing.ToOutputDTO());
+                return Ok(updated.ToOutputDTO());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(ex.Message);
             }
             catch (Exception ex)
             {

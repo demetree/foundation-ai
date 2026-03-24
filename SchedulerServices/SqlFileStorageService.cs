@@ -487,6 +487,84 @@ namespace Scheduler.Server.Services
         }
 
 
+        public async Task<Document> UpdateDocumentContentAsync(int documentId, Guid tenantGuid, byte[] newContent,
+            string fileName, string mimeType, int securityUserId, CancellationToken ct = default)
+        {
+            Document existing = await _db.Documents
+                .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == false)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (existing == null)
+            {
+                throw new InvalidOperationException($"Document {documentId} not found.");
+            }
+
+            //
+            // Update file metadata
+            //
+            existing.fileName = fileName ?? existing.fileName;
+            existing.name = System.IO.Path.GetFileNameWithoutExtension(existing.fileName);
+            existing.mimeType = mimeType ?? existing.mimeType;
+            existing.fileSizeBytes = newContent?.Length ?? 0;
+            existing.fileDataFileName = existing.fileName;
+            existing.fileDataSize = newContent?.Length ?? 0;
+            existing.fileDataMimeType = existing.mimeType;
+            existing.uploadedDate = DateTime.UtcNow;
+
+            //
+            // Delegate binary storage to the configured provider
+            //
+            if (_storageProvider != null
+                && _storageProvider.ProviderName != "Sql"
+                && newContent != null
+                && newContent.Length > 0)
+            {
+                try
+                {
+                    // Delete old external content if the key will change
+                    string oldKey = existing.storageKey;
+                    string newKey = BuildStorageKey(existing);
+
+                    await _storageProvider.StoreContentAsync(newKey, newContent, existing.mimeType, ct).ConfigureAwait(false);
+
+                    if (!string.IsNullOrEmpty(oldKey) && oldKey != newKey)
+                    {
+                        try
+                        {
+                            await _storageProvider.DeleteContentAsync(oldKey, ct).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to delete old storage key '{OldKey}' for Document {DocumentId}.", oldKey, documentId);
+                        }
+                    }
+
+                    existing.storageKey = newKey;
+                    existing.fileDataData = null;  // Don't store binary inline in SQL
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to store updated content externally for Document {DocumentId}. Falling back to SQL storage.", documentId);
+                    existing.fileDataData = newContent;
+                }
+            }
+            else
+            {
+                // SQL mode — store binary inline
+                existing.fileDataData = newContent;
+            }
+
+            var chts = new Foundation.ChangeHistory.ChangeHistoryToolset<Document, DocumentChangeHistory>(_db, securityUserId, false, ct);
+            await chts.SaveEntityAsync(existing).ConfigureAwait(false);
+
+            _logger.LogInformation("Updated content for Document {DocumentId} '{FileName}' ({Size} bytes) for tenant {TenantGuid} [provider={Provider}].",
+                documentId, existing.fileName, existing.fileSizeBytes, tenantGuid, _storageProvider?.ProviderName ?? "Sql");
+
+            return existing;
+        }
+
+
         public async Task MoveDocumentAsync(int documentId, int? targetFolderId, Guid tenantGuid, int securityUserId, CancellationToken ct = default)
         {
             Document document = await _db.Documents
