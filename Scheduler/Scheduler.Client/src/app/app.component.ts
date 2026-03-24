@@ -17,6 +17,7 @@ import { AppTitleService } from './services/app-title.service';
 import { AuthService } from './services/auth.service';
 import { ConfigurationService } from './services/configuration.service';
 import { ThemeService } from './services/theme.service';
+import { MessagingSignalRService } from './services/messaging-signalr.service';
 import { Alertify } from './models/Alertify';
 import { LoginComponent } from './components/login/login.component';
 import { Modal } from 'bootstrap';
@@ -66,7 +67,8 @@ export class AppComponent implements OnInit, OnDestroy {
     private navigationService: NavigationService,
     @Inject('BASE_URL') private baseUrl: string,
     private http: HttpClient,
-    private themeService: ThemeService,) {
+    private themeService: ThemeService,
+    private messagingSignalR: MessagingSignalRService,) {
 
     storageManager.initialiseStorageSyncListener();
 
@@ -102,6 +104,7 @@ export class AppComponent implements OnInit, OnDestroy {
     //
     if (this.isUserLoggedIn === true) {
       this.themeService.initializeAfterLogin();
+      this.messagingSignalR.connect();
     }
 
     this.schedulerDataServiceManagerService.ClearAllCaches();
@@ -158,6 +161,9 @@ export class AppComponent implements OnInit, OnDestroy {
       //
       if (isLoggedIn === true) {
         this.themeService.initializeAfterLogin();
+        this.messagingSignalR.connect();
+      } else {
+        this.messagingSignalR.disconnect();
       }
 
 

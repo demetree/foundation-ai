@@ -263,3 +263,6 @@
 
 <!-- Backdrop only when expanded (click to close) -->
 <div class="sidebar-backdrop" *ngIf="isUserLoggedIn && isExpanded" (click)="close()"></div>
+
+<!-- Messaging Panel (slide-out overlay) -->
+<app-messaging #messagingPanel *ngIf="isUserLoggedIn"></app-messaging>

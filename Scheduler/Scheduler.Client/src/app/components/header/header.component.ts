@@ -266,7 +266,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   // ─── Message Icon ──────────────────────────────────────────────────────────
 
   onToggleMessaging(): void {
-    this.router.navigate(['/messaging']);
+    this.toggleMessaging.emit();
   }
 
 

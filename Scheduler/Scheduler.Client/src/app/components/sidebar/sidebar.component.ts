@@ -1,4 +1,5 @@
 import { Component, HostListener, Input, OnDestroy, AfterViewInit, ViewChildren, QueryList, ViewChild, EventEmitter, Output } from '@angular/core';
+import { MessagingComponent } from '../messaging/messaging.component';
 import { Router, NavigationEnd } from '@angular/router';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
 import { Subscription } from 'rxjs';
@@ -18,6 +19,7 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   @Output() helpClicked = new EventEmitter<void>();
   @ViewChildren(NgbTooltip) tips!: QueryList<NgbTooltip>;
   @ViewChild('customerSupport') customerSupport: any; // optional
+  @ViewChild('messagingPanel') messagingPanel?: MessagingComponent;
 
   public isExpanded = false;
   public volunteersExpanded = false;
@@ -125,6 +127,24 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
    */
   public toggleSchedulerMode(): void {
     this.schedulerModeService.toggleGlobalMode();
+  }
+
+
+  /**
+   * Toggle the messaging panel (off-canvas slide-out).
+   * Called from the header's messaging button via the app component.
+   */
+  public toggleMessaging(): void {
+    if (this.messagingPanel) {
+      this.messagingPanel.isOpen = !this.messagingPanel.isOpen;
+    }
+  }
+
+  /**
+   * Total unread message count for badge display.
+   */
+  public get unreadMessageCount(): number {
+    return this.messagingPanel?.totalUnreadCount ?? 0;
   }
 
 

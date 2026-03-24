@@ -8,9 +8,12 @@
 <ngx-toasta></ngx-toasta>
 
 <div *ngIf="!isMobile">
-  <app-header [isUserLoggedIn]="isUserLoggedIn" (invokeLogout)="logout()"></app-header>
+  <app-header [isUserLoggedIn]="isUserLoggedIn"
+              [unreadMessageCount]="sidebarRef?.unreadMessageCount ?? 0"
+              (invokeLogout)="logout()"
+              (toggleMessaging)="sidebarRef?.toggleMessaging()"></app-header>
   <div class="content">
-    <app-sidebar [isUserLoggedIn]="isUserLoggedIn"></app-sidebar>
+    <app-sidebar #sidebarRef [isUserLoggedIn]="isUserLoggedIn"></app-sidebar>
   </div>
   <div class="main-content flex-grow-1 p-4">
     <router-outlet></router-outlet>
@@ -18,7 +21,8 @@
 </div>
 
 <div *ngIf="isMobile">
-  <app-header [isUserLoggedIn]="isUserLoggedIn" (invokeLogout)="logout()"></app-header>
+  <app-header [isUserLoggedIn]="isUserLoggedIn"
+              (invokeLogout)="logout()"></app-header>
   <div class="main-mobile-content flex-grow-1">
     <router-outlet></router-outlet>
   </div>
