@@ -2887,5 +2887,414 @@ namespace Foundation.Scheduler.Services
                 ["voided"] = true
             });
         }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  EventCharge CRUD
+        //
+        //  All EventCharge writes flow through these methods to ensure:
+        //    - ChargeType and ChargeStatus validation
+        //    - Tax calculation from TaxCode
+        //    - Amount calculation (quantity × unitPrice)
+        //    - Status guards (can't modify invoiced/voided charges)
+        //    - Change history via EventChargeChangeHistory
+        //    - DB transaction wrapping
+        //
+        //  AI-Developed — This file was significantly developed with AI assistance.
+        // ────────────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Creates a new EventCharge on a ScheduledEvent.
+        /// Validates ChargeType, calculates tax from TaxCode, computes amounts.
+        /// </summary>
+        public async Task<FinancialOperationResult> CreateEventChargeAsync(
+            Guid tenantGuid,
+            int scheduledEventId,
+            int chargeTypeId,
+            int chargeStatusId,
+            decimal quantity,
+            decimal? unitPrice,
+            string description,
+            int currencyId,
+            int? resourceId = null,
+            int? rateTypeId = null,
+            int? taxCodeId = null,
+            string notes = null,
+            bool isAutomatic = false,
+            bool isDeposit = false,
+            int userId = 0,
+            CancellationToken cancellationToken = default)
+        {
+            //
+            // Validate: event exists and belongs to tenant
+            //
+            var scheduledEvent = await _context.ScheduledEvents
+                .Where(e => e.id == scheduledEventId && e.tenantGuid == tenantGuid && e.active == true && e.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (scheduledEvent == null)
+            {
+                return FinancialOperationResult.Fail("Scheduled event not found.");
+            }
+
+            //
+            // Validate: charge type exists
+            //
+            var chargeType = await _context.ChargeTypes
+                .Where(ct => ct.id == chargeTypeId && ct.active == true && ct.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (chargeType == null)
+            {
+                return FinancialOperationResult.Fail("Charge type not found.");
+            }
+
+            //
+            // Validate: charge status exists
+            //
+            var chargeStatus = await _context.ChargeStatuses
+                .Where(cs => cs.id == chargeStatusId && cs.active == true && cs.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (chargeStatus == null)
+            {
+                return FinancialOperationResult.Fail("Charge status not found.");
+            }
+
+            //
+            // If no description provided, fall back to charge type name
+            //
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                description = chargeType.name;
+            }
+
+            //
+            // Calculate amounts
+            //
+            decimal effectiveUnitPrice = unitPrice ?? 0;
+            decimal extendedAmount = quantity * effectiveUnitPrice;
+            decimal taxAmount = 0;
+
+            // If a tax code is specified, apply its rate
+            if (taxCodeId.HasValue)
+            {
+                var taxCode = await _context.TaxCodes
+                    .Where(tc => tc.id == taxCodeId.Value && tc.active == true && tc.deleted == false)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (taxCode != null)
+                {
+                    taxAmount = extendedAmount * taxCode.rate;
+                }
+            }
+            else if (chargeType.taxCodeId.HasValue)
+            {
+                // Inherit tax code from charge type
+                taxCodeId = chargeType.taxCodeId;
+                var taxCode = await _context.TaxCodes
+                    .Where(tc => tc.id == chargeType.taxCodeId.Value && tc.active == true && tc.deleted == false)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (taxCode != null)
+                {
+                    taxAmount = extendedAmount * taxCode.rate;
+                }
+            }
+
+            decimal totalAmount = extendedAmount + taxAmount;
+
+            //
+            // Build the entity
+            //
+            var eventCharge = new EventCharge
+            {
+                tenantGuid = tenantGuid,
+                scheduledEventId = scheduledEventId,
+                resourceId = resourceId,
+                chargeTypeId = chargeTypeId,
+                chargeStatusId = chargeStatusId,
+                quantity = quantity,
+                unitPrice = unitPrice,
+                extendedAmount = extendedAmount,
+                taxAmount = taxAmount,
+                totalAmount = totalAmount,
+                description = description?.Length > 250 ? description.Substring(0, 250) : description,
+                currencyId = currencyId,
+                rateTypeId = rateTypeId,
+                taxCodeId = taxCodeId,
+                notes = notes,
+                isAutomatic = isAutomatic,
+                isDeposit = isDeposit,
+                versionNumber = 1,
+                objectGuid = Guid.NewGuid(),
+                active = true,
+                deleted = false
+            };
+
+            _context.EventCharges.Add(eventCharge);
+
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    //
+                    // Write change history
+                    //
+                    WriteEventChargeChangeHistory(eventCharge, userId, tenantGuid);
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "EventCharge {ChargeId} created on event {EventId}. Type={ChargeType}, Total={Total}",
+                        eventCharge.id, scheduledEventId, chargeType.name, totalAmount);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to create EventCharge on event {EventId}", scheduledEventId);
+                    return FinancialOperationResult.Fail($"Failed to create charge: {ex.Message}");
+                }
+            }
+
+            return FinancialOperationResult.Ok(new Dictionary<string, object>
+            {
+                ["eventChargeId"] = eventCharge.id,
+                ["extendedAmount"] = extendedAmount,
+                ["taxAmount"] = taxAmount,
+                ["totalAmount"] = totalAmount
+            });
+        }
+
+
+        /// <summary>
+        /// Updates an existing EventCharge.
+        /// Cannot update charges that have been invoiced or voided.
+        /// Recalculates amounts from quantity × unitPrice + tax.
+        /// </summary>
+        public async Task<FinancialOperationResult> UpdateEventChargeAsync(
+            Guid tenantGuid,
+            int eventChargeId,
+            int chargeTypeId,
+            int chargeStatusId,
+            decimal quantity,
+            decimal? unitPrice,
+            string description,
+            int currencyId,
+            int? resourceId = null,
+            int? rateTypeId = null,
+            int? taxCodeId = null,
+            string notes = null,
+            bool isDeposit = false,
+            int userId = 0,
+            CancellationToken cancellationToken = default)
+        {
+            var existing = await _context.EventCharges
+                .Where(ec => ec.id == eventChargeId && ec.tenantGuid == tenantGuid && ec.active == true && ec.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existing == null)
+            {
+                return FinancialOperationResult.Fail("Event charge not found.");
+            }
+
+            //
+            // Guard: check if the charge has been invoiced or voided — can't edit those
+            //
+            var currentStatus = await _context.ChargeStatuses
+                .Where(cs => cs.id == existing.chargeStatusId)
+                .Select(cs => cs.name)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (currentStatus == "Invoiced" || currentStatus == "Void")
+            {
+                return FinancialOperationResult.Fail($"Cannot update a charge with status '{currentStatus}'.");
+            }
+
+            //
+            // Validate charge type
+            //
+            var chargeType = await _context.ChargeTypes
+                .Where(ct => ct.id == chargeTypeId && ct.active == true && ct.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (chargeType == null)
+            {
+                return FinancialOperationResult.Fail("Charge type not found.");
+            }
+
+            //
+            // Recalculate amounts
+            //
+            decimal effectiveUnitPrice = unitPrice ?? 0;
+            decimal extendedAmount = quantity * effectiveUnitPrice;
+            decimal taxAmount = 0;
+
+            int? resolvedTaxCodeId = taxCodeId ?? chargeType.taxCodeId;
+            if (resolvedTaxCodeId.HasValue)
+            {
+                var taxCode = await _context.TaxCodes
+                    .Where(tc => tc.id == resolvedTaxCodeId.Value && tc.active == true && tc.deleted == false)
+                    .FirstOrDefaultAsync(cancellationToken);
+
+                if (taxCode != null)
+                {
+                    taxAmount = extendedAmount * taxCode.rate;
+                }
+            }
+
+            decimal totalAmount = extendedAmount + taxAmount;
+
+            //
+            // Apply updates
+            //
+            existing.chargeTypeId = chargeTypeId;
+            existing.chargeStatusId = chargeStatusId;
+            existing.quantity = quantity;
+            existing.unitPrice = unitPrice;
+            existing.extendedAmount = extendedAmount;
+            existing.taxAmount = taxAmount;
+            existing.totalAmount = totalAmount;
+            existing.description = description?.Length > 250 ? description.Substring(0, 250) : description;
+            existing.currencyId = currencyId;
+            existing.resourceId = resourceId;
+            existing.rateTypeId = rateTypeId;
+            existing.taxCodeId = resolvedTaxCodeId;
+            existing.notes = notes;
+            existing.isDeposit = isDeposit;
+            existing.versionNumber++;
+
+            _context.Entry(existing).State = EntityState.Modified;
+
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    WriteEventChargeChangeHistory(existing, userId, tenantGuid);
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation(
+                        "EventCharge {ChargeId} updated. Version={Version}, Total={Total}",
+                        eventChargeId, existing.versionNumber, totalAmount);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to update EventCharge {ChargeId}", eventChargeId);
+                    return FinancialOperationResult.Fail($"Failed to update charge: {ex.Message}");
+                }
+            }
+
+            return FinancialOperationResult.Ok(new Dictionary<string, object>
+            {
+                ["eventChargeId"] = existing.id,
+                ["versionNumber"] = existing.versionNumber,
+                ["extendedAmount"] = extendedAmount,
+                ["taxAmount"] = taxAmount,
+                ["totalAmount"] = totalAmount
+            });
+        }
+
+
+        /// <summary>
+        /// Soft-deletes an EventCharge.
+        /// Cannot delete charges that have been invoiced.
+        /// </summary>
+        public async Task<FinancialOperationResult> DeleteEventChargeAsync(
+            Guid tenantGuid,
+            int eventChargeId,
+            int userId = 0,
+            CancellationToken cancellationToken = default)
+        {
+            var existing = await _context.EventCharges
+                .Where(ec => ec.id == eventChargeId && ec.tenantGuid == tenantGuid && ec.active == true && ec.deleted == false)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (existing == null)
+            {
+                return FinancialOperationResult.Fail("Event charge not found.");
+            }
+
+            //
+            // Guard: can't delete invoiced charges
+            //
+            var currentStatus = await _context.ChargeStatuses
+                .Where(cs => cs.id == existing.chargeStatusId)
+                .Select(cs => cs.name)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (currentStatus == "Invoiced")
+            {
+                return FinancialOperationResult.Fail("Cannot delete an invoiced charge. Void the invoice first.");
+            }
+
+            //
+            // Soft delete
+            //
+            existing.deleted = true;
+            existing.versionNumber++;
+            _context.Entry(existing).State = EntityState.Modified;
+
+            using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+            {
+                try
+                {
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    WriteEventChargeChangeHistory(existing, userId, tenantGuid);
+                    await _context.SaveChangesAsync(cancellationToken);
+
+                    await transaction.CommitAsync(cancellationToken);
+
+                    _logger.LogInformation("EventCharge {ChargeId} soft-deleted by user {UserId}", eventChargeId, userId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to delete EventCharge {ChargeId}", eventChargeId);
+                    return FinancialOperationResult.Fail($"Failed to delete charge: {ex.Message}");
+                }
+            }
+
+            return FinancialOperationResult.Ok(new Dictionary<string, object>
+            {
+                ["eventChargeId"] = existing.id,
+                ["deleted"] = true
+            });
+        }
+
+
+        /// <summary>
+        /// Writes a change history record for an EventCharge.
+        /// </summary>
+        private void WriteEventChargeChangeHistory(EventCharge eventCharge, int userId, Guid tenantGuid)
+        {
+            _context.EventChargeChangeHistories.Add(new EventChargeChangeHistory
+            {
+                eventChargeId = eventCharge.id,
+                versionNumber = eventCharge.versionNumber,
+                timeStamp = DateTime.UtcNow,
+                userId = userId,
+                tenantGuid = tenantGuid,
+                data = JsonSerializer.Serialize(new
+                {
+                    scheduledEventId = eventCharge.scheduledEventId,
+                    chargeTypeId = eventCharge.chargeTypeId,
+                    chargeStatusId = eventCharge.chargeStatusId,
+                    quantity = eventCharge.quantity,
+                    unitPrice = eventCharge.unitPrice,
+                    extendedAmount = eventCharge.extendedAmount,
+                    taxAmount = eventCharge.taxAmount,
+                    totalAmount = eventCharge.totalAmount,
+                    description = eventCharge.description,
+                    isDeposit = eventCharge.isDeposit,
+                    deleted = eventCharge.deleted
+                })
+            });
+        }
     }
 }

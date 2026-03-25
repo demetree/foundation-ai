@@ -910,7 +910,7 @@ export class EventChargeService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.put<EventChargeData>(this.baseUrl + 'api/EventCharge/' + id.toString(), eventCharge, { headers: authenticationHeaders } ).pipe(
+        return this.http.put<EventChargeData>(this.baseUrl + 'api/financial/charges/' + id.toString(), eventCharge, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveEventCharge(raw)),
             catchError(error => {
@@ -923,7 +923,7 @@ export class EventChargeService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.post<EventChargeData>(this.baseUrl + 'api/EventCharge', eventCharge, { headers: authenticationHeaders } ).pipe(
+        return this.http.post<EventChargeData>(this.baseUrl + 'api/financial/charges', eventCharge, { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             map(raw => this.ReviveEventCharge(raw)),
             catchError(error => {
@@ -936,7 +936,7 @@ export class EventChargeService extends SecureEndpointBase {
 
         const authenticationHeaders = this.authService.GetAuthenticationHeaders();
 
-        return this.http.delete<void>(this.baseUrl + 'api/EventCharge/' + id.toString(), { headers: authenticationHeaders } ).pipe(
+        return this.http.delete<void>(this.baseUrl + 'api/financial/charges/' + id.toString(), { headers: authenticationHeaders } ).pipe(
             tap(() => this.ClearAllCaches()),
             catchError(error => {
                 return this.handleError(error, () => this.DeleteEventCharge(id));

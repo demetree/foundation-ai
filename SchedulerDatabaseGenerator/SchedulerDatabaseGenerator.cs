@@ -3067,6 +3067,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             eventChargeTable.AddString100Field("externalId", true).AddScriptComments("Identifier from extenral system - possibly invoice number or some other billing grouper").CreateIndex();
             eventChargeTable.AddVersionControl();
             eventChargeTable.AddControlFields();
+            eventChargeTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by FinancialManagementService
 
             #region Financial Ledger — FinancialCategory + FinancialTransaction
 
@@ -3422,6 +3423,7 @@ DESIGN NOTE: EventCharge supports both flat fees and quantity-based charges.
             paymentTransactionTable.AddTextField("notes", true).AddScriptComments("Optional notes about the payment.");
             paymentTransactionTable.AddVersionControl();
             paymentTransactionTable.AddControlFields();
+            paymentTransactionTable.SetTableToBeReadonlyForControllerCreationPurposes(); // Writes managed by payment processing service
 
             #endregion
 

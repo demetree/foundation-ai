@@ -1363,5 +1363,254 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
             return Ok(result.Data);
         }
+
+
+        // ────────────────────────────────────────────────────────────────────────
+        //  EventCharge CRUD (delegated to FinancialManagementService)
+        //
+        //  These endpoints replace the code-generated write routes on
+        //  EventChargesController, routing all writes through the financial
+        //  service for proper transaction handling and validation.
+        //
+        //  AI-Developed — This file was significantly developed with AI assistance.
+        // ────────────────────────────────────────────────────────────────────────
+
+        /// <summary>DTO for EventCharge create/update requests.</summary>
+        public class EventChargeRequest
+        {
+            public int scheduledEventId { get; set; }
+            public int chargeTypeId { get; set; }
+            public int chargeStatusId { get; set; }
+            public decimal quantity { get; set; } = 1;
+            public decimal? unitPrice { get; set; }
+            public string description { get; set; }
+            public int currencyId { get; set; }
+            public int? resourceId { get; set; }
+            public int? rateTypeId { get; set; }
+            public int? taxCodeId { get; set; }
+            public string notes { get; set; }
+            public bool isAutomatic { get; set; }
+            public bool isDeposit { get; set; }
+        }
+
+
+        /// <summary>
+        /// Creates a new EventCharge via the FinancialManagementService.
+        /// Validates ChargeType, calculates tax, wraps in a DB transaction.
+        /// </summary>
+        [HttpPost]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/financial/charges")]
+        public async Task<IActionResult> CreateEventCharge(
+            [FromBody] EventChargeRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required." });
+            }
+
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+            int userId;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                userId = securityUser.id;
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "CreateEventCharge requested by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.CreateEventChargeAsync(
+                userTenantGuid,
+                request.scheduledEventId,
+                request.chargeTypeId,
+                request.chargeStatusId,
+                request.quantity,
+                request.unitPrice,
+                request.description,
+                request.currencyId,
+                request.resourceId,
+                request.rateTypeId,
+                request.taxCodeId,
+                request.notes,
+                request.isAutomatic,
+                request.isDeposit,
+                userId,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            await CreateAuditEventAsync(AuditType.CreateEntity,
+                $"EventCharge created via FinancialManagementService. ChargeId={result.Data.GetValueOrDefault("eventChargeId")}");
+
+            return Ok(result.Data);
+        }
+
+
+        /// <summary>
+        /// Updates an existing EventCharge via the FinancialManagementService.
+        /// Guards against editing invoiced/voided charges.
+        /// </summary>
+        [HttpPut]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/financial/charges/{id}")]
+        public async Task<IActionResult> UpdateEventCharge(
+            int id,
+            [FromBody] EventChargeRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required." });
+            }
+
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+            int userId;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                userId = securityUser.id;
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "UpdateEventCharge requested by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.UpdateEventChargeAsync(
+                userTenantGuid,
+                id,
+                request.chargeTypeId,
+                request.chargeStatusId,
+                request.quantity,
+                request.unitPrice,
+                request.description,
+                request.currencyId,
+                request.resourceId,
+                request.rateTypeId,
+                request.taxCodeId,
+                request.notes,
+                request.isDeposit,
+                userId,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            await CreateAuditEventAsync(AuditType.UpdateEntity,
+                $"EventCharge {id} updated via FinancialManagementService.");
+
+            return Ok(result.Data);
+        }
+
+
+        /// <summary>
+        /// Soft-deletes an EventCharge via the FinancialManagementService.
+        /// Guards against deleting invoiced charges.
+        /// </summary>
+        [HttpDelete]
+        [RateLimit(RateLimitOption.TwoPerSecond, Scope = RateLimitScope.PerUser)]
+        [Route("api/financial/charges/{id}")]
+        public async Task<IActionResult> DeleteEventCharge(
+            int id,
+            CancellationToken cancellationToken = default)
+        {
+            StartAuditEventClock();
+
+            if (await DoesUserHaveWritePrivilegeSecurityCheckAsync(WRITE_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
+            {
+                return Forbid();
+            }
+
+            SecurityUser securityUser = await GetSecurityUserAsync(cancellationToken);
+            Guid userTenantGuid;
+            int userId;
+
+            try
+            {
+                userTenantGuid = await UserTenantGuidAsync(securityUser, cancellationToken);
+                userId = securityUser.id;
+            }
+            catch (Exception ex)
+            {
+                await CreateAuditEventAsync(AuditType.Error,
+                    "DeleteEventCharge requested by user with no tenant. User: " + securityUser?.accountName,
+                    securityUser?.accountName, ex);
+                return Problem("Your user account is not configured with a tenant.");
+            }
+
+            var financialService = HttpContext.RequestServices
+                .GetService(typeof(Foundation.Scheduler.Services.FinancialManagementService))
+                as Foundation.Scheduler.Services.FinancialManagementService;
+
+            if (financialService == null)
+            {
+                return Problem("Financial management service is not available.");
+            }
+
+            var result = await financialService.DeleteEventChargeAsync(
+                userTenantGuid,
+                id,
+                userId,
+                cancellationToken);
+
+            if (!result.Success)
+            {
+                return BadRequest(new { error = result.ErrorMessage });
+            }
+
+            await CreateAuditEventAsync(AuditType.DeleteEntity,
+                $"EventCharge {id} deleted via FinancialManagementService.");
+
+            return Ok(result.Data);
+        }
     }
 }

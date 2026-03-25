@@ -27,6 +27,8 @@ import { DocumentService, DocumentSubmitData } from '../../../scheduler-data-ser
 import { DocumentTypeService, DocumentTypeData } from '../../../scheduler-data-services/document-type.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
+import { ChargeStatusService, ChargeStatusData } from '../../../scheduler-data-services/charge-status.service';
+import { CurrencyService, CurrencyData } from '../../../scheduler-data-services/currency.service';
 
 @Component({
   selector: 'app-private-rental-booking',
@@ -68,6 +70,10 @@ export class PrivateRentalBookingComponent implements OnInit {
   pendingAgreementBase64: string | null = null;
   documentTypes: DocumentTypeData[] = [];
 
+  // Financial lookups for charge creation
+  chargeStatuses: ChargeStatusData[] = [];
+  currencies: CurrencyData[] = [];
+
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -83,7 +89,9 @@ export class PrivateRentalBookingComponent implements OnInit {
     private documentService: DocumentService,
     private documentTypeService: DocumentTypeService,
     private alertService: AlertService,
-    private authService: AuthService
+    private authService: AuthService,
+    private chargeStatusService: ChargeStatusService,
+    private currencyService: CurrencyService
   ) {}
 
 
@@ -194,6 +202,25 @@ export class PrivateRentalBookingComponent implements OnInit {
       );
     } catch (err) {
       console.error('Failed to load document types', err);
+    }
+
+    //
+    // Load charge statuses and currencies (for EventCharge creation)
+    //
+    try {
+      this.chargeStatuses = await lastValueFrom(
+        this.chargeStatusService.GetChargeStatusList({ active: true, deleted: false })
+      );
+    } catch (err) {
+      console.error('Failed to load charge statuses', err);
+    }
+
+    try {
+      this.currencies = await lastValueFrom(
+        this.currencyService.GetCurrencyList({ active: true, deleted: false })
+      );
+    } catch (err) {
+      console.error('Failed to load currencies', err);
     }
   }
 
@@ -398,42 +425,53 @@ export class PrivateRentalBookingComponent implements OnInit {
 
       //
       // 3. Create EventCharge if payment is needed
+      //    Route: POST api/financial/charges (FinancialManagementService)
       //
       if (this.selectedEventType?.requiresPayment && form.price > 0) {
-        const chargeSubmit: any = {
-          scheduledEventId: savedEvent.id,
-          chargeTypeId: this.selectedEventType.chargeTypeId,
-          amount: form.price,
-          description: `${this.selectedEventType.name} rental fee`,
-          isDeposit: false,
-          isPaid: this.markAsPaid,
-          paidDate: this.markAsPaid ? new Date().toISOString() : null,
-          active: true,
-          deleted: false
-        };
 
-        await lastValueFrom(
-          this.eventChargeService.PostEventCharge(chargeSubmit)
-        );
+        // Resolve default ChargeStatus and Currency
+        const defaultStatus = this.chargeStatuses.length > 0 ? this.chargeStatuses[0] : null;
+        const defaultCurrency = this.currencies.length > 0 ? this.currencies[0] : null;
 
-        //
-        // 3b. Create deposit charge if needed
-        //
-        if (this.selectedEventType?.requiresDeposit) {
-          const depositSubmit: any = {
+        if (!defaultStatus || !defaultCurrency) {
+          console.warn('Missing default ChargeStatus or Currency — skipping charge creation');
+        } else {
+          const chargeSubmit: any = {
             scheduledEventId: savedEvent.id,
             chargeTypeId: this.selectedEventType.chargeTypeId,
-            amount: Math.round(form.price * 0.5),  // 50% deposit
-            description: `${this.selectedEventType.name} deposit`,
-            isDeposit: true,
-            isPaid: false,
-            active: true,
-            deleted: false
+            chargeStatusId: defaultStatus.id,
+            quantity: 1,
+            unitPrice: form.price,
+            description: `${this.selectedEventType.name} rental fee`,
+            currencyId: defaultCurrency.id,
+            isDeposit: false,
+            isAutomatic: false
           };
 
           await lastValueFrom(
-            this.eventChargeService.PostEventCharge(depositSubmit)
+            this.eventChargeService.PostEventCharge(chargeSubmit)
           );
+
+          //
+          // 3b. Create deposit charge if needed
+          //
+          if (this.selectedEventType?.requiresDeposit) {
+            const depositSubmit: any = {
+              scheduledEventId: savedEvent.id,
+              chargeTypeId: this.selectedEventType.chargeTypeId,
+              chargeStatusId: defaultStatus.id,
+              quantity: 1,
+              unitPrice: Math.round(form.price * 0.5),  // 50% deposit
+              description: `${this.selectedEventType.name} deposit`,
+              currencyId: defaultCurrency.id,
+              isDeposit: true,
+              isAutomatic: false
+            };
+
+            await lastValueFrom(
+              this.eventChargeService.PostEventCharge(depositSubmit)
+            );
+          }
         }
       }
 
