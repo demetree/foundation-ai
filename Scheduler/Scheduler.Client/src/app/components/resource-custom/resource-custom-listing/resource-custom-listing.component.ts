@@ -4,10 +4,11 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
-import { ResourceCustomAddEditComponent } from '../resource-custom-add-edit/resource-custom-add-edit.component';
+import { StaffQuickAddModalComponent } from '../staff-quick-add-modal/staff-quick-add-modal.component';
 import { ResourceCustomTableComponent } from '..//resource-custom-table/resource-custom-table.component';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
+import { TerminologyService } from '../../../services/terminology.service';
 
 @Component({
   selector: 'app-resource-listing',
@@ -15,7 +16,7 @@ import { AuthService } from '../../../services/auth.service';
   styleUrls: ['./resource-custom-listing.component.scss']
 })
 export class ResourceCustomListingComponent implements OnInit, AfterViewInit, CanComponentDeactivate {
-  @ViewChild(ResourceCustomAddEditComponent) addEditResourceComponent!: ResourceCustomAddEditComponent;
+  @ViewChild(StaffQuickAddModalComponent) addEditResourceComponent!: StaffQuickAddModalComponent;
   @ViewChild(ResourceCustomTableComponent) resourceTableComponent!: ResourceCustomTableComponent;
 
   public Resources: ResourceData[] | null = null;
@@ -35,7 +36,8 @@ export class ResourceCustomListingComponent implements OnInit, AfterViewInit, Ca
     private alertService: AlertService,
     private authService: AuthService,
     private navigationService: NavigationService,
-    private breakpointObserver: BreakpointObserver) { }
+    private breakpointObserver: BreakpointObserver,
+    public terminology: TerminologyService) { }
 
   ngOnInit(): void {
 

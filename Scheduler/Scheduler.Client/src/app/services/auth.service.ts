@@ -739,7 +739,7 @@ export class AuthService {
     // Deny any access if the user has the 'Volunteer No Access' role
     //
     for (var i = 0; i < user.roles.length; i++) {
-      if (user.roles[i] == "Volunteer No Access") {
+      if (user.roles[i] == "Scheduler No Access") {
         return false;
       }
     }
@@ -748,7 +748,7 @@ export class AuthService {
     // Return true if the user has the 'Volunteer Manager' role
     //
     for (var i = 0; i < user.roles.length; i++) {
-      if (user.roles[i] == "Volunteer Manager") {
+      if (user.roles[i] == "Scheduler Volunteer Manager") {
         return true;
       }
     }
@@ -779,7 +779,7 @@ export class AuthService {
     // Deny any access if the user has the 'Fundraising No Access' role
     //
     for (var i = 0; i < user.roles.length; i++) {
-      if (user.roles[i] == "Fundraising No Access") {
+      if (user.roles[i] == "Sceduler No Access") {
         return false;
       }
     }
@@ -788,7 +788,7 @@ export class AuthService {
     // Return true if the user has the 'Fundraising Manager' role
     //
     for (var i = 0; i < user.roles.length; i++) {
-      if (user.roles[i] == "Fundraising Manager") {
+      if (user.roles[i] == "Scheduler Fundraising Manager") {
         return true;
       }
     }
@@ -819,7 +819,7 @@ export class AuthService {
     // Deny any access if the user has the 'Financial No Access' role
     //
     for (var i = 0; i < user.roles.length; i++) {
-      if (user.roles[i] == "Financial No Access") {
+      if (user.roles[i] == "Scheduler No Access") {
         return false;
       }
     }
@@ -828,13 +828,57 @@ export class AuthService {
     // Return true if the user has the 'Financial Manager' role
     //
     for (var i = 0; i < user.roles.length; i++) {
-      if (user.roles[i] == "Financial Manager") {
+      if (user.roles[i] == "Scheduler Financial Manager") {
         return true;
       }
     }
 
     return false;
   }
+
+
+
+
+  // AI-Developed — Messaging admin management role check added with AI assistance.
+  ///
+  /// Returns true if the current user has the 'Scheduler Messaging Manager' role.
+  /// Used with the system-level MessageEnabled toggle to gate
+  /// access to message administration features.
+  ///
+  get isMessagingManager(): boolean {
+
+    var user = this.currentUser;
+
+    if (user == null) {
+      return false;
+    }
+
+    if (user.roles == null || user.roles.length == 0) {
+      return false;
+    }
+
+    //
+    // Deny any access if the user has the 'Financial No Access' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Scheduler No Access") {
+        return false;
+      }
+    }
+
+    //
+    // Return true if the user has the 'Scheduler Messaging Manager' role
+    //
+    for (var i = 0; i < user.roles.length; i++) {
+      if (user.roles[i] == "Scheduler Messaging Manager") {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+
 
 
   ///

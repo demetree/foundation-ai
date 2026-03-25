@@ -1427,6 +1427,8 @@ import { VolunteerStatusListingComponent } from './scheduler-data-components/vol
 import { VolunteerStatusAddEditComponent } from './scheduler-data-components/volunteer-status/volunteer-status-add-edit/volunteer-status-add-edit.component';
 import { VolunteerStatusDetailComponent } from './scheduler-data-components/volunteer-status/volunteer-status-detail/volunteer-status-detail.component';
 import { VolunteerStatusTableComponent } from './scheduler-data-components/volunteer-status/volunteer-status-table/volunteer-status-table.component';
+import { StaffQuickAddModalComponent } from './components/resource-custom/staff-quick-add-modal/staff-quick-add-modal.component';
+import { DailyDispatchComponent } from './components/scheduler/daily-dispatch/daily-dispatch.component';
 //
 // End of imports for Scheduler Data Components
 //
@@ -2588,6 +2590,8 @@ VolunteerStatusTableComponent,
     LocationMapComponent,
     ConfirmationDialogComponent,
     InputDialogComponent,
+    StaffQuickAddModalComponent,
+    DailyDispatchComponent,
 
   ],
   imports: [

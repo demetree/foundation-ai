@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AuthService } from '../../../services/auth.service'
 
 
 interface UpcomingEvent {
@@ -62,7 +63,7 @@ export class OverviewCoordinatorTabComponent implements OnInit, OnDestroy {
   recentTransactions: RecentTxn[] = [];
   ytdSummary: YtdSummary = { totalRevenue: 0, totalExpenses: 0, netIncome: 0 };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -77,6 +78,9 @@ export class OverviewCoordinatorTabComponent implements OnInit, OnDestroy {
   private loadData(): void {
     this.loading = true;
 
+    const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
+
     const now = new Date();
     const sevenDaysLater = new Date(now);
     sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
@@ -89,7 +93,8 @@ export class OverviewCoordinatorTabComponent implements OnInit, OnDestroy {
           endDateTime: sevenDaysLater.toISOString(),
           active: 'true',
           includeRelations: 'true'
-        }
+        },
+        headers: authenticationHeaders
       }),
       deposits: this.http.get<DepositsResponse>('/api/FinancialTransactions/OutstandingDeposits'),
       transactions: this.http.get<any[]>('/api/FinancialTransactions', {
@@ -97,11 +102,12 @@ export class OverviewCoordinatorTabComponent implements OnInit, OnDestroy {
           includeRelations: 'true',
           pageSize: '10',
           pageNumber: '1'
-        }
+        }, headers: authenticationHeaders
       }),
       summary: this.http.get<any>('/api/FinancialTransactions/Summary', {
-        params: { year: year.toString() }
-      })
+        params: { year: year.toString() },
+        headers: authenticationHeaders
+      }, )
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe({

@@ -2,20 +2,20 @@
    Messaging Admin Dashboard Styles
    ═══════════════════════════════════════════════════════════════════════════ */
 
-$bg-dark: #1e2226;
-$bg-darker: #15181c;
-$bg-panel: #1a1d21;
-$bg-card: #22262b;
-$bg-hover: rgba(255, 255, 255, 0.06);
-$border: rgba(255, 255, 255, 0.08);
-$accent: #4d8df7;
-$accent-hover: #3a7de6;
-$text-primary: #f1f1f2;
-$text-secondary: #a0a3a8;
-$text-muted: #71747a;
-$online: #2ecc71;
-$danger: #e63946;
-$warning: #f1c40f;
+$bg-dark: var(--sch-bg-deep);
+$bg-darker: var(--sch-surface-subtle);
+$bg-panel: var(--sch-bg-elevated);
+$bg-card: var(--sch-bg-card);
+$bg-hover: var(--sch-bg-hover);
+$border: var(--sch-border);
+$accent: var(--sch-primary);
+$accent-hover: var(--sch-primary-hover, var(--sch-primary));
+$text-primary: var(--sch-text-primary);
+$text-secondary: var(--sch-text-secondary);
+$text-muted: var(--sch-text-muted);
+$online: var(--sch-success, #2ecc71);
+$danger: var(--sch-danger, #e63946);
+$warning: var(--sch-warning, #f1c40f);
 $radius: 10px;
 
 
@@ -71,7 +71,7 @@ $radius: 10px;
   cursor: pointer;
   transition: background 0.2s;
 
-  &:hover { background: darken($danger, 8%); }
+  &:hover { background: color-mix(in srgb, $danger, black 8%); }
 }
 
 .btn-action {
@@ -85,12 +85,12 @@ $radius: 10px;
 
   &:hover {
     color: $accent;
-    background: rgba($accent, 0.1);
+    background: color-mix(in srgb, $accent 10%, transparent);
   }
 
   &.btn-action-danger:hover {
     color: $danger;
-    background: rgba($danger, 0.1);
+    background: color-mix(in srgb, $danger 10%, transparent);
   }
 }
 
@@ -297,8 +297,8 @@ $radius: 10px;
   }
 
   &.metric-alert {
-    border-color: rgba($danger, 0.3);
-    background: rgba($danger, 0.06);
+    border-color: color-mix(in srgb, $danger 30%, transparent);
+    background: color-mix(in srgb, $danger 6%, transparent);
   }
 }
 
@@ -313,12 +313,12 @@ $radius: 10px;
 
   &.conversations { background: rgba(#4d8df7, 0.15); color: #4d8df7; }
   &.messages { background: rgba(#7b61ff, 0.15); color: #7b61ff; }
-  &.users { background: rgba($online, 0.15); color: $online; }
+  &.users { background: color-mix(in srgb, $online 15%, transparent); color: $online; }
   &.today { background: rgba(#f59e0b, 0.15); color: #f59e0b; }
   &.week { background: rgba(#06b6d4, 0.15); color: #06b6d4; }
-  &.flags { background: rgba($danger, 0.15); color: $danger; }
+  &.flags { background: color-mix(in srgb, $danger 15%, transparent); color: $danger; }
   &.delivery { background: rgba(#8b5cf6, 0.15); color: #8b5cf6; }
-  &.failures { background: rgba($danger, 0.15); color: $danger; }
+  &.failures { background: color-mix(in srgb, $danger 15%, transparent); color: $danger; }
 }
 
 .metric-info {
@@ -478,17 +478,17 @@ $radius: 10px;
   white-space: nowrap;
 }
 
-.badge-public { background: rgba($accent, 0.15); color: $accent; }
+.badge-public { background: color-mix(in srgb, $accent 15%, transparent); color: $accent; }
 .badge-private { background: rgba(#8b5cf6, 0.15); color: #8b5cf6; }
-.badge-active { background: rgba($online, 0.15); color: $online; }
-.badge-archived { background: rgba($text-muted, 0.15); color: $text-muted; }
-.badge-open { background: rgba($warning, 0.15); color: $warning; }
-.badge-resolved { background: rgba($online, 0.15); color: $online; }
-.badge-reason { background: rgba($danger, 0.12); color: $danger; }
-.badge-action { background: rgba($accent, 0.12); color: $accent; }
+.badge-active { background: color-mix(in srgb, $online 15%, transparent); color: $online; }
+.badge-archived { background: color-mix(in srgb, $text-muted 15%, transparent); color: $text-muted; }
+.badge-open { background: color-mix(in srgb, $warning 15%, transparent); color: $warning; }
+.badge-resolved { background: color-mix(in srgb, $online 15%, transparent); color: $online; }
+.badge-reason { background: color-mix(in srgb, $danger 12%, transparent); color: $danger; }
+.badge-action { background: color-mix(in srgb, $accent 12%, transparent); color: $accent; }
 .badge-provider { background: rgba(#8b5cf6, 0.12); color: #8b5cf6; }
-.badge-success { background: rgba($online, 0.15); color: $online; }
-.badge-failure { background: rgba($danger, 0.15); color: $danger; }
+.badge-success { background: color-mix(in srgb, $online 15%, transparent); color: $online; }
+.badge-failure { background: color-mix(in srgb, $danger 15%, transparent); color: $danger; }
 
 
 /* ─── Action Buttons ───────────────────────────────────────────────────── */
@@ -505,8 +505,8 @@ $radius: 10px;
 
   &:hover {
     color: $accent;
-    border-color: rgba($accent, 0.3);
-    background: rgba($accent, 0.08);
+    border-color: color-mix(in srgb, $accent 30%, transparent);
+    background: color-mix(in srgb, $accent 8%, transparent);
   }
 }
 
@@ -749,14 +749,14 @@ $radius: 10px;
   border-radius: 4px;
   font-size: 10px;
   font-weight: 700;
-  background: rgba($danger, 0.15);
+  background: color-mix(in srgb, $danger 15%, transparent);
   color: $danger;
   margin-right: 6px;
   text-decoration: none !important;
 }
 
 .flagged-row {
-  background: rgba($danger, 0.04) !important;
+  background: color-mix(in srgb, $danger 4%, transparent) !important;
   border-left: 3px solid $danger;
 }
 
@@ -768,7 +768,7 @@ $radius: 10px;
   border-radius: 10px;
   font-size: 10px;
   font-weight: 700;
-  background: rgba($danger, 0.15);
+  background: color-mix(in srgb, $danger 15%, transparent);
   color: $danger;
   margin-right: 8px;
   cursor: pointer;
@@ -778,27 +778,27 @@ $radius: 10px;
   i { font-size: 9px; }
 
   &:hover {
-    background: rgba($danger, 0.25);
+    background: color-mix(in srgb, $danger 25%, transparent);
   }
 }
 
 .flagged-btn {
   color: $accent !important;
-  border-color: rgba($accent, 0.3) !important;
+  border-color: color-mix(in srgb, $accent 30%, transparent) !important;
 
   &:hover {
-    background: rgba($accent, 0.1) !important;
+    background: color-mix(in srgb, $accent 10%, transparent) !important;
   }
 }
 
 .flag-details-row {
-  background: rgba($danger, 0.03) !important;
+  background: color-mix(in srgb, $danger 3%, transparent) !important;
 
-  &:hover { background: rgba($danger, 0.06) !important; }
+  &:hover { background: color-mix(in srgb, $danger 6%, transparent) !important; }
 
   td {
     padding: 0 14px 14px !important;
-    border-bottom: 1px solid rgba($danger, 0.12) !important;
+    border-bottom: 1px solid color-mix(in srgb, $danger 12%, transparent) !important;
   }
 }
 
@@ -1222,7 +1222,7 @@ $radius: 10px;
   align-items: center;
   gap: 8px;
 
-  &:hover:not(:disabled) { background: darken($danger, 8%); }
+  &:hover:not(:disabled) { background: color-mix(in srgb, $danger, black 8%); }
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 

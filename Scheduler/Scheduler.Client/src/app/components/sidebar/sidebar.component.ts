@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { SchedulerHelperService } from '../../services/scheduler-helper.service';
 import { SchedulerModeService } from '../../services/scheduler-mode.service';
 import { FeatureConfigService } from '../../services/feature-config.service';
+import { TerminologyService } from '../../services/terminology.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -39,7 +40,8 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
     private authService: AuthService,
     private schedulerHelperService: SchedulerHelperService,
     private schedulerModeService: SchedulerModeService,
-    private featureConfigService: FeatureConfigService) {
+    private featureConfigService: FeatureConfigService,
+    public terminology: TerminologyService) {
 
     //
     // Close side panel + tooltips on navigation
@@ -112,6 +114,11 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
     return this.authService.isFinancialManager;
   }
 
+  public get isMessagingManager(): boolean {
+    return this.authService.isMessagingManager;
+  }
+
+  
 
   private closeAllTooltips(): void {
     this.tips?.forEach(t => t.close());

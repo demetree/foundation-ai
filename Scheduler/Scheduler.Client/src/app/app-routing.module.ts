@@ -25,6 +25,7 @@ import { SystemHealthComponent } from './components/system-health/system-health.
 //
 import { OverviewComponent } from './components/overview/overview.component'
 import { SchedulerCalendarComponent } from './components/scheduler/scheduler-calendar/scheduler-calendar.component';
+import { DailyDispatchComponent } from './components/scheduler/daily-dispatch/daily-dispatch.component';
 import { AdministrationComponent } from './components/administration/administration.component';
 import { TemplateManagerComponent } from './components/scheduler/template-manager/template-manager.component';
 
@@ -56,8 +57,11 @@ import { OfficeCustomDetailComponent } from './components/office-custom/office-c
 import { ContactCustomListingComponent } from './components/contact-custom/contact-custom-listing/contact-custom-listing.component';
 import { ContactCustomDetailComponent } from './components/contact-custom/contact-custom-detail/contact-custom-detail.component';
 
+//
+// file Manager
+//
 import { FileManagerComponent } from './components/file-manager/file-manager.component';
-import { MessagingPageComponent } from './components/messaging-page/messaging-page.component';
+
 
 
 //
@@ -128,6 +132,12 @@ import { RentalAgreementTrackerComponent } from './components/scheduler-custom/r
 import { FiscalPeriodCloseComponent } from './components/financial-custom/fiscal-period-close/fiscal-period-close.component';
 import { AuditLogViewerComponent } from './components/financial-custom/audit-log-viewer/audit-log-viewer.component';
 
+
+//
+// Messaging
+//
+import { MessagingPageComponent } from './components/messaging-page/messaging-page.component';
+import { MessagingAdminComponent } from './components/messaging-admin/messaging-admin.component';
 
 //
 // Beginning of imports for Scheduler Data Components
@@ -607,6 +617,7 @@ const routes: Routes = [
   // Custom component routes - for better business functions - these take precedence over the code gen routes, so they are first
   //
   { path: 'schedule', component: SchedulerCalendarComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Schedule' },
+  { path: 'dispatch', component: DailyDispatchComponent, canActivate: [AuthGuard], title: 'Daily Dispatch' },
   { path: 'administration', component: AdministrationComponent, canActivate: [AuthGuard], title: 'Administration' },
   { path: 'ratesheets', component: RateSheetCustomListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Rate Sheets' },
   { path: 'templates', component: TemplateManagerComponent, canActivate: [AuthGuard], title: 'Event Templates' },
@@ -727,7 +738,7 @@ const routes: Routes = [
   // Foundation Messaging routes — AI-Developed
   //
   { path: 'messaging', component: MessagingPageComponent, canActivate: [AuthGuard], title: 'Messaging' },
-
+  { path: 'messaging-admin', component: MessagingAdminComponent, canActivate: [AuthGuard], title: 'Messaging Administration' },
 
 
   //
