@@ -1,8 +1,5 @@
-$primary: #0d6efd;
-$info: #0dcaf0;
-$success: #198754;
-$warning: #ffc107;
-$danger: #dc3545;
+// overview-dispatcher-tab styles
+// Uses global Bootstrap variables — no local redefinitions
 
 .premium-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -14,10 +11,11 @@ $danger: #dc3545;
 
 .hover-lift {
     transition: transform 0.2s ease, background-color 0.2s ease;
+    cursor: pointer;
 
     &:hover {
         transform: translateY(-2px);
-        background-color: #f8f9fa;
+        background-color: var(--bs-gray-100);
         z-index: 10;
     }
 }
@@ -31,16 +29,16 @@ $danger: #dc3545;
 }
 
 .dashed-border {
-    border: 2px dashed #dee2e6;
-    background-color: #f8f9fa;
+    border: 2px dashed var(--bs-border-color);
+    background-color: var(--bs-gray-100);
 }
 
 .bg-danger-soft {
-    background-color: rgba($danger, 0.1);
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
 }
 
 .bg-primary-soft {
-    background-color: rgba($primary, 0.1);
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
 }
 
 .avatar-circle {
@@ -52,6 +50,6 @@ $danger: #dc3545;
     justify-content: center;
 }
 
-.text-xs {
+.kpi-label {
     font-size: 0.75rem;
 }

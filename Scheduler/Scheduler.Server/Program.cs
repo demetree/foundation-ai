@@ -26,6 +26,8 @@ using static Foundation.Configuration;
 using static Foundation.StartupBasics;
 using Foundation.Web.Services;
 using Foundation.HubConfig;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 namespace Foundation.Scheduler
@@ -643,6 +645,24 @@ namespace Foundation.Scheduler
 
 
                 //
+                // Rate Limiting — protects anonymous share link endpoints from abuse.
+                // Fixed window: 30 requests per minute per client IP.
+                //
+                builder.Services.AddRateLimiter(options =>
+                {
+                    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+                    options.AddFixedWindowLimiter("ShareLinkPolicy", limiterOptions =>
+                    {
+                        limiterOptions.PermitLimit = 30;
+                        limiterOptions.Window = TimeSpan.FromMinutes(1);
+                        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                        limiterOptions.QueueLimit = 0;
+                    });
+                });
+
+
+                //
                 // Configurations
                 //
                 builder.Services.Configure<AppSettings>(builder.Configuration);
@@ -712,6 +732,11 @@ namespace Foundation.Scheduler
 
                 app.UseAuthentication();
                 app.UseAuthorization();
+
+                //
+                // Rate limiting middleware — must be after UseAuthorization
+                //
+                app.UseRateLimiter();
 
 
                 //

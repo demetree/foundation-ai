@@ -147,10 +147,14 @@ namespace Foundation.Networking.DeepSpace.Providers
 
         public Task<string> GetPresignedUrlAsync(string key, TimeSpan expires, CancellationToken cancellationToken = default)
         {
-            // For Local Storage, generating a "presigned URL" offers no performance benefit 
-            // since the server instance still has to stream the bytes from local disk.
-            // Returning null signals the client to fall back to the standard API download route.
-            return Task.FromResult<string>(null);
+            //
+            // For Local Storage, there is no cloud-signed URL. Instead, return a relative
+            // API path that the server can use to stream the file from local disk.
+            //
+            string normalizedKey = NormalizeKey(key);
+            string url = "/api/deepspace/download/local/" + normalizedKey.Replace('\\', '/');
+
+            return Task.FromResult(url);
         }
 
         public Task<Stream> GetStreamAsync(string key, CancellationToken cancellationToken = default)
@@ -425,7 +429,18 @@ namespace Foundation.Networking.DeepSpace.Providers
         private string GetFilePath(string key)
         {
             string normalized = NormalizeKey(key);
-            return Path.Combine(_rootPath, normalized);
+            string filePath = Path.GetFullPath(Path.Combine(_rootPath, normalized));
+
+            //
+            // Security: ensure the resolved path is still within the storage root.
+            // This prevents path traversal attacks (e.g., keys like "../../etc/passwd").
+            //
+            if (filePath.StartsWith(_rootPath, StringComparison.OrdinalIgnoreCase) == false)
+            {
+                throw new ArgumentException("Storage key resolves outside the storage root directory: " + key);
+            }
+
+            return filePath;
         }
 
 

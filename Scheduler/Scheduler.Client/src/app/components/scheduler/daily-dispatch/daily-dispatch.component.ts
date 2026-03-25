@@ -1,11 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+//
+// Daily Dispatch — drag-and-drop dispatch board for today's jobs.
+//
+// AI-Developed — This file was significantly developed with AI assistance.
+//
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { forkJoin } from 'rxjs';
 import { ScheduledEventService, ScheduledEventData } from '../../../scheduler-data-services/scheduled-event.service';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
+import { AuthService } from '../../../services/auth.service';
 import { TerminologyService } from '../../../services/terminology.service';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { QuickAddJobModalComponent } from '../quick-add-job-modal/quick-add-job-modal.component';
 
 @Component({
@@ -14,9 +19,11 @@ import { QuickAddJobModalComponent } from '../quick-add-job-modal/quick-add-job-
   styleUrls: ['./daily-dispatch.component.scss']
 })
 export class DailyDispatchComponent implements OnInit {
+  @ViewChild('quickAddJob') quickAddJobComponent?: QuickAddJobModalComponent;
+
   public today: Date = new Date();
-  public isLoading: boolean = true;
-  
+  public isLoading = true;
+
   public resources: ResourceData[] = [];
   public allEvents: ScheduledEventData[] = [];
   public assignments: EventResourceAssignmentData[] = [];
@@ -31,11 +38,16 @@ export class DailyDispatchComponent implements OnInit {
     private assignmentService: EventResourceAssignmentService,
     public terminology: TerminologyService,
     private alertService: AlertService,
-    private modalService: NgbModal
+    public authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.loadData();
+  }
+
+  /** Whether the current user can create/assign resources. */
+  public get canWrite(): boolean {
+    return this.authService.isSchedulerReaderWriter;
   }
 
   loadData(): void {
@@ -54,81 +66,108 @@ export class DailyDispatchComponent implements OnInit {
         deleted: false,
         startDateTime: start.toISOString(),
         endDateTime: end.toISOString()
-      }),
-      assignments: this.assignmentService.GetEventResourceAssignmentList({
-        active: true,
-        deleted: false
       })
     }).subscribe({
       next: (data) => {
         this.resources = data.resources || [];
         this.allEvents = data.events || [];
-        this.assignments = data.assignments || [];
 
-        this.processTimelines();
-        this.isLoading = false;
+        // Load assignments scoped to today's events only (F10: bounded fetch)
+        this.loadTodayAssignments();
       },
-      error: (err) => {
+      error: () => {
         this.alertService.showMessage('Error loading dispatch data', '', MessageSeverity.error);
         this.isLoading = false;
       }
     });
   }
 
+  /** Load assignments relevant to today's events only — avoids unbounded full-table fetch. */
+  private loadTodayAssignments(): void {
+    if (this.allEvents.length === 0) {
+      this.assignments = [];
+      this.processTimelines();
+      this.isLoading = false;
+      return;
+    }
+
+    // Fetch assignments filtered to active/non-deleted, then filter client-side
+    // to only today's event IDs.
+    this.assignmentService.GetEventResourceAssignmentList({
+      active: true,
+      deleted: false
+    }).subscribe({
+      next: (allAssignments) => {
+        const todayEventIds = new Set(this.allEvents.map(e => Number(e.id)));
+        this.assignments = (allAssignments || []).filter(
+          a => a.scheduledEventId && todayEventIds.has(Number(a.scheduledEventId))
+        );
+        this.processTimelines();
+        this.isLoading = false;
+      },
+      error: () => {
+        this.assignments = [];
+        this.processTimelines();
+        this.isLoading = false;
+      }
+    });
+  }
+
   private processTimelines(): void {
-    // Filter assignments that apply to today's events
-    const todayEventIds = new Set(this.allEvents.map(e => Number(e.id)));
-    const relevantAssignments = this.assignments.filter(a => a.scheduledEventId && todayEventIds.has(Number(a.scheduledEventId)));
-    
     // Set of assigned event IDs
-    const assignedIds = new Set(relevantAssignments.map(a => Number(a.scheduledEventId)));
+    const assignedIds = new Set(this.assignments.map(a => Number(a.scheduledEventId)));
 
     // Unassigned subset
     this.unassignedEvents = this.allEvents.filter(e => !assignedIds.has(Number(e.id)));
 
     // Build timeline rows
     this.resourceTimelines = this.resources.map(res => {
-      const resAssignments = relevantAssignments.filter(a => Number(a.resourceId) === Number(res.id));
+      const resAssignments = this.assignments.filter(a => Number(a.resourceId) === Number(res.id));
       const resEventIds = new Set(resAssignments.map(a => Number(a.scheduledEventId)));
       const resEvents = this.allEvents.filter(e => resEventIds.has(Number(e.id)));
-      
-      return {
-        resource: res,
-        events: resEvents
-      };
+
+      return { resource: res, events: resEvents };
     });
   }
 
   // Drag and Drop support
-  onDragStart(event: DragEvent, scheduledEvent: ScheduledEventData) {
+  onDragStart(event: DragEvent, scheduledEvent: ScheduledEventData): void {
+    if (!this.canWrite) { return; }
     if (event.dataTransfer) {
       event.dataTransfer.setData('text/plain', scheduledEvent.id.toString());
       event.dataTransfer.effectAllowed = 'move';
     }
   }
 
-  onDragOver(event: DragEvent) {
+  onDragOver(event: DragEvent): void {
+    if (!this.canWrite) { return; }
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
     }
   }
 
-  onDrop(event: DragEvent, targetResourceId: bigint | number) {
+  onDrop(event: DragEvent, targetResourceId: bigint | number): void {
     event.preventDefault();
+
+    // Permission check
+    if (!this.canWrite) {
+      this.alertService.showMessage('Permission Denied', 'You do not have write access.', MessageSeverity.info);
+      return;
+    }
+
     const eventIdStr = event.dataTransfer?.getData('text/plain');
-    if (!eventIdStr) return;
+    if (!eventIdStr) { return; }
 
     const eventId = Number(eventIdStr);
-    
-    // Check if it's already assigned there (to prevent duplicates)
+
+    // Prevent duplicate assignments
     if (this.assignments.some(a => Number(a.scheduledEventId) === eventId && Number(a.resourceId) === Number(targetResourceId))) {
-      return; 
+      return;
     }
 
     this.isLoading = true;
 
-    // Create new assignment
     const newAssignment = {
       id: 0,
       scheduledEventId: eventId,
@@ -141,22 +180,16 @@ export class DailyDispatchComponent implements OnInit {
     this.assignmentService.PostEventResourceAssignment(newAssignment).subscribe({
       next: () => {
         this.alertService.showMessage('Assigned successfully', '', MessageSeverity.success);
-        this.loadData(); // Re-fetch all so the view updates cleanly
+        this.loadData();
       },
-      error: (err) => {
+      error: () => {
         this.alertService.showMessage('Failed to assign event', '', MessageSeverity.error);
         this.isLoading = false;
       }
     });
-
   }
 
-  public openQuickAddJob(): void {
-    const modalRef = this.modalService.open(QuickAddJobModalComponent, { size: 'lg', backdrop: 'static' });
-    modalRef.result.then((newJob) => {
-      if (newJob) {
-        this.loadData();
-      }
-    }).catch(() => {});
+  public onJobCreated(): void {
+    this.loadData();
   }
 }

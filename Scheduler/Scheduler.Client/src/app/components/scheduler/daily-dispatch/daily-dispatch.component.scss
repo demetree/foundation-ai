@@ -1,0 +1,51 @@
+// daily-dispatch styles
+// All inline styles extracted to named classes (F7)
+
+.resource-name-cell {
+    width: 250px;
+    border-right: 2px solid var(--bs-border-color);
+}
+
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.drop-zone {
+    min-height: 70px;
+}
+
+.drop-zone-empty {
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 0.375rem;
+}
+
+.timeline-row {
+    min-height: 70px;
+}
+
+.assigned-job-card {
+    min-width: 200px;
+}
+
+.job-card {
+    cursor: grab;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+    }
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.truncate-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}

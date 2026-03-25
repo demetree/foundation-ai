@@ -1,107 +1,118 @@
-<div class="modal-header bg-primary text-white">
-  <h4 class="modal-title m-0">
-    <i class="fa-solid fa-bolt me-2"></i> Quick Add {{ terminology.getTerm('ScheduledEvent') }}
-  </h4>
-  <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="activeModal.dismiss('Cross click')"></button>
-</div>
+<button class="btn btn-sm btn-primary text-white shadow-sm fw-bold border-0" (click)="openModal()">
+  <i class="fa-solid fa-plus me-1"></i> Quick Add {{ terminology.getTerm('ScheduledEvent') }}
+</button>
 
-<div class="modal-body bg-light">
-  <div *ngIf="errorMessage" class="alert alert-danger">
-    <i class="fa-solid fa-triangle-exclamation me-2"></i> {{ errorMessage }}
+<ng-template #quickAddJobModal let-modal>
+  <div class="modal-header premium-header bg-primary text-white">
+    <h4 class="modal-title m-0">
+      <i class="fa-solid fa-bolt me-2"></i> Quick Add {{ terminology.getTerm('ScheduledEvent') }}
+    </h4>
+    <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="closeModal()"></button>
   </div>
 
-  <form [formGroup]="jobForm" (ngSubmit)="onSubmit()">
+  <div class="modal-body p-4 bg-light">
+    <p class="text-muted small mb-4">
+      Quickly create a new {{ terminology.getTerm('ScheduledEvent') }} with a {{ terminology.getTerm('Client') }}
+      and {{ terminology.getTerm('SchedulingTarget') }} in one step. Defaults will be automatically applied.
+    </p>
 
-    <!-- Customer Section -->
-    <h5 class="border-bottom pb-2 mb-3 text-secondary">
-      1. {{ terminology.getTerm('Client') }} Info
-    </h5>
-    
-    <div class="row g-3 mb-4">
-      <div class="col-12">
-        <label class="form-label fw-bold">{{ terminology.getTerm('Client') }} Name</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-          <input type="text" class="form-control" formControlName="customerName" placeholder="e.g. John Smith or Acme Corp"
-                 [ngClass]="{'is-invalid': jobForm.get('customerName')?.invalid && jobForm.get('customerName')?.touched}">
+    <form [formGroup]="jobForm" (ngSubmit)="onSubmit()">
+
+      <!-- Customer Section -->
+      <h5 class="border-bottom pb-2 mb-3 text-secondary">
+        1. {{ terminology.getTerm('Client') }} Info
+      </h5>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <label class="form-label fw-bold">{{ terminology.getTerm('Client') }} Name <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="fa-solid fa-user text-secondary"></i></span>
+            <input type="text" class="form-control" formControlName="customerName"
+                   placeholder="e.g. John Smith or Acme Corp"
+                   [ngClass]="{'is-invalid': jobForm.get('customerName')?.invalid && jobForm.get('customerName')?.touched}">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Phone</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="fa-solid fa-phone text-secondary"></i></span>
+            <input type="tel" class="form-control" formControlName="phone" placeholder="555-0100">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="fa-solid fa-envelope text-secondary"></i></span>
+            <input type="email" class="form-control" formControlName="email" placeholder="john@example.com">
+          </div>
         </div>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Phone</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
-          <input type="tel" class="form-control" formControlName="phone" placeholder="555-0100">
+
+      <!-- Location Section -->
+      <h5 class="border-bottom pb-2 mb-3 text-secondary">
+        2. Service {{ terminology.getTerm('SchedulingTarget') }}
+      </h5>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <label class="form-label fw-bold">Address <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="fa-solid fa-map-pin text-secondary"></i></span>
+            <input type="text" class="form-control" formControlName="addressLine1" placeholder="123 Main St"
+                   [ngClass]="{'is-invalid': jobForm.get('addressLine1')?.invalid && jobForm.get('addressLine1')?.touched}">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">City <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" formControlName="city" placeholder="City"
+                 [ngClass]="{'is-invalid': jobForm.get('city')?.invalid && jobForm.get('city')?.touched}">
         </div>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Email</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
-          <input type="email" class="form-control" formControlName="email" placeholder="john@example.com">
+
+      <!-- Job Section -->
+      <h5 class="border-bottom pb-2 mb-3 text-secondary">
+        3. {{ terminology.getTerm('ScheduledEvent') }} Details
+      </h5>
+
+      <div class="row g-3">
+        <div class="col-12">
+          <label class="form-label fw-bold">{{ terminology.getTerm('ScheduledEvent') }} Description <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="fa-solid fa-wrench text-secondary"></i></span>
+            <input type="text" class="form-control" formControlName="jobName" placeholder="e.g. Broken Pipe Repair"
+                   [ngClass]="{'is-invalid': jobForm.get('jobName')?.invalid && jobForm.get('jobName')?.touched}">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Date <span class="text-danger">*</span></label>
+          <input type="date" class="form-control" formControlName="date"
+                 [ngClass]="{'is-invalid': jobForm.get('date')?.invalid && jobForm.get('date')?.touched}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Time <span class="text-danger">*</span></label>
+          <input type="time" class="form-control" formControlName="time"
+                 [ngClass]="{'is-invalid': jobForm.get('time')?.invalid && jobForm.get('time')?.touched}">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Est. Hours <span class="text-danger">*</span></label>
+          <input type="number" step="0.5" class="form-control" formControlName="durationHours"
+                 [ngClass]="{'is-invalid': jobForm.get('durationHours')?.invalid && jobForm.get('durationHours')?.touched}">
         </div>
       </div>
-    </div>
 
-    <!-- Location Section -->
-    <h5 class="border-bottom pb-2 mb-3 text-secondary">
-      2. Service {{ terminology.getTerm('SchedulingTarget') }}
-    </h5>
+    </form>
+  </div>
 
-    <div class="row g-3 mb-4">
-      <div class="col-12">
-        <label class="form-label fw-bold">Address</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fa-solid fa-map-pin"></i></span>
-          <input type="text" class="form-control" formControlName="addressLine1" placeholder="123 Main St"
-                 [ngClass]="{'is-invalid': jobForm.get('addressLine1')?.invalid && jobForm.get('addressLine1')?.touched}">
-        </div>
-      </div>
-      <div class="col-md-6">
-        <label class="form-label fw-bold">City</label>
-        <input type="text" class="form-control" formControlName="city" placeholder="City"
-               [ngClass]="{'is-invalid': jobForm.get('city')?.invalid && jobForm.get('city')?.touched}">
-      </div>
-    </div>
-
-    <!-- Job Section -->
-    <h5 class="border-bottom pb-2 mb-3 text-secondary">
-      3. {{ terminology.getTerm('ScheduledEvent') }} Details
-    </h5>
-
-    <div class="row g-3">
-      <div class="col-12">
-        <label class="form-label fw-bold">{{ terminology.getTerm('ScheduledEvent') }} Description</label>
-        <div class="input-group">
-          <span class="input-group-text"><i class="fa-solid fa-wrench"></i></span>
-          <input type="text" class="form-control" formControlName="jobName" placeholder="e.g. Broken Pipe Repair"
-                 [ngClass]="{'is-invalid': jobForm.get('jobName')?.invalid && jobForm.get('jobName')?.touched}">
-        </div>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label fw-bold">Date</label>
-        <input type="date" class="form-control" formControlName="date"
-               [ngClass]="{'is-invalid': jobForm.get('date')?.invalid && jobForm.get('date')?.touched}">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label fw-bold">Time</label>
-        <input type="time" class="form-control" formControlName="time"
-               [ngClass]="{'is-invalid': jobForm.get('time')?.invalid && jobForm.get('time')?.touched}">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label fw-bold">Est. Hours</label>
-        <input type="number" step="0.5" class="form-control" formControlName="durationHours"
-               [ngClass]="{'is-invalid': jobForm.get('durationHours')?.invalid && jobForm.get('durationHours')?.touched}">
-      </div>
-    </div>
-
-  </form>
-</div>
-
-<div class="modal-footer bg-light">
-  <button type="button" class="btn btn-outline-secondary px-4" (click)="activeModal.dismiss('Cancel')">Cancel</button>
-  <button type="button" class="btn btn-primary px-4 fw-bold shadow-sm" [disabled]="jobForm.invalid || isSaving" (click)="onSubmit()">
-    <span *ngIf="isSaving" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-    <span *ngIf="!isSaving"><i class="fa-solid fa-plus me-1"></i> Create {{ terminology.getTerm('ScheduledEvent') }}</span>
-    <span *ngIf="isSaving">Saving...</span>
-  </button>
-</div>
+  <div class="modal-footer bg-light border-top-0 pt-0 pb-4 justify-content-between">
+    <button type="button" class="btn btn-outline-secondary btn-glass rounded-pill px-4 shadow-sm"
+            (click)="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-primary btn-glass rounded-pill px-4 shadow-sm fw-bold"
+            [disabled]="jobForm.invalid || isSaving || !defaultsLoaded" (click)="onSubmit()">
+      <i class="fa fa-spinner fa-spin me-2" *ngIf="isSaving"></i>
+      <i class="fa-solid fa-plus me-1" *ngIf="!isSaving"></i>
+      <span *ngIf="!isSaving">Create {{ terminology.getTerm('ScheduledEvent') }}</span>
+      <span *ngIf="isSaving">Creating...</span>
+    </button>
+  </div>
+</ng-template>

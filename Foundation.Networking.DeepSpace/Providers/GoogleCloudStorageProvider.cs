@@ -26,7 +26,7 @@ using Foundation.Networking.DeepSpace.Configuration;
 
 namespace Foundation.Networking.DeepSpace.Providers
 {
-    public class GoogleCloudStorageProvider : IStorageProvider
+    public class GoogleCloudStorageProvider : IStorageProvider, IDisposable
     {
         private readonly StorageClient _client;
         private readonly string _bucketName;
@@ -144,15 +144,20 @@ namespace Foundation.Networking.DeepSpace.Providers
 
         public async Task<byte[]> GetBytesAsync(string key, CancellationToken cancellationToken = default)
         {
-            using (Stream stream = await GetStreamAsync(key, cancellationToken))
+            try
             {
-                if (stream == null) return null;
+                //
+                // Download directly into a single MemoryStream to avoid the double-buffer
+                // that would result from going through GetStreamAsync.
+                //
+                MemoryStream ms = new MemoryStream();
+                await _client.DownloadObjectAsync(_bucketName, NormalizeKey(key), ms, cancellationToken: cancellationToken);
 
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    await stream.CopyToAsync(ms, 81920, cancellationToken);
-                    return ms.ToArray();
-                }
+                return ms.ToArray();
+            }
+            catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
             }
         }
 
@@ -393,8 +398,24 @@ namespace Foundation.Networking.DeepSpace.Providers
 
         private static string NormalizeKey(string key)
         {
-            if (string.IsNullOrEmpty(key)) return string.Empty;
+            if (string.IsNullOrEmpty(key))
+            {
+                return string.Empty;
+            }
+
             return key.TrimStart('/');
+        }
+
+
+        // ── Dispose ──────────────────────────────────────────────────────
+
+
+        /// <summary>
+        /// Disposes the underlying Google Cloud Storage client.
+        /// </summary>
+        public void Dispose()
+        {
+            _client?.Dispose();
         }
     }
 }

@@ -1,12 +1,18 @@
 //
 // Scheduler Metrics Provider
 //
+// AI-Developed — This file was significantly developed with AI assistance.
+//
 // Provides Scheduler-specific business metrics for the System Health dashboard.
-// This is an example implementation of IApplicationMetricsProvider.
+// Implements IApplicationMetricsProvider to surface operational metrics for admins.
+//
+// Metrics are system-wide (not tenant-scoped) because the System Health dashboard
+// is an administrative tool that shows global operational totals across all tenants.
 //
 using Foundation.Scheduler.Database;
 using Foundation.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,17 +22,20 @@ using System.Threading.Tasks;
 namespace Scheduler.Server.Services
 {
     /// <summary>
-    /// Provides Scheduler application-specific metrics for System Health dashboard
+    /// Provides Scheduler application-specific metrics for System Health dashboard.
+    /// Registered as a Singleton — uses IServiceScopeFactory to resolve scoped DbContext.
     /// </summary>
     public class SchedulerMetricsProvider : IApplicationMetricsProvider
     {
         private readonly ILogger<SchedulerMetricsProvider> _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public string ApplicationName => "Scheduler";
 
-        public SchedulerMetricsProvider(ILogger<SchedulerMetricsProvider> logger)
+        public SchedulerMetricsProvider(ILogger<SchedulerMetricsProvider> logger, IServiceScopeFactory scopeFactory)
         {
             _logger = logger;
+            _scopeFactory = scopeFactory;
         }
 
 
@@ -36,10 +45,16 @@ namespace Scheduler.Server.Services
 
             try
             {
-                await using var context = new SchedulerContext();
+                //
+                // Resolve SchedulerContext from a DI scope so it picks up the configured
+                // connection string, interceptors, and logging providers.
+                //
+                using var scope = _scopeFactory.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<SchedulerContext>();
 
                 //
                 // Count active scheduled events
+                // (system-wide — not tenant-scoped; admin health dashboard shows global totals)
                 //
                 var totalEvents = await context.ScheduledEvents
                     .CountAsync()

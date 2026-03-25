@@ -29,7 +29,7 @@ namespace Foundation.Networking.DeepSpace.Providers
     /// Azure Blob Storage provider.
     ///
     /// </summary>
-    public class AzureBlobStorageProvider : IStorageProvider
+    public class AzureBlobStorageProvider : IStorageProvider, IDisposable
     {
         private readonly BlobServiceClient _serviceClient;
         private readonly BlobContainerClient _containerClient;
@@ -117,7 +117,7 @@ namespace Foundation.Networking.DeepSpace.Providers
             {
                 BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
 
-                if (blob.CanGenerateSasUri)
+                if (blob.CanGenerateSasUri == true)
                 {
                     Uri sasUri = blob.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.Add(expires));
                     return Task.FromResult(sasUri.ToString());
@@ -408,6 +408,19 @@ namespace Foundation.Networking.DeepSpace.Providers
             }
 
             return key.TrimStart('/');
+        }
+
+
+        // ── Dispose ──────────────────────────────────────────────────────
+
+
+        /// <summary>
+        /// Dispose implementation for pattern consistency.
+        /// BlobServiceClient does not implement IDisposable.
+        /// </summary>
+        public void Dispose()
+        {
+            // No-op: Azure BlobServiceClient is not IDisposable.
         }
     }
 }

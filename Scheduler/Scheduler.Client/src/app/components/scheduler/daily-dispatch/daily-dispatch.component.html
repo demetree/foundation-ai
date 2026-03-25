@@ -1,5 +1,5 @@
 <div class="page-container h-100 d-flex flex-column">
-  
+
   <div class="card mb-3 header-card premium-header shadow-lg border-0 flex-shrink-0">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center border-0 bg-transparent">
       <div class="header-left">
@@ -9,10 +9,10 @@
         </div>
       </div>
       <div class="header-right">
-        <button class="btn btn-sm btn-primary text-white shadow-sm fw-bold me-2 border-0" style="background-color: var(--bs-primary);" (click)="openQuickAddJob()">
-          <i class="fa-solid fa-plus me-1"></i> Quick Add {{ terminology.getTerm('ScheduledEvent') }}
-        </button>
-        <button class="btn btn-sm btn-glass text-white" (click)="loadData()">
+        <app-quick-add-job-modal #quickAddJob
+            (jobCreated)="onJobCreated()"
+            *ngIf="canWrite"></app-quick-add-job-modal>
+        <button class="btn btn-sm btn-glass text-white ms-2" (click)="loadData()">
           <i class="fa fa-sync" [class.fa-spin]="isLoading"></i> Refresh
         </button>
       </div>
@@ -20,7 +20,7 @@
   </div>
 
   <div class="row flex-grow-1 overflow-hidden gx-3">
-    
+
     <!-- Left Panel: Unassigned Events -->
     <div class="col-md-3 d-flex flex-column h-100">
       <div class="card shadow-sm border-0 h-100 d-flex flex-column">
@@ -35,10 +35,10 @@
           <div *ngIf="!isLoading && unassignedEvents.length === 0" class="text-center py-4 text-muted small">
             <i class="fa-solid fa-check-circle fa-2x text-success mb-2 opacity-50"></i><br>All caught up!
           </div>
-          
-          <div *ngFor="let ev of unassignedEvents" 
+
+          <div *ngFor="let ev of unassignedEvents"
                class="job-card p-3 mb-2 rounded border border-light shadow-sm"
-               draggable="true" 
+               [attr.draggable]="canWrite"
                (dragstart)="onDragStart($event, ev)">
             <div class="fw-bold text-primary mb-1">{{ ev.name }}</div>
             <div class="text-muted small">
@@ -59,18 +59,18 @@
           <i class="fa-solid fa-users me-2"></i> {{ terminology.getTerm('Crew') }} Dispatch
         </div>
         <div class="card-body overflow-auto p-0 dispatch-timeline">
-           
+
           <div *ngIf="isLoading" class="text-center py-5 text-muted">
-             <i class="fa fa-circle-notch fa-spin fa-2x mb-2"></i><br>Loading {{ terminology.getTerm('Resource', true) }}...
+            <i class="fa fa-circle-notch fa-spin fa-2x mb-2"></i><br>Loading {{ terminology.getTerm('Resource', true) }}...
           </div>
 
           <table class="table table-bordered table-sm m-0" *ngIf="!isLoading">
             <tbody>
               <tr *ngFor="let rt of resourceTimelines">
                 <!-- Staff Name Column -->
-                <td class="bg-light align-middle p-3" style="width: 250px; border-right: 2px solid #dee2e6;">
+                <td class="bg-light align-middle p-3 resource-name-cell">
                   <div class="d-flex align-items-center">
-                    <div class="avatar-circle bg-primary text-white me-3 d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px; border-radius: 50%;">
+                    <div class="avatar-circle bg-primary text-white me-3 d-flex align-items-center justify-content-center fw-bold">
                       {{ rt.resource.name | slice:0:1 | uppercase }}
                     </div>
                     <div>
@@ -80,16 +80,19 @@
                   </div>
                 </td>
                 <!-- Timeline/Drop Zone -->
-                <td class="align-middle p-2 bg-white drop-zone" 
-                    (dragover)="onDragOver($event)" 
+                <td class="align-middle p-2 bg-white drop-zone"
+                    (dragover)="onDragOver($event)"
                     (drop)="onDrop($event, rt.resource.id)">
-                  
-                  <div class="d-flex flex-nowrap overflow-auto gap-2 py-2 px-1" style="min-height: 70px;">
-                    <div *ngIf="rt.events.length === 0" class="text-muted small p-2 w-100 d-flex align-items-center justify-content-center opacity-50" style="border: 2px dashed #e9ecef;">
-                      Drag jobs here to assign to {{ rt.resource.name.split(' ')[0] }}
+
+                  <div class="d-flex flex-nowrap overflow-auto gap-2 py-2 px-1 timeline-row">
+                    <div *ngIf="rt.events.length === 0"
+                         class="text-muted small p-2 w-100 d-flex align-items-center justify-content-center opacity-50 drop-zone-empty">
+                      <span *ngIf="canWrite">Drag jobs here to assign to {{ rt.resource.name.split(' ')[0] }}</span>
+                      <span *ngIf="!canWrite">No jobs assigned</span>
                     </div>
-                    
-                    <div *ngFor="let ev of rt.events" class="assigned-job-card bg-primary-subtle border border-primary text-primary px-3 py-2 rounded shadow-sm" style="min-width: 200px;">
+
+                    <div *ngFor="let ev of rt.events"
+                         class="assigned-job-card bg-primary-subtle border border-primary text-primary px-3 py-2 rounded shadow-sm">
                       <div class="fw-bold truncate-text"><i class="fa-solid fa-clipboard-check me-1"></i> {{ ev.name }}</div>
                       <div class="small opacity-75">{{ ev.startDateTime | date:'shortTime' }}</div>
                     </div>

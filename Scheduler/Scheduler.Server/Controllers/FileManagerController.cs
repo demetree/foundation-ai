@@ -32,6 +32,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Foundation.Scheduler.Controllers.WebAPI
 {
@@ -1599,7 +1600,13 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 };
 
                 // Set the entity FK using reflection
-                typeof(Document).GetProperty(fkProp)?.SetValue(newDoc, entityId);
+                var propertyInfo = typeof(Document).GetProperty(fkProp);
+                if (propertyInfo == null)
+                {
+                    _logger.LogError("Scratchpad entity map references non-existent property '{Property}' on Document.", fkProp);
+                    return BadRequest($"Configuration error: unknown entity link property '{fkProp}'.");
+                }
+                propertyInfo.SetValue(newDoc, entityId);
 
                 Document saved = await _fileStorage.UploadDocumentAsync(newDoc, securityUser.id);
 
@@ -2417,6 +2424,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [Route("api/Share/{token}")]
         [HttpGet]
         [AllowAnonymous]
+        [EnableRateLimiting("ShareLinkPolicy")]
         public async Task<IActionResult> GetShareLinkInfo(Guid token)
         {
             try
@@ -2469,6 +2477,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [Route("api/Share/{token}/Verify")]
         [HttpPost]
         [AllowAnonymous]
+        [EnableRateLimiting("ShareLinkPolicy")]
         public async Task<IActionResult> VerifyShareLinkPassword(Guid token, [FromBody] VerifyPasswordRequest request)
         {
             try
@@ -2516,6 +2525,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
         [Route("api/Share/{token}/Download")]
         [HttpGet]
         [AllowAnonymous]
+        [EnableRateLimiting("ShareLinkPolicy")]
         public async Task<IActionResult> DownloadSharedFile(Guid token, [FromQuery] string password = null)
         {
             try
@@ -2611,7 +2621,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                     return NotFound("Document not found.");
                 }
 
-                string senderEmail = securityUser.emailAddress;
+                // Use system-configured EmailFromAddress to avoid SendGrid sender verification issues.
+                // SendGridEmailService falls back to config EmailFromAddress when senderEmail is null,
+                // and sets Reply-To to the provided sender name for recipient replies.
+                string senderEmail = (string)null;
                 string senderName = $"{securityUser.firstName} {securityUser.lastName}".Trim();
                 if (string.IsNullOrEmpty(senderName)) senderName = securityUser.accountName;
 

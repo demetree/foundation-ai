@@ -254,7 +254,7 @@ namespace Foundation.Networking.DeepSpace
                 bool deleted = await provider.DeleteAsync(key, cancellationToken);
                 Interlocked.Increment(ref _totalDeletes);
 
-                if (deleted)
+                if (deleted == true)
                 {
                     RecordDeleteMetadata(key, provider.ProviderName);
 
@@ -301,7 +301,7 @@ namespace Foundation.Networking.DeepSpace
 
             ListResult result = await provider.ListAsync(prefix, maxResults, cancellationToken);
 
-            if (result.Success && result.Objects != null)
+            if (result.Success == true && result.Objects != null)
             {
                 result.Objects = result.Objects
                     .Where(o => StorageObjectSidecar.IsSidecarKey(o.Key) == false)
@@ -360,7 +360,12 @@ namespace Foundation.Networking.DeepSpace
             CancellationToken cancellationToken = default)
         {
             IStorageProvider provider = GetProvider(providerName);
-            if (provider == null) return false;
+
+            if (provider == null)
+            {
+                return false;
+            }
+
             return await provider.CreateBucketAsync(bucketName, cancellationToken);
         }
 
@@ -372,7 +377,12 @@ namespace Foundation.Networking.DeepSpace
             CancellationToken cancellationToken = default)
         {
             IStorageProvider provider = GetProvider(providerName);
-            if (provider == null) return new List<string>();
+
+            if (provider == null)
+            {
+                return new List<string>();
+            }
+
             return await provider.ListBucketsAsync(cancellationToken);
         }
 
@@ -384,7 +394,12 @@ namespace Foundation.Networking.DeepSpace
             CancellationToken cancellationToken = default)
         {
             IStorageProvider provider = GetProvider(providerName);
-            if (provider == null) return false;
+
+            if (provider == null)
+            {
+                return false;
+            }
+
             return await provider.DeleteBucketAsync(bucketName, cancellationToken);
         }
 
@@ -396,7 +411,12 @@ namespace Foundation.Networking.DeepSpace
             CancellationToken cancellationToken = default)
         {
             IStorageProvider provider = GetProvider(providerName);
-            if (provider == null) return false;
+
+            if (provider == null)
+            {
+                return false;
+            }
+
             return await provider.SetExpirationLifecycleAsync(expirationDays, cancellationToken);
         }
 
@@ -409,7 +429,12 @@ namespace Foundation.Networking.DeepSpace
             CancellationToken cancellationToken = default)
         {
             IStorageProvider provider = GetProvider(providerName);
-            if (provider == null) return false;
+
+            if (provider == null)
+            {
+                return false;
+            }
+
             return await provider.UpdateMetadataAsync(key, metadata, cancellationToken);
         }
 
@@ -543,7 +568,10 @@ namespace Foundation.Networking.DeepSpace
         /// </summary>
         private void RecordPutMetadata(string key, string providerName, string contentType, long sizeBytes, string md5Hash)
         {
-            if (_databaseManager == null) return;
+            if (_databaseManager == null)
+            {
+                return;
+            }
 
             try
             {
@@ -630,8 +658,9 @@ namespace Foundation.Networking.DeepSpace
                         dbObject.deletedByUserGuid = null;
                     }
 
-                    context.SaveChanges();
-
+                    //
+                    // SaveChanges for object is deferred — saved together with version below
+                    //
 
                     //
                     // Create a StorageObjectVersion snapshot
@@ -666,7 +695,10 @@ namespace Foundation.Networking.DeepSpace
         /// </summary>
         private void RecordAccessMetadata(string key, string providerName)
         {
-            if (_databaseManager == null) return;
+            if (_databaseManager == null)
+            {
+                return;
+            }
 
             try
             {
@@ -675,7 +707,10 @@ namespace Foundation.Networking.DeepSpace
                     DbStorageProvider dbProvider = context.StorageProviders
                         .FirstOrDefault(p => p.name == providerName);
 
-                    if (dbProvider == null) return;
+                    if (dbProvider == null)
+                    {
+                        return;
+                    }
 
                     DbStorageObject dbObject = context.StorageObjects
                         .FirstOrDefault(o => o.key == key && o.storageProviderId == dbProvider.id);
@@ -700,7 +735,10 @@ namespace Foundation.Networking.DeepSpace
         /// </summary>
         private void RecordDeleteMetadata(string key, string providerName)
         {
-            if (_databaseManager == null) return;
+            if (_databaseManager == null)
+            {
+                return;
+            }
 
             try
             {
@@ -709,7 +747,10 @@ namespace Foundation.Networking.DeepSpace
                     DbStorageProvider dbProvider = context.StorageProviders
                         .FirstOrDefault(p => p.name == providerName);
 
-                    if (dbProvider == null) return;
+                    if (dbProvider == null)
+                    {
+                        return;
+                    }
 
                     DbStorageObject dbObject = context.StorageObjects
                         .FirstOrDefault(o => o.key == key && o.storageProviderId == dbProvider.id);
@@ -935,7 +976,10 @@ namespace Foundation.Networking.DeepSpace
                                 DbStorageObject existing = context.StorageObjects
                                     .FirstOrDefault(o => o.key == sidecar.Key && o.storageProviderId == dbProvider.id);
 
-                                if (existing != null) return;
+                                if (existing != null)
+                                {
+                                    return;
+                                }
 
 
                                 //

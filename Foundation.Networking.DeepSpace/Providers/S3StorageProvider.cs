@@ -30,7 +30,7 @@ namespace Foundation.Networking.DeepSpace.Providers
     /// S3-compatible storage provider.
     ///
     /// </summary>
-    public class S3StorageProvider : IStorageProvider
+    public class S3StorageProvider : IStorageProvider, IDisposable
     {
         private readonly AmazonS3Client _client;
         private readonly string _bucketName;
@@ -453,6 +453,18 @@ namespace Foundation.Networking.DeepSpace.Providers
             }
 
             return key.TrimStart('/');
+        }
+
+
+        // ── Dispose ──────────────────────────────────────────────────────
+
+
+        /// <summary>
+        /// Disposes the underlying S3 client.
+        /// </summary>
+        public void Dispose()
+        {
+            _client?.Dispose();
         }
     }
 }

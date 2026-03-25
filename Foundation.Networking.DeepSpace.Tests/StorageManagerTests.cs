@@ -7,6 +7,7 @@
 // ============================================================================
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -295,6 +296,104 @@ namespace Foundation.Networking.DeepSpace.Tests
 
             StorageManagerStatistics stats = _manager.GetStatistics();
             Assert.True(stats.TotalPuts >= 1);
+        }
+
+
+        // ── Sidecar Operations ──────────────────────────────────────────
+
+
+        [Fact]
+        public async Task List_ExcludesSidecarFiles()
+        {
+            //
+            // Store a regular object (which creates a sidecar since no DB manager)
+            // and a fake sidecar file, then verify sidecars are filtered out of list results
+            //
+            await _manager.PutAsync("items/doc.txt", Encoding.UTF8.GetBytes("content"));
+
+            //
+            // Manually store a sidecar-named object via the provider
+            //
+            IStorageProvider provider = _manager.GetProvider("Local");
+            await provider.PutBytesAsync("items/doc.txt.deepspace.json", Encoding.UTF8.GetBytes("{}"));
+
+            ListResult result = await _manager.ListAsync("items/");
+
+            Assert.True(result.Success);
+
+            //
+            // Verify no sidecar files appear in the results
+            //
+            foreach (StorageObject obj in result.Objects)
+            {
+                Assert.False(obj.Key.EndsWith(".deepspace.json"), "Sidecar file should be filtered: " + obj.Key);
+            }
+        }
+
+
+        [Fact]
+        public async Task PutAsync_SidecarKeyRejected()
+        {
+            //
+            // Attempting to store an object with the .deepspace.json extension should be rejected
+            //
+            StorageResult result = await _manager.PutAsync("test.deepspace.json", new byte[] { 1 });
+
+            Assert.False(result.Success);
+            Assert.Contains("reserved", result.Error);
+        }
+
+
+        // ── Bucket Operations ───────────────────────────────────────────
+
+
+        [Fact]
+        public async Task CreateBucket_WorksThroughManager()
+        {
+            bool created = await _manager.CreateBucketAsync("mgr-bucket");
+
+            Assert.True(created);
+        }
+
+
+        [Fact]
+        public async Task ListBuckets_WorksThroughManager()
+        {
+            await _manager.CreateBucketAsync("list-bucket");
+
+            List<string> buckets = await _manager.ListBucketsAsync();
+
+            Assert.Contains("list-bucket", buckets);
+        }
+
+
+        [Fact]
+        public async Task DeleteBucket_WorksThroughManager()
+        {
+            await _manager.CreateBucketAsync("delete-bucket");
+
+            bool deleted = await _manager.DeleteBucketAsync("delete-bucket");
+
+            Assert.True(deleted);
+        }
+
+
+        // ── Update Metadata ─────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task UpdateMetadata_WorksThroughManager()
+        {
+            await _manager.PutAsync("metamgr.txt", Encoding.UTF8.GetBytes("test"));
+
+            Dictionary<string, string> meta = new Dictionary<string, string>
+            {
+                { "tag", "important" }
+            };
+
+            bool updated = await _manager.UpdateMetadataAsync("metamgr.txt", meta);
+
+            Assert.True(updated);
         }
     }
 }

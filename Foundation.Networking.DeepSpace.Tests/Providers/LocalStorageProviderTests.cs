@@ -362,5 +362,106 @@ namespace Foundation.Networking.DeepSpace.Tests.Providers
 
             Assert.True(result.Success);
         }
+
+
+        // ── Path Traversal ───────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task PutBytes_PathTraversal_ReturnsFail()
+        {
+            //
+            // Attempting to store with a path traversal key should fail
+            //
+            byte[] data = new byte[] { 1 };
+
+            StorageResult result = await _provider.PutBytesAsync("../../escape.txt", data);
+
+            Assert.False(result.Success);
+            Assert.Contains("outside the storage root", result.Error);
+        }
+
+
+        [Fact]
+        public async Task GetBytes_PathTraversal_ThrowsException()
+        {
+            //
+            // GetBytesAsync does not wrap in try/catch, so ArgumentException propagates
+            //
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
+            {
+                await _provider.GetBytesAsync("../../../etc/passwd");
+            });
+        }
+
+
+        // ── Bucket Operations ────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task CreateBucket_CreatesDirectory()
+        {
+            bool created = await _provider.CreateBucketAsync("test-bucket");
+
+            Assert.True(created);
+            Assert.True(Directory.Exists(Path.Combine(_testRoot, "test-bucket")));
+        }
+
+
+        [Fact]
+        public async Task ListBuckets_ReturnsDirectories()
+        {
+            await _provider.CreateBucketAsync("bucket-a");
+            await _provider.CreateBucketAsync("bucket-b");
+
+            List<string> buckets = await _provider.ListBucketsAsync();
+
+            Assert.Contains("bucket-a", buckets);
+            Assert.Contains("bucket-b", buckets);
+        }
+
+
+        [Fact]
+        public async Task DeleteBucket_RemovesEmptyDirectory()
+        {
+            await _provider.CreateBucketAsync("to-delete");
+
+            bool deleted = await _provider.DeleteBucketAsync("to-delete");
+
+            Assert.True(deleted);
+            Assert.False(Directory.Exists(Path.Combine(_testRoot, "to-delete")));
+        }
+
+
+        // ── Update Metadata ──────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task UpdateMetadata_SavesNewMetadata()
+        {
+            await _provider.PutBytesAsync("updatemeta.txt", new byte[] { 1 });
+
+            Dictionary<string, string> newMeta = new Dictionary<string, string>
+            {
+                { "status", "reviewed" }
+            };
+
+            bool updated = await _provider.UpdateMetadataAsync("updatemeta.txt", newMeta);
+
+            Assert.True(updated);
+
+            StorageObject obj = await _provider.GetMetadataAsync("updatemeta.txt");
+            Assert.Equal("reviewed", obj.Metadata["status"]);
+        }
+
+
+        [Fact]
+        public async Task UpdateMetadata_NonExistent_ReturnsFalse()
+        {
+            Dictionary<string, string> meta = new Dictionary<string, string> { { "key", "value" } };
+            bool result = await _provider.UpdateMetadataAsync("missing.txt", meta);
+
+            Assert.False(result);
+        }
     }
 }
