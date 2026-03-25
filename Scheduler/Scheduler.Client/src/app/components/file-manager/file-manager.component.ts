@@ -676,16 +676,32 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         if (newSelection) {
             this.selectedDocumentTags = this.documentTagsMap.get(newSelection.id) || [];
 
-            // Load authenticated preview blob URL for images and PDFs
+            // Load authenticated preview for images and PDFs (Presigned URL first, fallback to blob)
             if (this.isImagePreviewable(newSelection.mimeType) || this.isPdfPreviewable(newSelection.mimeType)) {
-                this.fileManagerService.downloadDocument(newSelection.id).subscribe({
-                    next: (blob) => {
-                        // Revoke any previous preview blob URL
-                        if (this.previewBlobUrl) {
-                            URL.revokeObjectURL(this.previewBlobUrl);
+                this.fileManagerService.getPresignedUrl(newSelection.id, 60).subscribe({
+                    next: (resp) => {
+                        if (resp.url) {
+                            if (this.previewBlobUrl && this.previewBlobUrl.startsWith('blob:')) {
+                                URL.revokeObjectURL(this.previewBlobUrl);
+                            }
+                            this.previewBlobUrl = resp.url;
+                            this.safePreviewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(resp.url);
+                        } else {
+                            // Fallback to server proxy download if local/SQL storage
+                            this.fileManagerService.downloadDocument(newSelection.id).subscribe({
+                                next: (blob) => {
+                                    if (this.previewBlobUrl && this.previewBlobUrl.startsWith('blob:')) {
+                                        URL.revokeObjectURL(this.previewBlobUrl);
+                                    }
+                                    this.previewBlobUrl = URL.createObjectURL(blob);
+                                    this.safePreviewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewBlobUrl);
+                                },
+                                error: () => {
+                                    this.previewBlobUrl = null;
+                                    this.safePreviewBlobUrl = null;
+                                }
+                            });
                         }
-                        this.previewBlobUrl = URL.createObjectURL(blob);
-                        this.safePreviewBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.previewBlobUrl);
                     },
                     error: () => {
                         this.previewBlobUrl = null;
@@ -748,17 +764,36 @@ export class FileManagerComponent implements OnInit, OnDestroy {
     }
 
     downloadFile(doc: DocumentDTO): void {
-        this.fileManagerService.downloadDocument(doc.id).subscribe({
-            next: (blob) => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = doc.fileName;
-                a.click();
-                window.URL.revokeObjectURL(url);
+        this.fileManagerService.getPresignedUrl(doc.id, 60).subscribe({
+            next: (resp) => {
+                if (resp.url) {
+                    const a = document.createElement('a');
+                    a.href = resp.url;
+                    a.target = '_blank'; // direct CDN downloads
+                    a.download = doc.fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    // Fallback to web server proxy
+                    this.fileManagerService.downloadDocument(doc.id).subscribe({
+                        next: (blob) => {
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = doc.fileName;
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                        },
+                        error: (err) => {
+                            console.error('Download failed', err);
+                            this.alertService.showMessage('Error', 'Download failed.', MessageSeverity.error);
+                        }
+                    });
+                }
             },
             error: (err) => {
-                console.error('Download failed', err);
+                console.error('Failed to get presigned URL', err);
                 this.alertService.showMessage('Error', 'Download failed.', MessageSeverity.error);
             }
         });

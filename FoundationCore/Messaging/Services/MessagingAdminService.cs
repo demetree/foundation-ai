@@ -630,23 +630,36 @@ namespace Foundation.Messaging.Services
                 metrics.totalConversations = await db.Conversations
                     .CountAsync(c => c.tenantGuid == tenantGuid && c.active && !c.deleted);
 
-                metrics.totalMessages = await db.ConversationMessages
-                    .CountAsync(m => m.tenantGuid == tenantGuid && m.active && !m.deleted);
+                var messageStats = await db.ConversationMessages
+                    .Where(m => m.tenantGuid == tenantGuid && m.active && !m.deleted)
+                    .GroupBy(m => 1)
+                    .Select(g => new
+                    {
+                        total = g.Count(),
+                        today = g.Count(m => m.dateTimeCreated >= today),
+                        week = g.Count(m => m.dateTimeCreated >= weekStart)
+                    })
+                    .FirstOrDefaultAsync() ?? new { total = 0, today = 0, week = 0 };
 
-                metrics.messagesToday = await db.ConversationMessages
-                    .CountAsync(m => m.tenantGuid == tenantGuid && m.active && !m.deleted && m.dateTimeCreated >= today);
-
-                metrics.messagesThisWeek = await db.ConversationMessages
-                    .CountAsync(m => m.tenantGuid == tenantGuid && m.active && !m.deleted && m.dateTimeCreated >= weekStart);
+                metrics.totalMessages = messageStats.total;
+                metrics.messagesToday = messageStats.today;
+                metrics.messagesThisWeek = messageStats.week;
 
                 metrics.openFlags = await db.MessageFlags
                     .CountAsync(f => f.tenantGuid == tenantGuid && f.active && !f.deleted && f.status == "open");
 
-                metrics.deliveryAttemptsToday = await db.PushDeliveryLogs
-                    .CountAsync(d => d.tenantGuid == tenantGuid && d.dateTimeCreated >= today);
+                var deliveryStats = await db.PushDeliveryLogs
+                    .Where(d => d.tenantGuid == tenantGuid && d.dateTimeCreated >= today)
+                    .GroupBy(d => 1)
+                    .Select(g => new
+                    {
+                        attempts = g.Count(),
+                        failures = g.Count(d => !d.success)
+                    })
+                    .FirstOrDefaultAsync() ?? new { attempts = 0, failures = 0 };
 
-                metrics.deliveryFailuresToday = await db.PushDeliveryLogs
-                    .CountAsync(d => d.tenantGuid == tenantGuid && d.dateTimeCreated >= today && !d.success);
+                metrics.deliveryAttemptsToday = deliveryStats.attempts;
+                metrics.deliveryFailuresToday = deliveryStats.failures;
 
                 //
                 // Active users: distinct message senders in the last 7 days
@@ -757,35 +770,44 @@ namespace Foundation.Messaging.Services
                     .ToList();
 
                 //
+                // Base query for analytics: Group by conversation & user to compute stats in memory
+                //
+                var recentMessages = await db.ConversationMessages
+                    .Where(m => m.tenantGuid == tenantGuid && m.active && !m.deleted && m.dateTimeCreated >= thirtyDaysAgo)
+                    .GroupBy(m => new { m.conversationId, m.userId })
+                    .Select(g => new
+                    {
+                        g.Key.conversationId,
+                        g.Key.userId,
+                        count = g.Count(),
+                        lastActive = g.Max(m => m.dateTimeCreated)
+                    })
+                    .ToListAsync();
+
+                //
                 // Top users by message count (last 30 days)
                 //
-                var topUserRaw = await db.ConversationMessages
-                    .Where(m => m.tenantGuid == tenantGuid && m.active && !m.deleted && m.dateTimeCreated >= thirtyDaysAgo)
+                var topUserRaw = recentMessages
                     .GroupBy(m => m.userId)
                     .Select(g => new
                     {
                         userId = g.Key,
-                        messageCount = g.Count(),
-                        lastActive = g.Max(m => m.dateTimeCreated)
+                        messageCount = g.Sum(x => x.count),
+                        lastActive = g.Max(x => x.lastActive)
                     })
                     .OrderByDescending(u => u.messageCount)
                     .Take(15)
-                    .ToListAsync();
+                    .ToList();
 
-                //
-                // Get conversation counts per user (separate query to avoid EF translation issues)
-                //
                 List<int> topUserIds = topUserRaw.Select(u => u.userId).ToList();
-                var userConvCounts = await db.ConversationMessages
-                    .Where(m => m.tenantGuid == tenantGuid && m.active && !m.deleted
-                        && m.dateTimeCreated >= thirtyDaysAgo && topUserIds.Contains(m.userId))
-                    .Select(m => new { m.userId, m.conversationId })
-                    .Distinct()
+                
+                //
+                // Get conversation counts per top user
+                //
+                Dictionary<int, int> convCountMap = recentMessages
+                    .Where(m => topUserIds.Contains(m.userId))
                     .GroupBy(m => m.userId)
-                    .Select(g => new { userId = g.Key, count = g.Count() })
-                    .ToListAsync();
-
-                Dictionary<int, int> convCountMap = userConvCounts.ToDictionary(x => x.userId, x => x.count);
+                    .ToDictionary(g => g.Key, g => g.Select(x => x.conversationId).Distinct().Count());
 
                 analytics.topUsers = new List<UserActivity>();
                 foreach (var u in topUserRaw)
@@ -805,17 +827,16 @@ namespace Foundation.Messaging.Services
                 //
                 // Top channels by message count
                 //
-                var topChannelData = await db.ConversationMessages
-                    .Where(m => m.tenantGuid == tenantGuid && m.active && !m.deleted && m.dateTimeCreated >= thirtyDaysAgo)
+                var topChannelData = recentMessages
                     .GroupBy(m => m.conversationId)
                     .Select(g => new
                     {
                         conversationId = g.Key,
-                        messageCount = g.Count()
+                        messageCount = g.Sum(x => x.count)
                     })
                     .OrderByDescending(c => c.messageCount)
                     .Take(10)
-                    .ToListAsync();
+                    .ToList();
 
                 List<int> channelIds = topChannelData.Select(c => c.conversationId).ToList();
 
@@ -846,18 +867,6 @@ namespace Foundation.Messaging.Services
                 //
                 // User-to-user message flows for Sankey diagram.
                 // For each conversation, get users who sent messages; pair them as sender → other participants.
-                //
-                var recentMessages = await db.ConversationMessages
-                    .Where(m => m.tenantGuid == tenantGuid && m.active && !m.deleted && m.dateTimeCreated >= thirtyDaysAgo)
-                    .GroupBy(m => new { m.conversationId, m.userId })
-                    .Select(g => new
-                    {
-                        g.Key.conversationId,
-                        g.Key.userId,
-                        count = g.Count()
-                    })
-                    .ToListAsync();
-
                 //
                 // Group by conversation to find participants
                 //

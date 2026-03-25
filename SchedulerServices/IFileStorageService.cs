@@ -101,6 +101,12 @@ namespace Scheduler.Server.Services
         /// </summary>
         Task DeleteDocumentAsync(int documentId, Guid tenantGuid, int securityUserId, CancellationToken ct = default);
 
+        /// <summary>
+        /// Gets a short-lived presigned URL directly to the document's binary content, bypassing the application server.
+        /// Returns null if not supported by the underlying storage provider (e.g. SQL/Local modes).
+        /// </summary>
+        Task<string> GetDocumentPresignedUrlAsync(int documentId, Guid tenantGuid, TimeSpan expires, CancellationToken ct = default);
+
 
         // ─── Recycle Bin ─────────────────────────────────────────────────────
 

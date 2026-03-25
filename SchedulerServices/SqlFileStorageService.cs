@@ -622,6 +622,29 @@ namespace Scheduler.Server.Services
         }
 
 
+        public async Task<string> GetDocumentPresignedUrlAsync(int documentId, Guid tenantGuid, TimeSpan expires, CancellationToken ct = default)
+        {
+            if (_storageProvider == null)
+            {
+                return null;
+            }
+
+            // Get metadata to find the storageKey
+            Document document = await _db.Documents
+                .Where(d => d.id == documentId && d.tenantGuid == tenantGuid && d.deleted == false)
+                .Select(d => new Document { storageKey = d.storageKey })
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+
+            if (document == null || string.IsNullOrEmpty(document.storageKey))
+            {
+                return null;
+            }
+
+            return await _storageProvider.GetPresignedUrlAsync(document.storageKey, expires, ct).ConfigureAwait(false);
+        }
+
+
         // ═══════════════════════════════════════════════════════════════════════
         //  RECYCLE BIN
         // ═══════════════════════════════════════════════════════════════════════

@@ -109,6 +109,22 @@ namespace Foundation.Networking.DeepSpace.Host
                 return Results.Ok(new { Key = key, Exists = exists });
             });
 
+            app.MapGet("/api/deepspace/presigned-url", async (HttpContext ctx, StorageManager mgr) =>
+            {
+                string key = ctx.Request.Query["key"].ToString();
+                string expiresStr = ctx.Request.Query["expires"].ToString();
+                if (string.IsNullOrEmpty(key)) return Results.BadRequest("key parameter required");
+
+                TimeSpan expires = TimeSpan.FromMinutes(60);
+                if (double.TryParse(expiresStr, out double minutes))
+                {
+                    expires = TimeSpan.FromMinutes(minutes);
+                }
+
+                string url = await mgr.GetPresignedUrlAsync(key, expires);
+                return Results.Ok(new { Url = url });
+            });
+
 
             //
             // Admin: rebuild metadata database from sidecar files

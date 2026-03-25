@@ -1111,6 +1111,10 @@ CREATE INDEX "I_ConversationMessage_tenantGuid_deleted" ON "ConversationMessage"
 CREATE INDEX "I_ConversationMessage_id_active_deleted" ON "ConversationMessage" ("id", "active", "deleted")
 ;
 
+-- Index on the ConversationMessage table's tenantGuid,dateTimeCreated fields.
+CREATE INDEX "I_ConversationMessage_tenantGuid_dateTimeCreated" ON "ConversationMessage" ("tenantGuid", "dateTimeCreated")
+;
+
 
 -- The change history for records from the ConversationMessage table.
 CREATE TABLE "ConversationMessageChangeHistory"

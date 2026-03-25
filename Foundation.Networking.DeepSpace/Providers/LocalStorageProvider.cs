@@ -147,9 +147,10 @@ namespace Foundation.Networking.DeepSpace.Providers
 
         public Task<string> GetPresignedUrlAsync(string key, TimeSpan expires, CancellationToken cancellationToken = default)
         {
-            string urlKey = (key ?? string.Empty).Replace('\\', '/').TrimStart('/');
-            string url = $"/api/deepspace/download/{ProviderName.ToLowerInvariant()}/{urlKey}";
-            return Task.FromResult(url);
+            // For Local Storage, generating a "presigned URL" offers no performance benefit 
+            // since the server instance still has to stream the bytes from local disk.
+            // Returning null signals the client to fall back to the standard API download route.
+            return Task.FromResult<string>(null);
         }
 
         public Task<Stream> GetStreamAsync(string key, CancellationToken cancellationToken = default)

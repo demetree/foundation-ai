@@ -90,5 +90,13 @@ namespace Scheduler.Server.Services
                 .AnyAsync(d => d.id == documentId && d.fileDataData != null, ct)
                 .ConfigureAwait(false);
         }
+
+
+        public Task<string> GetPresignedUrlAsync(string storageKey, TimeSpan expires, CancellationToken ct = default)
+        {
+            // For SQL Storage, returning a "presigned URL" offers no performance benefit.
+            // Returning null signals the client to fall back to the standard database download route.
+            return Task.FromResult<string>(null);
+        }
     }
 }

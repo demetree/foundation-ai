@@ -734,6 +734,42 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 
         /// <summary>
+        /// Gets a short-lived presigned URL directly to the document's binary content, bypassing the application server.
+        /// Returns 404/null if not supported by the underlying storage provider (e.g. SQL/Local modes).
+        /// </summary>
+        [Route("api/FileManager/Documents/{documentId}/PresignedUrl")]
+        [HttpGet]
+        public async Task<IActionResult> GetDocumentPresignedUrl(int documentId, [FromQuery] int expiresMinutes = 60)
+        {
+            if (!await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED))
+            {
+                return Forbid();
+            }
+
+            try
+            {
+                SecurityUser securityUser = await GetSecurityUserAsync();
+                Guid tenantGuid = await UserTenantGuidAsync(securityUser);
+
+                string url = await _fileStorage.GetDocumentPresignedUrlAsync(documentId, tenantGuid, TimeSpan.FromMinutes(expiresMinutes));
+
+                if (string.IsNullOrEmpty(url))
+                {
+                    // Return null object instead of a 404 HTTP status, so the Angular client HttpClient can smoothly parse { "url": null }
+                    return Ok(new { url = (string)null });
+                }
+
+                return Ok(new { url });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting presigned URL for document {DocumentId}.", documentId);
+                return StatusCode(500, "Error generating presigned URL.");
+            }
+        }
+
+
+        /// <summary>
         /// Returns an 80×80 PNG thumbnail for a document (if it's a supported image format).
         /// </summary>
         [Route("api/FileManager/Documents/{documentId}/Thumbnail")]

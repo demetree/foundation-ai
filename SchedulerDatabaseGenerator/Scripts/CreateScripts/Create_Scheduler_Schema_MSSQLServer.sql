@@ -1164,6 +1164,10 @@ GO
 CREATE INDEX [I_ConversationMessage_id_active_deleted] ON [Scheduler].[ConversationMessage] ([id], [active], [deleted])
 GO
 
+-- Index on the ConversationMessage table's tenantGuid,dateTimeCreated fields.
+CREATE INDEX [I_ConversationMessage_tenantGuid_dateTimeCreated] ON [Scheduler].[ConversationMessage] ([tenantGuid], [dateTimeCreated])
+GO
+
 
 -- The change history for records from the ConversationMessage table.
 CREATE TABLE [Scheduler].[ConversationMessageChangeHistory]

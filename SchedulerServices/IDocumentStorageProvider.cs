@@ -14,6 +14,7 @@
 // The storageKey is the unique identifier for the content in the provider.
 // For SQL storage, it maps to a document ID. For file/DeepSpace, it's a path-like key.
 //
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,5 +56,13 @@ namespace Scheduler.Server.Services
         /// Returns true if content exists at the given storage key.
         /// </summary>
         Task<bool> ExistsAsync(string storageKey, CancellationToken ct = default);
+
+
+        /// <summary>
+        /// Gets a short-lived presigned URL for direct client access, bypassing the application server.
+        /// Returns null if the provider (e.g., SQL/Local) does not natively support CDN presigned URLs
+        /// or if generating one provides no architectural offloading benefit.
+        /// </summary>
+        Task<string> GetPresignedUrlAsync(string storageKey, TimeSpan expires, CancellationToken ct = default);
     }
 }

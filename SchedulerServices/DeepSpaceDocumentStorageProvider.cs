@@ -149,5 +149,37 @@ namespace Scheduler.Server.Services
                 return false;
             }
         }
+
+
+        public async Task<string> GetPresignedUrlAsync(string storageKey, TimeSpan expires, CancellationToken ct = default)
+        {
+            try
+            {
+                string url = $"/api/deepspace/presigned-url?key={Uri.EscapeDataString(storageKey)}&expires={expires.TotalMinutes}";
+
+                HttpResponseMessage response = await _httpClient.GetAsync(url, ct).ConfigureAwait(false);
+
+                if (response.IsSuccessStatusCode == false)
+                {
+                    return null;
+                }
+
+                string json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+
+                using var doc = System.Text.Json.JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("Url", out var urlProp) || doc.RootElement.TryGetProperty("url", out urlProp))
+                {
+                    string presignedUrl = urlProp.GetString();
+                    return string.IsNullOrEmpty(presignedUrl) ? null : presignedUrl;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "DeepSpaceDocumentStorageProvider: exception during GetPresignedUrlAsync for key '{Key}'.", storageKey);
+                return null;
+            }
+        }
     }
 }

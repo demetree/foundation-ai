@@ -1413,6 +1413,10 @@ and adds channel-specific fields like name, topic, and privacy.";
             conversationMessageIdActiveDeletedIndex.AddField("active");
             conversationMessageIdActiveDeletedIndex.AddField("deleted");
 
+            Database.Table.Index conversationMessageTenantDateTimeIndex = conversationMessageTable.CreateIndex("I_ConversationMessage_tenantGuid_dateTimeCreated");
+            conversationMessageTenantDateTimeIndex.AddField("tenantGuid");
+            conversationMessageTenantDateTimeIndex.AddField("dateTimeCreated");
+
 
 
             Database.Table conversationMessageAttachmentTable = database.AddTable("ConversationMessageAttachment");

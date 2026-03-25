@@ -103,6 +103,12 @@ namespace Scheduler.Server.Services
         }
 
 
+        public Task<string> GetPresignedUrlAsync(string storageKey, TimeSpan expires, CancellationToken ct = default)
+        {
+            return Task.FromResult<string>(null);
+        }
+
+
         /// <summary>
         /// Resolves a storage key to a full filesystem path.
         /// Replaces forward slashes with the OS path separator.

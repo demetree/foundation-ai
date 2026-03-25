@@ -168,8 +168,8 @@ namespace Foundation.Messaging.Database
                 entity.HasIndex(e => new { e.tenantGuid, e.deleted });
                 entity.HasIndex(e => new { e.tenantGuid, e.parentConversationMessageId });
                 entity.HasIndex(e => new { e.tenantGuid, e.userId });
-
                 entity.HasIndex(e => new { e.tenantGuid, e.conversationChannelId });
+                entity.HasIndex(e => new { e.tenantGuid, e.dateTimeCreated });
 
                 entity.Property(e => e.active).HasDefaultValue(true);
                 entity.Property(e => e.entity).HasMaxLength(250);

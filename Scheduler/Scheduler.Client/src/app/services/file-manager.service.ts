@@ -435,6 +435,13 @@ export class FileManagerService extends SecureEndpointBase {
     }
 
 
+    getPresignedUrl(documentId: number, expiresMinutes: number = 60): Observable<{ url: string | null }> {
+        const params = new HttpParams().set('expiresMinutes', expiresMinutes.toString());
+        return this.http.get<{ url: string | null }>(`${this.base}/Documents/${documentId}/PresignedUrl`, { headers: this.authHeaders(), params }).pipe(
+            catchError((error: any) => this.handleError(error, () => this.getPresignedUrl(documentId, expiresMinutes)))
+        );
+    }
+
     downloadDocumentUrl(documentId: number): string {
         return `${this.base}/Documents/${documentId}/Download`;
     }
