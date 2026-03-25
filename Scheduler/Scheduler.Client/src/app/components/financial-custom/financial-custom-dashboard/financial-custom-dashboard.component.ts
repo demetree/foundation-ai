@@ -17,7 +17,6 @@ import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-
 import { AuthService } from '../../../services/auth.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FinancialTransactionCustomAddEditComponent } from '../financial-transaction-custom-add-edit/financial-transaction-custom-add-edit.component';
 
 
 @Component({
@@ -26,9 +25,6 @@ import { FinancialTransactionCustomAddEditComponent } from '../financial-transac
     styleUrls: ['./financial-custom-dashboard.component.scss']
 })
 export class FinancialCustomDashboardComponent implements OnInit {
-
-    @ViewChild('txAddEdit') txAddEdit!: FinancialTransactionCustomAddEditComponent;
-
     public isLoading = true;
 
     //
@@ -407,42 +403,34 @@ export class FinancialCustomDashboardComponent implements OnInit {
     }
 
 
+    public goToInvoices(): void {
+        this.router.navigate(['/finances/invoices']);
+    }
+
+    public goToReceipts(): void {
+        this.router.navigate(['/finances/receipts']);
+    }
+
     /**
-     * Opens the add-edit modal pre-seeded for revenue (income).
+     * Navigates to the add-edit page pre-seeded for revenue (income).
      */
     public recordIncome(): void {
-        if (this.txAddEdit) {
-            this.txAddEdit.preSeededData = {
-                isRevenue: true,
-                financialOfficeId: this.selectedOfficeId
-            };
-            this.txAddEdit.openModal();
+        const params: any = { type: 'revenue' };
+        if (this.selectedOfficeId !== null) {
+            params.financialOfficeId = this.selectedOfficeId;
         }
+        this.router.navigate(['/finances/transactions/new'], { queryParams: params });
     }
 
-
     /**
-     * Opens the add-edit modal pre-seeded for expense.
+     * Navigates to the add-edit page pre-seeded for expense.
      */
     public recordExpense(): void {
-        if (this.txAddEdit) {
-            this.txAddEdit.preSeededData = {
-                isRevenue: false,
-                financialOfficeId: this.selectedOfficeId
-            };
-            this.txAddEdit.openModal();
+        const params: any = { type: 'expense' };
+        if (this.selectedOfficeId !== null) {
+            params.financialOfficeId = this.selectedOfficeId;
         }
-    }
-
-
-    /**
-     * Called after a transaction is saved from the add-edit modal.
-     * Reloads all dashboard data.
-     */
-    public onTransactionChanged(): void {
-        this.loadDashboardData();
-        this.loadCategoryBreakdown();
-        this.loadOutstandingDeposits();
+        this.router.navigate(['/finances/transactions/new'], { queryParams: params });
     }
 
 

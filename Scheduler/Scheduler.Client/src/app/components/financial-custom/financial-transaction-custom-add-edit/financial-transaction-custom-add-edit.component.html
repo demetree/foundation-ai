@@ -1,16 +1,17 @@
-<!-- ng-bootstrap modal -->
-<ng-template #txModal let-modal>
-    <div class="modal-header tx-modal-header">
-        <h5 class="modal-title mb-0">
-            <i class="fa-solid me-2" [ngClass]="isEditMode ? 'fa-pen-to-square' : 'fa-plus-circle'"></i>
-            {{ isEditMode ? 'Edit Transaction' : 'New Transaction' }}
-        </h5>
-        <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
-            <i class="fa fa-xmark"></i>
-        </button>
-    </div>
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-7">
+            
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-semibold text-primary">
+                        <i class="fa-solid me-2" [ngClass]="isEditMode ? 'fa-pen-to-square' : 'fa-plus-circle'"></i>
+                        {{ isEditMode ? 'Edit Transaction' : 'New Transaction' }}
+                    </h5>
+                    <button type="button" class="btn-close" (click)="goBack()" aria-label="Close"></button>
+                </div>
 
-    <div class="modal-body tx-modal-body">
+                <div class="card-body p-4">
         <form [formGroup]="txForm" (ngSubmit)="submitForm()">
 
             <!-- ═══════════════════════════════════════════ -->
@@ -227,8 +228,8 @@
             <!-- ═══════════════════════════════════════════ -->
             <!-- FOOTER                                      -->
             <!-- ═══════════════════════════════════════════ -->
-            <div class="modal-footer tx-modal-footer">
-                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeModal()">Cancel</button>
+            <div class="mt-4 pt-3 border-top d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-outline-secondary" (click)="goBack()">Cancel</button>
 
                 <!-- Save & Add Another (add mode only) -->
                 <button type="button" class="btn btn-sm btn-outline-primary"
@@ -258,5 +259,8 @@
                 </button>
             </div>
         </form>
+        </div>
     </div>
-</ng-template>
+    </div>
+    </div>
+</div>

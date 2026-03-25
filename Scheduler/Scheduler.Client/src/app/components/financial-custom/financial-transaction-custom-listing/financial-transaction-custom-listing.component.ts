@@ -7,7 +7,6 @@ import { FinancialCategoryService, FinancialCategoryData } from '../../../schedu
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { FinancialOfficeService, FinancialOfficeData } from '../../../scheduler-data-services/financial-office.service';
-import { FinancialTransactionCustomAddEditComponent } from '../financial-transaction-custom-add-edit/financial-transaction-custom-add-edit.component';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
@@ -63,8 +62,6 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
         private http: HttpClient,
         @Inject('BASE_URL') private baseUrl: string
     ) { }
-
-    @ViewChild('txAddEdit') txAddEdit!: FinancialTransactionCustomAddEditComponent;
 
 
     ngOnInit(): void {
@@ -252,19 +249,16 @@ export class FinancialTransactionCustomListingComponent implements OnInit {
 
 
     public addTransaction(): void {
-        if (this.txAddEdit) {
-            this.txAddEdit.preSeededData = {
-                financialOfficeId: this.selectedOfficeId
-            };
-            this.txAddEdit.openModal();
+        const queryParams: any = {};
+        if (this.selectedOfficeId) {
+            queryParams.financialOfficeId = this.selectedOfficeId;
         }
+        this.router.navigate(['/finances/transactions/new'], { queryParams });
     }
 
 
     public editTransaction(tx: FinancialTransactionData): void {
-        if (this.txAddEdit) {
-            this.txAddEdit.openModal(tx);
-        }
+        this.router.navigate(['/finances/transactions', tx.id]);
     }
 
 

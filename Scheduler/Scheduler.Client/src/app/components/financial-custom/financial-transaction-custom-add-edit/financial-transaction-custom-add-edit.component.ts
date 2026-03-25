@@ -1,7 +1,7 @@
-import { Component, ViewChild, TemplateRef, Input, Output, EventEmitter, Inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, Inject, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Location } from '@angular/common';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { FinancialTransactionService, FinancialTransactionData, FinancialTransactionSubmitData } from '../../../scheduler-data-services/financial-transaction.service';
@@ -19,9 +19,8 @@ import { isoUtcStringToDateTimeLocal, dateTimeLocalToIsoUtc } from '../../../uti
     templateUrl: './financial-transaction-custom-add-edit.component.html',
     styleUrls: ['./financial-transaction-custom-add-edit.component.scss']
 })
-export class FinancialTransactionCustomAddEditComponent {
+export class FinancialTransactionCustomAddEditComponent implements OnInit {
 
-    @ViewChild('txModal') txModal!: TemplateRef<any>;
     @Output() financialTransactionChanged = new EventEmitter<void>();
 
     @Input() navigateToDetailsAfterAdd: boolean = false;
@@ -34,9 +33,7 @@ export class FinancialTransactionCustomAddEditComponent {
     @Input() preSeededData: Record<string, any> | null = null;
 
     public txForm!: FormGroup;
-    private modalRef: NgbModalRef | undefined;
     public isEditMode = false;
-    public modalIsDisplayed = false;
     public isSaving = false;
     public isSavingAndAdding = false;
     public showMoreDetails = false;
@@ -61,7 +58,8 @@ export class FinancialTransactionCustomAddEditComponent {
     private editVersionNumber: number | bigint = 0;
 
     constructor(
-        private modalService: NgbModal,
+        private route: ActivatedRoute,
+        private location: Location,
         private transactionService: FinancialTransactionService,
         private categoryService: FinancialCategoryService,
         private officeService: FinancialOfficeService,
@@ -142,62 +140,85 @@ export class FinancialTransactionCustomAddEditComponent {
 
 
     //
-    // Public API — called by parent via @ViewChild
+    // Lifecycle / Route Init
     //
-    public openModal(txData?: FinancialTransactionData): void {
-
-        if (txData) {
-
-            if (!this.transactionService.userIsSchedulerFinancialTransactionReader()) {
-                this.alertService.showMessage(
-                    `${this.authService.currentUser?.userName} does not have permission to read Financial Transactions`, '', MessageSeverity.info
-                );
-                return;
-            }
-
-            this.isEditMode = true;
-            this.editId = txData.id;
-            this.editVersionNumber = txData.versionNumber;
-            this.populateForm(txData);
-
-            // Auto-expand more details if optional fields have values
-            this.showMoreDetails = !!(txData.referenceNumber || txData.notes || txData.taxCodeId
-                || txData.fiscalPeriodId || txData.journalEntryType || txData.contactRole
-                || txData.contactId || txData.clientId || txData.scheduledEventId);
-
+    public ngOnInit(): void {
+        this.loadLookups();
+        
+        const idParam = this.route.snapshot.paramMap.get('id');
+        
+        if (idParam && idParam !== 'new' && idParam !== '0') {
+            const id = Number(idParam);
+            this.transactionService.GetFinancialTransaction(id, true).subscribe({
+                next: (txData) => {
+                    this.setupEditMode(txData);
+                },
+                error: (err) => {
+                    this.alertService.showMessage('Error loading transaction', '', MessageSeverity.error);
+                    this.goBack();
+                }
+            });
         } else {
+            this.setupAddMode();
+        }
+    }
 
-            if (!this.transactionService.userIsSchedulerFinancialTransactionWriter()) {
-                this.alertService.showMessage(
-                    `${this.authService.currentUser?.userName} does not have permission to write Financial Transactions`, '', MessageSeverity.info
-                );
-                return;
-            }
-
-            this.isEditMode = false;
-            this.editId = 0;
-            this.editVersionNumber = 0;
-            this.showMoreDetails = false;
-            this.resetForm();
-
-            //
-            // Apply pre-seeded data if provided
-            //
-            if (this.preSeededData) {
-                this.txForm.patchValue(this.preSeededData);
-            }
-
-            //
-            // Apply last-used values from localStorage (category, office, currency)
-            //
-            this.applyLastUsedValues();
+    private setupEditMode(txData: FinancialTransactionData): void {
+        if (!this.transactionService.userIsSchedulerFinancialTransactionReader()) {
+            this.alertService.showMessage(`${this.authService.currentUser?.userName} does not have permission`, '', MessageSeverity.info);
+            this.goBack();
+            return;
         }
 
-        this.loadLookups();
+        this.isEditMode = true;
+        this.editId = txData.id;
+        this.editVersionNumber = txData.versionNumber;
+        this.populateForm(txData);
 
-        //
-        // Disable validators for hidden fields to prevent form invalidation
-        //
+        this.showMoreDetails = !!(txData.referenceNumber || txData.notes || txData.taxCodeId
+            || txData.fiscalPeriodId || txData.journalEntryType || txData.contactRole
+            || txData.contactId || txData.clientId || txData.scheduledEventId);
+            
+        this.disableHiddenFieldValidators();
+    }
+
+    private setupAddMode(): void {
+        if (!this.transactionService.userIsSchedulerFinancialTransactionWriter()) {
+            this.alertService.showMessage(`${this.authService.currentUser?.userName} does not have permission`, '', MessageSeverity.info);
+            this.goBack();
+            return;
+        }
+
+        this.isEditMode = false;
+        this.editId = 0;
+        this.editVersionNumber = 0;
+        this.showMoreDetails = false;
+        this.resetForm();
+
+        // Check query params for type=revenue or type=expense
+        const queryParams = this.route.snapshot.queryParams;
+        const seed: Record<string, any> = {};
+        
+        if (queryParams['type'] === 'revenue') {
+            seed['isRevenue'] = true;
+        } else if (queryParams['type'] === 'expense') {
+            seed['isRevenue'] = false;
+        }
+        if (queryParams['financialOfficeId']) {
+            seed['financialOfficeId'] = Number(queryParams['financialOfficeId']);
+        }
+        
+        if (Object.keys(seed).length > 0) {
+            this.txForm.patchValue(seed);
+        } else if (this.preSeededData) {
+            this.txForm.patchValue(this.preSeededData);
+        }
+
+        this.applyLastUsedValues();
+        this.disableHiddenFieldValidators();
+    }
+
+    private disableHiddenFieldValidators(): void {
         for (const fieldName of this.hiddenFields) {
             const control = this.txForm.get(fieldName);
             if (control) {
@@ -205,25 +226,11 @@ export class FinancialTransactionCustomAddEditComponent {
                 control.updateValueAndValidity();
             }
         }
-
-        this.modalRef = this.modalService.open(this.txModal, {
-            size: 'lg',
-            scrollable: true,
-            backdrop: 'static',
-            keyboard: true,
-            windowClass: 'custom-modal'
-        });
-        this.modalIsDisplayed = true;
     }
 
-
-    public closeModal(): void {
-        if (this.modalRef) {
-            this.modalRef.dismiss('cancel');
-        }
-        this.modalIsDisplayed = false;
+    public goBack(): void {
+        this.location.back();
     }
-
 
     //
     // Form population
@@ -355,7 +362,7 @@ export class FinancialTransactionCustomAddEditComponent {
                 next: () => {
                     this.alertService.showMessage('Transaction updated successfully', '', MessageSeverity.success);
                     this.isSaving = false;
-                    this.closeModal();
+                    this.goBack();
                     this.transactionService.ClearAllCaches();
                     this.financialTransactionChanged.emit();
                 },
@@ -373,7 +380,7 @@ export class FinancialTransactionCustomAddEditComponent {
                     this.alertService.showMessage('Transaction created successfully', '', MessageSeverity.success);
                     this.isSaving = false;
                     this.isSavingAndAdding = false;
-                    this.closeModal();
+                    this.goBack();
                     this.transactionService.ClearAllCaches();
                     this.financialTransactionChanged.emit();
                 },

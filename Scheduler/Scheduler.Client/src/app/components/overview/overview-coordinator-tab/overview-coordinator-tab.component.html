@@ -106,7 +106,7 @@
             <div class="list-group list-group-flush" *ngIf="recentTransactions.length > 0">
               <a *ngFor="let txn of recentTransactions"
                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 hover-lift"
-                [routerLink]="['/financialtransactions', txn.id]" style="font-size: 0.85rem; cursor: pointer;">
+                [routerLink]="['/finances/transactions/', txn.id]" style="font-size: 0.85rem; cursor: pointer;">
                 <div>
                   <div class="fw-medium">{{ txn.description }}</div>
                   <small class="text-muted">

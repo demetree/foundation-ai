@@ -5,12 +5,8 @@
 }
 
 //
-// Premium Header — Finance gradient (teal/emerald — entity identity color, stays)
-//
-$gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%);
-
 .premium-header {
-    background: $gradient-finance;
+    background: var(--sch-gradient-primary);
     border-radius: 16px;
     overflow: hidden;
 
@@ -80,17 +76,17 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     width: 100%;
 }
 
-// Accent gradients — functional colors, stay hardcoded
+// Accent indicators
 .accent-success {
-    background: linear-gradient(90deg, #10b981, #34d399);
+    background: var(--sch-success);
 }
 
 .accent-danger {
-    background: linear-gradient(90deg, #ef4444, #f87171);
+    background: var(--sch-danger);
 }
 
 .accent-primary {
-    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    background: var(--sch-primary);
 }
 
 .summary-icon {
@@ -103,25 +99,25 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     font-size: 1.25rem;
 }
 
-// Functional icon colors — stay hardcoded
+// Functional icon colors — dynamic based on theme
 .income-icon {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    background: color-mix(in srgb, var(--sch-success) 12%, transparent);
+    color: var(--sch-success);
 }
 
 .expense-icon {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: color-mix(in srgb, var(--sch-danger) 12%, transparent);
+    color: var(--sch-danger);
 }
 
 .balance-icon {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
+    background: color-mix(in srgb, var(--sch-primary) 12%, transparent);
+    color: var(--sch-primary);
 }
 
 .records-icon {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
+    background: color-mix(in srgb, var(--sch-info) 12%, transparent);
+    color: var(--sch-info);
 }
 
 .ls-1 {
@@ -171,7 +167,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 
     &.current-month .month-label {
         font-weight: 700;
-        color: #3b82f6;
+        color: var(--sch-primary);
     }
 }
 
@@ -191,13 +187,13 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     transition: height 0.6s ease;
 }
 
-// Chart bar colors — functional, stay
+// Chart bar colors — dynamic
 .income-bar {
-    background: linear-gradient(180deg, #10b981, #34d399);
+    background: var(--sch-success);
 }
 
 .expense-bar {
-    background: linear-gradient(180deg, #ef4444, #f87171);
+    background: var(--sch-danger);
 }
 
 .month-label {
@@ -222,11 +218,11 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 }
 
 .income-dot {
-    background: #10b981;
+    background: var(--sch-success);
 }
 
 .expense-dot {
-    background: #ef4444;
+    background: var(--sch-danger);
 }
 
 
@@ -263,15 +259,15 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     flex-shrink: 0;
 }
 
-// Functional colors — stay
+// Functional colors
 .tx-income {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    background: color-mix(in srgb, var(--sch-success) 12%, transparent);
+    color: var(--sch-success);
 }
 
 .tx-expense {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background: color-mix(in srgb, var(--sch-danger) 12%, transparent);
+    color: var(--sch-danger);
 }
 
 .min-width-0 {
@@ -336,17 +332,17 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     border-left: 3px solid transparent;
 }
 
-// Revenue/expense colors — functional, stay
+// Revenue/expense colors
 .revenue-header {
-    color: #059669;
-    border-left-color: #10b981;
-    background: rgba(16, 185, 129, 0.04);
+    color: var(--sch-success);
+    border-left-color: var(--sch-success);
+    background: color-mix(in srgb, var(--sch-success) 6%, transparent);
 }
 
 .expense-header {
-    color: #dc2626;
-    border-left-color: #ef4444;
-    background: rgba(239, 68, 68, 0.04);
+    color: var(--sch-danger);
+    border-left-color: var(--sch-danger);
+    background: color-mix(in srgb, var(--sch-danger) 6%, transparent);
 }
 
 .breakdown-table {

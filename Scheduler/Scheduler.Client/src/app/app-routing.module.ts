@@ -112,6 +112,7 @@ import { VolunteerGroupCustomDetailComponent } from './components/volunteer-grou
 //
 import { FinancialCustomDashboardComponent } from './components/financial-custom/financial-custom-dashboard/financial-custom-dashboard.component';
 import { FinancialTransactionCustomListingComponent } from './components/financial-custom/financial-transaction-custom-listing/financial-transaction-custom-listing.component';
+import { FinancialTransactionCustomAddEditComponent } from './components/financial-custom/financial-transaction-custom-add-edit/financial-transaction-custom-add-edit.component';
 import { FinancialCategoryCustomListingComponent } from './components/financial-custom/financial-category-custom-listing/financial-category-custom-listing.component';
 import { FinancialBudgetManagerComponent } from './components/financial-custom/financial-budget-manager/financial-budget-manager.component';
 import { InvoiceCustomListingComponent } from './components/invoice-custom/invoice-custom-listing/invoice-custom-listing.component';
@@ -685,6 +686,8 @@ const routes: Routes = [
   //
   { path: 'finances', component: FinancialCustomDashboardComponent, canActivate: [AuthGuard], title: 'Finances' },
   { path: 'finances/transactions', component: FinancialTransactionCustomListingComponent, canActivate: [AuthGuard], title: 'Financial Transactions' },
+  { path: 'finances/transactions/new', component: FinancialTransactionCustomAddEditComponent, canActivate: [AuthGuard], title: 'New Financial Transaction' },
+  { path: 'finances/transactions/:id', component: FinancialTransactionCustomAddEditComponent, canActivate: [AuthGuard], title: 'Edit Financial Transaction' },
   { path: 'finances/categories', component: FinancialCategoryCustomListingComponent, canActivate: [AuthGuard], title: 'Chart of Accounts' },
   { path: 'finances/budgets', component: FinancialBudgetManagerComponent, canActivate: [AuthGuard], title: 'Budget Manager' },
   { path: 'finances/invoices', component: InvoiceCustomListingComponent, canActivate: [AuthGuard], title: 'Invoices' },

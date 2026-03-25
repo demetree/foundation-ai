@@ -25,17 +25,8 @@
                 <button class="btn btn-glass btn-sm me-2" (click)="recordIncome()" ngbTooltip="Record Income">
                     <i class="fa-solid fa-plus-circle me-1"></i> Record Income
                 </button>
-                <button class="btn btn-glass btn-sm me-2" (click)="recordExpense()" ngbTooltip="Record Expense">
+                <button class="btn btn-glass btn-sm" (click)="recordExpense()" ngbTooltip="Record Expense">
                     <i class="fa-solid fa-minus-circle me-1"></i> Record Expense
-                </button>
-                <button class="btn btn-glass btn-sm me-2" (click)="goToCategories()">
-                    <i class="fa-solid fa-layer-group me-1"></i> Categories
-                </button>
-                <button class="btn btn-glass btn-sm me-2" (click)="goToBudgets()">
-                    <i class="fa-solid fa-chart-pie me-1"></i> Budgets
-                </button>
-                <button class="btn btn-glass btn-sm" (click)="goToTransactions()">
-                    <i class="fa-solid fa-list me-1"></i> All Transactions
                 </button>
             </div>
         </div>
@@ -258,7 +249,7 @@
                         <!-- Transaction List -->
                         <div class="recent-list" *ngIf="!loadingRecent && recentTransactions.length > 0">
                             <div class="recent-item" *ngFor="let tx of recentTransactions"
-                                [routerLink]="['/financialtransactions', tx.id]" style="cursor: pointer;">
+                                [routerLink]="['/finances/transactions', tx.id]" style="cursor: pointer;">
                                 <div class="d-flex align-items-center">
                                     <div class="tx-icon me-3" [ngClass]="tx.isRevenue ? 'tx-income' : 'tx-expense'">
                                         <i
@@ -459,6 +450,54 @@
                 </div>
             </div>
         </div>
+        <!-- Core Financials -->
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0 fw-semibold">
+                    <i class="fa-solid fa-book-journal-whills me-2 text-primary"></i>Core Financials
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3" style="flex-wrap: nowrap;">
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center" (click)="goToTransactions()">
+                            <i class="fa-solid fa-list-check fa-2x mb-2"></i>
+                            <span class="fw-semibold">All Transactions</span>
+                            <small class="text-muted">Master ledger</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center" (click)="goToInvoices()">
+                            <i class="fa-solid fa-file-invoice-dollar fa-2x mb-2"></i>
+                            <span class="fw-semibold">Invoices</span>
+                            <small class="text-muted">Manage billing</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center" (click)="goToReceipts()">
+                            <i class="fa-solid fa-receipt fa-2x mb-2"></i>
+                            <span class="fw-semibold">Receipts</span>
+                            <small class="text-muted">Payment records</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center" (click)="goToCategories()">
+                            <i class="fa-solid fa-layer-group fa-2x mb-2"></i>
+                            <span class="fw-semibold">Categories</span>
+                            <small class="text-muted">Chart of accounts</small>
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-primary w-100 py-3 d-flex flex-column align-items-center" (click)="goToBudgets()">
+                            <i class="fa-solid fa-chart-pie fa-2x mb-2"></i>
+                            <span class="fw-semibold">Budgets</span>
+                            <small class="text-muted">Budget planning</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Reports & Tools -->
         <div class="card mb-4 shadow-sm border-0">
             <div class="card-header bg-light">
@@ -547,10 +586,5 @@
         </div>
 
     </ng-container>
-
-    <!-- Transaction Add-Edit Modal (opened by Record Income / Record Expense buttons) -->
-    <app-financial-transaction-custom-add-edit #txAddEdit
-        (financialTransactionChanged)="onTransactionChanged()">
-    </app-financial-transaction-custom-add-edit>
 
 </div>
