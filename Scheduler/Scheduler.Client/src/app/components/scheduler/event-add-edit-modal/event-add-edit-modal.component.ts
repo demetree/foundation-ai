@@ -662,6 +662,15 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   generateInvoice(): void {
     if (!this.event || this.generatingInvoice) return;
 
+    if (!this.event.clientId) {
+      this.alertService.showMessage(
+        'Client Required',
+        'Please assign and save a client to this event before generating an invoice.',
+        MessageSeverity.warn
+      );
+      return;
+    }
+
     this.generatingInvoice = true;
     this.generatedInvoice = null;
 

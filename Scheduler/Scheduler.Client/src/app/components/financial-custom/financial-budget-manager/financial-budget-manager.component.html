@@ -70,7 +70,7 @@
         *ngIf="!isLoading && (revenueRows.length > 0 || expenseRows.length > 0)">
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #059669, #10b981);">
+                <div class="stat-icon" style="background: var(--sch-success);">
                     <i class="fa-solid fa-arrow-trend-up"></i>
                 </div>
                 <div class="stat-content">
@@ -84,7 +84,7 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+                <div class="stat-icon" style="background: var(--sch-danger);">
                     <i class="fa-solid fa-arrow-trend-down"></i>
                 </div>
                 <div class="stat-content">
@@ -98,7 +98,7 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #818cf8);">
+                <div class="stat-icon" style="background: var(--sch-primary);">
                     <i class="fa-solid fa-scale-balanced"></i>
                 </div>
                 <div class="stat-content">
@@ -231,7 +231,7 @@
 
         <!-- ═════ Revenue Section ═════ -->
         <div class="card border-0 shadow-sm mb-3" *ngIf="filteredRevenueRows.length > 0">
-            <div class="card-header bg-white border-bottom py-2 px-4">
+            <div class="card-header border-bottom py-2 px-4">
                 <h6 class="mb-0 fw-bold">
                     <i class="fa-solid fa-arrow-trend-up text-success me-2"></i>Revenue
                     <span class="badge bg-success-subtle text-success ms-2">{{ filteredRevenueRows.length }}
@@ -240,7 +240,7 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle budget-table">
-                    <thead class="bg-light">
+                    <thead class="table-light">
                         <tr>
                             <th class="ps-4" style="width: 220px;">Category</th>
                             <th class="text-end" style="width: 120px;">Budgeted</th>
@@ -370,7 +370,7 @@
                         </tr>
                     </tbody>
                     <!-- Revenue Totals -->
-                    <tfoot class="bg-light">
+                    <tfoot class="table-light">
                         <tr class="fw-bold">
                             <td class="ps-4">Total Revenue</td>
                             <td class="text-end">{{ totalRevenueBudget | currency:'CAD':'symbol':'1.2-2' }}</td>
@@ -395,7 +395,7 @@
 
         <!-- ═════ Expense Section ═════ -->
         <div class="card border-0 shadow-sm mb-3" *ngIf="filteredExpenseRows.length > 0">
-            <div class="card-header bg-white border-bottom py-2 px-4">
+            <div class="card-header border-bottom py-2 px-4">
                 <h6 class="mb-0 fw-bold">
                     <i class="fa-solid fa-arrow-trend-down text-danger me-2"></i>Expenses
                     <span class="badge bg-danger-subtle text-danger ms-2">{{ filteredExpenseRows.length }}
@@ -404,7 +404,7 @@
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle budget-table">
-                    <thead class="bg-light">
+                    <thead class="table-light">
                         <tr>
                             <th class="ps-4" style="width: 220px;">Category</th>
                             <th class="text-end" style="width: 120px;">Budgeted</th>
@@ -534,7 +534,7 @@
                         </tr>
                     </tbody>
                     <!-- Expense Totals -->
-                    <tfoot class="bg-light">
+                    <tfoot class="table-light">
                         <tr class="fw-bold">
                             <td class="ps-4">Total Expenses</td>
                             <td class="text-end">{{ totalExpenseBudget | currency:'CAD':'symbol':'1.2-2' }}</td>

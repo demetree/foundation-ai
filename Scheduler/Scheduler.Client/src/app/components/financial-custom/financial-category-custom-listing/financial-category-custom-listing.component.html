@@ -78,7 +78,7 @@
     <div class="row g-3 mb-3" *ngIf="!isLoading">
         <div class="col-6 col-md-3">
             <div class="stat-card">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #818cf8);">
+                <div class="stat-icon" style="background: var(--sch-primary);">
                     <i class="fa-solid fa-layer-group"></i>
                 </div>
                 <div class="stat-content">
@@ -89,7 +89,7 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card stat-card-income">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #059669, #10b981);">
+                <div class="stat-icon" style="background: var(--sch-success);">
                     <i class="fa-solid fa-arrow-trend-up"></i>
                 </div>
                 <div class="stat-content">
@@ -100,7 +100,7 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card stat-card-expense">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #dc2626, #ef4444);">
+                <div class="stat-icon" style="background: var(--sch-danger);">
                     <i class="fa-solid fa-arrow-trend-down"></i>
                 </div>
                 <div class="stat-content">
@@ -111,7 +111,7 @@
         </div>
         <div class="col-6 col-md-3">
             <div class="stat-card stat-card-other">
-                <div class="stat-icon" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                <div class="stat-icon" style="background: var(--sch-info);">
                     <i class="fa-solid fa-building-columns"></i>
                 </div>
                 <div class="stat-content">
@@ -151,7 +151,7 @@
         <div class="card border-0 shadow-sm">
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
-                    <thead class="bg-light">
+                    <thead class="table-light">
                         <tr>
                             <th class="ps-4 sortable" style="width:80px" (click)="sortBy('code')">
                                 Code <i class="fa-solid ms-1" [ngClass]="getSortIcon('code')"></i>
@@ -230,7 +230,7 @@
                 </table>
             </div>
 
-            <div class="card-footer bg-white border-top py-2 px-4">
+            <div class="card-footer border-top py-2 px-4">
                 <small class="text-muted">
                     Showing {{ filteredCategories.length }} of {{ totalCount }} categories
                 </small>
@@ -335,13 +335,13 @@
                                 {{ cat.accountType?.name }}
                             </span>
                             <span class="badge me-1" *ngIf="offices.length > 1 && cat.financialOffice"
-                                style="background: rgba(107,114,128,0.1); color: #6b7280;">
+                                style="background: color-mix(in srgb, var(--sch-text-secondary) 15%, transparent); color: var(--sch-text-secondary);">
                                 <span class="office-dot me-1" *ngIf="cat.financialOffice.color"
                                     [style.background]="cat.financialOffice.color"></span>
                                 {{ cat.financialOffice.name }}
                             </span>
                             <span class="badge" *ngIf="cat.isTaxApplicable"
-                                style="background: rgba(16,185,129,0.1); color: #059669;">
+                                style="background: color-mix(in srgb, var(--sch-success) 15%, transparent); color: var(--sch-success);">
                                 <i class="fa-solid fa-check me-1"></i>Tax
                             </span>
                             <span class="usage-badge ms-1" *ngIf="getTransactionCount(cat.id) > 0">

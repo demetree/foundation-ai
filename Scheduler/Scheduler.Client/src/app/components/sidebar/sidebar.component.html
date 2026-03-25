@@ -66,7 +66,8 @@
 
     <!-- Finances (gated: advanced mode + fundraising toggle + role) -->
     <!-- AI-Developed — Fundraising visibility gating added with AI assistance. -->
-    <ng-container *ngIf="!isSimpleMode && isFinancialManager && (isFinancialEnabled$ | async)">
+    <!--<ng-container *ngIf="!isSimpleMode && isFinancialManager && (isFinancialEnabled$ | async)">-->
+    <ng-container *ngIf="isFinancialManager && (isFinancialEnabled$ | async)">
       <li class="nav-item">
         <a routerLink="/finances" routerLinkActive="active" class="nav-link text-white"
            [ngbTooltip]="!isExpanded ? 'Finances' : null" triggers="hover" #tFinances="ngbTooltip"

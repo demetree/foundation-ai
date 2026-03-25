@@ -1,7 +1,7 @@
 // AI-Developed — This file was significantly developed with AI assistance.
 
 .page-container {
-    background-color: var(--sch-bg);
+    background-color: var(--sch-bg-deep);
     min-height: 100%;
     padding: 1.5rem;
 }
@@ -55,8 +55,8 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
     backdrop-filter: blur(5px);
 
     option {
-        color: #333;
-        background: white;
+        color: var(--sch-text-primary);
+        background: var(--sch-bg-card);
     }
 }
 
@@ -126,16 +126,16 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: white;
+    background: var(--sch-bg-card);
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: var(--sch-shadow-sm);
+    border: 1px solid var(--sch-border);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 
     &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--sch-shadow-md);
     }
 }
 
@@ -159,19 +159,19 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
     font-size: 1.4rem;
     font-weight: 700;
     line-height: 1.2;
-    color: #1e293b;
+    color: var(--sch-text-primary);
 }
 
 .stat-label {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--sch-text-secondary);
     font-weight: 500;
     letter-spacing: 0.01em;
 }
 
 .stat-sub {
     font-size: 0.7rem;
-    color: #94a3b8;
+    color: var(--sch-text-muted);
 }
 
 
@@ -180,26 +180,26 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
 //
 
 .health-good {
-    color: #059669 !important;
+    color: var(--sch-success) !important;
 
     &.stat-icon {
-        background: linear-gradient(135deg, #059669, #10b981) !important;
+        background: var(--sch-success) !important;
     }
 }
 
 .health-caution {
-    color: #d97706 !important;
+    color: var(--sch-warning) !important;
 
     &.stat-icon {
-        background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+        background: var(--sch-warning) !important;
     }
 }
 
 .health-risk {
-    color: #dc2626 !important;
+    color: var(--sch-danger) !important;
 
     &.stat-icon {
-        background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+        background: var(--sch-danger) !important;
     }
 }
 
@@ -209,8 +209,8 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
 //
 
 .add-budget-card {
-    border-left: 4px solid #6366f1 !important;
-    background: #fafafe;
+    border-left: 4px solid var(--sch-primary) !important;
+    background: color-mix(in srgb, var(--sch-primary) 5%, transparent);
 }
 
 
@@ -219,12 +219,12 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
 //
 
 .unbudgeted-card {
-    border-left: 4px solid #f59e0b !important;
-    background: #fffcf5;
+    border-left: 4px solid var(--sch-warning) !important;
+    background: color-mix(in srgb, var(--sch-warning) 10%, transparent);
 }
 
 .unbudgeted-row {
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--sch-border);
 
     &:last-child {
         border-bottom: none;
@@ -246,12 +246,12 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
         font-size: 0.8rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        color: #6b7280;
+        color: var(--sch-text-secondary);
         font-weight: 600;
     }
 
     tfoot td {
-        border-top: 2px solid #e5e7eb;
+        border-top: 2px solid var(--sch-border);
     }
 }
 
@@ -259,7 +259,7 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
     transition: background 0.15s ease;
 
     &:hover {
-        background: #f8fafc;
+        background: var(--sch-bg-hover);
     }
 
     .delete-btn {
@@ -303,8 +303,8 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
     transition: background 0.15s ease;
 
     &:hover {
-        background: #f0f5ff;
-        outline: 1px dashed #93c5fd;
+        background: color-mix(in srgb, var(--sch-primary) 10%, transparent);
+        outline: 1px dashed var(--sch-primary);
     }
 }
 
@@ -340,7 +340,7 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
     display: inline-block;
 
     &:hover {
-        background: #f0f5ff;
+        background: color-mix(in srgb, var(--sch-primary) 10%, transparent);
     }
 
     .notes-icon {
@@ -385,18 +385,18 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
 }
 
 .variance-under {
-    background: rgba(16, 185, 129, 0.1);
-    color: #059669;
+    background: color-mix(in srgb, var(--sch-success) 15%, transparent);
+    color: var(--sch-success);
 }
 
 .variance-warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: #d97706;
+    background: color-mix(in srgb, var(--sch-warning) 15%, transparent);
+    color: var(--sch-warning);
 }
 
 .variance-over {
-    background: rgba(239, 68, 68, 0.1);
-    color: #dc2626;
+    background: color-mix(in srgb, var(--sch-danger) 15%, transparent);
+    color: var(--sch-danger);
 }
 
 
@@ -405,7 +405,7 @@ $gradient-finance: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%
 //
 
 .progress {
-    background: #e5e7eb;
+    background: var(--sch-border);
     border-radius: 4px;
 }
 

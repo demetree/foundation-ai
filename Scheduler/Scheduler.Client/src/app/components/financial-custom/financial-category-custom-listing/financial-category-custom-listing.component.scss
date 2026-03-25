@@ -1,7 +1,7 @@
 // AI-Developed — This file was significantly developed with AI assistance.
 
 .page-container {
-    background-color: var(--sch-bg);
+    background-color: var(--sch-bg-deep);
     min-height: 100%;
     padding: 1.5rem;
 }
@@ -129,16 +129,16 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: white;
+    background: var(--sch-bg-card);
     border-radius: 12px;
     padding: 1.25rem 1.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: var(--sch-shadow-sm);
+    border: 1px solid var(--sch-border);
     transition: transform 0.15s ease, box-shadow 0.15s ease;
 
     &:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--sch-shadow-md);
     }
 }
 
@@ -162,12 +162,12 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     font-size: 1.5rem;
     font-weight: 700;
     line-height: 1.2;
-    color: #1e293b;
+    color: var(--sch-text-primary);
 }
 
 .stat-label {
     font-size: 0.78rem;
-    color: #64748b;
+    color: var(--sch-text-secondary);
     font-weight: 500;
     letter-spacing: 0.01em;
 }
@@ -190,7 +190,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     transition: background 0.15s ease;
 
     &:hover {
-        background: #f8fafc;
+        background: var(--sch-bg-hover);
     }
 }
 
@@ -254,9 +254,9 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 .tree-group {
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.04);
-    background: white;
+    box-shadow: var(--sch-shadow-sm);
+    border: 1px solid var(--sch-border);
+    background: var(--sch-bg-card);
 }
 
 .tree-group-header {
@@ -264,14 +264,14 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     align-items: center;
     justify-content: space-between;
     padding: 1rem 1.5rem;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--sch-bg-elevated);
+    border-bottom: 1px solid var(--sch-border);
     cursor: pointer;
     user-select: none;
     transition: background 0.15s ease;
 
     &:hover {
-        background: #f1f5f9;
+        background: var(--sch-bg-hover);
     }
 }
 
@@ -288,7 +288,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 }
 
 .expand-chevron {
-    color: #94a3b8;
+    color: var(--sch-text-muted);
     font-size: 0.85rem;
     transition: transform 0.2s ease;
 }
@@ -299,13 +299,13 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     display: flex;
     align-items: center;
     padding: 0.65rem 1.5rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--sch-border);
     cursor: pointer;
     transition: background 0.12s ease;
     position: relative;
 
     &:hover {
-        background: #f8fafc;
+        background: var(--sch-bg-hover);
     }
 
     &:last-child {
@@ -320,14 +320,14 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
     width: 20px;
     height: 20px;
     border-radius: 4px;
-    color: #64748b;
+    color: var(--sch-text-secondary);
     cursor: pointer;
     transition: background 0.12s ease, color 0.12s ease;
     flex-shrink: 0;
 
     &:hover {
-        background: rgba(99, 102, 241, 0.1);
-        color: #6366f1;
+        background: color-mix(in srgb, var(--sch-primary) 10%, transparent);
+        color: var(--sch-primary);
     }
 }
 
@@ -350,7 +350,7 @@ $gradient-finance: linear-gradient(135deg, #0d9488 0%, #059669 50%, #10b981 100%
 .tree-code {
     font-family: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
     font-size: 0.82rem;
-    color: #475569;
+    color: var(--sch-text-secondary);
     min-width: 60px;
 }
 

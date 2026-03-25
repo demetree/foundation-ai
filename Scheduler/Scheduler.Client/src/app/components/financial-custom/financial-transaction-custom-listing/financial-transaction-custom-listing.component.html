@@ -93,7 +93,7 @@
     <div class="card border-0 shadow-sm" *ngIf="!isLoading && filteredTransactions.length > 0 && !isSmallScreen">
         <div class="table-responsive">
             <table class="table table-hover mb-0 align-middle">
-                <thead class="bg-light">
+                <thead class="table-light">
                     <tr>
                         <th class="ps-4 sortable" (click)="sortBy('transactionDate')">
                             Date <i class="fa-solid ms-1" [ngClass]="getSortIcon('transactionDate')"></i>
@@ -154,7 +154,7 @@
         </div>
 
         <!-- Footer with count -->
-        <div class="card-footer bg-white border-top py-2 px-4">
+        <div class="card-footer border-top py-2 px-4">
             <small class="text-muted">
                 Showing {{ filteredTransactions.length }} of {{ totalCount }} transactions
             </small>

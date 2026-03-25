@@ -75,12 +75,12 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
 
     // Account type colors and labels
     public accountTypeConfig: { [key: string]: { bg: string; color: string; icon: string; gradient: string } } = {
-        'Income':    { bg: 'rgba(16, 185, 129, 0.1)',  color: '#059669', icon: 'fa-arrow-trend-up',   gradient: 'linear-gradient(135deg, #059669, #10b981)' },
-        'Expense':   { bg: 'rgba(239, 68, 68, 0.1)',   color: '#dc2626', icon: 'fa-arrow-trend-down', gradient: 'linear-gradient(135deg, #dc2626, #ef4444)' },
-        'COGS':      { bg: 'rgba(245, 158, 11, 0.1)',  color: '#d97706', icon: 'fa-industry',         gradient: 'linear-gradient(135deg, #d97706, #f59e0b)' },
-        'Asset':     { bg: 'rgba(59, 130, 246, 0.1)',   color: '#2563eb', icon: 'fa-building-columns', gradient: 'linear-gradient(135deg, #2563eb, #3b82f6)' },
-        'Liability': { bg: 'rgba(139, 92, 246, 0.1)',   color: '#7c3aed', icon: 'fa-file-invoice-dollar', gradient: 'linear-gradient(135deg, #7c3aed, #8b5cf6)' },
-        'Equity':    { bg: 'rgba(236, 72, 153, 0.1)',   color: '#db2777', icon: 'fa-scale-balanced',  gradient: 'linear-gradient(135deg, #db2777, #ec4899)' }
+        'Income':    { bg: 'color-mix(in srgb, var(--sch-success) 15%, transparent)',  color: 'var(--sch-success)', icon: 'fa-arrow-trend-up',   gradient: 'var(--sch-success)' },
+        'Expense':   { bg: 'color-mix(in srgb, var(--sch-danger) 15%, transparent)',   color: 'var(--sch-danger)', icon: 'fa-arrow-trend-down', gradient: 'var(--sch-danger)' },
+        'COGS':      { bg: 'color-mix(in srgb, var(--sch-warning) 15%, transparent)',  color: 'var(--sch-warning)', icon: 'fa-industry',         gradient: 'var(--sch-warning)' },
+        'Asset':     { bg: 'color-mix(in srgb, var(--sch-primary) 15%, transparent)',   color: 'var(--sch-primary)', icon: 'fa-building-columns', gradient: 'var(--sch-primary)' },
+        'Liability': { bg: 'color-mix(in srgb, var(--sch-accent) 15%, transparent)',   color: 'var(--sch-accent)', icon: 'fa-file-invoice-dollar', gradient: 'var(--sch-accent)' },
+        'Equity':    { bg: 'color-mix(in srgb, var(--sch-info) 15%, transparent)',   color: 'var(--sch-info)', icon: 'fa-scale-balanced',  gradient: 'var(--sch-info)' }
     };
 
     // Office filter
@@ -433,7 +433,7 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
 
 
     public getAccountTypeStyle(type: string): { [key: string]: string } {
-        const config = this.accountTypeConfig[type] || { bg: 'rgba(107, 114, 128, 0.1)', color: '#6b7280' };
+        const config = this.accountTypeConfig[type] || { bg: 'color-mix(in srgb, var(--sch-text-secondary) 15%, transparent)', color: 'var(--sch-text-secondary)' };
         return {
             'background': config.bg,
             'color': config.color
@@ -447,7 +447,7 @@ export class FinancialCategoryCustomListingComponent implements OnInit {
 
 
     public getAccountTypeGradient(type: string): string {
-        return this.accountTypeConfig[type]?.gradient || 'linear-gradient(135deg, #6b7280, #9ca3af)';
+        return this.accountTypeConfig[type]?.gradient || 'var(--sch-text-secondary)';
     }
 
 
