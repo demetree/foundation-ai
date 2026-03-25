@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Azure.Storage.Sas;
 
 using Foundation.Networking.DeepSpace.Configuration;
 
@@ -108,6 +109,26 @@ namespace Foundation.Networking.DeepSpace.Providers
 
         // ── Get ───────────────────────────────────────────────────────────
 
+
+        public Task<string> GetPresignedUrlAsync(string key, TimeSpan expires, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
+
+                if (blob.CanGenerateSasUri)
+                {
+                    Uri sasUri = blob.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.Add(expires));
+                    return Task.FromResult(sasUri.ToString());
+                }
+
+                return Task.FromResult<string>(null);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<string>(null);
+            }
+        }
 
         public async Task<Stream> GetStreamAsync(string key, CancellationToken cancellationToken = default)
         {

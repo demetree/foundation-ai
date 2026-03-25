@@ -128,6 +128,32 @@ namespace Foundation.Networking.DeepSpace
 
 
         /// <summary>
+        /// Gets a short-lived presigned URL for direct client download.
+        /// </summary>
+        public async Task<string> GetPresignedUrlAsync(
+            string key, TimeSpan expires, string providerName = null,
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+
+            if (provider == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                string url = await provider.GetPresignedUrlAsync(key, expires, cancellationToken);
+                return url;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning("DeepSpace: get presigned URL failed for '{key}': {error}", key, ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Stores data using the default (or named) provider.
         /// </summary>
         public async Task<StorageResult> PutAsync(

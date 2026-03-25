@@ -140,6 +140,25 @@ namespace Foundation.Networking.DeepSpace.Tests
         }
 
 
+        [Fact]
+        public async Task GetPresignedUrlAsync_WorksThroughManager()
+        {
+            string url = await _manager.GetPresignedUrlAsync("managed.txt", TimeSpan.FromMinutes(5));
+            
+            Assert.NotNull(url);
+            Assert.Equal("/api/deepspace/download/local/managed.txt", url);
+        }
+
+
+        [Fact]
+        public async Task GetPresignedUrlAsync_MissingProvider_ReturnsNull()
+        {
+            string url = await _manager.GetPresignedUrlAsync("managed.txt", TimeSpan.FromMinutes(5), providerName: "NonExistent");
+            
+            Assert.Null(url);
+        }
+
+
         // ── Missing Provider ─────────────────────────────────────────────
 
 

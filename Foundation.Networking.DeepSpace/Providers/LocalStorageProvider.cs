@@ -145,6 +145,13 @@ namespace Foundation.Networking.DeepSpace.Providers
         // ── Get ───────────────────────────────────────────────────────────
 
 
+        public Task<string> GetPresignedUrlAsync(string key, TimeSpan expires, CancellationToken cancellationToken = default)
+        {
+            string urlKey = (key ?? string.Empty).Replace('\\', '/').TrimStart('/');
+            string url = $"/api/deepspace/download/{ProviderName.ToLowerInvariant()}/{urlKey}";
+            return Task.FromResult(url);
+        }
+
         public Task<Stream> GetStreamAsync(string key, CancellationToken cancellationToken = default)
         {
             string filePath = GetFilePath(key);

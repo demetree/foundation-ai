@@ -96,7 +96,7 @@ export class OverviewCoordinatorTabComponent implements OnInit, OnDestroy {
         },
         headers: authenticationHeaders
       }),
-      deposits: this.http.get<DepositsResponse>('/api/FinancialTransactions/OutstandingDeposits'),
+      deposits: this.http.get<DepositsResponse>('/api/FinancialTransactions/OutstandingDeposits', { headers: authenticationHeaders }),
       transactions: this.http.get<any[]>('/api/FinancialTransactions', {
         params: {
           includeRelations: 'true',
@@ -107,7 +107,7 @@ export class OverviewCoordinatorTabComponent implements OnInit, OnDestroy {
       summary: this.http.get<any>('/api/FinancialTransactions/Summary', {
         params: { year: year.toString() },
         headers: authenticationHeaders
-      }, )
+      })
     }).pipe(
       takeUntil(this.destroy$)
     ).subscribe({

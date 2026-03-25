@@ -127,6 +127,26 @@ namespace Foundation.Networking.DeepSpace.Providers
         // ── Get ───────────────────────────────────────────────────────────
 
 
+        public Task<string> GetPresignedUrlAsync(string key, TimeSpan expires, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                GetPreSignedUrlRequest request = new GetPreSignedUrlRequest
+                {
+                    BucketName = _bucketName,
+                    Key = NormalizeKey(key),
+                    Expires = DateTime.UtcNow.Add(expires)
+                };
+
+                string url = _client.GetPreSignedURL(request);
+                return Task.FromResult(url);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult<string>(null);
+            }
+        }
+
         public async Task<Stream> GetStreamAsync(string key, CancellationToken cancellationToken = default)
         {
             try

@@ -107,6 +107,17 @@ namespace Foundation.Networking.DeepSpace.Tests.Providers
         }
 
 
+        // ── Presigned URLs ───────────────────────────────────────────────
+
+
+        [Fact]
+        public async Task GetPresignedUrl_ReturnsExpectedRelativeUrl()
+        {
+            string url = await _provider.GetPresignedUrlAsync("test/doc.pdf", TimeSpan.FromMinutes(5));
+            Assert.Equal("/api/deepspace/download/local/test/doc.pdf", url);
+        }
+
+
         // ── Metadata ─────────────────────────────────────────────────────
 
 

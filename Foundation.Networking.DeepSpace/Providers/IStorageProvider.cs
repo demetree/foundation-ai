@@ -148,5 +148,10 @@ namespace Foundation.Networking.DeepSpace.Providers
         /// Copies an object to a new key.
         /// </summary>
         Task<StorageResult> CopyAsync(string sourceKey, string destinationKey, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets a short-lived presigned URL for direct client download.
+        /// </summary>
+        Task<string> GetPresignedUrlAsync(string key, TimeSpan expires, CancellationToken cancellationToken = default);
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import {
   MessagingApiService,
@@ -6,6 +6,8 @@ import {
   ConversationSummary, AdminMessageResult, MessagingAnalytics, UserActivity, ChannelActivity, UserMessageFlow
 } from '../../services/messaging-api.service';
 import { Chart, registerables } from 'chart.js';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 Chart.register(...registerables);
 
@@ -14,7 +16,9 @@ Chart.register(...registerables);
   templateUrl: './messaging-admin.component.html',
   styleUrls: ['./messaging-admin.component.scss']
 })
-export class MessagingAdminComponent implements OnInit {
+export class MessagingAdminComponent implements OnInit, OnDestroy {
+
+  private destroy$ = new Subject<void>();
 
   activeTab: 'overview' | 'channels' | 'messages' | 'analytics' | 'users' | 'entities' | 'moderation' | 'audit' | 'delivery' = 'overview';
 
@@ -141,6 +145,19 @@ export class MessagingAdminComponent implements OnInit {
     private router: Router
   ) {}
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+
+    for (const chart of this.chartInstances) {
+      if (chart) chart.destroy();
+    }
+
+    if (this.messageSearchTimeout) {
+      clearTimeout(this.messageSearchTimeout);
+    }
+  }
+
   ngOnInit(): void {
     this.loadMetrics();
     this.loadAnalytics();
@@ -188,7 +205,7 @@ export class MessagingAdminComponent implements OnInit {
 
   loadMetrics(): void {
     this.isLoadingMetrics = true;
-    this.messagingApi.getMessagingMetrics().subscribe({
+    this.messagingApi.getMessagingMetrics().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.metrics = data;
         this.isLoadingMetrics = false;
@@ -205,7 +222,7 @@ export class MessagingAdminComponent implements OnInit {
   loadChannels(): void {
     this.isLoadingChannels = true;
     // browseChannels() returns ALL channels for the tenant (not just ones the user is a member of)
-    this.messagingApi.browseChannels().subscribe({
+    this.messagingApi.browseChannels().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data: ConversationSummary[]) => {
         this.channels = data;
         this.isLoadingChannels = false;
@@ -246,7 +263,7 @@ export class MessagingAdminComponent implements OnInit {
     this.isSavingChannel = true;
 
     if (this.channelDialogMode === 'create') {
-      this.messagingApi.createChannelConversation(this.channelName, this.channelDescription, this.channelIsPublic).subscribe({
+      this.messagingApi.createChannelConversation(this.channelName, this.channelDescription, this.channelIsPublic).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.isSavingChannel = false;
           this.closeChannelDialog();
@@ -255,7 +272,7 @@ export class MessagingAdminComponent implements OnInit {
         error: () => { this.isSavingChannel = false; }
       });
     } else if (this.editingChannel) {
-      this.messagingApi.updateChannel(this.editingChannel.id, this.channelName, this.channelDescription, !this.channelIsPublic).subscribe({
+      this.messagingApi.updateChannel(this.editingChannel.id, this.channelName, this.channelDescription, !this.channelIsPublic).pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
           this.isSavingChannel = false;
           this.closeChannelDialog();
@@ -278,7 +295,7 @@ export class MessagingAdminComponent implements OnInit {
 
   executeDeleteChannel(): void {
     if (!this.deletingChannel) return;
-    this.messagingApi.deleteChannel(this.deletingChannel.id).subscribe({
+    this.messagingApi.deleteChannel(this.deletingChannel.id).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.showDeleteConfirm = false;
         this.deletingChannel = null;
@@ -297,7 +314,7 @@ export class MessagingAdminComponent implements OnInit {
     this.isLoadingFlags = true;
 
     const status = this.flagStatusFilter === 'all' ? undefined : this.flagStatusFilter;
-    this.messagingApi.getFlags(status).subscribe({
+    this.messagingApi.getFlags(status).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.flags = data;
         this.isLoadingFlags = false;
@@ -330,7 +347,7 @@ export class MessagingAdminComponent implements OnInit {
     if (!this.resolvingFlag) return;
     this.isResolving = true;
 
-    this.messagingApi.resolveFlag(this.resolvingFlag.id, this.resolveStatus, this.resolveNotes).subscribe({
+    this.messagingApi.resolveFlag(this.resolvingFlag.id, this.resolveStatus, this.resolveNotes).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isResolving = false;
         this.closeResolveDialog();
@@ -368,7 +385,7 @@ export class MessagingAdminComponent implements OnInit {
     this.isSavingFlag = true;
 
     // Use resolveFlag to update — it supports changing status and notes
-    this.messagingApi.resolveFlag(this.editingFlag.id, this.editFlagStatus, `[EDIT] Reason: ${this.editFlagReason}. Details: ${this.editFlagDetails}`).subscribe({
+    this.messagingApi.resolveFlag(this.editingFlag.id, this.editFlagStatus, `[EDIT] Reason: ${this.editFlagReason}. Details: ${this.editFlagDetails}`).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isSavingFlag = false;
         this.closeEditFlagDialog();
@@ -393,7 +410,7 @@ export class MessagingAdminComponent implements OnInit {
     const action = this.auditActionFilter || undefined;
     const startDate = this.auditDateFilter || undefined;
 
-    this.messagingApi.getAuditLog(startDate, undefined, action, 200).subscribe({
+    this.messagingApi.getAuditLog(startDate, undefined, action, 200).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.auditLog = data;
         this.isLoadingAudit = false;
@@ -421,7 +438,7 @@ export class MessagingAdminComponent implements OnInit {
                       : this.deliveryStatusFilter === 'failure' ? false
                       : undefined;
 
-    this.messagingApi.getDeliveryLogs(undefined, providerId, successOnly, undefined, 200).subscribe({
+    this.messagingApi.getDeliveryLogs(undefined, providerId, successOnly, undefined, 200).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.deliveryLogs = data;
         this.isLoadingDelivery = false;
@@ -464,7 +481,7 @@ export class MessagingAdminComponent implements OnInit {
     const conversationId = this.messageConversationFilter ? parseInt(this.messageConversationFilter, 10) : undefined;
     const startDate = this.messageDateFilter || undefined;
 
-    this.messagingApi.adminSearchMessages(query, conversationId, undefined, startDate, undefined, 200).subscribe({
+    this.messagingApi.adminSearchMessages(query, conversationId, undefined, startDate, undefined, 200).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.messageSearchResults = data;
         this.isLoadingMessages = false;
@@ -503,7 +520,7 @@ export class MessagingAdminComponent implements OnInit {
 
     const reason = this.flagReasonOptions.find(r => r.value === this.flagReason)?.label || this.flagReason;
 
-    this.messagingApi.createFlag(this.flaggingMessage.id, reason, this.flagDetails || undefined).subscribe({
+    this.messagingApi.createFlag(this.flaggingMessage.id, reason, this.flagDetails || undefined).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         // Track this message as flagged so we show it in the list
         this.flaggedMessages.set(this.flaggingMessage!.id, {
@@ -541,7 +558,7 @@ export class MessagingAdminComponent implements OnInit {
 
   loadEntityConversations(): void {
     // Use browseChannels to get all conversations, filter to those with entity links
-    this.messagingApi.browseChannels().subscribe({
+    this.messagingApi.browseChannels().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.entityConversations = data.filter(c => c.entity && c.entity.trim() !== '');
       }
@@ -578,7 +595,7 @@ export class MessagingAdminComponent implements OnInit {
 
     // Fetch messages from the first matching conversation (or all if desired)
     const convId = matching.length === 1 ? matching[0].id : undefined;
-    this.messagingApi.adminSearchMessages(undefined, convId, undefined, undefined, undefined, 500).subscribe({
+    this.messagingApi.adminSearchMessages(undefined, convId, undefined, undefined, undefined, 500).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.entityResults = data;
         this.isLoadingEntities = false;
@@ -597,7 +614,7 @@ export class MessagingAdminComponent implements OnInit {
   downloadChannelTranscript(ch: ConversationSummary): void {
     this.downloadingTranscripts[ch.id] = true;
 
-    this.messagingApi.adminSearchMessages(undefined, ch.id, undefined, undefined, undefined, 5000).subscribe({
+    this.messagingApi.adminSearchMessages(undefined, ch.id, undefined, undefined, undefined, 5000).pipe(takeUntil(this.destroy$)).subscribe({
       next: (messages) => {
         // Sort chronologically
         const sorted = [...messages].sort((a, b) =>
@@ -685,7 +702,7 @@ export class MessagingAdminComponent implements OnInit {
 
   loadAnalytics(): void {
     this.isLoadingAnalytics = true;
-    this.messagingApi.getMessagingAnalytics().subscribe({
+    this.messagingApi.getMessagingAnalytics().pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
         this.analytics = data;
         this.isLoadingAnalytics = false;
@@ -978,3 +995,4 @@ export class MessagingAdminComponent implements OnInit {
     return this.analytics.topUsers.filter(u => u.displayName.toLowerCase().includes(q));
   }
 }
+
