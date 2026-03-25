@@ -4,6 +4,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { OfficeService, OfficeData, OfficeSubmitData } from '../../../scheduler-data-services/office.service';
 import { AuthService } from '../../../services/auth.service';
+import { FeatureConfigService } from '../../../services/feature-config.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, of, combineLatest, shareReplay } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { OfficeCustomAddEditComponent } from '../office-custom-add-edit/office-custom-add-edit.component';
@@ -51,6 +52,7 @@ export class OfficeCustomDetailComponent implements OnInit {
   constructor(
     public officeService: OfficeService,
     private authService: AuthService,
+    public featureConfig: FeatureConfigService,
     private route: ActivatedRoute,
     private alertService: AlertService,
     private navigationService: NavigationService,

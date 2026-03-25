@@ -6,6 +6,7 @@ import { ContactService, ContactData, ContactSubmitData, VersionInformation } fr
 import { IconService } from '../../../scheduler-data-services/icon.service';
 import { ContactTagData } from '../../../scheduler-data-services/contact-tag.service';
 import { AuthService } from '../../../services/auth.service';
+import { FeatureConfigService } from '../../../services/feature-config.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, finalize, switchMap, forkJoin, shareReplay, map, of } from 'rxjs';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { ContactCustomAddEditComponent } from '../contact-custom-add-edit/contact-custom-add-edit.component';
@@ -57,6 +58,7 @@ export class ContactCustomDetailComponent implements OnInit {
     public contactService: ContactService,
     public iconService: IconService,
     private authService: AuthService,
+    public featureConfig: FeatureConfigService,
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,

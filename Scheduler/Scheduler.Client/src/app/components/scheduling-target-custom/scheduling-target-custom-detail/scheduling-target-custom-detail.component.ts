@@ -18,6 +18,7 @@ import { RateSheetService } from '../../../scheduler-data-services/rate-sheet.se
 import { ScheduledEventService } from '../../../scheduler-data-services/scheduled-event.service';
 import { HouseholdService } from '../../../scheduler-data-services/household.service';
 import { AuthService } from '../../../services/auth.service';
+import { FeatureConfigService } from '../../../services/feature-config.service';
 import { BehaviorSubject, Subject, takeUntil, finalize } from 'rxjs';
 
 interface SchedulingTargetFormValues {
@@ -117,6 +118,7 @@ export class SchedulingTargetCustomDetailComponent implements OnInit, OnDestroy,
         public scheduledEventService: ScheduledEventService,
         public householdService: HouseholdService,
         private authService: AuthService,
+        public featureConfig: FeatureConfigService,
         private route: ActivatedRoute,
         private router: Router,
         private fb: FormBuilder,

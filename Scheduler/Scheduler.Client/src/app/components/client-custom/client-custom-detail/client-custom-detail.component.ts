@@ -4,6 +4,7 @@ import { NavigationService } from '../../../utility-services/navigation.service'
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { ClientService, ClientData, ClientSubmitData } from '../../../scheduler-data-services/client.service';
 import { AuthService } from '../../../services/auth.service';
+import { FeatureConfigService } from '../../../services/feature-config.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, of, combineLatest, shareReplay } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { ClientCustomAddEditComponent } from '../client-custom-add-edit/client-custom-add-edit.component';
@@ -51,6 +52,7 @@ export class ClientCustomDetailComponent implements OnInit {
   constructor(
     public clientService: ClientService,
     private authService: AuthService,
+    public featureConfig: FeatureConfigService,
     private route: ActivatedRoute,
     private alertService: AlertService,
     private navigationService: NavigationService,

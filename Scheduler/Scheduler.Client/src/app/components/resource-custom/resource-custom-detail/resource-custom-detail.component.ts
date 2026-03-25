@@ -13,6 +13,7 @@ import { ScheduledEventService } from '../../../scheduler-data-services/schedule
 import { EventResourceAssignmentService } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { DocumentService } from '../../../scheduler-data-services/document.service';
 import { AuthService } from '../../../services/auth.service';
+import { FeatureConfigService } from '../../../services/feature-config.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, combineLatest, shareReplay } from 'rxjs';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 import { map, startWith } from 'rxjs/operators';
@@ -67,6 +68,7 @@ export class ResourceCustomDetailComponent implements OnInit {
     private documentService: DocumentService,
     private schedulerHelperService: SchedulerHelperService,
     private authService: AuthService,
+    public featureConfig: FeatureConfigService,
     private route: ActivatedRoute,
     private router: Router,
     private alertService: AlertService,

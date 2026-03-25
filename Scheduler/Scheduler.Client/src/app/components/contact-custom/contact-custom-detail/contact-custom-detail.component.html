@@ -244,6 +244,25 @@
         </ng-template>
       </li>
 
+      <li ngbNavItem="messages" *ngIf="featureConfig.isMessagingEnabled$ | async">
+        <button ngbNavLink>
+          <i class="fa-solid fa-comments me-1"></i> Messages
+        </button>
+        <ng-template ngbNavContent>
+          <div *ngIf="contact; else loadingMessagesTemplate">
+            <app-entity-conversations [entityName]="'Contact'" [entityId]="contact!.id"></app-entity-conversations>
+          </div>
+          <ng-template #loadingMessagesTemplate>
+            <div class="text-center py-5 text-muted">
+              <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading messages...</span>
+              </div>
+            </div>
+            <div class="mt-3">Loading messages...</div>
+          </ng-template>
+        </ng-template>
+      </li>
+
       <!-- Contact Documents -->
       <li ngbNavItem="documents">
         <button ngbNavLink>

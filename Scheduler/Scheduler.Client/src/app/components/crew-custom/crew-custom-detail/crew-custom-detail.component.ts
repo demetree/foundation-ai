@@ -9,6 +9,7 @@ import { EventResourceAssignmentService } from '../../../scheduler-data-services
 import { OfficeService } from '../../../scheduler-data-services/office.service';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 import { AuthService } from '../../../services/auth.service';
+import { FeatureConfigService } from '../../../services/feature-config.service';
 import { Observable, BehaviorSubject, Subject, takeUntil, combineLatest, shareReplay } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { CrewCustomAddEditComponent } from '../crew-custom-add-edit/crew-custom-add-edit.component';
@@ -51,6 +52,7 @@ export class CrewCustomDetailComponent implements OnInit {
   constructor(
     public crewService: CrewService,
     private authService: AuthService,
+    public featureConfig: FeatureConfigService,
     private crewMemberService: CrewMemberService,
     private scheduledEventService: ScheduledEventService,
     private eventResourceAssignmentService: EventResourceAssignmentService,

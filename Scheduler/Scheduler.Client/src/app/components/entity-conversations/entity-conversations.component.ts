@@ -31,7 +31,7 @@ import {
 export class EntityConversationsComponent implements OnChanges {
 
   @Input() entityName: string = '';
-  @Input() entityId: number | null | undefined = null;
+  @Input() entityId: number | bigint | null | undefined = null;
 
   //
   // State
@@ -70,7 +70,7 @@ export class EntityConversationsComponent implements OnChanges {
 
     this.isLoading = true;
 
-    this.messagingApi.getEntityConversations(this.entityName, this.entityId).subscribe({
+    this.messagingApi.getEntityConversations(this.entityName, Number(this.entityId)).subscribe({
       next: (conversations) => {
         this.conversations = conversations;
         this.isLoading = false;
@@ -90,7 +90,7 @@ export class EntityConversationsComponent implements OnChanges {
 
     this.isCreating = true;
 
-    this.messagingApi.createEntityConversation(this.entityName, this.entityId, [], '').subscribe({
+    this.messagingApi.createEntityConversation(this.entityName, Number(this.entityId), [], '').subscribe({
       next: (conversation) => {
         this.isCreating = false;
         this.conversations.unshift(conversation);
@@ -146,7 +146,7 @@ export class EntityConversationsComponent implements OnChanges {
     if (!this.entityName || !this.entityId || this.isCreating) return;
 
     this.isCreating = true;
-    this.messagingApi.createEntityConversation(this.entityName, this.entityId, [], '').subscribe({
+    this.messagingApi.createEntityConversation(this.entityName, Number(this.entityId), [], '').subscribe({
       next: (conversation) => {
         this.isCreating = false;
         this.conversations.unshift(conversation);
@@ -165,7 +165,7 @@ export class EntityConversationsComponent implements OnChanges {
     this.isCreating = true;
     const accountNames = this.selectedMembers.map(m => m.accountName);
 
-    this.messagingApi.createEntityConversation(this.entityName, this.entityId, accountNames, '').subscribe({
+    this.messagingApi.createEntityConversation(this.entityName, Number(this.entityId), accountNames, '').subscribe({
       next: (conversation) => {
         this.isCreating = false;
         this.conversations.unshift(conversation);
