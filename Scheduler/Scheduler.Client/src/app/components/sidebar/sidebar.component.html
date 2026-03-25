@@ -64,9 +64,9 @@
       </a>
     </li>
 
-    <!-- Finances (gated: fundraising toggle + role) -->
+    <!-- Finances (gated: advanced mode + fundraising toggle + role) -->
     <!-- AI-Developed — Fundraising visibility gating added with AI assistance. -->
-    <ng-container *ngIf="isFinancialManager && (isFinancialEnabled$ | async)">
+    <ng-container *ngIf="!isSimpleMode && isFinancialManager && (isFinancialEnabled$ | async)">
       <li class="nav-item">
         <a routerLink="/finances" routerLinkActive="active" class="nav-link text-white"
            [ngbTooltip]="!isExpanded ? 'Finances' : null" triggers="hover" #tFinances="ngbTooltip"
@@ -78,7 +78,7 @@
     </ng-container>
 
 
-    <ng-container *ngIf="isMessagingManager && (isMessagingEnabled$ | async)">
+    <ng-container *ngIf="!isSimpleMode && isMessagingManager && (isMessagingEnabled$ | async)">
 
       <li class="nav-item">
         <a routerLink="/messaging-admin" class="nav-link"
@@ -157,19 +157,19 @@
       <ng-container *ngIf="setupExpanded">
         <li class="nav-item" [class.group-nested]="isExpanded">
           <a routerLink="/clients" routerLinkActive="active" class="nav-link text-white"
-             [ngbTooltip]="!isExpanded ? 'Clients' : null" triggers="hover" #tClients="ngbTooltip"
+             [ngbTooltip]="!isExpanded ? terminology.getTerm('Client', true) : null" triggers="hover" #tClients="ngbTooltip"
              (click)="tClients.close()" placement="right" tooltipClass="sidebar-tip">
             <i class="fa-solid fa-handshake"></i>
-            <span class="label px-2">Clients</span>
+            <span class="label px-2">{{ terminology.getTerm('Client', true) }}</span>
           </a>
         </li>
 
         <li class="nav-item" [class.group-nested]="isExpanded">
           <a routerLink="/schedulingtargets" routerLinkActive="active" class="nav-link text-white"
-             [ngbTooltip]="!isExpanded ? 'Targets' : null" triggers="hover" #tTargets="ngbTooltip"
+             [ngbTooltip]="!isExpanded ? terminology.getTerm('SchedulingTarget', true) : null" triggers="hover" #tTargets="ngbTooltip"
              (click)="tTargets.close()" placement="right" tooltipClass="sidebar-tip">
             <i class="fa-solid fa-bullseye"></i>
-            <span class="label px-2">Targets</span>
+            <span class="label px-2">{{ terminology.getTerm('SchedulingTarget', true) }}</span>
           </a>
         </li>
 
@@ -272,7 +272,7 @@
       <hr class="dropdown-divider text-secondary my-2">
     </li>
 
-    <li class="nav-item mt-auto" *ngIf="isUserSchedulerAdmin">
+    <li class="nav-item mt-auto" *ngIf="!isSimpleMode && isUserSchedulerAdmin">
       <a routerLink="/administration" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }"
          class="nav-link text-white" [ngbTooltip]="!isExpanded ? 'Administration' : null" triggers="hover"
          #tAdmin="ngbTooltip" (click)="tAdmin.close()" placement="right" tooltipClass="sidebar-tip">

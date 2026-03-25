@@ -32,19 +32,31 @@ export class TerminologyService {
     const dictionary: Record<string, Record<string, { singular: string, plural: string }>> = {
       'generic': {
         'resource': { singular: 'Staff', plural: 'Staff' },
-        'crew': { singular: 'Crew', plural: 'Crews' }
+        'crew': { singular: 'Crew', plural: 'Crews' },
+        'scheduledevent': { singular: 'Job', plural: 'Jobs' },
+        'schedulingtarget': { singular: 'Location', plural: 'Locations' },
+        'client': { singular: 'Customer', plural: 'Customers' }
       },
       'healthcare': {
         'resource': { singular: 'Clinical Staff', plural: 'Clinical Staff' },
-        'crew': { singular: 'Care Team', plural: 'Care Teams' }
+        'crew': { singular: 'Care Team', plural: 'Care Teams' },
+        'scheduledevent': { singular: 'Appointment', plural: 'Appointments' },
+        'schedulingtarget': { singular: 'Facility', plural: 'Facilities' },
+        'client': { singular: 'Patient', plural: 'Patients' }
       },
       'construction': {
         'resource': { singular: 'Technician', plural: 'Technicians' },
-        'crew': { singular: 'Crew', plural: 'Crews' }
+        'crew': { singular: 'Crew', plural: 'Crews' },
+        'scheduledevent': { singular: 'Work Order', plural: 'Work Orders' },
+        'schedulingtarget': { singular: 'Job Site', plural: 'Job Sites' },
+        'client': { singular: 'Client', plural: 'Clients' }
       },
       'salon': {
         'resource': { singular: 'Stylist', plural: 'Stylists' },
-        'crew': { singular: 'Team', plural: 'Teams' }
+        'crew': { singular: 'Team', plural: 'Teams' },
+        'scheduledevent': { singular: 'Appointment', plural: 'Appointments' },
+        'schedulingtarget': { singular: 'Location', plural: 'Locations' },
+        'client': { singular: 'Client', plural: 'Clients' }
       }
     };
 

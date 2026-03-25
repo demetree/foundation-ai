@@ -9,6 +9,9 @@
         </div>
       </div>
       <div class="header-right">
+        <button class="btn btn-sm btn-primary text-white shadow-sm fw-bold me-2 border-0" style="background-color: var(--bs-primary);" (click)="openQuickAddJob()">
+          <i class="fa-solid fa-plus me-1"></i> Quick Add {{ terminology.getTerm('ScheduledEvent') }}
+        </button>
         <button class="btn btn-sm btn-glass text-white" (click)="loadData()">
           <i class="fa fa-sync" [class.fa-spin]="isLoading"></i> Refresh
         </button>

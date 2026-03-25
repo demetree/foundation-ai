@@ -5,6 +5,8 @@ import { ResourceService, ResourceData } from '../../../scheduler-data-services/
 import { EventResourceAssignmentService, EventResourceAssignmentData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { TerminologyService } from '../../../services/terminology.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { QuickAddJobModalComponent } from '../quick-add-job-modal/quick-add-job-modal.component';
 
 @Component({
   selector: 'app-daily-dispatch',
@@ -28,7 +30,8 @@ export class DailyDispatchComponent implements OnInit {
     private resourceService: ResourceService,
     private assignmentService: EventResourceAssignmentService,
     public terminology: TerminologyService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
@@ -146,5 +149,14 @@ export class DailyDispatchComponent implements OnInit {
       }
     });
 
+  }
+
+  public openQuickAddJob(): void {
+    const modalRef = this.modalService.open(QuickAddJobModalComponent, { size: 'lg', backdrop: 'static' });
+    modalRef.result.then((newJob) => {
+      if (newJob) {
+        this.loadData();
+      }
+    }).catch(() => {});
   }
 }

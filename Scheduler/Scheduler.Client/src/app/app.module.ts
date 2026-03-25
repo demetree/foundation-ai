@@ -1429,6 +1429,7 @@ import { VolunteerStatusDetailComponent } from './scheduler-data-components/volu
 import { VolunteerStatusTableComponent } from './scheduler-data-components/volunteer-status/volunteer-status-table/volunteer-status-table.component';
 import { StaffQuickAddModalComponent } from './components/resource-custom/staff-quick-add-modal/staff-quick-add-modal.component';
 import { DailyDispatchComponent } from './components/scheduler/daily-dispatch/daily-dispatch.component';
+import { QuickAddJobModalComponent } from './components/scheduler/quick-add-job-modal/quick-add-job-modal.component';
 //
 // End of imports for Scheduler Data Components
 //
@@ -2592,6 +2593,7 @@ VolunteerStatusTableComponent,
     InputDialogComponent,
     StaffQuickAddModalComponent,
     DailyDispatchComponent,
+    QuickAddJobModalComponent,
 
   ],
   imports: [
