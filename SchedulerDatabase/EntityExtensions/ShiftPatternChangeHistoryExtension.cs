@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = shiftPatternChangeHistory.timeStamp,
 				userId = shiftPatternChangeHistory.userId,
 				data = shiftPatternChangeHistory.data,
-				shiftPattern = ShiftPattern.CreateMinimalAnonymous(shiftPatternChangeHistory.shiftPattern)
+				shiftPattern = ShiftPattern.CreateMinimalAnonymous(shiftPatternChangeHistory.shiftPattern),
 			 };
 		}
 

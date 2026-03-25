@@ -372,7 +372,7 @@ namespace BMC.LDraw.Render
             }
 
             byte[] pdfBytes = _doc.Save();
-            _doc.Dispose();
+            //_doc.Dispose();
 
             return new ManualGenerationResult
             {

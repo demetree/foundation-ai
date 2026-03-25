@@ -1,6 +1,7 @@
 // AI-Developed — This file was significantly developed with AI assistance.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { EventChargeService, EventChargeData, EventChargeSubmitData } from '../../../scheduler-data-services/event-charge.service';
@@ -52,7 +53,9 @@ export class DepositManagerComponent implements OnInit {
         private alertService: AlertService,
         private authService: AuthService,
         private router: Router,
-        private breakpointObserver: BreakpointObserver
+        private breakpointObserver: BreakpointObserver,
+        private http: HttpClient,
+        @Inject('BASE_URL') private baseUrl: string
     ) { }
 
 
@@ -139,10 +142,16 @@ export class DepositManagerComponent implements OnInit {
         if (this.isRefunding) return;
         this.isRefunding = true;
 
-        const submitData = deposit.charge.ConvertToSubmitData();
-        submitData.depositRefundedDate = new Date().toISOString();
+        //
+        // Route through FinancialManagementService endpoint instead of the
+        // code-generated EventCharge controller (which is now read-only).
+        //
+        const payload = deposit.charge.ConvertToSubmitData();
+        payload.depositRefundedDate = new Date().toISOString();
 
-        this.eventChargeService.PutEventCharge(deposit.charge.id, submitData).subscribe({
+        const headers = this.authService.GetAuthenticationHeaders();
+
+        this.http.put(this.baseUrl + 'api/financial/charges/' + deposit.charge.id, payload, { headers }).subscribe({
             next: () => {
                 this.alertService.showMessage('Deposit marked as refunded', '', MessageSeverity.success);
                 this.isRefunding = false;

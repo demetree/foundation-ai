@@ -11,10 +11,11 @@
  *   - Facility resource selection (auto-selected when only one)
  */
 
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { lastValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { EventTypeService, EventTypeData } from '../../../scheduler-data-services/event-type.service';
 import { ScheduledEventService, ScheduledEventSubmitData } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventStatusService, EventStatusData } from '../../../scheduler-data-services/event-status.service';
@@ -91,7 +92,9 @@ export class PrivateRentalBookingComponent implements OnInit {
     private alertService: AlertService,
     private authService: AuthService,
     private chargeStatusService: ChargeStatusService,
-    private currencyService: CurrencyService
+    private currencyService: CurrencyService,
+    private http: HttpClient,
+    @Inject('BASE_URL') private baseUrl: string
   ) {}
 
 
@@ -449,7 +452,9 @@ export class PrivateRentalBookingComponent implements OnInit {
           };
 
           await lastValueFrom(
-            this.eventChargeService.PostEventCharge(chargeSubmit)
+            this.http.post(this.baseUrl + 'api/financial/charges', chargeSubmit, {
+              headers: this.authService.GetAuthenticationHeaders()
+            })
           );
 
           //
@@ -469,7 +474,9 @@ export class PrivateRentalBookingComponent implements OnInit {
             };
 
             await lastValueFrom(
-              this.eventChargeService.PostEventCharge(depositSubmit)
+              this.http.post(this.baseUrl + 'api/financial/charges', depositSubmit, {
+                headers: this.authService.GetAuthenticationHeaders()
+              })
             );
           }
         }

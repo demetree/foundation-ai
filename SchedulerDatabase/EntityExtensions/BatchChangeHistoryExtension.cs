@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = batchChangeHistory.timeStamp,
 				userId = batchChangeHistory.userId,
 				data = batchChangeHistory.data,
-				batch = Batch.CreateMinimalAnonymous(batchChangeHistory.batch)
+				batch = Batch.CreateMinimalAnonymous(batchChangeHistory.batch),
 			 };
 		}
 

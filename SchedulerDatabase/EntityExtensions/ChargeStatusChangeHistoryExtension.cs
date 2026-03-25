@@ -283,7 +283,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = chargeStatusChangeHistory.timeStamp,
 				userId = chargeStatusChangeHistory.userId,
 				data = chargeStatusChangeHistory.data,
-				chargeStatus = ChargeStatus.CreateMinimalAnonymous(chargeStatusChangeHistory.chargeStatus)
+				chargeStatus = ChargeStatus.CreateMinimalAnonymous(chargeStatusChangeHistory.chargeStatus),
 			 };
 		}
 

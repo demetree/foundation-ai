@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = rateSheetChangeHistory.timeStamp,
 				userId = rateSheetChangeHistory.userId,
 				data = rateSheetChangeHistory.data,
-				rateSheet = RateSheet.CreateMinimalAnonymous(rateSheetChangeHistory.rateSheet)
+				rateSheet = RateSheet.CreateMinimalAnonymous(rateSheetChangeHistory.rateSheet),
 			 };
 		}
 

@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = recurrenceExceptionChangeHistory.timeStamp,
 				userId = recurrenceExceptionChangeHistory.userId,
 				data = recurrenceExceptionChangeHistory.data,
-				recurrenceException = RecurrenceException.CreateMinimalAnonymous(recurrenceExceptionChangeHistory.recurrenceException)
+				recurrenceException = RecurrenceException.CreateMinimalAnonymous(recurrenceExceptionChangeHistory.recurrenceException),
 			 };
 		}
 

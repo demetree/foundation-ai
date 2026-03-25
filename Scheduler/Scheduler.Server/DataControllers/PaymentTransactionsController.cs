@@ -687,6 +687,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+/* This function is expected to be overridden in a custom file
 		/// <summary>
 		/// 
 		/// This updates an existing PaymentTransaction record
@@ -904,7 +905,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
 			}
 		}
+*/
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This creates a new PaymentTransaction record
@@ -1064,7 +1067,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			return CreatedAtRoute("PaymentTransaction", new { id = paymentTransaction.id }, Database.PaymentTransaction.CreateAnonymousWithFirstLevelSubObjects(paymentTransaction));
 		}
 
+*/
 
+/* This function is expected to be overridden in a custom file
 
         /// <summary>
         /// 
@@ -1242,6 +1247,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 				}
 			}
 		}
+
+*/
 
 
 
@@ -1518,6 +1525,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			}
 		}
 
+/* This function is expected to be overridden in a custom file
         /// <summary>
         /// 
         /// This deletes a PaymentTransaction record
@@ -1624,6 +1632,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		}
 
 
+*/
         /// <summary>
         /// 
         /// This gets a list of PaymentTransaction records, filtered by the parameters provided in a simple minimal format that is useful for drop down boxes and similar.

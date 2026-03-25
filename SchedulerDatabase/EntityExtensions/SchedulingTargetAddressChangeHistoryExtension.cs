@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = schedulingTargetAddressChangeHistory.timeStamp,
 				userId = schedulingTargetAddressChangeHistory.userId,
 				data = schedulingTargetAddressChangeHistory.data,
-				schedulingTargetAddress = SchedulingTargetAddress.CreateMinimalAnonymous(schedulingTargetAddressChangeHistory.schedulingTargetAddress)
+				schedulingTargetAddress = SchedulingTargetAddress.CreateMinimalAnonymous(schedulingTargetAddressChangeHistory.schedulingTargetAddress),
 			 };
 		}
 

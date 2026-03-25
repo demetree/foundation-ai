@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = fundChangeHistory.timeStamp,
 				userId = fundChangeHistory.userId,
 				data = fundChangeHistory.data,
-				fund = Fund.CreateMinimalAnonymous(fundChangeHistory.fund)
+				fund = Fund.CreateMinimalAnonymous(fundChangeHistory.fund),
 			 };
 		}
 

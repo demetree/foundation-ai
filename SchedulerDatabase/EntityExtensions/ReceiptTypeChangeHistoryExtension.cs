@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = receiptTypeChangeHistory.timeStamp,
 				userId = receiptTypeChangeHistory.userId,
 				data = receiptTypeChangeHistory.data,
-				receiptType = ReceiptType.CreateMinimalAnonymous(receiptTypeChangeHistory.receiptType)
+				receiptType = ReceiptType.CreateMinimalAnonymous(receiptTypeChangeHistory.receiptType),
 			 };
 		}
 

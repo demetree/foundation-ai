@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = conversationMessageLinkPreviewChangeHistory.timeStamp,
 				userId = conversationMessageLinkPreviewChangeHistory.userId,
 				data = conversationMessageLinkPreviewChangeHistory.data,
-				conversationMessageLinkPreview = ConversationMessageLinkPreview.CreateMinimalAnonymous(conversationMessageLinkPreviewChangeHistory.conversationMessageLinkPreview)
+				conversationMessageLinkPreview = ConversationMessageLinkPreview.CreateMinimalAnonymous(conversationMessageLinkPreviewChangeHistory.conversationMessageLinkPreview),
 			 };
 		}
 

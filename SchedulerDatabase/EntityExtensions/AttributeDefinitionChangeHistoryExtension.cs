@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = attributeDefinitionChangeHistory.timeStamp,
 				userId = attributeDefinitionChangeHistory.userId,
 				data = attributeDefinitionChangeHistory.data,
-				attributeDefinition = AttributeDefinition.CreateMinimalAnonymous(attributeDefinitionChangeHistory.attributeDefinition)
+				attributeDefinition = AttributeDefinition.CreateMinimalAnonymous(attributeDefinitionChangeHistory.attributeDefinition),
 			 };
 		}
 

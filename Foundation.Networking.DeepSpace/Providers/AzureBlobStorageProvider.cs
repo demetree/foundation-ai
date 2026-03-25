@@ -216,6 +216,8 @@ namespace Foundation.Networking.DeepSpace.Providers
                 int count = 0;
 
                 await foreach (BlobItem blobItem in _containerClient.GetBlobsAsync(
+                    BlobTraits.All,
+                    BlobStates.All,
                     prefix: NormalizeKey(prefix),
                     cancellationToken: cancellationToken))
                 {

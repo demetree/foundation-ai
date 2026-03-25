@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = pledgeChangeHistory.timeStamp,
 				userId = pledgeChangeHistory.userId,
 				data = pledgeChangeHistory.data,
-				pledge = Pledge.CreateMinimalAnonymous(pledgeChangeHistory.pledge)
+				pledge = Pledge.CreateMinimalAnonymous(pledgeChangeHistory.pledge),
 			 };
 		}
 

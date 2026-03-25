@@ -47,9 +47,14 @@ export class FeatureConfigService extends SecureEndpointBase {
      */
     private get config$(): Observable<FeatureConfig> {
 
-        if (this._config$ == null) {
+      if (this._config$ == null) {
+
+        const authenticationHeaders = this.authService.GetAuthenticationHeaders();
+
             this._config$ = this.http.get<FeatureConfig>(
-                `${this.baseUrl}api/FeatureConfig`
+              `${this.baseUrl}api/FeatureConfig`, {
+              headers: authenticationHeaders
+            }
             ).pipe(
                 catchError(error => {
                     console.warn('FeatureConfigService: Unable to fetch feature config, defaulting all features to disabled', error);

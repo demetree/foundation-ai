@@ -49,10 +49,13 @@ GO
 INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Scheduler Resource Writer', 'Scheduler Resource Writer Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
 GO
 
-INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Fundraising Manager', 'Fundraising Manager Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Financial Manager', 'Scheduler Financial Manager Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
 GO
 
-INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Volunteer Manager', 'Volunteer Manager Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Fundraising Manager', 'Scheduler Fundraising Manager Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
+GO
+
+INSERT INTO [Security].[SecurityRole] ( [name], [description], [privilegeId] ) VALUES  ( 'Volunteer Manager', 'Scheduler Volunteer Manager Role', ( SELECT TOP 1 id FROM [Security].[Privilege] WHERE [name] = 'Custom' ) )
 GO
 
 
@@ -63,6 +66,9 @@ INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VAL
 GO
 
 INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Scheduler Resource Writer' ) )
+GO
+
+INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Financial Manager' ) )
 GO
 
 INSERT INTO [Security].[ModuleSecurityRole] ( [moduleId], [securityRoleId] ) VALUES  ( ( SELECT TOP 1 id FROM [Security].[Module] WHERE [name] = 'Scheduler' ), ( SELECT TOP 1 id FROM [Security].[SecurityRole] WHERE [name] = 'Fundraising Manager' ) )

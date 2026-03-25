@@ -484,12 +484,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     const now = new Date().toISOString();
 
     //
-    // Use the built-in conversion to create a submit payload, then set the refund date
+    // Route through FinancialManagementService endpoint instead of the
+    // code-generated EventCharge controller (which is now read-only).
     //
     const submitData = this.eventChargeService.ConvertToEventChargeSubmitData(charge);
     submitData.depositRefundedDate = now;
 
-    this.eventChargeService.PutEventCharge(charge.id, submitData).subscribe({
+    this.http.put(`/api/financial/charges/${charge.id}`, submitData).subscribe({
       next: () => {
         //
         // Update the local charge object so the UI reflects the change immediately

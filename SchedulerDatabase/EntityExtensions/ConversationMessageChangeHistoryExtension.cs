@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = conversationMessageChangeHistory.timeStamp,
 				userId = conversationMessageChangeHistory.userId,
 				data = conversationMessageChangeHistory.data,
-				conversationMessage = ConversationMessage.CreateMinimalAnonymous(conversationMessageChangeHistory.conversationMessage)
+				conversationMessage = ConversationMessage.CreateMinimalAnonymous(conversationMessageChangeHistory.conversationMessage),
 			 };
 		}
 

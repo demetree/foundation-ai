@@ -37,9 +37,11 @@ INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) V
 
 INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Scheduler Resource Writer', 'Scheduler Resource Writer Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
 
-INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Fundraising Manager', 'Fundraising Manager Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Financial Manager', 'Scheduler Financial Manager Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
 
-INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Volunteer Manager', 'Volunteer Manager Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Fundraising Manager', 'Scheduler Fundraising Manager Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
+
+INSERT INTO "Security"."SecurityRole" ( "name", "description", "privilegeId" ) VALUES  ( 'Volunteer Manager', 'Scheduler Volunteer Manager Role', ( SELECT id FROM "Privilege" WHERE "name" = 'Custom' LIMIT 1) );
 
 
 INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Scheduler' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Scheduler Config Writer' LIMIT 1) );
@@ -47,6 +49,8 @@ INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VAL
 INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Scheduler' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Scheduler Contact Writer' LIMIT 1) );
 
 INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Scheduler' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Scheduler Resource Writer' LIMIT 1) );
+
+INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Scheduler' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Financial Manager' LIMIT 1) );
 
 INSERT INTO "Security"."ModuleSecurityRole" ( "moduleId", "securityRoleId" ) VALUES  ( ( SELECT id FROM "Module" WHERE "name" = 'Scheduler' LIMIT 1), ( SELECT id FROM "SecurityRole" WHERE "name" = 'Fundraising Manager' LIMIT 1) );
 

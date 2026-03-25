@@ -44,6 +44,8 @@ namespace Foundation.Scheduler.Database
         private const string SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME = "Scheduler Config Writer";
         private const string SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME = "Scheduler Contact Writer";
         private const string SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME = "Scheduler Resource Writer";
+
+        private const string SCHEDULER_FINANCIAL_MANAGER_CUSTOM_ROLE_NAME = "Financial Manager";
         private const string SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME = "Fundraising Manager";
         private const string SCHEDULER_VOLUNTEER_MANAGER_ROLE = "Volunteer Manager";
 
@@ -67,11 +69,12 @@ All operational tables include multi-tenant support, versioning where appropriat
 
 
             // Register custom roles for granular write access control
-            this.database.AddCustomRole(SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME} Role");                      // Admin config: types, templates, calendars, qualifications
-            this.database.AddCustomRole(SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME} Role");                    // Contact management
-            this.database.AddCustomRole(SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME} Role");                  // Resources, crews, availability, shifts
-            this.database.AddCustomRole(SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME, $"{SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME} Role");            // Fundraising module
-            this.database.AddCustomRole(SCHEDULER_VOLUNTEER_MANAGER_ROLE, $"{SCHEDULER_VOLUNTEER_MANAGER_ROLE} Role");                // Volunteer extensions
+            this.database.AddCustomRole(SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME} Role");                              // Admin config: types, templates, calendars, qualifications
+            this.database.AddCustomRole(SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_CONTACT_WRITER_CUSTOM_ROLE_NAME} Role");                            // Contact management
+            this.database.AddCustomRole(SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME, $"{SCHEDULER_RESOURCE_WRITER_CUSTOM_ROLE_NAME} Role");                          // Resources, crews, availability, shifts
+            this.database.AddCustomRole(SCHEDULER_FINANCIAL_MANAGER_CUSTOM_ROLE_NAME, $"Scheduler {SCHEDULER_FINANCIAL_MANAGER_CUSTOM_ROLE_NAME} Role");            // Fincials module Management
+            this.database.AddCustomRole(SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME, $"Scheduler {SCHEDULER_FUNDRAISING_MANAGER_CUSTOM_ROLE_NAME} Role");        // Fundraising module
+            this.database.AddCustomRole(SCHEDULER_VOLUNTEER_MANAGER_ROLE, $"Scheduler {SCHEDULER_VOLUNTEER_MANAGER_ROLE} Role");                                    // Volunteer extensions
 
 
             #region Setup Master Data - Resource Types, Countries, states, time zones etc..

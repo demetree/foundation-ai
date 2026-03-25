@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = notificationChangeHistory.timeStamp,
 				userId = notificationChangeHistory.userId,
 				data = notificationChangeHistory.data,
-				notification = Notification.CreateMinimalAnonymous(notificationChangeHistory.notification)
+				notification = Notification.CreateMinimalAnonymous(notificationChangeHistory.notification),
 			 };
 		}
 

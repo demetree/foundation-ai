@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = financialCategoryChangeHistory.timeStamp,
 				userId = financialCategoryChangeHistory.userId,
 				data = financialCategoryChangeHistory.data,
-				financialCategory = FinancialCategory.CreateMinimalAnonymous(financialCategoryChangeHistory.financialCategory)
+				financialCategory = FinancialCategory.CreateMinimalAnonymous(financialCategoryChangeHistory.financialCategory),
 			 };
 		}
 

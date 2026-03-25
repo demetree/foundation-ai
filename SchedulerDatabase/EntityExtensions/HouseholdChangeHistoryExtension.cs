@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = householdChangeHistory.timeStamp,
 				userId = householdChangeHistory.userId,
 				data = householdChangeHistory.data,
-				household = Household.CreateMinimalAnonymous(householdChangeHistory.household)
+				household = Household.CreateMinimalAnonymous(householdChangeHistory.household),
 			 };
 		}
 

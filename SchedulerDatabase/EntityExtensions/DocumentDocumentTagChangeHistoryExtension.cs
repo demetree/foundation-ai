@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = documentDocumentTagChangeHistory.timeStamp,
 				userId = documentDocumentTagChangeHistory.userId,
 				data = documentDocumentTagChangeHistory.data,
-				documentDocumentTag = DocumentDocumentTag.CreateMinimalAnonymous(documentDocumentTagChangeHistory.documentDocumentTag)
+				documentDocumentTag = DocumentDocumentTag.CreateMinimalAnonymous(documentDocumentTagChangeHistory.documentDocumentTag),
 			 };
 		}
 
