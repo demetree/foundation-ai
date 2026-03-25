@@ -74,6 +74,17 @@ namespace Foundation.Networking.DeepSpace
                 });
             }
 
+            //
+            // Conditionally register the Google Cloud Storage provider
+            //
+            if (string.IsNullOrEmpty(config.GoogleCloud.BucketName) == false)
+            {
+                services.AddSingleton<GoogleCloudStorageProvider>(sp =>
+                {
+                    return new GoogleCloudStorageProvider(config.GoogleCloud);
+                });
+            }
+
 
             //
             // Register the DeepSpace metadata database manager.
@@ -112,6 +123,12 @@ namespace Foundation.Networking.DeepSpace
                 if (azure != null)
                 {
                     manager.RegisterProvider(azure);
+                }
+
+                GoogleCloudStorageProvider gcs = sp.GetService<GoogleCloudStorageProvider>();
+                if (gcs != null)
+                {
+                    manager.RegisterProvider(gcs);
                 }
 
                 return manager;

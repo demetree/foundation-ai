@@ -1,8 +1,8 @@
 // ============================================================================
 //
-// AzureBlobStorageProvider.cs — Azure Blob Storage provider.
+// GoogleCloudStorageProvider.cs — Google Cloud Storage provider.
 //
-// Implements IStorageProvider using the Azure.Storage.Blobs SDK.
+// Implements IStorageProvider using the Google.Cloud.Storage.V1 SDK.
 //
 // AI-Developed | Gemini
 //
@@ -12,42 +12,47 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Azure;
-using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
-using Azure.Storage.Sas;
+using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Storage.V1;
+using Object = Google.Apis.Storage.v1.Data.Object;
+using Bucket = Google.Apis.Storage.v1.Data.Bucket;
+using Google.Apis.Storage.v1.Data;
 
 using Foundation.Networking.DeepSpace.Configuration;
 
 namespace Foundation.Networking.DeepSpace.Providers
 {
-    /// <summary>
-    ///
-    /// Azure Blob Storage provider.
-    ///
-    /// </summary>
-    public class AzureBlobStorageProvider : IStorageProvider
+    public class GoogleCloudStorageProvider : IStorageProvider
     {
-        private readonly BlobServiceClient _serviceClient;
-        private readonly BlobContainerClient _containerClient;
+        private readonly StorageClient _client;
+        private readonly string _bucketName;
+        private readonly string _projectId;
+        private readonly GoogleCredential _credential;
 
 
-        public AzureBlobStorageProvider(AzureBlobConfig config)
+        public GoogleCloudStorageProvider(GoogleCloudStorageConfig config)
         {
-            _serviceClient = new BlobServiceClient(config.ConnectionString);
-            _containerClient = _serviceClient.GetBlobContainerClient(config.ContainerName);
+            _bucketName = config.BucketName;
+            _projectId = config.ProjectId;
 
-            //
-            // Ensure the container exists
-            //
-            _containerClient.CreateIfNotExists();
+            if (string.IsNullOrEmpty(config.CredentialsFilePath) == false)
+            {
+                _credential = GoogleCredential.FromFile(config.CredentialsFilePath);
+                _client = StorageClient.Create(_credential);
+            }
+            else
+            {
+                _credential = GoogleCredential.GetApplicationDefault();
+                _client = StorageClient.Create(_credential);
+            }
         }
 
 
-        public string ProviderName => "AzureBlob";
+        public string ProviderName => "GCS";
 
 
         // ── Put ───────────────────────────────────────────────────────────
@@ -60,22 +65,19 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
-                BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
-
-                BlobUploadOptions options = new BlobUploadOptions
+                Object obj = new Object
                 {
-                    HttpHeaders = new BlobHttpHeaders
-                    {
-                        ContentType = contentType ?? "application/octet-stream"
-                    }
+                    Bucket = _bucketName,
+                    Name = NormalizeKey(key),
+                    ContentType = contentType ?? "application/octet-stream"
                 };
 
                 if (metadata != null && metadata.Count > 0)
                 {
-                    options.Metadata = metadata;
+                    obj.Metadata = metadata;
                 }
 
-                BlobContentInfo info = await blob.UploadAsync(data, options, cancellationToken);
+                Object result = await _client.UploadObjectAsync(obj, data, cancellationToken: cancellationToken);
 
                 return new StorageResult
                 {
@@ -83,9 +85,10 @@ namespace Foundation.Networking.DeepSpace.Providers
                     Object = new StorageObject
                     {
                         Key = key,
-                        ContentType = contentType ?? "application/octet-stream",
-                        LastModifiedUtc = info.LastModified.UtcDateTime,
-                        ETag = info.ETag.ToString().Trim('"')
+                        ContentType = result.ContentType,
+                        SizeBytes = (long)(result.Size ?? 0),
+                        LastModifiedUtc = result.UpdatedDateTimeOffset?.UtcDateTime ?? DateTime.UtcNow,
+                        ETag = result.ETag
                     }
                 };
             }
@@ -94,7 +97,6 @@ namespace Foundation.Networking.DeepSpace.Providers
                 return new StorageResult { Success = false, Error = ex.Message };
             }
         }
-
 
         public async Task<StorageResult> PutBytesAsync(
             string key, byte[] data, string contentType = null,
@@ -115,15 +117,9 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
-                BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
-
-                if (blob.CanGenerateSasUri)
-                {
-                    Uri sasUri = blob.GenerateSasUri(BlobSasPermissions.Read, DateTimeOffset.UtcNow.Add(expires));
-                    return Task.FromResult(sasUri.ToString());
-                }
-
-                return Task.FromResult<string>(null);
+                UrlSigner signer = UrlSigner.FromCredential(_credential);
+                string url = signer.Sign(_bucketName, NormalizeKey(key), expires, HttpMethod.Get);
+                return Task.FromResult(url);
             }
             catch (Exception)
             {
@@ -135,25 +131,22 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
-                BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
-                Response<BlobDownloadStreamingResult> response = await blob.DownloadStreamingAsync(cancellationToken: cancellationToken);
-                return response.Value.Content;
+                MemoryStream ms = new MemoryStream();
+                await _client.DownloadObjectAsync(_bucketName, NormalizeKey(key), ms, cancellationToken: cancellationToken);
+                ms.Position = 0;
+                return ms;
             }
-            catch (RequestFailedException ex) when (ex.Status == 404)
+            catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return null;
             }
         }
 
-
         public async Task<byte[]> GetBytesAsync(string key, CancellationToken cancellationToken = default)
         {
             using (Stream stream = await GetStreamAsync(key, cancellationToken))
             {
-                if (stream == null)
-                {
-                    return null;
-                }
+                if (stream == null) return null;
 
                 using (MemoryStream ms = new MemoryStream())
                 {
@@ -163,37 +156,32 @@ namespace Foundation.Networking.DeepSpace.Providers
             }
         }
 
-
         public async Task<StorageObject> GetMetadataAsync(string key, CancellationToken cancellationToken = default)
         {
             try
             {
-                BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
-                BlobProperties properties = await blob.GetPropertiesAsync(cancellationToken: cancellationToken);
+                Object obj = await _client.GetObjectAsync(_bucketName, NormalizeKey(key), cancellationToken: cancellationToken);
 
-                StorageObject obj = new StorageObject
+                StorageObject storageObject = new StorageObject
                 {
                     Key = key,
-                    SizeBytes = properties.ContentLength,
-                    ContentType = properties.ContentType ?? "application/octet-stream",
-                    LastModifiedUtc = properties.LastModified.UtcDateTime,
-                    ETag = properties.ETag.ToString().Trim('"')
+                    SizeBytes = (long)(obj.Size ?? 0),
+                    ContentType = obj.ContentType ?? "application/octet-stream",
+                    LastModifiedUtc = obj.UpdatedDateTimeOffset?.UtcDateTime ?? DateTime.UtcNow,
+                    ETag = obj.ETag ?? string.Empty
                 };
 
-                //
-                // Map Azure metadata
-                //
-                if (properties.Metadata != null)
+                if (obj.Metadata != null)
                 {
-                    foreach (var kvp in properties.Metadata)
+                    foreach (var kvp in obj.Metadata)
                     {
-                        obj.Metadata[kvp.Key] = kvp.Value;
+                        storageObject.Metadata[kvp.Key] = kvp.Value;
                     }
                 }
 
-                return obj;
+                return storageObject;
             }
-            catch (RequestFailedException ex) when (ex.Status == 404)
+            catch (Google.GoogleApiException ex) when (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 return null;
             }
@@ -205,19 +193,15 @@ namespace Foundation.Networking.DeepSpace.Providers
 
         public async Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
         {
-            BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
-            Response<bool> response = await blob.ExistsAsync(cancellationToken);
-            return response.Value;
+            return (await GetMetadataAsync(key, cancellationToken)) != null;
         }
-
 
         public async Task<bool> DeleteAsync(string key, CancellationToken cancellationToken = default)
         {
             try
             {
-                BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
-                Response<bool> response = await blob.DeleteIfExistsAsync(cancellationToken: cancellationToken);
-                return response.Value;
+                await _client.DeleteObjectAsync(_bucketName, NormalizeKey(key), cancellationToken: cancellationToken);
+                return true;
             }
             catch (Exception)
             {
@@ -235,13 +219,12 @@ namespace Foundation.Networking.DeepSpace.Providers
 
             try
             {
+                ListObjectsOptions options = new ListObjectsOptions { PageSize = maxResults };
+                
+                var results = _client.ListObjectsAsync(_bucketName, NormalizeKey(prefix), options);
+                
                 int count = 0;
-
-                await foreach (BlobItem blobItem in _containerClient.GetBlobsAsync(
-                    BlobTraits.All,
-                    BlobStates.All,
-                    prefix: NormalizeKey(prefix),
-                    cancellationToken: cancellationToken))
+                await foreach (var obj in results.WithCancellation(cancellationToken))
                 {
                     if (count >= maxResults)
                     {
@@ -251,11 +234,11 @@ namespace Foundation.Networking.DeepSpace.Providers
 
                     result.Objects.Add(new StorageObject
                     {
-                        Key = blobItem.Name,
-                        SizeBytes = blobItem.Properties.ContentLength ?? 0,
-                        ContentType = blobItem.Properties.ContentType ?? "application/octet-stream",
-                        LastModifiedUtc = blobItem.Properties.LastModified?.UtcDateTime ?? DateTime.UtcNow,
-                        ETag = blobItem.Properties.ETag?.ToString().Trim('"') ?? string.Empty
+                        Key = obj.Name,
+                        SizeBytes = (long)(obj.Size ?? 0),
+                        ContentType = obj.ContentType ?? "application/octet-stream",
+                        LastModifiedUtc = obj.UpdatedDateTimeOffset?.UtcDateTime ?? DateTime.UtcNow,
+                        ETag = obj.ETag ?? string.Empty
                     });
 
                     count++;
@@ -278,25 +261,7 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
-                BlobClient sourceBlob = _containerClient.GetBlobClient(NormalizeKey(sourceKey));
-                BlobClient destBlob = _containerClient.GetBlobClient(NormalizeKey(destinationKey));
-
-                //
-                // Check source exists
-                //
-                bool sourceExists = await sourceBlob.ExistsAsync(cancellationToken);
-                if (sourceExists == false)
-                {
-                    return new StorageResult { Success = false, Error = "Source not found" };
-                }
-
-                //
-                // Start the copy operation
-                //
-                CopyFromUriOperation operation = await destBlob.StartCopyFromUriAsync(sourceBlob.Uri, cancellationToken: cancellationToken);
-                await operation.WaitForCompletionAsync(cancellationToken);
-
-                BlobProperties props = await destBlob.GetPropertiesAsync(cancellationToken: cancellationToken);
+                Object dest = await _client.CopyObjectAsync(_bucketName, NormalizeKey(sourceKey), _bucketName, NormalizeKey(destinationKey), cancellationToken: cancellationToken);
 
                 return new StorageResult
                 {
@@ -304,10 +269,10 @@ namespace Foundation.Networking.DeepSpace.Providers
                     Object = new StorageObject
                     {
                         Key = destinationKey,
-                        SizeBytes = props.ContentLength,
-                        ContentType = props.ContentType ?? "application/octet-stream",
-                        LastModifiedUtc = props.LastModified.UtcDateTime,
-                        ETag = props.ETag.ToString().Trim('"')
+                        SizeBytes = (long)(dest.Size ?? 0),
+                        ContentType = dest.ContentType ?? "application/octet-stream",
+                        LastModifiedUtc = dest.UpdatedDateTimeOffset?.UtcDateTime ?? DateTime.UtcNow,
+                        ETag = dest.ETag ?? string.Empty
                     }
                 };
             }
@@ -325,8 +290,9 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
-                BlobContainerClient container = _serviceClient.GetBlobContainerClient(bucketName);
-                await container.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+                if (string.IsNullOrEmpty(_projectId)) return false;
+
+                await _client.CreateBucketAsync(_projectId, new Bucket { Name = bucketName }, cancellationToken: cancellationToken);
                 return true;
             }
             catch (Exception)
@@ -339,12 +305,17 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
-                List<string> containers = new List<string>();
-                await foreach (BlobContainerItem container in _serviceClient.GetBlobContainersAsync(cancellationToken: cancellationToken))
+                if (string.IsNullOrEmpty(_projectId)) return new List<string>();
+
+                List<string> buckets = new List<string>();
+                var bucketStream = _client.ListBucketsAsync(_projectId);
+                
+                await foreach (var b in bucketStream.WithCancellation(cancellationToken))
                 {
-                    containers.Add(container.Name);
+                    buckets.Add(b.Name);
                 }
-                return containers;
+
+                return buckets;
             }
             catch (Exception)
             {
@@ -356,8 +327,7 @@ namespace Foundation.Networking.DeepSpace.Providers
         {
             try
             {
-                BlobContainerClient container = _serviceClient.GetBlobContainerClient(bucketName);
-                await container.DeleteIfExistsAsync(cancellationToken: cancellationToken);
+                await _client.DeleteBucketAsync(bucketName, cancellationToken: cancellationToken);
                 return true;
             }
             catch (Exception)
@@ -366,25 +336,49 @@ namespace Foundation.Networking.DeepSpace.Providers
             }
         }
 
-        public Task<bool> SetExpirationLifecycleAsync(int expirationDays, CancellationToken cancellationToken = default)
+        public async Task<bool> SetExpirationLifecycleAsync(int expirationDays, CancellationToken cancellationToken = default)
         {
-            // Azure Blob Storage lifecycle management requires the Azure Resource Manager (ARM) SDK
-            // (Azure.ResourceManager.Storage) to alter management policies programmatically.
-            // The data-plane Azure.Storage.Blobs SDK does not support setting lifecycle rules.
-            // Returning false to indicate it is not supported natively via this provider.
-            return Task.FromResult(false);
+            try
+            {
+                Bucket bucket = await _client.GetBucketAsync(_bucketName, cancellationToken: cancellationToken);
+
+                if (bucket.Lifecycle == null)
+                {
+                    bucket.Lifecycle = new Bucket.LifecycleData();
+                }
+                
+                if (bucket.Lifecycle.Rule == null)
+                {
+                    bucket.Lifecycle.Rule = new List<Bucket.LifecycleData.RuleData>();
+                }
+
+                bucket.Lifecycle.Rule.Add(new Bucket.LifecycleData.RuleData
+                {
+                    Action = new Bucket.LifecycleData.RuleData.ActionData { Type = "Delete" },
+                    Condition = new Bucket.LifecycleData.RuleData.ConditionData { Age = expirationDays }
+                });
+
+                await _client.PatchBucketAsync(bucket, cancellationToken: cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         public async Task<bool> UpdateMetadataAsync(string key, Dictionary<string, string> metadata, CancellationToken cancellationToken = default)
         {
             try
             {
-                BlobClient blob = _containerClient.GetBlobClient(NormalizeKey(key));
+                Object obj = await _client.GetObjectAsync(_bucketName, NormalizeKey(key), cancellationToken: cancellationToken);
                 
                 if (metadata != null)
                 {
-                    await blob.SetMetadataAsync(metadata, cancellationToken: cancellationToken);
+                    obj.Metadata = metadata;
+                    await _client.PatchObjectAsync(obj, cancellationToken: cancellationToken);
                 }
+
                 return true;
             }
             catch (Exception)
@@ -397,16 +391,9 @@ namespace Foundation.Networking.DeepSpace.Providers
         // ── Internal ──────────────────────────────────────────────────────
 
 
-        /// <summary>
-        /// Normalizes key by removing leading slashes.
-        /// </summary>
         private static string NormalizeKey(string key)
         {
-            if (string.IsNullOrEmpty(key))
-            {
-                return key ?? string.Empty;
-            }
-
+            if (string.IsNullOrEmpty(key)) return string.Empty;
             return key.TrimStart('/');
         }
     }

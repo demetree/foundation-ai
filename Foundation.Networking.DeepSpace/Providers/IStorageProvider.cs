@@ -153,5 +153,30 @@ namespace Foundation.Networking.DeepSpace.Providers
         /// Gets a short-lived presigned URL for direct client download.
         /// </summary>
         Task<string> GetPresignedUrlAsync(string key, TimeSpan expires, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Creates a new storage bucket/container.
+        /// </summary>
+        Task<bool> CreateBucketAsync(string bucketName, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Lists all existing buckets/containers.
+        /// </summary>
+        Task<List<string>> ListBucketsAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Deletes an empty storage bucket/container.
+        /// </summary>
+        Task<bool> DeleteBucketAsync(string bucketName, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Sets an expiration lifecycle rule (e.g. auto-delete after X days) on the configured default bucket.
+        /// </summary>
+        Task<bool> SetExpirationLifecycleAsync(int expirationDays, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Updates the custom metadata for an existing object.
+        /// </summary>
+        Task<bool> UpdateMetadataAsync(string key, Dictionary<string, string> metadata, CancellationToken cancellationToken = default);
     }
 }

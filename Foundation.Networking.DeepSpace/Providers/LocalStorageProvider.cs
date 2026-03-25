@@ -328,6 +328,97 @@ namespace Foundation.Networking.DeepSpace.Providers
         }
 
 
+        // ── Advanced Operations (Bucket, Lifecycle, Metadata) ─────────────
+
+
+        public Task<bool> CreateBucketAsync(string bucketName, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                string path = Path.Combine(_rootPath, bucketName);
+                if (Directory.Exists(path) == false)
+                {
+                    Directory.CreateDirectory(path);
+                }
+                return Task.FromResult(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult(false);
+            }
+        }
+
+
+        public Task<List<string>> ListBucketsAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (Directory.Exists(_rootPath) == false)
+                {
+                    return Task.FromResult(new List<string>());
+                }
+
+                string[] directories = Directory.GetDirectories(_rootPath);
+                List<string> buckets = directories.Select(d => Path.GetFileName(d)).ToList();
+                return Task.FromResult(buckets);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult(new List<string>());
+            }
+        }
+
+
+        public Task<bool> DeleteBucketAsync(string bucketName, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                string path = Path.Combine(_rootPath, bucketName);
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, false);
+                }
+                return Task.FromResult(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult(false);
+            }
+        }
+
+
+        public Task<bool> SetExpirationLifecycleAsync(int expirationDays, CancellationToken cancellationToken = default)
+        {
+            // Local file system has no native lifecycle daemon engine.
+            // Returning false to indicate it is not natively supported via this provider interface.
+            return Task.FromResult(false);
+        }
+
+
+        public Task<bool> UpdateMetadataAsync(string key, Dictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                string filePath = GetFilePath(key);
+                if (File.Exists(filePath) == false)
+                {
+                    return Task.FromResult(false);
+                }
+
+                if (metadata != null)
+                {
+                    SaveMetadata(filePath, metadata);
+                }
+
+                return Task.FromResult(true);
+            }
+            catch (Exception)
+            {
+                return Task.FromResult(false);
+            }
+        }
+
+
         // ── Internal ──────────────────────────────────────────────────────
 
 

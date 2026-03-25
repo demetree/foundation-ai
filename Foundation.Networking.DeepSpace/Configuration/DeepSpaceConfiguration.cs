@@ -42,6 +42,11 @@ namespace Foundation.Networking.DeepSpace.Configuration
         /// Azure Blob provider settings.
         /// </summary>
         public AzureBlobConfig AzureBlob { get; set; } = new AzureBlobConfig();
+
+        /// <summary>
+        /// Google Cloud Storage settings.
+        /// </summary>
+        public GoogleCloudStorageConfig GoogleCloud { get; set; } = new GoogleCloudStorageConfig();
     }
 
 
@@ -83,5 +88,15 @@ namespace Foundation.Networking.DeepSpace.Configuration
     {
         public string ConnectionString { get; set; } = string.Empty;
         public string ContainerName { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Google Cloud Storage configuration.
+    /// </summary>
+    public class GoogleCloudStorageConfig
+    {
+        public string ProjectId { get; set; } = string.Empty;
+        public string CredentialsFilePath { get; set; } = string.Empty;
+        public string BucketName { get; set; } = string.Empty;
     }
 }

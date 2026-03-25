@@ -321,6 +321,124 @@ namespace Foundation.Networking.DeepSpace.Providers
         }
 
 
+        // ── Advanced Operations (Bucket, Lifecycle, Metadata) ─────────────
+
+
+        public async Task<bool> CreateBucketAsync(string bucketName, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                PutBucketRequest request = new PutBucketRequest
+                {
+                    BucketName = bucketName
+                };
+
+                await _client.PutBucketAsync(request, cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<List<string>> ListBucketsAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                ListBucketsResponse response = await _client.ListBucketsAsync(cancellationToken);
+                return response.Buckets.Select(b => b.BucketName).ToList();
+            }
+            catch (Exception)
+            {
+                return new List<string>();
+            }
+        }
+
+
+        public async Task<bool> DeleteBucketAsync(string bucketName, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                await _client.DeleteBucketAsync(bucketName, cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<bool> SetExpirationLifecycleAsync(int expirationDays, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                PutLifecycleConfigurationRequest request = new PutLifecycleConfigurationRequest
+                {
+                    BucketName = _bucketName,
+                    Configuration = new LifecycleConfiguration
+                    {
+                        Rules = new List<LifecycleRule>
+                        {
+                            new LifecycleRule
+                            {
+                                Id = "AutoExpireRule",
+                                Filter = new LifecycleFilter(),
+                                Status = LifecycleRuleStatus.Enabled,
+                                Expiration = new LifecycleRuleExpiration { Days = expirationDays }
+                            }
+                        }
+                    }
+                };
+
+                await _client.PutLifecycleConfigurationAsync(request, cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
+        public async Task<bool> UpdateMetadataAsync(string key, Dictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                CopyObjectRequest request = new CopyObjectRequest
+                {
+                    SourceBucket = _bucketName,
+                    SourceKey = NormalizeKey(key),
+                    DestinationBucket = _bucketName,
+                    DestinationKey = NormalizeKey(key),
+                    MetadataDirective = S3MetadataDirective.REPLACE
+                };
+
+                // When replacing metadata, ContentType must also be specified in CopyObject
+                // We fetch the current ContentType first to preserve it.
+                GetObjectMetadataResponse existing = await _client.GetObjectMetadataAsync(_bucketName, NormalizeKey(key), cancellationToken);
+                request.ContentType = existing.Headers.ContentType ?? "application/octet-stream";
+
+                if (metadata != null)
+                {
+                    foreach (var kvp in metadata)
+                    {
+                        request.Metadata.Add("x-amz-meta-" + kvp.Key, kvp.Value);
+                    }
+                }
+
+                await _client.CopyObjectAsync(request, cancellationToken);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+
         // ── Internal ──────────────────────────────────────────────────────
 
 

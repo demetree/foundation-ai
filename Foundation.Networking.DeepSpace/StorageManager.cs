@@ -349,6 +349,71 @@ namespace Foundation.Networking.DeepSpace
         }
 
 
+        // ── Advanced Operations (Bucket, Lifecycle, Metadata) ─────────────
+
+
+        /// <summary>
+        /// Creates a new storage bucket/container using the default (or named) provider.
+        /// </summary>
+        public async Task<bool> CreateBucketAsync(
+            string bucketName, string providerName = null, 
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+            if (provider == null) return false;
+            return await provider.CreateBucketAsync(bucketName, cancellationToken);
+        }
+
+        /// <summary>
+        /// Lists all existing buckets/containers.
+        /// </summary>
+        public async Task<List<string>> ListBucketsAsync(
+            string providerName = null, 
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+            if (provider == null) return new List<string>();
+            return await provider.ListBucketsAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Deletes an empty storage bucket/container.
+        /// </summary>
+        public async Task<bool> DeleteBucketAsync(
+            string bucketName, string providerName = null,
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+            if (provider == null) return false;
+            return await provider.DeleteBucketAsync(bucketName, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sets an expiration lifecycle rule on the configured default bucket.
+        /// </summary>
+        public async Task<bool> SetExpirationLifecycleAsync(
+            int expirationDays, string providerName = null,
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+            if (provider == null) return false;
+            return await provider.SetExpirationLifecycleAsync(expirationDays, cancellationToken);
+        }
+
+        /// <summary>
+        /// Updates custom metadata for an existing object.
+        /// </summary>
+        public async Task<bool> UpdateMetadataAsync(
+            string key, Dictionary<string, string> metadata, 
+            string providerName = null,
+            CancellationToken cancellationToken = default)
+        {
+            IStorageProvider provider = GetProvider(providerName);
+            if (provider == null) return false;
+            return await provider.UpdateMetadataAsync(key, metadata, cancellationToken);
+        }
+
+
         /// <summary>
         /// Stores data from a stream using the default (or named) provider.
         /// </summary>
