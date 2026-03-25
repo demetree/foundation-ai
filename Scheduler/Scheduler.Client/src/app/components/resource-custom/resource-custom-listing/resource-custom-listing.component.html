@@ -71,10 +71,12 @@
           </button>
         </div>
 
-        <!-- Add/Edit Button -->
-        <div class="add-button-wrapper">
-          <app-staff-quick-add-modal></app-staff-quick-add-modal>
-        </div>
+        <!-- Quick Add Button (streamlined) -->
+        <app-staff-quick-add-modal #quickAddResource (resourceChanged)="onResourceChanged($event)"></app-staff-quick-add-modal>
+
+        <!-- Full Add/Edit Button -->
+        <app-resource-custom-add-edit #fullAddResource [navigateToDetailsAfterAdd]="false"
+          (resourceChanged)="onResourceChanged($event)"></app-resource-custom-add-edit>
       </div>
     </div>
   </div>

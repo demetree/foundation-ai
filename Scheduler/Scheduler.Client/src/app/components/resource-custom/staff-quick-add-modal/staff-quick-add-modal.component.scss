@@ -1,5 +1,22 @@
 // staff-quick-add-modal styles
+// Matches client-custom-add-edit modal conventions
 
-.premium-header {
-    border: none;
+.btn-glass {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    backdrop-filter: blur(5px);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+        color: white;
+    }
+}
+
+.staff-modal-body {
+    padding: 15px;
+    font-size: 1rem;
 }

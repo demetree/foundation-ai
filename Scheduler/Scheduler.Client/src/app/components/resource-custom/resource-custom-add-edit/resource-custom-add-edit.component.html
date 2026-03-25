@@ -1,6 +1,8 @@
 <div class="add-resource" *ngIf="showAddButton == true">
-  <button type="button" class="btn btn-sm btn-add-resource me-2" (click)="openModal()" ngbTooltip="Add Resource"
-    *ngIf="userIsSchedulerResourceWriter() == true" placement="top" style="min-width: 75px;">Add</button>
+  <button type="button" class="btn btn-sm btn-glass" (click)="openModal()" ngbTooltip="Add Resource"
+    *ngIf="userIsSchedulerResourceWriter() == true" placement="top">
+    <i class="fa-solid fa-plus me-1"></i>Add
+  </button>
 </div>
 
 <!-- ng-bootstrap modal -->

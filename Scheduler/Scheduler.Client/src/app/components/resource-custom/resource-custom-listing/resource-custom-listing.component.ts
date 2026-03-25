@@ -4,6 +4,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { ResourceService, ResourceData } from '../../../scheduler-data-services/resource.service';
+import { ResourceCustomAddEditComponent } from '../resource-custom-add-edit/resource-custom-add-edit.component';
 import { StaffQuickAddModalComponent } from '../staff-quick-add-modal/staff-quick-add-modal.component';
 import { ResourceCustomTableComponent } from '..//resource-custom-table/resource-custom-table.component';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
@@ -16,7 +17,8 @@ import { TerminologyService } from '../../../services/terminology.service';
   styleUrls: ['./resource-custom-listing.component.scss']
 })
 export class ResourceCustomListingComponent implements OnInit, AfterViewInit, CanComponentDeactivate {
-  @ViewChild(StaffQuickAddModalComponent) addEditResourceComponent!: StaffQuickAddModalComponent;
+  @ViewChild('fullAddResource') fullAddResourceComponent!: ResourceCustomAddEditComponent;
+  @ViewChild('quickAddResource') quickAddResourceComponent!: StaffQuickAddModalComponent;
   @ViewChild(ResourceCustomTableComponent) resourceTableComponent!: ResourceCustomTableComponent;
 
   public Resources: ResourceData[] | null = null;
@@ -51,29 +53,26 @@ export class ResourceCustomListingComponent implements OnInit, AfterViewInit, Ca
   }
 
   ngAfterViewInit(): void {
-    //
-    // Subscribe to the resourceChanged observable on the add/edit component so that when a Resource changes we can reload the list.
-    //
-    this.addEditResourceComponent.resourceChanged.subscribe({
-      next: (result: ResourceData[] | null) => {
-        this.resourceTableComponent.loadData();
-        this.loadCounts();
-      },
-      error: (err: any) => {
-         this.alertService.showMessage("Error during Resource changed notification", JSON.stringify(err), MessageSeverity.error);
-      }
-    });
+    // No manual subscriptions needed — both components emit via (resourceChanged) output binding in template
+  }
+
+  /**
+   * Shared handler for both the Quick Add and Full Add/Edit components.
+   * Reloads the table and refreshes counts when any resource changes.
+   */
+  public onResourceChanged(resources: ResourceData[] | null): void {
+    this.resourceTableComponent.loadData();
+    this.loadCounts();
   }
 
   canDeactivate(): boolean {
     //
-    // Do not allow route changes when the modal is up.
+    // Do not allow route changes when either modal is up.
     //
-    if (this.addEditResourceComponent.modalIsDisplayed == true) {
+    if (this.fullAddResourceComponent?.modalIsDisplayed || this.quickAddResourceComponent?.modalIsDisplayed) {
       return false;
-    } else {
-      return true;
     }
+    return true;
   }
 
 
