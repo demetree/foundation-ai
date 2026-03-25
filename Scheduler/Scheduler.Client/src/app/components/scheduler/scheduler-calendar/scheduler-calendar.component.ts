@@ -14,6 +14,7 @@
 
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FullCalendarComponent } from '@fullcalendar/angular';
 import { CalendarOptions } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -39,6 +40,7 @@ import { ResourceShiftService, ResourceShiftData } from '../../../scheduler-data
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { SchedulerModeService } from '../../../services/scheduler-mode.service';
 import { SchedulerSignalrService } from '../../../services/scheduler-signalr.service';
+import { AuthService } from '../../../services/auth.service';
 
 @Component({
   selector: 'app-scheduler-calendar',
@@ -161,7 +163,9 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     private schedulerModeService: SchedulerModeService,
     private schedulerSignalr: SchedulerSignalrService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private http: HttpClient,
+    private authService: AuthService
   ) { }
 
 
@@ -1406,6 +1410,34 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
       url += `&calendarIds=${Array.from(this.selectedCalendarIds).join(',')}`;
     }
 
-    window.open(url, '_blank');
+    // Open an empty window immediately to bypass popup blockers triggered by async callbacks
+    const printWindow = window.open('about:blank', '_blank');
+    if (printWindow) {
+      printWindow.document.write('<div style="font-family: sans-serif; padding: 20px;">Generating printable schedule...</div>');
+    }
+
+    // Perform an authenticated GET request, expecting a Blob response
+    const headers = new HttpHeaders({
+      'Authorization': 'Bearer ' + this.authService.accessToken
+    });
+
+    this.http.get(url, { headers, responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        if (printWindow) {
+          // Create a blob URL for the returned HTML and navigate the new window to it
+          const htmlBlob = new Blob([blob], { type: 'text/html' });
+          const objectUrl = URL.createObjectURL(htmlBlob);
+          printWindow.location.href = objectUrl;
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load printable schedule', err);
+        if (printWindow) {
+          printWindow.document.open();
+          printWindow.document.write('<div style="font-family: sans-serif; padding: 20px; color: red;"><h3>Failed to load schedule</h3><p>Ensure you are logged in and have permission to view this schedule.</p></div>');
+          printWindow.document.close();
+        }
+      }
+    });
   }
 }
