@@ -27,7 +27,7 @@
             <div class="list-group list-group-flush" *ngIf="upcomingEvents.length > 0">
               <a *ngFor="let event of upcomingEvents"
                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-start py-3 hover-lift"
-                [routerLink]="['/scheduledevents', event.id]" style="cursor: pointer;">
+                [routerLink]="['/schedule']" [queryParams]="{eventId: event.id}" style="cursor: pointer;">
                 <div>
                   <div class="fw-semibold">{{ event.name }}</div>
                   <small class="text-muted">
@@ -71,7 +71,7 @@
             <div class="list-group list-group-flush" *ngIf="outstandingDeposits.length > 0">
               <a *ngFor="let deposit of outstandingDeposits"
                 class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3 hover-lift"
-                [routerLink]="['/scheduledevents', deposit.eventId]" style="cursor: pointer;">
+                [routerLink]="['/schedule']" [queryParams]="{eventId: deposit.eventId}" style="cursor: pointer;">
                 <div>
                   <div class="fw-semibold">{{ deposit.eventName }}</div>
                   <small class="text-muted">{{ deposit.chargeType }}</small>
