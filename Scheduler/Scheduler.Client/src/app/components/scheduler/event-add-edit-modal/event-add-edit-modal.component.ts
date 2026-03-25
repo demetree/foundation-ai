@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Input, Output, EventEmitter } from '@angu
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { forkJoin, Subscription, lastValueFrom } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ScheduledEventService, ScheduledEventData, ScheduledEventSubmitData } from '../../../scheduler-data-services/scheduled-event.service';
 import { EventResourceAssignmentService, EventResourceAssignmentData, EventResourceAssignmentSubmitData } from '../../../scheduler-data-services/event-resource-assignment.service';
 import { CalendarService, CalendarData } from '../../../scheduler-data-services/calendar.service';
@@ -46,6 +46,13 @@ import { InputDialogService } from '../../../services/input-dialog.service';
 import { SchedulerHelperService } from '../../../services/scheduler-helper.service';
 import { EventChargeService, EventChargeData } from '../../../scheduler-data-services/event-charge.service';
 import { FinancialTransactionService, FinancialTransactionData } from '../../../scheduler-data-services/financial-transaction.service';
+import { ChargeTypeService, ChargeTypeData } from '../../../scheduler-data-services/charge-type.service';
+import { ChargeStatusService, ChargeStatusData } from '../../../scheduler-data-services/charge-status.service';
+import { CurrencyService, CurrencyData } from '../../../scheduler-data-services/currency.service';
+import { InvoiceHelperService } from '../../../services/invoice-helper.service';
+import { InvoiceService, InvoiceData } from '../../../scheduler-data-services/invoice.service';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.service';
 import { SchedulerModeService } from '../../../services/scheduler-mode.service';
 
 @Component({
@@ -155,6 +162,31 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
   loadingFinancials = false;
   financialsTotal = { charges: 0, income: 0, expenses: 0, net: 0 };
 
+  // Add Charge inline form (P0-1)
+  showAddCharge = false;
+  savingCharge = false;
+  chargeTypes: ChargeTypeData[] = [];
+  chargeStatuses: ChargeStatusData[] = [];
+  chargeCurrencies: CurrencyData[] = [];
+  chargeLookupsLoaded = false;
+  newCharge = {
+    chargeTypeId: null as number | null,
+    chargeStatusId: null as number | null,
+    description: '',
+    quantity: 1,
+    unitPrice: 0,
+    currencyId: null as number | null,
+    isDeposit: false,
+    notes: ''
+  };
+
+  // Generate Invoice (P0-2)
+  generatingInvoice = false;
+  generatedInvoice: { invoiceId: number; invoiceNumber: string } | null = null;
+
+  // Linked invoices (P2-8)
+  eventInvoices: InvoiceData[] = [];
+
   // Track whether the user has manually set the end date
   private endDateManuallySet = false;
 
@@ -204,6 +236,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private schedulerHelperService: SchedulerHelperService,
     private eventChargeService: EventChargeService,
     private financialTransactionService: FinancialTransactionService,
+    private chargeTypeService: ChargeTypeService,
+    private chargeStatusService: ChargeStatusService,
+    private currencyService: CurrencyService,
+    private invoiceHelperService: InvoiceHelperService,
+    private invoiceService: InvoiceService,
+    private router: Router,
+    private authService: AuthService,
     private schedulerModeService: SchedulerModeService
   ) {
     this.buildForm();
@@ -215,6 +254,13 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       this.schedulerModeService.isSimpleMode('eventEditor')
         .subscribe(simple => this.isSimpleMode = simple)
     );
+  }
+
+
+  private getAuthHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      'Authorization': 'Bearer ' + this.authService.accessToken
+    });
   }
 
   ngOnInit(): void {
@@ -426,7 +472,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     if (!this.event || this.loadingFinancials) return;
     this.loadingFinancials = true;
 
-    forkJoin({
+    const requests: any = {
       charges: this.eventChargeService.GetEventChargeList({
         scheduledEventId: this.event.id,
         active: true,
@@ -436,13 +482,45 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
         scheduledEventId: this.event.id,
         active: true,
         includeRelations: true
+      }),
+      invoices: this.invoiceService.GetInvoiceList({
+        scheduledEventId: this.event.id,
+        active: true,
+        includeRelations: true
       })
-    }).subscribe({
+    };
+
+    // Load charge form lookups lazily on first Financials tab visit
+    if (!this.chargeLookupsLoaded) {
+      requests.chargeTypes = this.chargeTypeService.GetChargeTypeList({ active: true });
+      requests.chargeStatuses = this.chargeStatusService.GetChargeStatusList({ active: true });
+      requests.currencies = this.currencyService.GetCurrencyList({ active: true });
+    }
+
+    forkJoin(requests).subscribe({
       next: (data: any) => {
         this.eventCharges = data.charges;
         this.eventTransactions = data.transactions;
+        this.eventInvoices = data.invoices ?? [];
         this.financialsLoaded = true;
         this.loadingFinancials = false;
+
+        // Populate charge form lookups
+        if (data.chargeTypes) {
+          this.chargeTypes = data.chargeTypes;
+          this.chargeStatuses = data.chargeStatuses;
+          this.chargeCurrencies = data.currencies;
+          this.chargeLookupsLoaded = true;
+
+          // Default currency to first available
+          if (this.chargeCurrencies.length > 0 && !this.newCharge.currencyId) {
+            this.newCharge.currencyId = Number(this.chargeCurrencies[0].id);
+          }
+          // Default charge status to first available
+          if (this.chargeStatuses.length > 0 && !this.newCharge.chargeStatusId) {
+            this.newCharge.chargeStatusId = Number(this.chargeStatuses[0].id);
+          }
+        }
 
         // Calculate totals
         this.financialsTotal.charges = this.eventCharges.reduce(
@@ -490,7 +568,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     const submitData = this.eventChargeService.ConvertToEventChargeSubmitData(charge);
     submitData.depositRefundedDate = now;
 
-    this.http.put(`/api/financial/charges/${charge.id}`, submitData).subscribe({
+    this.http.put(`/api/financial/charges/${charge.id}`, submitData, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
       next: () => {
         //
         // Update the local charge object so the UI reflects the change immediately
@@ -506,13 +586,182 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
 
   // -------------------------------------------------------------------------
-  // Event Financial Timeline
+  // Add Charge (P0-1)
+  // -------------------------------------------------------------------------
+  openAddCharge(): void {
+    this.showAddCharge = true;
+    this.resetNewCharge();
+  }
+
+  cancelAddCharge(): void {
+    this.showAddCharge = false;
+  }
+
+  private resetNewCharge(): void {
+    this.newCharge = {
+      chargeTypeId: null,
+      chargeStatusId: this.chargeStatuses.length > 0 ? Number(this.chargeStatuses[0].id) : null,
+      description: '',
+      quantity: 1,
+      unitPrice: 0,
+      currencyId: this.chargeCurrencies.length > 0 ? Number(this.chargeCurrencies[0].id) : null,
+      isDeposit: false,
+      notes: ''
+    };
+  }
+
+  submitNewCharge(): void {
+    if (!this.event || this.savingCharge) return;
+    if (!this.newCharge.chargeTypeId || !this.newCharge.chargeStatusId || !this.newCharge.currencyId) {
+      this.alertService.showMessage('Please fill in all required fields', '', MessageSeverity.warn);
+      return;
+    }
+
+    this.savingCharge = true;
+
+    const body = {
+      scheduledEventId: Number(this.event.id),
+      chargeTypeId: this.newCharge.chargeTypeId,
+      chargeStatusId: this.newCharge.chargeStatusId,
+      quantity: this.newCharge.quantity,
+      unitPrice: this.newCharge.unitPrice,
+      description: this.newCharge.description || null,
+      currencyId: this.newCharge.currencyId,
+      resourceId: null,
+      rateTypeId: null,
+      taxCodeId: null,
+      notes: this.newCharge.notes || null,
+      isAutomatic: false,
+      isDeposit: this.newCharge.isDeposit
+    };
+
+    this.http.post('/api/financial/charges', body, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: () => {
+        this.alertService.showMessage('Charge added successfully', '', MessageSeverity.success);
+        this.savingCharge = false;
+        this.showAddCharge = false;
+        // Refresh charges
+        this.financialsLoaded = false;
+        this.eventChargeService.ClearAllCaches();
+        this.loadEventFinancials();
+        this.loadEventTimeline();
+      },
+      error: (err: any) => {
+        this.alertService.showMessage('Failed to add charge', err?.error?.error || '', MessageSeverity.error);
+        this.savingCharge = false;
+      }
+    });
+  }
+
+
+  // -------------------------------------------------------------------------
+  // Generate Invoice (P0-2)
+  // -------------------------------------------------------------------------
+  generateInvoice(): void {
+    if (!this.event || this.generatingInvoice) return;
+
+    this.generatingInvoice = true;
+    this.generatedInvoice = null;
+
+    this.invoiceHelperService.createFromEvent(Number(this.event.id)).subscribe({
+      next: (result) => {
+        this.generatedInvoice = result;
+        this.generatingInvoice = false;
+        this.alertService.showMessage(
+          `Invoice ${result.invoiceNumber} created`,
+          'Draft invoice generated from event charges.',
+          MessageSeverity.success
+        );
+        // Refresh linked invoices
+        this.invoiceService.ClearAllCaches();
+        if (this.event) {
+          this.invoiceService.GetInvoiceList({
+            scheduledEventId: this.event.id,
+            active: true,
+            includeRelations: true
+          }).subscribe(invoices => this.eventInvoices = invoices);
+        }
+      },
+      error: (err: any) => {
+        this.generatingInvoice = false;
+        this.alertService.showMessage(
+          'Failed to generate invoice',
+          err?.error?.error || err?.message || '',
+          MessageSeverity.error
+        );
+      }
+    });
+  }
+
+  viewInvoice(invoiceId: number | bigint): void {
+    this.activeModal.dismiss('navigate');
+    this.router.navigate(['/finances/invoices', Number(invoiceId)]);
+  }
+
+
+  // -------------------------------------------------------------------------
+  // Charge Status Update (P2-9) and Charge Delete
+  // -------------------------------------------------------------------------
+  updateChargeStatus(charge: any, newStatusId: any): void {
+    if (!charge || !newStatusId) return;
+
+    const body = {
+      scheduledEventId: Number(charge.scheduledEventId),
+      chargeTypeId: Number(charge.chargeTypeId),
+      chargeStatusId: Number(newStatusId),
+      quantity: charge.quantity ?? 1,
+      unitPrice: charge.unitPrice ?? 0,
+      description: charge.description || null,
+      currencyId: Number(charge.currencyId),
+      resourceId: charge.resourceId ? Number(charge.resourceId) : null,
+      rateTypeId: charge.rateTypeId ? Number(charge.rateTypeId) : null,
+      taxCodeId: charge.taxCodeId ? Number(charge.taxCodeId) : null,
+      notes: charge.notes || null,
+      isAutomatic: charge.isAutomatic ?? false,
+      isDeposit: charge.isDeposit ?? false
+    };
+
+    this.http.put(`/api/financial/charges/${charge.id}`, body, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: () => {
+        charge.chargeStatusId = newStatusId;
+        this.alertService.showMessage('Charge status updated', '', MessageSeverity.success);
+      },
+      error: (err: any) => {
+        this.alertService.showMessage('Failed to update status', err?.error?.error || '', MessageSeverity.error);
+      }
+    });
+  }
+
+  deleteCharge(charge: any): void {
+    if (!charge) return;
+
+    this.http.delete(`/api/financial/charges/${charge.id}`, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
+      next: () => {
+        this.alertService.showMessage('Charge removed', '', MessageSeverity.success);
+        this.eventChargeService.ClearAllCaches();
+        this.financialsLoaded = false;
+        this.loadEventFinancials();
+        this.loadEventTimeline();
+      },
+      error: (err: any) => {
+        this.alertService.showMessage('Failed to remove charge', err?.error?.error || '', MessageSeverity.error);
+      }
+    });
+  }
+
   // -------------------------------------------------------------------------
   private loadEventTimeline(): void {
     if (!this.event) return;
 
     this.http.get<TimelineEntry[]>(
-      `/api/FinancialTransactions/EventFinancialTimeline/${this.event.id}`
+      `/api/FinancialTransactions/EventFinancialTimeline/${this.event.id}`,
+      { headers: this.getAuthHeaders() }
     ).subscribe({
       next: (entries) => {
         this.financialTimeline = entries ?? [];
@@ -551,7 +800,9 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
     const url = `/api/ScheduledEvents/CheckConflicts?schedulingTargetId=${targetId}&startDateTime=${startUtc}&endDateTime=${endUtc}${excludeId}`;
 
-    this.http.get<ConflictResponse>(url).subscribe({
+    this.http.get<ConflictResponse>(url, {
+      headers: this.getAuthHeaders()
+    }).subscribe({
       next: (response) => {
         this.conflictWarnings = response?.conflicts ?? [];
         this.checkingConflicts = false;

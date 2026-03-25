@@ -5,6 +5,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { PaymentTransactionService, PaymentTransactionData } from '../../../scheduler-data-services/payment-transaction.service';
+import { ReceiptHelperService } from '../../../services/receipt-helper.service';
 import { PaymentCustomAddEditComponent } from '../payment-custom-add-edit/payment-custom-add-edit.component';
 
 
@@ -28,7 +29,8 @@ export class PaymentCustomDetailComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         public router: Router,
         private alertService: AlertService,
-        private authService: AuthService
+        private authService: AuthService,
+        private receiptHelper: ReceiptHelperService
     ) { }
 
 
@@ -83,6 +85,34 @@ export class PaymentCustomDetailComponent implements OnInit, OnDestroy {
 
     goBack(): void {
         this.router.navigate(['/finances/payments']);
+    }
+
+
+    // P1-6: Create Receipt from Payment
+    public creatingReceipt = false;
+
+    createReceipt(): void {
+        if (!this.payment || this.creatingReceipt) return;
+        this.creatingReceipt = true;
+
+        this.receiptHelper.createFromPayment(Number(this.payment.id)).subscribe({
+            next: (result) => {
+                this.creatingReceipt = false;
+                this.alertService.showMessage(
+                    `Receipt ${result.receiptNumber} created`,
+                    '', MessageSeverity.success
+                );
+                this.router.navigate(['/finances/receipts', result.receiptId]);
+            },
+            error: (err: any) => {
+                this.creatingReceipt = false;
+                this.alertService.showMessage(
+                    'Failed to create receipt',
+                    err?.error?.error || err?.message || '',
+                    MessageSeverity.error
+                );
+            }
+        });
     }
 
 

@@ -1,5 +1,5 @@
 // AI-Developed — This file was significantly developed with AI assistance.
-import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -7,6 +7,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
 import { AuthService } from '../../../services/auth.service';
 import { ReceiptService, ReceiptData } from '../../../scheduler-data-services/receipt.service';
 import { ReceiptHelperService } from '../../../services/receipt-helper.service';
+import { InvoiceService, InvoiceData } from '../../../scheduler-data-services/invoice.service';
 import { ReceiptCustomAddEditComponent } from '../receipt-custom-add-edit/receipt-custom-add-edit.component';
 
 
@@ -15,7 +16,7 @@ import { ReceiptCustomAddEditComponent } from '../receipt-custom-add-edit/receip
     templateUrl: './receipt-custom-detail.component.html',
     styleUrls: ['./receipt-custom-detail.component.scss']
 })
-export class ReceiptCustomDetailComponent implements OnInit, OnDestroy {
+export class ReceiptCustomDetailComponent implements OnInit, OnDestroy, AfterViewInit {
 
     @ViewChild(ReceiptCustomAddEditComponent) addEditComponent!: ReceiptCustomAddEditComponent;
 
@@ -25,11 +26,16 @@ export class ReceiptCustomDetailComponent implements OnInit, OnDestroy {
     public isMobile = false;
     public isGeneratingPdf = false;
 
+    // Record Payment flow (P0-4)
+    public isNewReceiptMode = false;
+    private pendingInvoiceId: number | null = null;
+
     private destroy$ = new Subject<void>();
 
     constructor(
         public receiptService: ReceiptService,
         private receiptHelper: ReceiptHelperService,
+        private invoiceService: InvoiceService,
         private route: ActivatedRoute,
         public router: Router,
         private alertService: AlertService,
@@ -51,7 +57,58 @@ export class ReceiptCustomDetailComponent implements OnInit, OnDestroy {
                 this.loadData();
             }
         });
+
+        // P0-4: Handle "Record Payment" flow from invoice detail
+        this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe(params => {
+            const invoiceIdStr = params.get('invoiceId');
+            if (invoiceIdStr && !this.receiptId) {
+                this.isNewReceiptMode = true;
+                this.isLoading = false;
+                this.pendingInvoiceId = Number(invoiceIdStr);
+                this.openPreSeededModal(this.pendingInvoiceId);
+            }
+        });
     }
+
+
+    ngAfterViewInit(): void {
+        // If we have a pending invoice from query params and the ViewChild is now available
+        if (this.pendingInvoiceId && this.addEditComponent) {
+            setTimeout(() => this.openPreSeededModal(this.pendingInvoiceId!), 200);
+        }
+    }
+
+
+    /**
+     * P0-4: Load the invoice and open add-edit modal pre-seeded with invoice data
+     */
+    private openPreSeededModal(invoiceId: number): void {
+        this.invoiceService.GetInvoice(invoiceId, true).subscribe({
+            next: (invoice: InvoiceData) => {
+                if (this.addEditComponent && invoice) {
+                    // Build a partial ReceiptData to pre-seed the form
+                    const preSeed: Partial<ReceiptData> = {
+                        invoiceId: invoice.id,
+                        clientId: invoice.clientId,
+                        amount: Number(invoice.totalAmount ?? 0) - Number(invoice.amountPaid ?? 0),
+                        receiptDate: new Date().toISOString(),
+                        description: `Payment for Invoice ${invoice.invoiceNumber}`,
+                    } as any;
+
+                    // Open the add-edit modal with pre-seeded data (as a new receipt)
+                    this.addEditComponent.openModal(preSeed as ReceiptData);
+                }
+            },
+            error: () => {
+                this.alertService.showMessage('Could not load invoice for pre-seeding', '', MessageSeverity.warn);
+                // Still open the modal, just without pre-seeded data
+                if (this.addEditComponent) {
+                    this.addEditComponent.openModal();
+                }
+            }
+        });
+    }
+
 
 
     ngOnDestroy(): void {

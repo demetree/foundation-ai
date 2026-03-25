@@ -18,6 +18,13 @@
                 </div>
             </div>
             <div class="header-actions">
+                <button class="btn btn-sm btn-action btn-success me-1" (click)="createReceipt()"
+                  [disabled]="creatingReceipt"
+                  *ngIf="payment.status?.toLowerCase() === 'completed'">
+                    <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="creatingReceipt"></i>
+                    <i class="fa-solid fa-receipt me-1" *ngIf="!creatingReceipt"></i>
+                    Create Receipt
+                </button>
                 <button class="btn btn-sm btn-action btn-edit" (click)="openEditModal()">
                     <i class="fa-solid fa-pen-to-square me-1"></i> Edit
                 </button>
