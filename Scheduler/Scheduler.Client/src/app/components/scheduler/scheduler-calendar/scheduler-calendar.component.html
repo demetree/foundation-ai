@@ -18,9 +18,8 @@
         <h2 class="page-title">Schedule</h2>
       </div>
 
-      <!-- Right: Nav + View Toggle -->
-      <div class="header-right">
-
+      <!-- Center: Nav + Date Range -->
+      <div class="header-center">
         <!-- Navigation -->
         <button class="btn-glass" (click)="navigateCalendar('today')" title="Today">
           Today
@@ -33,9 +32,13 @@
         </button>
 
         <!-- Current Date Range Title -->
-        <span class="text-white fw-semibold mx-2" style="font-size: 1rem; text-shadow: 0 1px 3px rgba(0,0,0,0.15);">
+        <span class="text-white fw-semibold ms-2" style="font-size: 1rem; text-shadow: 0 1px 3px rgba(0,0,0,0.15); min-width: 200px; display: inline-block; text-align: center;">
           {{ currentTitle }}
         </span>
+      </div>
+
+      <!-- Right: View Toggle -->
+      <div class="header-right">
 
         <!-- View Toggle -->
         <div class="btn-group-glass">

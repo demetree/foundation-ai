@@ -130,8 +130,6 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
     nowIndicator: true,
     height: 'auto',
     allDaySlot: true,
-    slotMinTime: '06:00:00',
-    slotMaxTime: '22:00:00',
     scrollTime: '08:00:00',
     expandRows: true,
     stickyHeaderDates: true,
