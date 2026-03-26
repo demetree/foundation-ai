@@ -1,9 +1,9 @@
 <div class="container-fluid p-1 m-0 budget-details-container">
     <div class="p-2 detail-background">
-        <div class="card mb-3 header-card shadow-sm">
+        <div class="card mb-3 header-card gradient-header shadow-sm">
             <div class="budget-details-header">
                 <div class="header-left">
-                    <button class="btn btn-sm btn-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
+                    <button class="btn btn-sm btn-outline-light back-button me-2" (click)="goBack()" ngbTooltip="Go Back"  *ngIf="canGoBack()"><i class="fa-solid fa-arrow-left"></i></button>
                     <div>
                         <h3 class="page-title mb-0">Budget</h3>
                         <small class="text-muted">{{ isEditMode ? 'Edit Budget' : 'Add Budget'}}</small>

@@ -82,6 +82,8 @@ import { NewUserComponent } from './components/new-user/new-user.component';
 import { SystemHealthComponent } from './components/system-health/system-health.component';
 import { SystemHealthService } from './services/system-health.service';
 
+
+
 //
 // Custom Components
 //
@@ -316,6 +318,14 @@ import { NotificationSettingsComponent } from './components/messaging/notificati
 import { ThreadPanelComponent } from './components/chat-view/thread-panel/thread-panel.component';
 import { PinnedMessagesComponent } from './components/chat-view/pinned-messages/pinned-messages.component';
 import { LinkPreviewCardComponent } from './components/link-preview-card/link-preview-card.component';
+
+
+//
+// Custom dispatch
+//
+import { StaffQuickAddModalComponent } from './components/resource-custom/staff-quick-add-modal/staff-quick-add-modal.component';
+import { DailyDispatchComponent } from './components/scheduler/daily-dispatch/daily-dispatch.component';
+import { QuickAddJobModalComponent } from './components/scheduler/quick-add-job-modal/quick-add-job-modal.component';
 
 
 //
@@ -1427,9 +1437,6 @@ import { VolunteerStatusListingComponent } from './scheduler-data-components/vol
 import { VolunteerStatusAddEditComponent } from './scheduler-data-components/volunteer-status/volunteer-status-add-edit/volunteer-status-add-edit.component';
 import { VolunteerStatusDetailComponent } from './scheduler-data-components/volunteer-status/volunteer-status-detail/volunteer-status-detail.component';
 import { VolunteerStatusTableComponent } from './scheduler-data-components/volunteer-status/volunteer-status-table/volunteer-status-table.component';
-import { StaffQuickAddModalComponent } from './components/resource-custom/staff-quick-add-modal/staff-quick-add-modal.component';
-import { DailyDispatchComponent } from './components/scheduler/daily-dispatch/daily-dispatch.component';
-import { QuickAddJobModalComponent } from './components/scheduler/quick-add-job-modal/quick-add-job-modal.component';
 //
 // End of imports for Scheduler Data Components
 //

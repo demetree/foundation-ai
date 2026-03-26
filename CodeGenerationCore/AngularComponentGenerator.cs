@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -111,11 +111,11 @@ namespace Foundation.CodeGeneration
 
             sb.AppendLine("<div class=\"page-container\">");
 
-            sb.AppendLine($"    <div class=\"card mb-3 header-card shadow-sm\">");
+            sb.AppendLine($"    <div class=\"card mb-3 header-card gradient-header shadow-sm\">");
             sb.AppendLine($"        <div class=\"card-header d-flex flex-wrap justify-content-between align-items-center gap-3\">");
             sb.AppendLine($"            <div class=\"header-left\">");
             sb.AppendLine($"                <!-- Back Button -->");
-            sb.AppendLine($"                <button class=\"btn btn-sm btn-light back-button me-2\" (click)=\"goBack()\" ngbTooltip=\"Go Back\" *ngIf=\"canGoBack()\">");
+            sb.AppendLine($"                <button class=\"btn btn-sm btn-outline-light back-button me-2\" (click)=\"goBack()\" ngbTooltip=\"Go Back\" *ngIf=\"canGoBack()\">");
             sb.AppendLine($"                    <i class=\"fa-solid fa-arrow-left\"></i>");
             sb.AppendLine($"                </button>");
             sb.AppendLine($"");
@@ -450,7 +450,62 @@ namespace Foundation.CodeGeneration
 }}
 ";
 
-                return hostBlock + themed + glassBlock + formBlock;
+                //
+                // Gradient header — prominent theme-colored banner for the listing header card
+                //
+                string gradientBlock = $@"
+/* Gradient header — prominent theme-colored banner */
+.gradient-header {{
+  background: var(--{applicationThemePrefix}-gradient-primary) !important;
+  border: none;
+
+  .card-header {{
+    padding: 1.25rem 1.5rem;
+  }}
+
+  .page-title {{
+    color: #fff !important;
+    font-weight: 700;
+  }}
+
+  .text-muted {{
+    color: rgba(255, 255, 255, 0.75) !important;
+  }}
+
+  .badge {{
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #fff;
+  }}
+
+  .search-input {{
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #fff;
+
+    &::placeholder {{
+      color: rgba(255, 255, 255, 0.6);
+    }}
+
+    &:focus {{
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.15);
+    }}
+  }}
+
+  .search-icon {{
+    color: rgba(255, 255, 255, 0.7) !important;
+  }}
+
+  .clear-search {{
+    color: rgba(255, 255, 255, 0.7) !important;
+  }}
+}}
+";
+
+                return hostBlock + themed + glassBlock + gradientBlock + formBlock;
             }
 
             return sb.ToString();
@@ -4036,10 +4091,10 @@ label {{
 
             sb.AppendLine($"<div class=\"container-fluid p-1 m-0 {angularName}-details-container\">");
             sb.AppendLine($"    <div class=\"p-2 detail-background\">");
-            sb.AppendLine($"        <div class=\"card mb-3 header-card shadow-sm\">");
+            sb.AppendLine($"        <div class=\"card mb-3 header-card gradient-header shadow-sm\">");
             sb.AppendLine($"            <div class=\"{angularName}-details-header\">");
             sb.AppendLine($"                <div class=\"header-left\">");
-            sb.AppendLine($"                    <button class=\"btn btn-sm btn-light back-button me-2\" (click)=\"goBack()\" ngbTooltip=\"Go Back\"  *ngIf=\"canGoBack()\"><i class=\"fa-solid fa-arrow-left\"></i></button>");
+            sb.AppendLine($"                    <button class=\"btn btn-sm btn-outline-light back-button me-2\" (click)=\"goBack()\" ngbTooltip=\"Go Back\"  *ngIf=\"canGoBack()\"><i class=\"fa-solid fa-arrow-left\"></i></button>");
             sb.AppendLine($"                    <div>");
             sb.AppendLine($"                        <h3 class=\"page-title mb-0\">{titleName}</h3>");
             sb.AppendLine($"                        <small class=\"text-muted\">{{{{ isEditMode ? 'Edit {titleName}' : 'Add {titleName}'}}}}</small>");
@@ -4649,7 +4704,31 @@ label {{
 }}
 ";
 
-                return hostBlock + themed + glassBlock + formBlock + tabBlock;
+                //
+                // Gradient header — prominent theme-colored banner for the detail title card
+                //
+                string gradientBlock = $@"
+/* Gradient header — prominent theme-colored banner */
+.gradient-header {{
+  background: var(--{applicationThemePrefix}-gradient-primary) !important;
+  border: none;
+
+  .{angularName}-details-header {{
+    padding: 1.25rem 1.5rem;
+  }}
+
+  .page-title {{
+    color: #fff !important;
+    font-weight: 700;
+  }}
+
+  .text-muted {{
+    color: rgba(255, 255, 255, 0.75) !important;
+  }}
+}}
+";
+
+                return hostBlock + themed + glassBlock + gradientBlock + formBlock + tabBlock;
             }
 
             return sb.ToString();

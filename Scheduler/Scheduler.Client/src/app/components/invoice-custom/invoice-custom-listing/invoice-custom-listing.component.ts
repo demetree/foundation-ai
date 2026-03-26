@@ -221,7 +221,7 @@ export class InvoiceCustomListingComponent implements OnInit {
 
 
     public viewInvoice(invoice: InvoiceData): void {
-        this.router.navigate(['/invoices', invoice.id]);
+        this.router.navigate(['/finances/invoices', invoice.id]);
     }
 
 

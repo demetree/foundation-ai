@@ -295,6 +295,10 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 _context.Documents.Add(document);
                 await _context.SaveChangesAsync(cancellationToken);
+
+                // Invalidate the file manager cache so the document appears immediately
+                var fileCache = HttpContext.RequestServices.GetService(typeof(FileManagerCacheService)) as FileManagerCacheService;
+                fileCache?.InvalidateDocuments(tenantGuid);
             }
             else
             {

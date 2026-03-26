@@ -178,6 +178,25 @@ label {
   color: var(--sch-text-primary);
 }
 
+/* Gradient header — prominent theme-colored banner */
+.gradient-header {
+  background: var(--sch-gradient-primary) !important;
+  border: none;
+
+  .conversation-message-link-preview-change-history-details-header {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .page-title {
+    color: #fff !important;
+    font-weight: 700;
+  }
+
+  .text-muted {
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+}
+
 /* Theme-aware form controls */
 .form-control, .form-select {
   background-color: var(--sch-bg-elevated);

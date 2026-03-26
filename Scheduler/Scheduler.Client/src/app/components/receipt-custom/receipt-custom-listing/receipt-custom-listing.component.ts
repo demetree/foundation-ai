@@ -177,6 +177,11 @@ export class ReceiptCustomListingComponent implements OnInit {
     }
 
 
+    public viewReceipt(receipt: ReceiptData): void {
+        this.router.navigate(['/finances/receipts', receipt.id]);
+    }
+
+
     public trackById(index: number, item: ReceiptData): number {
         return Number(item.id);
     }

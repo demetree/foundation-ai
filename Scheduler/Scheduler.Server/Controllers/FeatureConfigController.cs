@@ -96,7 +96,8 @@ namespace Foundation.Scheduler.Controllers.WebAPI
                 fundraisingEnabled = ResolveToggle("FundraisingEnabled", currentTenant),
                 financialManagementEnabled = ResolveToggle("FinancialManagementEnabled", currentTenant),
                 crewManagementEnabled = ResolveToggle("CrewManagementEnabled", currentTenant),
-                messagingEnabled = ResolveToggle("MessagingEnabled", currentTenant)
+                messagingEnabled = ResolveToggle("MessagingEnabled", currentTenant),
+                dispatchEnabled = ResolveToggle("DispatchEnabled", currentTenant)
             });
         }
 

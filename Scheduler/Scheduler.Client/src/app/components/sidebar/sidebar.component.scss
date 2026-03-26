@@ -295,6 +295,24 @@ $toggle-half: calc($toggle-size / 2);
       min-height: 36px;
     }
   }
+
+  // AI-Developed — Animated submenu slide transition added with AI assistance.
+  .submenu-group {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: max-height 0.3s ease, opacity 0.25s ease, transform 0.25s ease;
+    border-left: 2px solid transparent;
+    margin-left: 10px;
+
+    &.submenu-open {
+      max-height: 500px; // generous upper bound; CSS transition handles the visual
+      opacity: 1;
+      transform: translateY(0);
+      border-left-color: var(--sch-primary, rgba(255, 255, 255, 0.15));
+    }
+  }
 }
 
 /* Backdrop for overlay mode */

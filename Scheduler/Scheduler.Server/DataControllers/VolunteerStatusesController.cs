@@ -451,9 +451,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Scheduler Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -584,9 +584,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Scheduler Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -661,9 +661,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 			StartAuditEventClock();
 
 			//
-			// Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Scheduler Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}
@@ -879,9 +879,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 		{
 
 			//
-			// Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
+			// Scheduler Volunteer Manager role needed to write to this table, or Scheduler Administrator role.  Note we do not check the user's write permission level here.  Role membership is the key to write access.
 			//
-			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
+			if (await DoesUserHaveCustomRoleSecurityCheckAsync("Scheduler Volunteer Manager", cancellationToken) == false && await DoesUserHaveAdminPrivilegeSecurityCheckAsync(cancellationToken) == false)
 			{
 			   return Forbid();
 			}

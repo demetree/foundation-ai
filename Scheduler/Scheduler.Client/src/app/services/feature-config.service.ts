@@ -23,6 +23,7 @@ interface FeatureConfig {
     financialManagementEnabled: boolean;
     crewManagementEnabled: boolean;
     messagingEnabled: boolean;
+    dispatchEnabled: boolean;
 }
 
 
@@ -63,7 +64,8 @@ export class FeatureConfigService extends SecureEndpointBase {
                         fundraisingEnabled: false,
                         financialManagementEnabled: false,
                         crewManagementEnabled: false,
-                        messagingEnabled: false
+                        messagingEnabled: false,
+                        dispatchEnabled: false
                     } as FeatureConfig);
                 }),
                 shareReplay({ bufferSize: 1, refCount: false })
@@ -97,5 +99,10 @@ export class FeatureConfigService extends SecureEndpointBase {
     /** Whether the Messaging & Notification system is enabled. */
     public get isMessagingEnabled$(): Observable<boolean> {
         return this.config$.pipe(map(c => c.messagingEnabled === true));
+    }
+
+    /** Whether the Dispatch / Daily Dispatch feature is enabled. */
+    public get isDispatchEnabled$(): Observable<boolean> {
+        return this.config$.pipe(map(c => c.dispatchEnabled === true));
     }
 }
