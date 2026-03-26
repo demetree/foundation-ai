@@ -7,7 +7,8 @@
 
         <!-- Avatar -->
         <div class="avatar rounded-circle overflow-hidden shadow clickable flex-shrink-0"
-          style="width: 120px; height: 120px;" (click)="openEditModal()">
+          style="width: 120px; height: 120px;" (click)="openEditModal()" (keydown.enter)="openEditModal()"
+          role="button" tabindex="0" aria-label="Edit client">
           <ng-container *ngIf="client?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (client?.avatarMimeType || 'image/png') + ';base64,' + (client?.avatarData || '')"
               class="w-100 h-100 object-fit-cover" alt="{{ client?.name }} avatar">

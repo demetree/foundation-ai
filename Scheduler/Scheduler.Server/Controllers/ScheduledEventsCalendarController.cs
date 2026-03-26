@@ -301,9 +301,25 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             DateTime rangeEnd,
             int? schedulingTargetId = null,
             string? calendarIds = null,
+            string? timeZoneId = null,
             [FromServices] RecurrenceExpansionService expansionService = null,
             CancellationToken cancellationToken = default)
         {
+            //
+            // Resolve the user's time zone (falls back to server local time)
+            //
+            TimeZoneInfo displayTimeZone = TimeZoneInfo.Local;
+            if (!string.IsNullOrWhiteSpace(timeZoneId))
+            {
+                try
+                {
+                    displayTimeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    // Fall back to server local time if the IANA/Windows ID is invalid
+                }
+            }
             if (await DoesUserHaveReadPrivilegeSecurityCheckAsync(READ_PERMISSION_LEVEL_REQUIRED, cancellationToken) == false)
             {
                 return Forbid();
@@ -404,7 +420,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             // Group events by date (local time)
             //
             var grouped = events
-                .GroupBy(e => e.startDateTime.ToLocalTime().Date)
+                .GroupBy(e => TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(e.startDateTime, DateTimeKind.Utc), displayTimeZone).Date)
                 .OrderBy(g => g.Key);
 
             //
@@ -428,7 +444,7 @@ namespace Foundation.Scheduler.Controllers.WebAPI
             html.AppendLine("</style></head><body>");
 
             html.AppendLine($"<h1>Event Schedule</h1>");
-            html.AppendLine($"<p class=\"subtitle\">{rangeStart.ToLocalTime():dddd, MMMM d, yyyy} — {rangeEnd.ToLocalTime():dddd, MMMM d, yyyy}</p>");
+            html.AppendLine($"<p class=\"subtitle\">{TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(rangeStart, DateTimeKind.Utc), displayTimeZone):dddd, MMMM d, yyyy} — {TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(rangeEnd, DateTimeKind.Utc), displayTimeZone):dddd, MMMM d, yyyy}</p>");
 
             foreach (var dayGroup in grouped)
             {
@@ -437,7 +453,9 @@ namespace Foundation.Scheduler.Controllers.WebAPI
 
                 foreach (var ev in dayGroup)
                 {
-                    string timeStr = ev.startDateTime.ToLocalTime().ToString("h:mm tt") + " – " + ev.endDateTime.ToLocalTime().ToString("h:mm tt");
+                    var evStart = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(ev.startDateTime, DateTimeKind.Utc), displayTimeZone);
+                    var evEnd = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(ev.endDateTime, DateTimeKind.Utc), displayTimeZone);
+                    string timeStr = evStart.ToString("h:mm tt") + " – " + evEnd.ToString("h:mm tt");
                     string name = System.Net.WebUtility.HtmlEncode(ev.name ?? "");
                     string loc = System.Net.WebUtility.HtmlEncode(ev.location ?? "—");
                     string cal = System.Net.WebUtility.HtmlEncode(ev.schedulingTarget?.name ?? "—");

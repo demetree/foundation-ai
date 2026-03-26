@@ -792,7 +792,7 @@ export class AuthService {
     // Deny any access if the user has the 'Fundraising No Access' role
     //
     for (var i = 0; i < user.roles.length; i++) {
-      if (user.roles[i] == "Sceduler No Access") {
+      if (user.roles[i] == "Scheduler No Access") {
         return false;
       }
     }

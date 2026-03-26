@@ -814,12 +814,13 @@ namespace Foundation.Scheduler
                         }
 
                         context.Response.Headers["Content-Security-Policy"] = cspPolicy;
-                        await next();
                     }
                     catch (Exception ex)
                     {
                         logger.LogException("Error adding CSP header", ex);
                     }
+
+                    await next();
                 });
 
 

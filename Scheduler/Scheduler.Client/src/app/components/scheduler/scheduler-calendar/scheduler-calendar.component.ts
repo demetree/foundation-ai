@@ -1406,6 +1406,12 @@ export class SchedulerCalendarComponent implements OnInit, OnDestroy {
 
     let url = `/api/ScheduledEvents/PrintSchedule?rangeStart=${encodeURIComponent(rangeStart)}&rangeEnd=${encodeURIComponent(rangeEnd)}`;
 
+    // Pass the user's browser timezone so the server formats times correctly
+    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (userTimeZone) {
+      url += `&timeZoneId=${encodeURIComponent(userTimeZone)}`;
+    }
+
     if (this.selectedCalendarIds.size > 0) {
       url += `&calendarIds=${Array.from(this.selectedCalendarIds).join(',')}`;
     }

@@ -4,8 +4,8 @@
 // AI-Developed — This file was significantly developed with AI assistance.
 // =============================================================================
 
-$accent-primary: #667eea;
-$accent-secondary: #764ba2;
+$accent-primary: var(--sch-primary, #667eea);
+$accent-secondary: var(--sch-primary-dark, #764ba2);
 
 .template-modal-header {
     background: linear-gradient(135deg, $accent-primary 0%, $accent-secondary 100%);
@@ -47,7 +47,7 @@ $accent-secondary: #764ba2;
             top: 50%;
             transform: translateY(-50%);
             font-size: 0.75rem;
-            color: #94a3b8;
+            color: var(--sch-text-muted, #94a3b8);
             font-weight: 500;
             pointer-events: none;
         }
@@ -61,6 +61,6 @@ $accent-secondary: #764ba2;
 }
 
 .modal-footer {
-    border-top: 1px solid #f1f3f7;
+    border-top: 1px solid var(--sch-border, #f1f3f7);
     padding: 0.75rem 1.25rem;
 }

@@ -46,6 +46,7 @@ namespace Foundation.Scheduler.Services
         //
         private static readonly object _invoiceNumberLock = new object();
         private static readonly object _receiptNumberLock = new object();
+        private static readonly SemaphoreSlim _glNumberLock = new SemaphoreSlim(1, 1);
 
 
         public FinancialManagementService(
@@ -301,14 +302,22 @@ namespace Foundation.Scheduler.Services
         {
             if (amount <= 0) return; // Nothing to post
 
-            // Auto-increment journal entry number per tenant
-            int nextJournalNumber = 1;
-            var lastEntry = await _context.GeneralLedgerEntries
-                .Where(e => e.tenantGuid == tenantGuid)
-                .OrderByDescending(e => e.journalEntryNumber)
-                .Select(e => e.journalEntryNumber)
-                .FirstOrDefaultAsync(cancellationToken);
-            if (lastEntry > 0) nextJournalNumber = lastEntry + 1;
+            // Auto-increment journal entry number per tenant (locked to prevent duplicates)
+            int nextJournalNumber;
+            await _glNumberLock.WaitAsync(cancellationToken);
+            try
+            {
+                var lastEntry = await _context.GeneralLedgerEntries
+                    .Where(e => e.tenantGuid == tenantGuid)
+                    .OrderByDescending(e => e.journalEntryNumber)
+                    .Select(e => e.journalEntryNumber)
+                    .FirstOrDefaultAsync(cancellationToken);
+                nextJournalNumber = lastEntry > 0 ? lastEntry + 1 : 1;
+            }
+            finally
+            {
+                _glNumberLock.Release();
+            }
 
             var glEntry = new GeneralLedgerEntry
             {
@@ -380,13 +389,21 @@ namespace Foundation.Scheduler.Services
 
             if (originalEntry == null) return; // No GL entry to reverse
 
-            int nextJournalNumber = 1;
-            var lastEntry = await _context.GeneralLedgerEntries
-                .Where(e => e.tenantGuid == tenantGuid)
-                .OrderByDescending(e => e.journalEntryNumber)
-                .Select(e => e.journalEntryNumber)
-                .FirstOrDefaultAsync(cancellationToken);
-            if (lastEntry > 0) nextJournalNumber = lastEntry + 1;
+            int nextJournalNumber;
+            await _glNumberLock.WaitAsync(cancellationToken);
+            try
+            {
+                var lastEntry = await _context.GeneralLedgerEntries
+                    .Where(e => e.tenantGuid == tenantGuid)
+                    .OrderByDescending(e => e.journalEntryNumber)
+                    .Select(e => e.journalEntryNumber)
+                    .FirstOrDefaultAsync(cancellationToken);
+                nextJournalNumber = lastEntry > 0 ? lastEntry + 1 : 1;
+            }
+            finally
+            {
+                _glNumberLock.Release();
+            }
 
             var reversalEntry = new GeneralLedgerEntry
             {

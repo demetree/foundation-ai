@@ -59,7 +59,7 @@
     }
     td { padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
     .clickable-row { cursor: pointer; transition: background 0.15s; &:hover { background: rgba(255,255,255,0.03); } }
-    .notes-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #90a4ae; font-size: 0.8rem; }
+    .notes-cell { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sch-text-muted, #90a4ae); font-size: 0.8rem; }
 }
 
 // Status badges

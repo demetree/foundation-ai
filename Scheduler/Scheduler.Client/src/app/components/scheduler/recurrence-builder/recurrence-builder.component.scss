@@ -2,11 +2,11 @@
 // Recurrence Builder – Premium Styling
 // ============================================================================
 
-$accent: #667eea;
-$accent-light: rgba(102, 126, 234, 0.08);
-$accent-border: rgba(102, 126, 234, 0.2);
-$text-muted: #64748b;
-$border-light: rgba(0, 0, 0, 0.06);
+$accent: var(--sch-primary, #667eea);
+$accent-light: var(--sch-primary-light, rgba(102, 126, 234, 0.08));
+$accent-border: var(--sch-primary-border, rgba(102, 126, 234, 0.2));
+$text-muted: var(--sch-text-muted, #64748b);
+$border-light: var(--sch-border, rgba(0, 0, 0, 0.06));
 $radius-md: 0.5rem;
 
 .recurrence-builder {
@@ -35,8 +35,8 @@ $radius-md: 0.5rem;
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(0, 0, 0, 0.04);
-      color: #1e293b;
+      background: var(--sch-bg-hover, rgba(0, 0, 0, 0.04));
+      color: var(--sch-text-primary, #1e293b);
     }
 
     &.active {
@@ -75,7 +75,7 @@ $radius-md: 0.5rem;
     height: 38px;
     border-radius: 50%;
     border: 2px solid rgba(0, 0, 0, 0.1);
-    background: #fff;
+    background: var(--sch-bg-card, #fff);
     color: $text-muted;
     font-weight: 600;
     font-size: 0.8rem;
@@ -218,7 +218,7 @@ $radius-md: 0.5rem;
     border: 1px solid $accent-border;
     border-radius: $radius-md;
     font-size: 0.85rem;
-    color: #4c1d95;
+    color: var(--sch-primary-dark, #4c1d95);
     font-weight: 500;
     margin-top: 0.75rem;
   }
