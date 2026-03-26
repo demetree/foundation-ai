@@ -1,0 +1,276 @@
+<!-- Salesforce Admin Component -->
+
+<!-- Loading Spinner -->
+<div *ngIf="isLoadingConfig" class="text-center py-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading configuration...</span>
+  </div>
+  <p class="text-muted mt-2">Loading Salesforce configuration...</p>
+</div>
+
+<div *ngIf="!isLoadingConfig" class="row gy-4 gx-4">
+
+  <!-- ─── Connection Settings Card ─────────────── -->
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-light fw-semibold d-flex align-items-center">
+        <i class="fa-brands fa-salesforce me-2 text-primary fs-5"></i>
+        Connection Settings
+        <span *ngIf="isConfigured" class="badge bg-success ms-auto">Configured</span>
+        <span *ngIf="!isConfigured" class="badge bg-secondary ms-auto">Not Configured</span>
+      </div>
+      <div class="card-body">
+
+        <!-- Login URL -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-login-url">Login URL</label>
+          <input type="text" class="form-control" id="sf-login-url"
+            [(ngModel)]="loginUrl" placeholder="https://login.salesforce.com/services/oauth2/token">
+          <!--<small class="text-muted">Use https://test.salesforce.com for sandbox orgs</small>-->
+        </div>
+
+        <!-- Client ID -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-client-id">Connected App Client ID</label>
+          <input type="text" class="form-control" id="sf-client-id"
+            [(ngModel)]="sfClientId" placeholder="Enter your Connected App Client ID">
+        </div>
+
+        <!-- Client Secret -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-client-secret">Client Secret</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="sf-client-secret"
+              [(ngModel)]="sfClientSecret"
+              [placeholder]="hasClientSecret ? '••••••• (saved — leave blank to keep)' : 'Enter Client Secret'">
+            <span class="input-group-text" *ngIf="hasClientSecret">
+              <i class="fa-solid fa-check text-success"></i>
+            </span>
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-username">Salesforce Username</label>
+          <input type="text" class="form-control" id="sf-username"
+            [(ngModel)]="sfUsername" placeholder="user@company.com">
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-password">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="sf-password"
+              [(ngModel)]="sfPassword"
+              [placeholder]="hasPassword ? '••••••• (saved — leave blank to keep)' : 'Enter Password'">
+            <span class="input-group-text" *ngIf="hasPassword">
+              <i class="fa-solid fa-check text-success"></i>
+            </span>
+          </div>
+        </div>
+
+        <!-- Security Token -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-security-token">Security Token</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="sf-security-token"
+              [(ngModel)]="sfSecurityToken"
+              [placeholder]="hasSecurityToken ? '••••••• (saved — leave blank to keep)' : 'Enter Security Token'">
+            <span class="input-group-text" *ngIf="hasSecurityToken">
+              <i class="fa-solid fa-check text-success"></i>
+            </span>
+          </div>
+          <small class="text-muted">Found in Salesforce: Settings → Reset Security Token</small>
+        </div>
+
+        <!-- API Version -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-api-version">API Version</label>
+          <input type="text" class="form-control" id="sf-api-version"
+            [(ngModel)]="apiVersion" placeholder="v56.0">
+        </div>
+
+        <!-- Instance URL (read-only, if known) -->
+        <div class="mb-3" *ngIf="instanceUrl">
+          <label class="form-label fw-semibold">Instance URL</label>
+          <input type="text" class="form-control bg-light" [value]="instanceUrl" readonly>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-primary" (click)="saveConfig()" [disabled]="isSavingConfig" id="sf-save-config">
+            <span *ngIf="isSavingConfig" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSavingConfig" class="fa-solid fa-floppy-disk me-2"></i>
+            {{ isSavingConfig ? 'Saving...' : 'Save Configuration' }}
+          </button>
+
+          <button class="btn btn-outline-primary" (click)="testConnection()" [disabled]="isTestingConnection || !isConfigured" id="sf-test-connection">
+            <span *ngIf="isTestingConnection" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isTestingConnection" class="fa-solid fa-plug me-2"></i>
+            {{ isTestingConnection ? 'Testing...' : 'Test Connection' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ─── Sync Configuration & Actions ─────────────── -->
+  <div class="col-lg-6">
+
+    <!-- Sync Config Card -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-light fw-semibold d-flex align-items-center">
+        <i class="fa-solid fa-arrows-rotate me-2 text-primary"></i>
+        Sync Configuration
+      </div>
+      <div class="card-body">
+
+        <!-- Sync Enabled Toggle -->
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input" type="checkbox" id="sf-sync-enabled" [(ngModel)]="syncEnabled">
+          <label class="form-check-label fw-semibold" for="sf-sync-enabled">
+            Synchronization Enabled
+          </label>
+        </div>
+
+        <!-- Sync Direction -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-sync-direction">Sync Direction</label>
+          <select class="form-select" id="sf-sync-direction" [(ngModel)]="syncDirectionFlags">
+            <option *ngFor="let opt of syncDirectionOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </div>
+
+        <!-- Pull Interval -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold" for="sf-pull-interval">Pull Interval (minutes)</label>
+          <input type="number" class="form-control" id="sf-pull-interval"
+            [(ngModel)]="pullIntervalMinutes" min="1" max="1440">
+          <small class="text-muted">How often to automatically pull changes from Salesforce (1−1440 min)</small>
+        </div>
+
+        <!-- Last Pull Date -->
+        <div class="mb-0" *ngIf="lastPullDate">
+          <label class="form-label fw-semibold">Last Pull</label>
+          <p class="text-muted mb-0">{{ lastPullDate | date:'medium' }}</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Sync Actions Card -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-light fw-semibold d-flex align-items-center">
+        <i class="fa-solid fa-bolt me-2 text-warning"></i>
+        Manual Sync Actions
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-3">Trigger a manual pull from Salesforce. This is in addition to the automatic periodic pull.</p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <button class="btn btn-outline-primary" (click)="pullAll()" [disabled]="isPulling || !isConfigured" id="sf-pull-all">
+            <span *ngIf="isPulling" class="spinner-border spinner-border-sm me-1"></span>
+            <i *ngIf="!isPulling" class="fa-solid fa-download me-1"></i> Pull All
+          </button>
+          <button class="btn btn-outline-secondary" (click)="pullAccounts()" [disabled]="isPullingAccounts || !isConfigured" id="sf-pull-accounts">
+            <span *ngIf="isPullingAccounts" class="spinner-border spinner-border-sm me-1"></span>
+            Accounts
+          </button>
+          <button class="btn btn-outline-secondary" (click)="pullContacts()" [disabled]="isPullingContacts || !isConfigured" id="sf-pull-contacts">
+            <span *ngIf="isPullingContacts" class="spinner-border spinner-border-sm me-1"></span>
+            Contacts
+          </button>
+          <button class="btn btn-outline-secondary" (click)="pullEvents()" [disabled]="isPullingEvents || !isConfigured" id="sf-pull-events">
+            <span *ngIf="isPullingEvents" class="spinner-border spinner-border-sm me-1"></span>
+            Events
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- Queue Monitor Card -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-light fw-semibold d-flex align-items-center">
+        <i class="fa-solid fa-list-check me-2 text-info"></i>
+        Sync Queue Monitor
+        <button class="btn btn-sm btn-link ms-auto p-0" (click)="loadQueueStatus()" [disabled]="isLoadingQueue">
+          <i class="fa-solid fa-arrows-rotate" [class.fa-spin]="isLoadingQueue"></i>
+        </button>
+      </div>
+      <div class="card-body">
+
+        <div *ngIf="isLoadingQueue" class="text-center py-3">
+          <div class="spinner-border spinner-border-sm text-primary"></div>
+        </div>
+
+        <div *ngIf="!isLoadingQueue && queueStatus">
+          <!-- Status Badges -->
+          <div class="d-flex flex-wrap gap-3 mb-3">
+            <div class="queue-badge">
+              <span class="fw-bold fs-5">{{ queueStatus.pending }}</span>
+              <small class="text-muted d-block">Pending</small>
+            </div>
+            <div class="queue-badge">
+              <span class="fw-bold fs-5 text-primary">{{ queueStatus.inProgress }}</span>
+              <small class="text-muted d-block">In Progress</small>
+            </div>
+            <div class="queue-badge">
+              <span class="fw-bold fs-5 text-success">{{ queueStatus.completed }}</span>
+              <small class="text-muted d-block">Completed</small>
+            </div>
+            <div class="queue-badge">
+              <span class="fw-bold fs-5 text-danger">{{ queueStatus.failed }}</span>
+              <small class="text-muted d-block">Failed</small>
+            </div>
+            <div class="queue-badge" *ngIf="queueStatus.abandoned > 0">
+              <span class="fw-bold fs-5 text-secondary">{{ queueStatus.abandoned }}</span>
+              <small class="text-muted d-block">Abandoned</small>
+            </div>
+          </div>
+
+          <!-- Failed Items Table -->
+          <div *ngIf="queueStatus.recentFailed && queueStatus.recentFailed.length > 0">
+            <h6 class="text-danger mb-2">Recent Failures</h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover mb-2">
+                <thead>
+                  <tr>
+                    <th>Entity</th>
+                    <th>Operation</th>
+                    <th>Attempts</th>
+                    <th>Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of queueStatus.recentFailed">
+                    <td>{{ item.entityType }} #{{ item.entityId }}</td>
+                    <td><span class="badge bg-warning text-dark">{{ item.operationType }}</span></td>
+                    <td>{{ item.attemptCount }}/{{ item.maxAttempts }}</td>
+                    <td class="text-truncate" style="max-width: 200px;" [title]="item.errorMessage">
+                      {{ item.errorMessage }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Retry Button -->
+          <div class="d-flex align-items-center gap-2" *ngIf="queueStatus.failed > 0">
+            <button class="btn btn-sm btn-outline-danger" (click)="retryFailed()" [disabled]="isRetrying" id="sf-retry-failed">
+              <span *ngIf="isRetrying" class="spinner-border spinner-border-sm me-1"></span>
+              <i *ngIf="!isRetrying" class="fa-solid fa-rotate me-1"></i>
+              Retry Failed ({{ queueStatus.failed }})
+            </button>
+          </div>
+
+          <div *ngIf="queueStatus.total === 0" class="text-muted text-center py-2">
+            <i class="fa-solid fa-circle-check text-success me-1"></i> No items in queue
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

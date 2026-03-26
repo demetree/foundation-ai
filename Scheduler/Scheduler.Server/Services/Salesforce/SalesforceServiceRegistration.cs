@@ -9,6 +9,7 @@
 
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.DataProtection;
 using Scheduler.Salesforce.Api;
 using Scheduler.Salesforce.Auth;
 using Scheduler.Salesforce.Sync;
@@ -33,6 +34,10 @@ namespace Foundation.Scheduler.Services.Salesforce
         {
             // Auth — singleton (IMemoryCache is already registered by ASP.NET Core)
             services.AddSingleton<ITokenCacheService, TokenCacheService>();
+
+            // Data protection for credential encryption
+            services.AddDataProtection();
+            services.AddSingleton<SalesforceCredentialProtector>();
 
             // SaveChanges interceptor — auto-enqueues sync operations for Client/Contact/ScheduledEvent writes
             services.AddSingleton<SalesforceSyncInterceptor>();

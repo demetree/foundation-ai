@@ -335,7 +335,17 @@
       </ng-template>
     </li>
 
-    <!-- Tab 3: Foundation Administration (only for foundation admins) -->
+    <!-- Tab 3: Salesforce Integration (only for admins) -->
+    <li ngbNavItem="salesforce" *ngIf="userIsSchedulerAdministrator()">
+      <button ngbNavLink class="fw-semibold">
+        <i class="fa-brands fa-salesforce me-1"></i> Salesforce
+      </button>
+      <ng-template ngbNavContent>
+        <app-salesforce-admin></app-salesforce-admin>
+      </ng-template>
+    </li>
+
+    <!-- Tab 4: Foundation Administration (only for foundation admins) -->
     <li ngbNavItem="foundation" *ngIf="userIsFoundationAdministrator()">
       <button ngbNavLink class="fw-semibold">Foundation Admin</button>
       <ng-template ngbNavContent>

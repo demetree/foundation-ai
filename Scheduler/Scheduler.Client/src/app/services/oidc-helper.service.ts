@@ -73,9 +73,20 @@ export class OidcHelperService {
   }
 
   refreshLogin() {
+
+    //
+    // Bail out immediately if there is no refresh token available.
+    // This prevents a doomed call to /connect/token with an empty
+    // refresh_token, which would produce an OpenIddict "mandatory
+    // refresh_token parameter is missing" error.
+    //
+    if (!this.refreshToken) {
+      return throwError(() => ({ status: 401, error: { error: 'invalid_grant', error_description: 'No refresh token available' } }));
+    }
+
     const header = new HttpHeaders({ 'Content-Type': 'application/x-www-form-urlencoded' });
     const params = new HttpParams()
-      .append('refresh_token', this.refreshToken ?? '')
+      .append('refresh_token', this.refreshToken)
       .append('client_id', this.clientId)
       .append('grant_type', 'refresh_token');
 

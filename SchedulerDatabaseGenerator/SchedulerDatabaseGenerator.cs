@@ -1544,7 +1544,7 @@ Used to track engagement level and control visibility/assignment rules.";
             contactTable.AddString250Field("title", true);
             contactTable.AddDateField("birthDate", true, true);
             contactTable.AddString250Field("company", true).CreateIndex();
-            contactTable.AddString250Field("email", true).CreateIndex(true).comment = "emails must be unique to one contact.";
+            contactTable.AddString250Field("email", true).CreateIndex(false);       // email isn't forced unique because SF allows dupes.   We will make email + externalID unique instead
             contactTable.AddString50Field("phone", true).CreateIndex();
             contactTable.AddString50Field("mobile", true).CreateIndex();
             contactTable.AddString250Field("position", true).CreateIndex();
@@ -1570,6 +1570,11 @@ Used to track engagement level and control visibility/assignment rules.";
 
 
             contactTable.canBeFavourited = true;
+
+            //
+            // To allow multiple emails by external id
+            //
+            contactTable.AddUniqueConstraint("tenantGuid", "email", "externalId", true);
 
             contactTable.CreateIndexForFields(new List<string>() { "tenantGuid", "externalId" });
             contactTable.CreateIndexForFields(new List<string>() { "tenantGuid", "lastName", "firstName" });
@@ -1914,7 +1919,7 @@ Used to track engagement level and control visibility/assignment rules.";
             clientTable.customWriteAccessRole = SCHEDULER_CONFIG_WRITER_CUSTOM_ROLE_NAME;
             clientTable.AddIdField();
             clientTable.AddMultiTenantSupport();
-            clientTable.AddNameAndDescriptionFields(true, true, true);
+            clientTable.AddNameAndDescriptionFields(false, true, true);  // Name is not unique for SF integration purposes.   Will make name + external ID unique instead"
             clientTable.AddForeignKeyField(clientTypeTable, false, true);
             clientTable.AddForeignKeyField(currencyTable, false, true);
             clientTable.AddForeignKeyField(timeZoneTable, false, true);
@@ -1947,6 +1952,8 @@ Used to track engagement level and control visibility/assignment rules.";
             clientTable.AddVersionControl();
             clientTable.AddControlFields();
             clientTable.canBeFavourited = true;
+
+            clientTable.AddUniqueConstraint("tenantGuid", "name", "externalId", true);
 
 
             Database.Table clientContactTable = database.AddTable("ClientContact");
@@ -4766,7 +4773,7 @@ and the last pull timestamp for incremental data sync.";
             salesforceTenantLinkTable.AddIntField("pullIntervalMinutes", true, 5).AddScriptComments("How often the periodic pull service checks for new/updated SF records");
             salesforceTenantLinkTable.AddDateTimeField("lastPullDate", true).AddScriptComments("UTC timestamp of the last successful periodic pull");
 
-            salesforceTenantLinkTable.AddString250Field("loginUrl", true).AddScriptComments("Salesforce login endpoint (e.g. https://login.salesforce.com)");
+            salesforceTenantLinkTable.AddString250Field("loginUrl", true).AddScriptComments("Salesforce login endpoint (e.g. https://login.salesforce.com/services/oauth2/token)");
             salesforceTenantLinkTable.AddString250Field("sfClientId", true).AddScriptComments("Connected App Client ID (Consumer Key)");
             salesforceTenantLinkTable.AddString500Field("sfClientSecret", true).AddScriptComments("Connected App Client Secret (should be encrypted at rest)");
             salesforceTenantLinkTable.AddString250Field("sfUsername", true).AddScriptComments("Salesforce API user username");

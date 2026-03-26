@@ -93,6 +93,7 @@ import { PrivateRentalBookingComponent } from './components/scheduler/private-re
 import { CommitteeEventBookingComponent } from './components/scheduler/committee-event-booking/committee-event-booking.component';
 import { EventDocumentPanelComponent } from './components/scheduler/event-document-panel/event-document-panel.component';
 import { AdministrationComponent } from './components/administration/administration.component';
+import { SalesforceAdminComponent } from './components/salesforce-admin/salesforce-admin.component';
 import { AddTenantProfileComponent } from './components/add-tenant-profile/add-tenant-profile.component';
 import { RecurrenceBuilderComponent } from './components/scheduler/recurrence-builder/recurrence-builder.component';
 import { TemplateManagerComponent } from './components/scheduler/template-manager/template-manager.component';
@@ -1504,6 +1505,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     TemplateManagerComponent,
     TemplateAddEditModalComponent,
     AdministrationComponent,
+    SalesforceAdminComponent,
     AddTenantProfileComponent,
     RateSheetCustomListingComponent,
     RateSheetCustomTableComponent,

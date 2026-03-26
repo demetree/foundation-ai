@@ -98,11 +98,11 @@ export class AuthService {
 
 
   refreshLogin() {
-    return this.oidcHelperService.refreshLogin().pipe(map(resp => this.processLoginResponse(resp, this.rememberMe)),
-      catchError(() => {
+    return this.oidcHelperService.refreshLogin().pipe(
+      map(resp => this.processLoginResponse(resp, this.rememberMe)),
+      catchError((error) => {
         this.logout();
-        this.reLogin();
-        return throwError('Session expired, please log in again.');
+        return throwError(() => error ?? 'Session expired');
       })
     );
   }
@@ -248,7 +248,20 @@ export class AuthService {
       return;
     }
 
-    const millisecondsBeforeTokenRefresh = this.accessTokenExpiryDate.getTime() - Date.now() - 60000; // Refresh 1 minutes before expiration
+    const millisecondsBeforeTokenRefresh = this.accessTokenExpiryDate.getTime() - Date.now() - 60000; // Refresh 1 minute before expiration
+
+    //
+    // If the token has already expired (or expires within the next minute),
+    // clear stale credentials immediately instead of attempting a doomed refresh.
+    // This prevents a login death-loop when the server has been restarted
+    // and the old refresh token is no longer valid.
+    //
+    if (millisecondsBeforeTokenRefresh <= 0) {
+      console.warn("Access token already expired — clearing session and redirecting to login.");
+      this.logout();
+      return;
+    }
+
     console.log("Access token refresh in " + millisecondsBeforeTokenRefresh + " milliseconds");
     this.tokenRefreshTimer = setTimeout(() => {
       this.refreshLogin().subscribe(

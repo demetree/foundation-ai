@@ -3880,7 +3880,8 @@ CREATE TABLE [Scheduler].[Contact]
 	CONSTRAINT [FK_Contact_Salutation_salutationId] FOREIGN KEY ([salutationId]) REFERENCES [Scheduler].[Salutation] ([id]),		-- Foreign key to the Salutation table.
 	CONSTRAINT [FK_Contact_ContactMethod_contactMethodId] FOREIGN KEY ([contactMethodId]) REFERENCES [Scheduler].[ContactMethod] ([id]),		-- Foreign key to the ContactMethod table.
 	CONSTRAINT [FK_Contact_TimeZone_timeZoneId] FOREIGN KEY ([timeZoneId]) REFERENCES [Scheduler].[TimeZone] ([id]),		-- Foreign key to the TimeZone table.
-	CONSTRAINT [FK_Contact_Icon_iconId] FOREIGN KEY ([iconId]) REFERENCES [Scheduler].[Icon] ([id])		-- Foreign key to the Icon table.
+	CONSTRAINT [FK_Contact_Icon_iconId] FOREIGN KEY ([iconId]) REFERENCES [Scheduler].[Icon] ([id]),		-- Foreign key to the Icon table.
+	CONSTRAINT [UC_Contact_tenantGuid_email_externalId] UNIQUE ( [tenantGuid], [email], [externalId]) 		-- Uniqueness enforced on the Contact table's tenantGuid and email and externalId fields.
 )
 GO
 
@@ -3896,9 +3897,8 @@ GO
 CREATE INDEX [I_Contact_tenantGuid_company] ON [Scheduler].[Contact] ([tenantGuid], [company])
 GO
 
--- emails must be unique to one contact.
-CREATE UNIQUE INDEX [I_Contact_tenantGuid_email] ON [Scheduler].[Contact] ([tenantGuid], [email])
- WHERE [email] IS NOT NULL
+-- Index on the Contact table's tenantGuid,email fields.
+CREATE INDEX [I_Contact_tenantGuid_email] ON [Scheduler].[Contact] ([tenantGuid], [email])
 GO
 
 -- Index on the Contact table's tenantGuid,phone fields.
@@ -4637,7 +4637,7 @@ CREATE TABLE [Scheduler].[Client]
 	CONSTRAINT [FK_Client_Calendar_calendarId] FOREIGN KEY ([calendarId]) REFERENCES [Scheduler].[Calendar] ([id]),		-- Foreign key to the Calendar table.
 	CONSTRAINT [FK_Client_StateProvince_stateProvinceId] FOREIGN KEY ([stateProvinceId]) REFERENCES [Scheduler].[StateProvince] ([id]),		-- Foreign key to the StateProvince table.
 	CONSTRAINT [FK_Client_Country_countryId] FOREIGN KEY ([countryId]) REFERENCES [Scheduler].[Country] ([id]),		-- Foreign key to the Country table.
-	CONSTRAINT [UC_Client_tenantGuid_name] UNIQUE ( [tenantGuid], [name]) 		-- Uniqueness enforced on the Client table's tenantGuid and name fields.
+	CONSTRAINT [UC_Client_tenantGuid_name_externalId] UNIQUE ( [tenantGuid], [name], [externalId]) 		-- Uniqueness enforced on the Client table's tenantGuid and name and externalId fields.
 )
 GO
 
@@ -11320,7 +11320,7 @@ CREATE TABLE [Scheduler].[SalesforceTenantLink]
 	[syncDirectionFlags] NVARCHAR(100) NULL,		-- None, ImportOnly, PushOnly, or RealTime
 	[pullIntervalMinutes] INT NULL DEFAULT 5,		-- How often the periodic pull service checks for new/updated SF records
 	[lastPullDate] DATETIME2(7) NULL,		-- UTC timestamp of the last successful periodic pull
-	[loginUrl] NVARCHAR(250) NULL,		-- Salesforce login endpoint (e.g. https://login.salesforce.com)
+	[loginUrl] NVARCHAR(250) NULL,		-- Salesforce login endpoint (e.g. https://login.salesforce.com/services/oauth2/token)
 	[sfClientId] NVARCHAR(250) NULL,		-- Connected App Client ID (Consumer Key)
 	[sfClientSecret] NVARCHAR(500) NULL,		-- Connected App Client Secret (should be encrypted at rest)
 	[sfUsername] NVARCHAR(250) NULL,		-- Salesforce API user username

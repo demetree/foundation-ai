@@ -31,6 +31,7 @@ namespace Scheduler.Salesforce.Sync
         private readonly SalesforceClient _sfClient;
         private readonly SalesforceWebApiService _sfWebApiService;
         private readonly ITokenCacheService _tokenCacheService;
+        private readonly SalesforceCredentialProtector _credentialProtector;
         private readonly ILogger<SalesforceSyncService> _logger;
 
         public const string TRIGGER_PERIODIC_PULL = "PeriodicPull";
@@ -38,19 +39,59 @@ namespace Scheduler.Salesforce.Sync
         public const string TRIGGER_MANUAL = "Manual";
 
 
+        private readonly Dictionary<string, (int stateProvinceId, int countryId)> _cachedProvinceAndCountry = new Dictionary<string, (int, int)>();
+
+
+
         public SalesforceSyncService(
             SchedulerContext context,
             SalesforceClient sfClient,
             SalesforceWebApiService sfWebApiService,
             ITokenCacheService tokenCacheService,
+            SalesforceCredentialProtector credentialProtector,
             ILogger<SalesforceSyncService> logger)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _sfClient = sfClient ?? throw new ArgumentNullException(nameof(sfClient));
             _sfWebApiService = sfWebApiService ?? throw new ArgumentNullException(nameof(sfWebApiService));
             _tokenCacheService = tokenCacheService ?? throw new ArgumentNullException(nameof(tokenCacheService));
+            _credentialProtector = credentialProtector ?? throw new ArgumentNullException(nameof(credentialProtector));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
+
+
+        #region Connection Testing
+
+
+        /// <summary>
+        ///
+        /// Tests the Salesforce connection by attempting an OAuth login.
+        /// Returns the instance URL on success.
+        ///
+        /// </summary>
+        public async Task<(bool success, string instanceUrl, string error)> TestConnectionAsync(Guid tenantGuid, CancellationToken ct = default)
+        {
+            try
+            {
+                SalesforceConfig config = await LoadConfigForTenantAsync(tenantGuid, ct);
+                if (config == null)
+                {
+                    return (false, null, "No Salesforce integration configured for this tenant.");
+                }
+
+                var (accessToken, instanceUrl) = await _sfWebApiService.GetValidTokenAsync(config, ct);
+
+                return (true, instanceUrl, null);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Salesforce connection test failed for tenant {TenantGuid}", tenantGuid);
+                return (false, null, ex.Message);
+            }
+        }
+
+
+        #endregion
 
 
         #region Pull Methods (Salesforce -> Scheduler)
@@ -62,15 +103,15 @@ namespace Scheduler.Salesforce.Sync
         /// Uses externalId for match-or-create correlation.
         ///
         /// </summary>
-        public async Task<SalesforceSyncResult> PullAccountsAsync(SalesforceConfig config, DateTime? modifiedSince = null, CancellationToken ct = default)
+        public async Task<SalesforceSyncResult> PullAccountsAsync(SalesforceConfig config, DateTime? modifiedSince = null, CancellationToken cancellationToken = default)
         {
             SalesforceSyncResult result = new SalesforceSyncResult();
 
             try
             {
-                var (accessToken, instanceUrl) = await _sfWebApiService.GetValidTokenAsync(config, ct);
+                var (accessToken, instanceUrl) = await _sfWebApiService.GetValidTokenAsync(config, cancellationToken);
 
-                string rawJson = await _sfClient.GetAccountsAsync(accessToken, instanceUrl, config.ApiVersion, modifiedSince, ct);
+                string rawJson = await _sfClient.GetAccountsAsync(accessToken, instanceUrl, config.ApiVersion, modifiedSince, cancellationToken);
 
                 SalesforceQueryResponse<AccountRecord> response = JsonSerializer.Deserialize<SalesforceQueryResponse<AccountRecord>>(rawJson, new JsonSerializerOptions
                 {
@@ -86,11 +127,12 @@ namespace Scheduler.Salesforce.Sync
                 //
                 // Find the default client type for this tenant
                 //
-                int defaultClientTypeId = await _context.ClientTypes
-                    .Where(ct2 => ct2.active == true && ct2.deleted == false)
-                    .OrderBy(ct2 => ct2.id)
-                    .Select(ct2 => ct2.id)
-                    .FirstOrDefaultAsync(ct);
+                int defaultClientTypeId = await _context.ClientTypes.Where(ct2 => ct2.tenantGuid == config.TenantGuid && 
+                                                                                  ct2.active == true && 
+                                                                                  ct2.deleted == false)
+                                                                    .OrderBy(ct2 => ct2.id)
+                                                                    .Select(ct2 => ct2.id)
+                                                                    .FirstOrDefaultAsync(cancellationToken);
 
                 if (defaultClientTypeId == 0)
                 {
@@ -100,11 +142,56 @@ namespace Scheduler.Salesforce.Sync
                     return result;
                 }
 
+                TenantProfile tp = await _context.TenantProfiles.Where(tp => tp.tenantGuid == config.TenantGuid).FirstOrDefaultAsync(cancellationToken);
+
+                int defaultTimeZoneId = 0;
+
+                if (tp == null && tp.timeZoneId.HasValue == true)
+                {
+                    defaultTimeZoneId = tp.timeZoneId.Value;
+                }
+
+
+
+                if (defaultTimeZoneId == 0)
+                {
+                    defaultTimeZoneId = await _context.TimeZones.Where(tz2 => tz2.active == true && tz2.deleted == false)
+                                                                .OrderBy(tz2 => tz2.id)
+                                                                .Select(tz2 => tz2.id)
+                                                                .FirstOrDefaultAsync(cancellationToken);
+                }
+
+
+                if (defaultTimeZoneId == 0)
+                {
+                    _logger.LogError("PullAccountsAsync: No active time zone found for tenant {TenantGuid}", config.TenantGuid);
+                    result.Errors.Add("No active time zone found.");
+                    result.ErrorCount++;
+                    return result;
+                }
+
+
+                int defaultCurrencyId = await _context.Currencies.Where(c2 => c2.active == true && c2.deleted == false)
+                                                                 .OrderBy(c2 => c2.id)
+                                                                 .Select(c2 => c2.id)
+                                                                 .FirstOrDefaultAsync(cancellationToken);
+                 
+                if (defaultCurrencyId == 0)
+                {
+                    _logger.LogError("PullAccountsAsync: No active Currency found for tenant {TenantGuid}", config.TenantGuid);
+                    result.Errors.Add("No active currency found.");
+                    result.ErrorCount++;
+                    return result;
+                }
+
+
+
+
                 foreach (AccountRecord record in response.records)
                 {
                     try
                     {
-                        await UpsertClientFromAccountAsync(record, config.TenantGuid, defaultClientTypeId, ct);
+                        await UpsertClientFromAccountAsync(record, config.TenantGuid, defaultClientTypeId, defaultTimeZoneId, defaultCurrencyId, cancellationToken);
 
                         if (record.IsDeleted == true)
                         {
@@ -166,7 +253,7 @@ namespace Scheduler.Salesforce.Sync
                 }
 
                 //
-                // Find the default contact type for this tenant
+                // Find the default contact type - this table is not multi tenanted
                 //
                 int defaultContactTypeId = await _context.ContactTypes
                     .Where(ct2 => ct2.active == true && ct2.deleted == false)
@@ -632,7 +719,12 @@ namespace Scheduler.Salesforce.Sync
         #region Private Upsert Helpers
 
 
-        private async Task UpsertClientFromAccountAsync(AccountRecord record, Guid tenantGuid, int defaultClientTypeId, CancellationToken ct)
+        private async Task UpsertClientFromAccountAsync(AccountRecord record, 
+                                                        Guid tenantGuid, 
+                                                        int defaultClientTypeId, 
+                                                        int defaultTimeZoneId,
+                                                        int defaultCurrencyId,
+                                                        CancellationToken ct)
         {
             Client existingClient = await _context.Clients
                 .FirstOrDefaultAsync(c => c.externalId == record.Id && c.tenantGuid == tenantGuid, ct);
@@ -656,18 +748,27 @@ namespace Scheduler.Salesforce.Sync
                 if (existingClient.addressLine1 != record.BillingStreet && string.IsNullOrEmpty(record.BillingStreet) == false)
                 {
                     existingClient.addressLine1 = record.BillingStreet;
+
+                    await SetClientProvinceAndCountry(existingClient, record.BillingState, record.BillingCountry, ct);
+
                     hasChange = true;
                 }
 
                 if (existingClient.city != record.BillingCity && string.IsNullOrEmpty(record.BillingCity) == false)
                 {
                     existingClient.city = record.BillingCity;
+
+                    await SetClientProvinceAndCountry(existingClient, record.BillingState, record.BillingCountry, ct);
+
                     hasChange = true;
                 }
 
                 if (existingClient.postalCode != record.BillingPostalCode && string.IsNullOrEmpty(record.BillingPostalCode) == false)
                 {
                     existingClient.postalCode = record.BillingPostalCode;
+
+                    await SetClientProvinceAndCountry(existingClient, record.BillingState, record.BillingCountry, ct);
+
                     hasChange = true;
                 }
 
@@ -684,6 +785,8 @@ namespace Scheduler.Salesforce.Sync
                 {
                     id = 0,
                     tenantGuid = tenantGuid,
+                    currencyId = defaultCurrencyId,
+                    timeZoneId = defaultTimeZoneId,
                     name = record.Name ?? "",
                     phone = record.Phone ?? "",
                     addressLine1 = record.BillingStreet ?? "",
@@ -697,6 +800,8 @@ namespace Scheduler.Salesforce.Sync
                     deleted = false
                 };
 
+                await SetClientProvinceAndCountry(newClient, record.BillingState, record.BillingCountry, ct);
+
                 _context.Clients.Add(newClient);
                 await _context.SaveChangesAsync(ct);
 
@@ -704,6 +809,86 @@ namespace Scheduler.Salesforce.Sync
             }
         }
 
+
+        private async Task SetClientProvinceAndCountry(Client client, 
+                                                       string stateName, 
+                                                       string countryName, 
+                                                       CancellationToken cancellationToken)
+        {
+            if (client == null)
+            { 
+                throw new ArgumentException(nameof(client)); 
+            }
+
+            string cacheKey = client.tenantGuid.ToString() + stateName + countryName;
+
+
+            if (_cachedProvinceAndCountry.TryGetValue(cacheKey, out var data))
+            {
+                client.stateProvinceId = data.stateProvinceId;
+                client.countryId = data.countryId;
+            }
+
+
+            int countryId = 0;
+            int stateProvinceId = 0;
+
+
+            Country country = await (from c in _context.Countries 
+                                     where (c.name == countryName || c.abbreviation == countryName) && 
+                                     c.active == true && 
+                                     c.deleted == false 
+                                     select c).FirstOrDefaultAsync(cancellationToken);
+
+            if (country != null)
+            {
+                StateProvince state = await (from sp in _context.StateProvinces
+                                             where
+                                             (sp.name == stateName || sp.abbreviation == stateName) &&
+                                             sp.active == true &&
+                                             sp.deleted == false
+                                             select sp).FirstOrDefaultAsync();
+
+                if (state != null)
+                {
+                    countryId = country.id;
+                    stateProvinceId = state.id;
+                }
+            }
+
+            if (countryId == 0)
+            { 
+                TenantProfile tp = await _context.TenantProfiles.Where(tp => tp.tenantGuid == client.tenantGuid).FirstOrDefaultAsync(cancellationToken);
+
+
+                if (tp != null)
+                {
+                    countryId = tp.countryId ?? 0;
+                    stateProvinceId = tp.stateProvinceId ?? 0;
+                }
+            }
+
+            if (countryId == 0)
+            {
+                countryId = await _context.Countries.OrderBy(c => c.id).Take(1).Select(c => c.id).FirstOrDefaultAsync();
+
+                stateProvinceId = await _context.StateProvinces.Where(sp => sp.countryId == countryId).OrderBy(sp => sp.id).Select(sp => sp.id).FirstOrDefaultAsync(cancellationToken);
+            }
+
+
+            if (countryId != 0 &&
+                stateProvinceId != 0)
+            {
+                _cachedProvinceAndCountry.TryAdd(cacheKey, (stateProvinceId, countryId));
+
+                client.countryId = countryId;
+                client.stateProvinceId = stateProvinceId;
+            }
+            else
+            {
+                throw new Exception("Unable to find a country or a state.");
+            }
+        }
 
         private async Task UpsertContactFromRecordAsync(ContactRecord record, Guid tenantGuid, int defaultContactTypeId, CancellationToken ct)
         {
@@ -968,7 +1153,8 @@ namespace Scheduler.Salesforce.Sync
         {
             SalesforceTenantLink link = await _context.SalesforceTenantLinks
                 .AsNoTracking()
-                .FirstOrDefaultAsync(l => l.tenantGuid == tenantGuid && l.active == true && l.deleted == false && l.syncEnabled == true, ct);
+                //.FirstOrDefaultAsync(l => l.tenantGuid == tenantGuid && l.active == true && l.deleted == false && l.syncEnabled == true, cancellationToken);
+                .FirstOrDefaultAsync(l => l.tenantGuid == tenantGuid && l.active == true && l.deleted == false, ct);
 
             if (link == null)
             {
@@ -981,10 +1167,10 @@ namespace Scheduler.Salesforce.Sync
                 TenantGuid = tenantGuid,
                 LoginUrl = link.loginUrl,
                 ClientId = link.sfClientId,
-                ClientSecret = link.sfClientSecret,
+                ClientSecret = _credentialProtector.Decrypt(link.sfClientSecret),
                 Username = link.sfUsername,
-                Password = link.sfPassword,
-                SecurityToken = link.sfSecurityToken,
+                Password = _credentialProtector.Decrypt(link.sfPassword),
+                SecurityToken = _credentialProtector.Decrypt(link.sfSecurityToken),
                 ApiVersion = link.apiVersion ?? "v56.0",
                 SyncDirectionFlags = link.syncDirectionFlags ?? SyncDirection.None,
                 PullIntervalMinutes = link.pullIntervalMinutes ?? 5

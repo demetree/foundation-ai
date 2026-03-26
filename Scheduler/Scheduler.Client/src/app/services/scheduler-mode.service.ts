@@ -2,6 +2,7 @@ import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import { UserSettingsService } from './user-settings.service';
+import { AuthService } from './auth.service';
 
 
 //
@@ -63,12 +64,29 @@ export class SchedulerModeService implements OnDestroy {
     private _initialized = false;
 
 
-    constructor(private userSettingsService: UserSettingsService) {
+    constructor(
+        private userSettingsService: UserSettingsService,
+        private authService: AuthService
+    ) {
 
         //
-        // Load the global mode from persisted user settings
+        // Only load from the server when the user is already logged in.
+        // If not logged in yet, we keep the default ('simple') and load
+        // after the next successful login event.
         //
-        this.loadGlobalMode();
+        if (this.authService.isLoggedIn) {
+            this.loadGlobalMode();
+        }
+
+        this.authService.getLoginStatusEvent()
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(isLoggedIn => {
+                if (isLoggedIn) {
+                    this.loadGlobalMode();
+                } else {
+                    this._globalMode$.next(DEFAULT_MODE);
+                }
+            });
     }
 
 

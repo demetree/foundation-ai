@@ -12,6 +12,7 @@
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.*" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.*" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.*" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="10.0.*" />
     <ProjectReference Include="..\SchedulerDatabase\SchedulerDatabase.csproj" />
   </ItemGroup>
 

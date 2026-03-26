@@ -284,7 +284,7 @@ namespace Foundation.Scheduler.Database
 				timeStamp = salesforceTenantLinkChangeHistory.timeStamp,
 				userId = salesforceTenantLinkChangeHistory.userId,
 				data = salesforceTenantLinkChangeHistory.data,
-				salesforceTenantLink = SalesforceTenantLink.CreateMinimalAnonymous(salesforceTenantLinkChangeHistory.salesforceTenantLink)
+				salesforceTenantLink = SalesforceTenantLink.CreateMinimalAnonymous(salesforceTenantLinkChangeHistory.salesforceTenantLink),
 			 };
 		}
 

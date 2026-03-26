@@ -3119,7 +3119,8 @@ CREATE TABLE `Contact`(
 	FOREIGN KEY (`salutationId`) REFERENCES `Salutation`(`id`),		-- Foreign key to the Salutation table.
 	FOREIGN KEY (`contactMethodId`) REFERENCES `ContactMethod`(`id`),		-- Foreign key to the ContactMethod table.
 	FOREIGN KEY (`timeZoneId`) REFERENCES `TimeZone`(`id`),		-- Foreign key to the TimeZone table.
-	FOREIGN KEY (`iconId`) REFERENCES `Icon`(`id`)		-- Foreign key to the Icon table.
+	FOREIGN KEY (`iconId`) REFERENCES `Icon`(`id`),		-- Foreign key to the Icon table.
+	UNIQUE `UC_Contact_tenantGuid_email_externalId_Unique`( `tenantGuid`, `email`, `externalId` ) 		-- Uniqueness enforced on the Contact table's tenantGuid and email and externalId fields.
 );
 -- Index on the Contact table's tenantGuid field.
 CREATE INDEX `I_Contact_tenantGuid` ON `Contact` (`tenantGuid`);
@@ -3130,9 +3131,8 @@ CREATE INDEX `I_Contact_tenantGuid_contactTypeId` ON `Contact` (`tenantGuid`, `c
 -- Index on the Contact table's tenantGuid,company fields.
 CREATE INDEX `I_Contact_tenantGuid_company` ON `Contact` (`tenantGuid`, `company`);
 
--- emails must be unique to one contact.
-CREATE UNIQUE INDEX `I_Contact_tenantGuid_email` ON `Contact` (`tenantGuid`, `email`);
- WHERE `email` IS NOT NULL
+-- Index on the Contact table's tenantGuid,email fields.
+CREATE INDEX `I_Contact_tenantGuid_email` ON `Contact` (`tenantGuid`, `email`);
 
 -- Index on the Contact table's tenantGuid,phone fields.
 CREATE INDEX `I_Contact_tenantGuid_phone` ON `Contact` (`tenantGuid`, `phone`);
@@ -3703,7 +3703,7 @@ CREATE TABLE `Client`(
 	FOREIGN KEY (`calendarId`) REFERENCES `Calendar`(`id`),		-- Foreign key to the Calendar table.
 	FOREIGN KEY (`stateProvinceId`) REFERENCES `StateProvince`(`id`),		-- Foreign key to the StateProvince table.
 	FOREIGN KEY (`countryId`) REFERENCES `Country`(`id`),		-- Foreign key to the Country table.
-	UNIQUE `UC_Client_tenantGuid_name_Unique`( `tenantGuid`, `name` ) 		-- Uniqueness enforced on the Client table's tenantGuid and name fields.
+	UNIQUE `UC_Client_tenantGuid_name_externalId_Unique`( `tenantGuid`, `name`, `externalId` ) 		-- Uniqueness enforced on the Client table's tenantGuid and name and externalId fields.
 );
 -- Index on the Client table's tenantGuid field.
 CREATE INDEX `I_Client_tenantGuid` ON `Client` (`tenantGuid`);
@@ -8972,7 +8972,7 @@ CREATE TABLE `SalesforceTenantLink`(
 	`syncDirectionFlags` VARCHAR(100) NULL,		-- None, ImportOnly, PushOnly, or RealTime
 	`pullIntervalMinutes` INT NULL DEFAULT 5,		-- How often the periodic pull service checks for new/updated SF records
 	`lastPullDate` DATETIME NULL,		-- UTC timestamp of the last successful periodic pull
-	`loginUrl` VARCHAR(250) NULL,		-- Salesforce login endpoint (e.g. https://login.salesforce.com)
+	`loginUrl` VARCHAR(250) NULL,		-- Salesforce login endpoint (e.g. https://login.salesforce.com/services/oauth2/token)
 	`sfClientId` VARCHAR(250) NULL,		-- Connected App Client ID (Consumer Key)
 	`sfClientSecret` VARCHAR(500) NULL,		-- Connected App Client Secret (should be encrypted at rest)
 	`sfUsername` VARCHAR(250) NULL,		-- Salesforce API user username
