@@ -535,6 +535,9 @@ import { ResourceQualificationChangeHistoryService } from './scheduler-data-serv
 import { ResourceShiftService } from './scheduler-data-services/resource-shift.service';
 import { ResourceShiftChangeHistoryService } from './scheduler-data-services/resource-shift-change-history.service';
 import { ResourceTypeService } from './scheduler-data-services/resource-type.service';
+import { SalesforceSyncQueueService } from './scheduler-data-services/salesforce-sync-queue.service';
+import { SalesforceTenantLinkService } from './scheduler-data-services/salesforce-tenant-link.service';
+import { SalesforceTenantLinkChangeHistoryService } from './scheduler-data-services/salesforce-tenant-link-change-history.service';
 import { SalutationService } from './scheduler-data-services/salutation.service';
 import { ScheduledEventService } from './scheduler-data-services/scheduled-event.service';
 import { ScheduledEventChangeHistoryService } from './scheduler-data-services/scheduled-event-change-history.service';
@@ -1257,6 +1260,18 @@ import { ResourceTypeListingComponent } from './scheduler-data-components/resour
 import { ResourceTypeAddEditComponent } from './scheduler-data-components/resource-type/resource-type-add-edit/resource-type-add-edit.component';
 import { ResourceTypeDetailComponent } from './scheduler-data-components/resource-type/resource-type-detail/resource-type-detail.component';
 import { ResourceTypeTableComponent } from './scheduler-data-components/resource-type/resource-type-table/resource-type-table.component';
+import { SalesforceSyncQueueListingComponent } from './scheduler-data-components/salesforce-sync-queue/salesforce-sync-queue-listing/salesforce-sync-queue-listing.component';
+import { SalesforceSyncQueueAddEditComponent } from './scheduler-data-components/salesforce-sync-queue/salesforce-sync-queue-add-edit/salesforce-sync-queue-add-edit.component';
+import { SalesforceSyncQueueDetailComponent } from './scheduler-data-components/salesforce-sync-queue/salesforce-sync-queue-detail/salesforce-sync-queue-detail.component';
+import { SalesforceSyncQueueTableComponent } from './scheduler-data-components/salesforce-sync-queue/salesforce-sync-queue-table/salesforce-sync-queue-table.component';
+import { SalesforceTenantLinkListingComponent } from './scheduler-data-components/salesforce-tenant-link/salesforce-tenant-link-listing/salesforce-tenant-link-listing.component';
+import { SalesforceTenantLinkAddEditComponent } from './scheduler-data-components/salesforce-tenant-link/salesforce-tenant-link-add-edit/salesforce-tenant-link-add-edit.component';
+import { SalesforceTenantLinkDetailComponent } from './scheduler-data-components/salesforce-tenant-link/salesforce-tenant-link-detail/salesforce-tenant-link-detail.component';
+import { SalesforceTenantLinkTableComponent } from './scheduler-data-components/salesforce-tenant-link/salesforce-tenant-link-table/salesforce-tenant-link-table.component';
+import { SalesforceTenantLinkChangeHistoryListingComponent } from './scheduler-data-components/salesforce-tenant-link-change-history/salesforce-tenant-link-change-history-listing/salesforce-tenant-link-change-history-listing.component';
+import { SalesforceTenantLinkChangeHistoryAddEditComponent } from './scheduler-data-components/salesforce-tenant-link-change-history/salesforce-tenant-link-change-history-add-edit/salesforce-tenant-link-change-history-add-edit.component';
+import { SalesforceTenantLinkChangeHistoryDetailComponent } from './scheduler-data-components/salesforce-tenant-link-change-history/salesforce-tenant-link-change-history-detail/salesforce-tenant-link-change-history-detail.component';
+import { SalesforceTenantLinkChangeHistoryTableComponent } from './scheduler-data-components/salesforce-tenant-link-change-history/salesforce-tenant-link-change-history-table/salesforce-tenant-link-change-history-table.component';
 import { SalutationListingComponent } from './scheduler-data-components/salutation/salutation-listing/salutation-listing.component';
 import { SalutationAddEditComponent } from './scheduler-data-components/salutation/salutation-add-edit/salutation-add-edit.component';
 import { SalutationDetailComponent } from './scheduler-data-components/salutation/salutation-detail/salutation-detail.component';
@@ -2396,6 +2411,18 @@ ResourceTypeListingComponent,
 ResourceTypeAddEditComponent,
 ResourceTypeDetailComponent,
 ResourceTypeTableComponent,
+SalesforceSyncQueueListingComponent,
+SalesforceSyncQueueAddEditComponent,
+SalesforceSyncQueueDetailComponent,
+SalesforceSyncQueueTableComponent,
+SalesforceTenantLinkListingComponent,
+SalesforceTenantLinkAddEditComponent,
+SalesforceTenantLinkDetailComponent,
+SalesforceTenantLinkTableComponent,
+SalesforceTenantLinkChangeHistoryListingComponent,
+SalesforceTenantLinkChangeHistoryAddEditComponent,
+SalesforceTenantLinkChangeHistoryDetailComponent,
+SalesforceTenantLinkChangeHistoryTableComponent,
 SalutationListingComponent,
 SalutationAddEditComponent,
 SalutationDetailComponent,
@@ -2840,6 +2867,9 @@ ResourceQualificationChangeHistoryService,
 ResourceShiftService,
 ResourceShiftChangeHistoryService,
 ResourceTypeService,
+SalesforceSyncQueueService,
+SalesforceTenantLinkService,
+SalesforceTenantLinkChangeHistoryService,
 SalutationService,
 ScheduledEventService,
 ScheduledEventChangeHistoryService,

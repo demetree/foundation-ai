@@ -1,0 +1,98 @@
+<div class="add-salesforce-tenant-link" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-salesforce-tenant-link me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Salesforce Tenant Link" 
+        *ngIf="userIsSchedulerSalesforceTenantLinkWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #salesforceTenantLinkModal let-modal>
+   <div class="modal-header salesforce-tenant-link-modal-header">
+      <h5 class="modal-title mb-0" id="salesforceTenantLinkModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Salesforce Tenant Link' : 'Add Salesforce Tenant Link' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body salesforce-tenant-link-modal-body">
+      <form [formGroup]="salesforceTenantLinkForm" (ngSubmit)="submitForm()">
+            <div class="form-check my-2" *ngIf="!isFieldHidden('syncEnabled')">
+                <input type="checkbox" id="SalesforceTenantLink-syncEnabled" formControlName="syncEnabled" class="form-check-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" />
+                <label for="SalesforceTenantLink-syncEnabled" class="form-check-label" id="label-SalesforceTenantLink-syncEnabled"><span class="text-danger">*</span>Sync Enabled</label>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('syncDirectionFlags')">
+                <label for="SalesforceTenantLink-syncDirectionFlags" id="label-SalesforceTenantLink-syncDirectionFlags">Sync Direction Flags</label>
+                <input type="text" id="SalesforceTenantLink-syncDirectionFlags" formControlName="syncDirectionFlags" placeholder="Enter Sync Direction Flags" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-syncDirectionFlags" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('pullIntervalMinutes')">
+                <label for="SalesforceTenantLink-pullIntervalMinutes" id="label-SalesforceTenantLink-pullIntervalMinutes">Pull Interval Minutes</label>
+                <input type="number" id="SalesforceTenantLink-pullIntervalMinutes" formControlName="pullIntervalMinutes" placeholder="Enter Pull Interval Minutes" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-pullIntervalMinutes" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastPullDate')">
+                <label for="SalesforceTenantLink-lastPullDate" id="label-SalesforceTenantLink-lastPullDate">Last Pull Date</label>
+                <input type="datetime-local" id="SalesforceTenantLink-lastPullDate" formControlName="lastPullDate" placeholder="Enter Last Pull Date" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-lastPullDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('loginUrl')">
+                <label for="SalesforceTenantLink-loginUrl" id="label-SalesforceTenantLink-loginUrl">Login Url</label>
+                <input type="text" id="SalesforceTenantLink-loginUrl" formControlName="loginUrl" placeholder="Enter Login Url" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-loginUrl" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sfClientId')">
+                <label for="SalesforceTenantLink-sfClientId" id="label-SalesforceTenantLink-sfClientId">Sf Client Id</label>
+                <input type="text" id="SalesforceTenantLink-sfClientId" formControlName="sfClientId" placeholder="Enter Sf Client Id" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-sfClientId" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sfClientSecret')">
+                <label for="SalesforceTenantLink-sfClientSecret" id="label-SalesforceTenantLink-sfClientSecret">Sf Client Secret</label>
+                <textarea id="SalesforceTenantLink-sfClientSecret" formControlName="sfClientSecret" placeholder="Enter Sf Client Secret" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sfUsername')">
+                <label for="SalesforceTenantLink-sfUsername" id="label-SalesforceTenantLink-sfUsername">Sf Username</label>
+                <input type="text" id="SalesforceTenantLink-sfUsername" formControlName="sfUsername" placeholder="Enter Sf Username" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-sfUsername" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sfPassword')">
+                <label for="SalesforceTenantLink-sfPassword" id="label-SalesforceTenantLink-sfPassword">Sf Password</label>
+                <textarea id="SalesforceTenantLink-sfPassword" formControlName="sfPassword" placeholder="Enter Sf Password" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('sfSecurityToken')">
+                <label for="SalesforceTenantLink-sfSecurityToken" id="label-SalesforceTenantLink-sfSecurityToken">Sf Security Token</label>
+                <input type="text" id="SalesforceTenantLink-sfSecurityToken" formControlName="sfSecurityToken" placeholder="Enter Sf Security Token" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-sfSecurityToken" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('instanceUrl')">
+                <label for="SalesforceTenantLink-instanceUrl" id="label-SalesforceTenantLink-instanceUrl">Instance Url</label>
+                <input type="text" id="SalesforceTenantLink-instanceUrl" formControlName="instanceUrl" placeholder="Enter Instance Url" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-instanceUrl" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('apiVersion')">
+                <label for="SalesforceTenantLink-apiVersion" id="label-SalesforceTenantLink-apiVersion">Api Version</label>
+                <input type="text" id="SalesforceTenantLink-apiVersion" formControlName="apiVersion" placeholder="Enter Api Version" class="form-control salesforce-tenant-link-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" aria-labelledby="label-apiVersion" />
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="SalesforceTenantLink-versionNumber" id="label-SalesforceTenantLink-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="SalesforceTenantLink-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control salesforce-tenant-link-input" />
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SalesforceTenantLink-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" />
+                <label for="SalesforceTenantLink-active" class="form-check-label" id="label-SalesforceTenantLink-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SalesforceTenantLink-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSalesforceTenantLinkWriter()" />
+                <label for="SalesforceTenantLink-deleted" class="form-check-label" id="label-SalesforceTenantLink-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer salesforce-tenant-link-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Salesforce Tenant Link changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !salesforceTenantLinkForm.valid || salesforceTenantLinkForm.pristine  || userIsSchedulerSalesforceTenantLinkWriter() == false " ngbTooltip="Save the Salesforce Tenant Link changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Salesforce Tenant Link' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

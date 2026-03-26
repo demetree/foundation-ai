@@ -12,15 +12,15 @@
     <span class="fw-bold">{{ tenantName }}</span>
   </div>
 
-  <!-- Right-side actions -->
-  <div class="d-flex align-items-center">
+  <!-- Right-side actions (hidden entirely when not logged in) -->
+  <div *ngIf="isUserLoggedIn" class="d-flex align-items-center">
     <!-- Mobile menu toggle (only on small screens) -->
-    <button *ngIf="isUserLoggedIn" class="btn btn-outline-light d-md-none me-2" (click)="toggleMobileMenu()"
+    <button class="btn btn-outline-light d-md-none me-2" (click)="toggleMobileMenu()"
       [attr.aria-expanded]="isMobileMenuOpen" aria-label="Open menu">
       <i class="fa fa-bars"></i>
     </button>
     <!-- Messages icon (desktop/tablet) -->
-    <div *ngIf="isUserLoggedIn && (isMessagingEnabled$ | async)" class="header-icon-wrapper d-none d-md-block" id="header-messages-btn">
+    <div *ngIf="isMessagingEnabled$ | async" class="header-icon-wrapper d-none d-md-block" id="header-messages-btn">
       <button class="btn header-icon-btn"
               (click)="onToggleMessaging()"
               title="Messages">
@@ -32,7 +32,7 @@
     </div>
 
     <!-- Notification bell (desktop/tablet) -->
-    <div *ngIf="isUserLoggedIn && (isMessagingEnabled$ | async)" class="header-icon-wrapper d-none d-md-block" id="header-notifications-btn">
+    <div *ngIf="isMessagingEnabled$ | async" class="header-icon-wrapper d-none d-md-block" id="header-notifications-btn">
       <button class="btn header-icon-btn header-notification-bell"
               (click)="toggleNotificationDropdown($event)"
               [class.active]="showNotificationDropdown"
@@ -84,7 +84,7 @@
     </div>
 
     <!-- Profile dropdown (desktop/tablet) -->
-    <div *ngIf="isUserLoggedIn" ngbDropdown placement="bottom-end" [autoClose]="'outside'" #profileMenu="ngbDropdown"
+    <div ngbDropdown placement="bottom-end" [autoClose]="'outside'" #profileMenu="ngbDropdown"
       class="ms-2 position-relative d-none d-md-block">
       <button class="btn btn-dark d-flex align-items-center profile-btn" id="profileDropdown" ngbDropdownToggle>
         <span class="avatar me-2">{{ userInitials }}</span>

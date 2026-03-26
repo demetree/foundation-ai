@@ -684,6 +684,18 @@
          "ObjectType": 0
       },
       {
+         "Name": "[Scheduler].[SalesforceSyncQueue]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SalesforceTenantLink]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[Scheduler].[SalesforceTenantLinkChangeHistory]",
+         "ObjectType": 0
+      },
+      {
          "Name": "[Scheduler].[Salutation]",
          "ObjectType": 0
       },

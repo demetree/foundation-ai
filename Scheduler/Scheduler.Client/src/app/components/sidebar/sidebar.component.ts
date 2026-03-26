@@ -1,8 +1,8 @@
-import { Component, HostListener, Input, OnDestroy, AfterViewInit, ViewChildren, QueryList, ViewChild, EventEmitter, Output } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnChanges, SimpleChanges, AfterViewInit, ViewChildren, QueryList, ViewChild, EventEmitter, Output } from '@angular/core';
 import { MessagingComponent } from '../messaging/messaging.component';
 import { Router, NavigationEnd } from '@angular/router';
 import { NgbTooltip } from '@ng-bootstrap/ng-bootstrap';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { SchedulerHelperService } from '../../services/scheduler-helper.service';
@@ -15,7 +15,7 @@ import { TerminologyService } from '../../services/terminology.service';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent implements OnDestroy, AfterViewInit {
+export class SidebarComponent implements OnDestroy, OnChanges, AfterViewInit {
   @Input() isUserLoggedIn!: boolean;
   @Output() helpClicked = new EventEmitter<void>();
   @ViewChildren(NgbTooltip) tips!: QueryList<NgbTooltip>;
@@ -29,10 +29,11 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
   public isSimpleMode = true;
   private navSub?: Subscription;
   private modeSub?: Subscription;
+  private _loginInitialized = false;
 
 
   // To get the count of offices to allow the offices button to be invisible if there are no offices (It can always be found under Administration)
-  public officeCount$ = this.schedulerHelperService.ActiveOfficeCount$;
+  public officeCount$: Observable<number> = of(0);
 
 
   constructor(
@@ -54,14 +55,13 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
       });
 
     this.isUserFoundationAdmin = this.authService?.isFoundationAdmin ?? false;
+  }
 
-    //
-    // Subscribe to the mode service for the sidebar component
-    //
-    this.modeSub = this.schedulerModeService.isSimpleMode('sidebar')
-      .subscribe(simple => {
-        this.isSimpleMode = simple;
-      });
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isUserLoggedIn'] && this.isUserLoggedIn && !this._loginInitialized) {
+      this._loginInitialized = true;
+      this.initLoggedInSubscriptions();
+    }
   }
 
   ngAfterViewInit(): void {
@@ -96,12 +96,33 @@ export class SidebarComponent implements OnDestroy, AfterViewInit {
 
 
   // AI-Developed — Feature toggle visibility properties added with AI assistance.
-  public isVolunteerEnabled$ = this.featureConfigService.isVolunteerEnabled$;
-  public isFundraisingEnabled$ = this.featureConfigService.isFundraisingEnabled$;
-  public isFinancialEnabled$ = this.featureConfigService.isFinancialEnabled$;
-  public isCrewEnabled$ = this.featureConfigService.isCrewEnabled$;
-  public isMessagingEnabled$ = this.featureConfigService.isMessagingEnabled$;
-  public isDispatchEnabled$ = this.featureConfigService.isDispatchEnabled$;
+  // Gated behind isUserLoggedIn to prevent server requests before authentication.
+  public isVolunteerEnabled$: Observable<boolean> = of(false);
+  public isFundraisingEnabled$: Observable<boolean> = of(false);
+  public isFinancialEnabled$: Observable<boolean> = of(false);
+  public isCrewEnabled$: Observable<boolean> = of(false);
+  public isMessagingEnabled$: Observable<boolean> = of(false);
+  public isDispatchEnabled$: Observable<boolean> = of(false);
+
+  /**
+   * Activates feature config, office count, and mode subscriptions
+   * only after the user is fully logged in.
+   */
+  private initLoggedInSubscriptions(): void {
+    this.isVolunteerEnabled$ = this.featureConfigService.isVolunteerEnabled$;
+    this.isFundraisingEnabled$ = this.featureConfigService.isFundraisingEnabled$;
+    this.isFinancialEnabled$ = this.featureConfigService.isFinancialEnabled$;
+    this.isCrewEnabled$ = this.featureConfigService.isCrewEnabled$;
+    this.isMessagingEnabled$ = this.featureConfigService.isMessagingEnabled$;
+    this.isDispatchEnabled$ = this.featureConfigService.isDispatchEnabled$;
+
+    this.officeCount$ = this.schedulerHelperService.ActiveOfficeCount$;
+
+    this.modeSub = this.schedulerModeService.isSimpleMode('sidebar')
+      .subscribe(simple => {
+        this.isSimpleMode = simple;
+      });
+  }
 
   public get isVolunteerManager(): boolean {
     return this.authService.isVolunteerManager;

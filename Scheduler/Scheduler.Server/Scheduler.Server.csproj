@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>disable</Nullable>
@@ -79,6 +79,7 @@
     <ProjectReference Include="..\..\SchedulerServices\SchedulerServices.csproj" />
     <ProjectReference Include="..\Scheduler.Client\Scheduler.Client.esproj" />
     <ProjectReference Include="..\..\Foundation.IndexedDB\Foundation.IndexedDB.csproj" />
+    <ProjectReference Include="..\..\Scheduler.Salesforce\Scheduler.Salesforce.csproj" />
   </ItemGroup>
 
   <ItemGroup>

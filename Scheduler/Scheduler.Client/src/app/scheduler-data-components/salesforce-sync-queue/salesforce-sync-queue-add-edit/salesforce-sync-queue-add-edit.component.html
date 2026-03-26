@@ -1,0 +1,112 @@
+<div class="add-salesforce-sync-queue" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-salesforce-sync-queue me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Salesforce Sync Queue" 
+        *ngIf="userIsSchedulerSalesforceSyncQueueWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #salesforceSyncQueueModal let-modal>
+   <div class="modal-header salesforce-sync-queue-modal-header">
+      <h5 class="modal-title mb-0" id="salesforceSyncQueueModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Salesforce Sync Queue' : 'Add Salesforce Sync Queue' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body salesforce-sync-queue-modal-body">
+      <form [formGroup]="salesforceSyncQueueForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('entityType')">
+                <label for="SalesforceSyncQueue-entityType" id="label-SalesforceSyncQueue-entityType"><span class="text-danger">*</span>Entity Type</label>
+                <input type="text" id="SalesforceSyncQueue-entityType" formControlName="entityType" placeholder="Enter Entity Type" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-entityType" />
+                <div *ngIf="salesforceSyncQueueForm.get('entityType')?.invalid && salesforceSyncQueueForm.get('entityType')?.touched" class="text-danger">
+                    Entity Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('operationType')">
+                <label for="SalesforceSyncQueue-operationType" id="label-SalesforceSyncQueue-operationType"><span class="text-danger">*</span>Operation Type</label>
+                <input type="text" id="SalesforceSyncQueue-operationType" formControlName="operationType" placeholder="Enter Operation Type" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-operationType" />
+                <div *ngIf="salesforceSyncQueueForm.get('operationType')?.invalid && salesforceSyncQueueForm.get('operationType')?.touched" class="text-danger">
+                    Operation Type is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('entityId')">
+                <label for="SalesforceSyncQueue-entityId" id="label-SalesforceSyncQueue-entityId"><span class="text-danger">*</span>Entity Id</label>
+                <input type="number" id="SalesforceSyncQueue-entityId" formControlName="entityId" placeholder="Enter Entity Id" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-entityId" />
+                <div *ngIf="salesforceSyncQueueForm.get('entityId')?.invalid && salesforceSyncQueueForm.get('entityId')?.touched" class="text-danger">
+                    Entity Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('payload')">
+                <label for="SalesforceSyncQueue-payload" id="label-SalesforceSyncQueue-payload">Payload</label>
+                <textarea id="SalesforceSyncQueue-payload" formControlName="payload" placeholder="Enter Payload" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('status')">
+                <label for="SalesforceSyncQueue-status" id="label-SalesforceSyncQueue-status"><span class="text-danger">*</span>Status</label>
+                <input type="text" id="SalesforceSyncQueue-status" formControlName="status" placeholder="Enter Status" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-status" />
+                <div *ngIf="salesforceSyncQueueForm.get('status')?.invalid && salesforceSyncQueueForm.get('status')?.touched" class="text-danger">
+                    Status is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('attemptCount')">
+                <label for="SalesforceSyncQueue-attemptCount" id="label-SalesforceSyncQueue-attemptCount"><span class="text-danger">*</span>Attempt Count</label>
+                <input type="number" id="SalesforceSyncQueue-attemptCount" formControlName="attemptCount" placeholder="Enter Attempt Count" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-attemptCount" />
+                <div *ngIf="salesforceSyncQueueForm.get('attemptCount')?.invalid && salesforceSyncQueueForm.get('attemptCount')?.touched" class="text-danger">
+                    Attempt Count is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('maxAttempts')">
+                <label for="SalesforceSyncQueue-maxAttempts" id="label-SalesforceSyncQueue-maxAttempts"><span class="text-danger">*</span>Max Attempts</label>
+                <input type="number" id="SalesforceSyncQueue-maxAttempts" formControlName="maxAttempts" placeholder="Enter Max Attempts" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-maxAttempts" />
+                <div *ngIf="salesforceSyncQueueForm.get('maxAttempts')?.invalid && salesforceSyncQueueForm.get('maxAttempts')?.touched" class="text-danger">
+                    Max Attempts is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('lastAttemptDate')">
+                <label for="SalesforceSyncQueue-lastAttemptDate" id="label-SalesforceSyncQueue-lastAttemptDate">Last Attempt Date</label>
+                <input type="datetime-local" id="SalesforceSyncQueue-lastAttemptDate" formControlName="lastAttemptDate" placeholder="Enter Last Attempt Date" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-lastAttemptDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('completedDate')">
+                <label for="SalesforceSyncQueue-completedDate" id="label-SalesforceSyncQueue-completedDate">Completed Date</label>
+                <input type="datetime-local" id="SalesforceSyncQueue-completedDate" formControlName="completedDate" placeholder="Enter Completed Date" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-completedDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('createdDate')">
+                <label for="SalesforceSyncQueue-createdDate" id="label-SalesforceSyncQueue-createdDate">Created Date</label>
+                <input type="datetime-local" id="SalesforceSyncQueue-createdDate" formControlName="createdDate" placeholder="Enter Created Date" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" aria-labelledby="label-createdDate" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('errorMessage')">
+                <label for="SalesforceSyncQueue-errorMessage" id="label-SalesforceSyncQueue-errorMessage">Error Message</label>
+                <textarea id="SalesforceSyncQueue-errorMessage" formControlName="errorMessage" placeholder="Enter Error Message" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()"></textarea>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('responseBody')">
+                <label for="SalesforceSyncQueue-responseBody" id="label-SalesforceSyncQueue-responseBody">Response Body</label>
+                <textarea id="SalesforceSyncQueue-responseBody" formControlName="responseBody" placeholder="Enter Response Body" class="form-control salesforce-sync-queue-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()"></textarea>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SalesforceSyncQueue-active" formControlName="active" class="form-check-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" />
+                <label for="SalesforceSyncQueue-active" class="form-check-label" id="label-SalesforceSyncQueue-active"><span class="text-danger">*</span>Active</label>
+            </div>
+            <div class="form-check my-2" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <input type="checkbox" id="SalesforceSyncQueue-deleted" formControlName="deleted" class="form-check-input" [disabled]="!userIsSchedulerSalesforceSyncQueueWriter()" />
+                <label for="SalesforceSyncQueue-deleted" class="form-check-label" id="label-SalesforceSyncQueue-deleted"><span class="text-danger">*</span>Deleted</label>
+            </div>
+         <div class="modal-footer salesforce-sync-queue-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Salesforce Sync Queue changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !salesforceSyncQueueForm.valid || salesforceSyncQueueForm.pristine  || userIsSchedulerSalesforceSyncQueueWriter() == false " ngbTooltip="Save the Salesforce Sync Queue changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Salesforce Sync Queue' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

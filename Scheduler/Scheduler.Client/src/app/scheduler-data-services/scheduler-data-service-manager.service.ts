@@ -176,6 +176,9 @@ import {ResourceQualificationChangeHistoryService} from  './resource-qualificati
 import {ResourceShiftService} from  './resource-shift.service';
 import {ResourceShiftChangeHistoryService} from  './resource-shift-change-history.service';
 import {ResourceTypeService} from  './resource-type.service';
+import {SalesforceSyncQueueService} from  './salesforce-sync-queue.service';
+import {SalesforceTenantLinkService} from  './salesforce-tenant-link.service';
+import {SalesforceTenantLinkChangeHistoryService} from  './salesforce-tenant-link-change-history.service';
 import {SalutationService} from  './salutation.service';
 import {ScheduledEventService} from  './scheduled-event.service';
 import {ScheduledEventChangeHistoryService} from  './scheduled-event-change-history.service';
@@ -395,6 +398,9 @@ export class SchedulerDataServiceManagerService  {
               , public resourceShiftService: ResourceShiftService
               , public resourceShiftChangeHistoryService: ResourceShiftChangeHistoryService
               , public resourceTypeService: ResourceTypeService
+              , public salesforceSyncQueueService: SalesforceSyncQueueService
+              , public salesforceTenantLinkService: SalesforceTenantLinkService
+              , public salesforceTenantLinkChangeHistoryService: SalesforceTenantLinkChangeHistoryService
               , public salutationService: SalutationService
               , public scheduledEventService: ScheduledEventService
               , public scheduledEventChangeHistoryService: ScheduledEventChangeHistoryService
@@ -612,6 +618,9 @@ export class SchedulerDataServiceManagerService  {
         this.resourceShiftService.ClearAllCaches();
         this.resourceShiftChangeHistoryService.ClearAllCaches();
         this.resourceTypeService.ClearAllCaches();
+        this.salesforceSyncQueueService.ClearAllCaches();
+        this.salesforceTenantLinkService.ClearAllCaches();
+        this.salesforceTenantLinkChangeHistoryService.ClearAllCaches();
         this.salutationService.ClearAllCaches();
         this.scheduledEventService.ClearAllCaches();
         this.scheduledEventChangeHistoryService.ClearAllCaches();

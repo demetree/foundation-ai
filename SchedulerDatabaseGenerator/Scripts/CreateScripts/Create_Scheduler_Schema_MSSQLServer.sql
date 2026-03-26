@@ -18,6 +18,9 @@ CREATE SCHEMA [Scheduler]
 GO
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE [Scheduler].[SalesforceSyncQueue]
+-- DROP TABLE [Scheduler].[SalesforceTenantLinkChangeHistory]
+-- DROP TABLE [Scheduler].[SalesforceTenantLink]
 -- DROP TABLE [Scheduler].[EventResourceAssignmentChangeHistory]
 -- DROP TABLE [Scheduler].[EventResourceAssignment]
 -- DROP TABLE [Scheduler].[DocumentShareLinkChangeHistory]
@@ -232,6 +235,9 @@ GO
 -- DROP TABLE [Scheduler].[NotificationType]
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON [Scheduler].[SalesforceSyncQueue] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[SalesforceTenantLinkChangeHistory] DISABLE
+-- ALTER INDEX ALL ON [Scheduler].[SalesforceTenantLink] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] DISABLE
 -- ALTER INDEX ALL ON [Scheduler].[DocumentShareLinkChangeHistory] DISABLE
@@ -446,6 +452,9 @@ GO
 -- ALTER INDEX ALL ON [Scheduler].[NotificationType] DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON [Scheduler].[SalesforceSyncQueue] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[SalesforceTenantLinkChangeHistory] REBUILD
+-- ALTER INDEX ALL ON [Scheduler].[SalesforceTenantLink] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignmentChangeHistory] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[EventResourceAssignment] REBUILD
 -- ALTER INDEX ALL ON [Scheduler].[DocumentShareLinkChangeHistory] REBUILD
@@ -11294,6 +11303,132 @@ GO
 
 -- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,eventResourceAssignmentId fields.
 CREATE INDEX [I_EventResourceAssignmentChangeHistory_tenantGuid_eventResourceAssignmentId] ON [Scheduler].[EventResourceAssignmentChangeHistory] ([tenantGuid], [eventResourceAssignmentId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+Per-tenant Salesforce integration configuration.
+Each tenant can connect their own Salesforce organization.
+Stores OAuth credentials (should be encrypted at rest), sync direction preferences,
+and the last pull timestamp for incremental data sync.
+*/
+CREATE TABLE [Scheduler].[SalesforceTenantLink]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[syncEnabled] BIT NOT NULL DEFAULT 0,		-- Master toggle for this tenant's Salesforce integration
+	[syncDirectionFlags] NVARCHAR(100) NULL,		-- None, ImportOnly, PushOnly, or RealTime
+	[pullIntervalMinutes] INT NULL DEFAULT 5,		-- How often the periodic pull service checks for new/updated SF records
+	[lastPullDate] DATETIME2(7) NULL,		-- UTC timestamp of the last successful periodic pull
+	[loginUrl] NVARCHAR(250) NULL,		-- Salesforce login endpoint (e.g. https://login.salesforce.com)
+	[sfClientId] NVARCHAR(250) NULL,		-- Connected App Client ID (Consumer Key)
+	[sfClientSecret] NVARCHAR(500) NULL,		-- Connected App Client Secret (should be encrypted at rest)
+	[sfUsername] NVARCHAR(250) NULL,		-- Salesforce API user username
+	[sfPassword] NVARCHAR(500) NULL,		-- Salesforce API user password (should be encrypted at rest)
+	[sfSecurityToken] NVARCHAR(250) NULL,		-- Salesforce security token appended to password for OAuth
+	[instanceUrl] NVARCHAR(250) NULL,		-- Salesforce instance URL returned after successful OAuth (e.g. https://na1.salesforce.com)
+	[apiVersion] NVARCHAR(50) NULL,		-- Salesforce REST API version (e.g. v56.0)
+	[versionNumber] INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+	CONSTRAINT [UC_SalesforceTenantLink_tenantGuid] UNIQUE ( [tenantGuid]) 		-- Uniqueness enforced on the SalesforceTenantLink table's tenantGuid field.
+)
+GO
+
+-- Index on the SalesforceTenantLink table's tenantGuid field.
+CREATE INDEX [I_SalesforceTenantLink_tenantGuid] ON [Scheduler].[SalesforceTenantLink] ([tenantGuid])
+GO
+
+-- Index on the SalesforceTenantLink table's tenantGuid,active fields.
+CREATE INDEX [I_SalesforceTenantLink_tenantGuid_active] ON [Scheduler].[SalesforceTenantLink] ([tenantGuid], [active])
+GO
+
+-- Index on the SalesforceTenantLink table's tenantGuid,deleted fields.
+CREATE INDEX [I_SalesforceTenantLink_tenantGuid_deleted] ON [Scheduler].[SalesforceTenantLink] ([tenantGuid], [deleted])
+GO
+
+
+-- The change history for records from the SalesforceTenantLink table.
+CREATE TABLE [Scheduler].[SalesforceTenantLinkChangeHistory]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[salesforceTenantLinkId] INT NOT NULL,		-- Link to the SalesforceTenantLink table.
+	[versionNumber] INT NOT NULL,		-- This is the version number that is being historized.
+	[timeStamp] DATETIME2(7) NOT NULL,		-- The time that the record version was created.
+	[userId] INT NOT NULL,
+	[data] NVARCHAR(MAX) NOT NULL		-- This stores the JSON representing the object's historical state.
+
+	CONSTRAINT [FK_SalesforceTenantLinkChangeHistory_SalesforceTenantLink_salesforceTenantLinkId] FOREIGN KEY ([salesforceTenantLinkId]) REFERENCES [Scheduler].[SalesforceTenantLink] ([id])		-- Foreign key to the SalesforceTenantLink table.
+)
+GO
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid field.
+CREATE INDEX [I_SalesforceTenantLinkChangeHistory_tenantGuid] ON [Scheduler].[SalesforceTenantLinkChangeHistory] ([tenantGuid])
+GO
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX [I_SalesforceTenantLinkChangeHistory_tenantGuid_versionNumber] ON [Scheduler].[SalesforceTenantLinkChangeHistory] ([tenantGuid], [versionNumber])
+GO
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX [I_SalesforceTenantLinkChangeHistory_tenantGuid_timeStamp] ON [Scheduler].[SalesforceTenantLinkChangeHistory] ([tenantGuid], [timeStamp])
+GO
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX [I_SalesforceTenantLinkChangeHistory_tenantGuid_userId] ON [Scheduler].[SalesforceTenantLinkChangeHistory] ([tenantGuid], [userId])
+GO
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,salesforceTenantLinkId fields.
+CREATE INDEX [I_SalesforceTenantLinkChangeHistory_tenantGuid_salesforceTenantLinkId] ON [Scheduler].[SalesforceTenantLinkChangeHistory] ([tenantGuid], [salesforceTenantLinkId]) INCLUDE ( versionNumber, timeStamp, userId )
+GO
+
+
+/*
+Durable queue for outbound Salesforce sync operations.
+Each row represents a pending push operation (Create, Update, Delete) for an entity.
+The SalesforceSyncQueueProcessor background service processes items with exponential backoff.
+Items progress through statuses: Pending -> InProgress -> Completed/Failed/Abandoned.
+*/
+CREATE TABLE [Scheduler].[SalesforceSyncQueue]
+(
+	[id] INT IDENTITY PRIMARY KEY NOT NULL,
+	[tenantGuid] UNIQUEIDENTIFIER NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	[entityType] NVARCHAR(100) NOT NULL,		-- The Scheduler entity type: Client, Contact, or ScheduledEvent
+	[operationType] NVARCHAR(50) NOT NULL,		-- Create, Update, or Delete
+	[entityId] INT NOT NULL,		-- Primary key of the Scheduler entity being synced
+	[payload] NVARCHAR(MAX) NULL,		-- Optional JSON payload (e.g. salesforceId for delete operations)
+	[status] NVARCHAR(50) NOT NULL,		-- Pending, InProgress, Completed, Failed, or Abandoned
+	[attemptCount] INT NOT NULL DEFAULT 0,		-- Number of processing attempts made so far
+	[maxAttempts] INT NOT NULL DEFAULT 5,		-- Maximum attempts before marking as Abandoned
+	[lastAttemptDate] DATETIME2(7) NULL,		-- UTC timestamp of the last processing attempt
+	[completedDate] DATETIME2(7) NULL,		-- UTC timestamp when the item was successfully processed
+	[createdDate] DATETIME2(7) NULL,		-- UTC timestamp when the item was enqueued
+	[errorMessage] NVARCHAR(MAX) NULL,		-- Error message from the last failed attempt
+	[responseBody] NVARCHAR(MAX) NULL,		-- Response body from the Salesforce API (for debugging)
+	[objectGuid] UNIQUEIDENTIFIER NOT NULL UNIQUE,		-- Unique identifier for this table.
+	[active] BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	[deleted] BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+)
+GO
+
+-- Index on the SalesforceSyncQueue table's tenantGuid field.
+CREATE INDEX [I_SalesforceSyncQueue_tenantGuid] ON [Scheduler].[SalesforceSyncQueue] ([tenantGuid])
+GO
+
+-- Index on the SalesforceSyncQueue table's tenantGuid,active fields.
+CREATE INDEX [I_SalesforceSyncQueue_tenantGuid_active] ON [Scheduler].[SalesforceSyncQueue] ([tenantGuid], [active])
+GO
+
+-- Index on the SalesforceSyncQueue table's tenantGuid,deleted fields.
+CREATE INDEX [I_SalesforceSyncQueue_tenantGuid_deleted] ON [Scheduler].[SalesforceSyncQueue] ([tenantGuid], [deleted])
+GO
+
+-- Index on the SalesforceSyncQueue table's tenantGuid,status,createdDate fields.
+CREATE INDEX [I_SalesforceSyncQueue_tenantGuid_status_createdDate] ON [Scheduler].[SalesforceSyncQueue] ([tenantGuid], [status], [createdDate])
 GO
 
 

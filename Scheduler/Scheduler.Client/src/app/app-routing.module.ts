@@ -477,6 +477,12 @@ import { ResourceShiftChangeHistoryListingComponent } from './scheduler-data-com
 import { ResourceShiftChangeHistoryDetailComponent } from './scheduler-data-components/resource-shift-change-history/resource-shift-change-history-detail/resource-shift-change-history-detail.component';
 import { ResourceTypeListingComponent } from './scheduler-data-components/resource-type/resource-type-listing/resource-type-listing.component';
 import { ResourceTypeDetailComponent } from './scheduler-data-components/resource-type/resource-type-detail/resource-type-detail.component';
+import { SalesforceSyncQueueListingComponent } from './scheduler-data-components/salesforce-sync-queue/salesforce-sync-queue-listing/salesforce-sync-queue-listing.component';
+import { SalesforceSyncQueueDetailComponent } from './scheduler-data-components/salesforce-sync-queue/salesforce-sync-queue-detail/salesforce-sync-queue-detail.component';
+import { SalesforceTenantLinkListingComponent } from './scheduler-data-components/salesforce-tenant-link/salesforce-tenant-link-listing/salesforce-tenant-link-listing.component';
+import { SalesforceTenantLinkDetailComponent } from './scheduler-data-components/salesforce-tenant-link/salesforce-tenant-link-detail/salesforce-tenant-link-detail.component';
+import { SalesforceTenantLinkChangeHistoryListingComponent } from './scheduler-data-components/salesforce-tenant-link-change-history/salesforce-tenant-link-change-history-listing/salesforce-tenant-link-change-history-listing.component';
+import { SalesforceTenantLinkChangeHistoryDetailComponent } from './scheduler-data-components/salesforce-tenant-link-change-history/salesforce-tenant-link-change-history-detail/salesforce-tenant-link-change-history-detail.component';
 import { SalutationListingComponent } from './scheduler-data-components/salutation/salutation-listing/salutation-listing.component';
 import { SalutationDetailComponent } from './scheduler-data-components/salutation/salutation-detail/salutation-detail.component';
 import { ScheduledEventListingComponent } from './scheduler-data-components/scheduled-event/scheduled-event-listing/scheduled-event-listing.component';
@@ -1582,6 +1588,21 @@ const routes: Routes = [
   {path: 'resourcetypes/:resourceTypeId', component: ResourceTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Resource Type' },
   {path: 'resourcetype/:resourceTypeId', component: ResourceTypeDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Resource Type' },
   {path: 'resourcetype',  redirectTo: 'resourcetypes'},
+  {path: 'salesforcesyncqueues', component: SalesforceSyncQueueListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Salesforce Sync Queues' },
+  {path: 'salesforcesyncqueues/new', component: SalesforceSyncQueueDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Salesforce Sync Queue' },
+  {path: 'salesforcesyncqueues/:salesforceSyncQueueId', component: SalesforceSyncQueueDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Salesforce Sync Queue' },
+  {path: 'salesforcesyncqueue/:salesforceSyncQueueId', component: SalesforceSyncQueueDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Salesforce Sync Queue' },
+  {path: 'salesforcesyncqueue',  redirectTo: 'salesforcesyncqueues'},
+  {path: 'salesforcetenantlinks', component: SalesforceTenantLinkListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Salesforce Tenant Links' },
+  {path: 'salesforcetenantlinks/new', component: SalesforceTenantLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Salesforce Tenant Link' },
+  {path: 'salesforcetenantlinks/:salesforceTenantLinkId', component: SalesforceTenantLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Salesforce Tenant Link' },
+  {path: 'salesforcetenantlink/:salesforceTenantLinkId', component: SalesforceTenantLinkDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Salesforce Tenant Link' },
+  {path: 'salesforcetenantlink',  redirectTo: 'salesforcetenantlinks'},
+  {path: 'salesforcetenantlinkchangehistories', component: SalesforceTenantLinkChangeHistoryListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Salesforce Tenant Link Change Histories' },
+  {path: 'salesforcetenantlinkchangehistories/new', component: SalesforceTenantLinkChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Salesforce Tenant Link Change History' },
+  {path: 'salesforcetenantlinkchangehistories/:salesforceTenantLinkChangeHistoryId', component: SalesforceTenantLinkChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Salesforce Tenant Link Change History' },
+  {path: 'salesforcetenantlinkchangehistory/:salesforceTenantLinkChangeHistoryId', component: SalesforceTenantLinkChangeHistoryDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Salesforce Tenant Link Change History' },
+  {path: 'salesforcetenantlinkchangehistory',  redirectTo: 'salesforcetenantlinkchangehistories'},
   {path: 'salutations', component: SalutationListingComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Salutations' },
   {path: 'salutations/new', component: SalutationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Create Salutation' },
   {path: 'salutations/:salutationId', component: SalutationDetailComponent, canActivate: [AuthGuard], canDeactivate: [UnsavedChangesGuard], title: 'Edit Salutation' },

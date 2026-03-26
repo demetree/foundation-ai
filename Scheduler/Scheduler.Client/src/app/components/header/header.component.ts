@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, EventEmitter, Output, Input, Inject, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, OnChanges, SimpleChanges, EventEmitter, Output, Input, Inject, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { NgbDropdown } from '@ng-bootstrap/ng-bootstrap';
 
@@ -19,7 +19,7 @@ import { FeatureConfigService } from '../../services/feature-config.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss']
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, OnDestroy, OnChanges {
   @Input() isUserLoggedIn!: boolean;
   @Output() toggle = new EventEmitter();
   @Output() invokeLogout = new EventEmitter();
@@ -52,7 +52,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   public mobileSetupExpanded = false;
 
   // To get the count of offices to allow the offices button to be invisible if there are no offices (It can always be found under Administration)
-  public officeCount$ = this.schedulerHelperService.ActiveOfficeCount$;
+  public officeCount$: Observable<number> = of(0);
+
+  private _loginInitialized = false;
 
   //
   // Entity → route mappings for deep-link navigation on notification click
@@ -83,8 +85,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ) { }
 
   /** Whether the messaging system is enabled (driven by server feature config). */
-  public isMessagingEnabled$ = this.featureConfigService.isMessagingEnabled$;
+  // Gated behind isUserLoggedIn to prevent server requests before authentication.
+  public isMessagingEnabled$: Observable<boolean> = of(false);
 
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isUserLoggedIn'] && this.isUserLoggedIn && !this._loginInitialized) {
+      this._loginInitialized = true;
+      this.initLoggedInSubscriptions();
+    }
+  }
 
   ngOnInit(): void {
 
@@ -94,6 +104,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.isUserLoggedIn) {
       this.loadNotificationCount();
     }
+  }
+
+  /**
+   * Activates feature config, office count, SignalR, and toast subscriptions
+   * only after the user is fully logged in.
+   */
+  private initLoggedInSubscriptions(): void {
+    this.isMessagingEnabled$ = this.featureConfigService.isMessagingEnabled$;
+    this.officeCount$ = this.schedulerHelperService.ActiveOfficeCount$;
+
+    this.loadNotificationCount();
 
     //
     // Subscribe to real-time notifications via SignalR for badge updates and toasts

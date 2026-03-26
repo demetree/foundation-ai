@@ -201,6 +201,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduler.Tests", "Schedule
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scheduler", "Scheduler", "{A8173BD2-A951-70AA-9D22-2A5D9E99F29F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scheduler.Salesforce", "Scheduler.Salesforce\Scheduler.Salesforce.csproj", "{4031F2A9-1755-45B8-B637-4D7999D3F2EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1135,6 +1137,18 @@ Global
 		{E8B0C94E-47E0-4624-A0D0-D8988A2DE524}.Release|x64.Build.0 = Release|Any CPU
 		{E8B0C94E-47E0-4624-A0D0-D8988A2DE524}.Release|x86.ActiveCfg = Release|Any CPU
 		{E8B0C94E-47E0-4624-A0D0-D8988A2DE524}.Release|x86.Build.0 = Release|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Debug|x64.Build.0 = Debug|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Debug|x86.Build.0 = Debug|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Release|x64.ActiveCfg = Release|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Release|x64.Build.0 = Release|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Release|x86.ActiveCfg = Release|Any CPU
+		{4031F2A9-1755-45B8-B637-4D7999D3F2EB}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

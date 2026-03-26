@@ -4737,6 +4737,92 @@ Used to:
 
             #endregion
 
+
+
+            #region Salesforce Integration
+
+            //
+            // SalesforceTenantLink
+            //
+            // Per-tenant Salesforce integration configuration.
+            // Each tenant can connect their own Salesforce organization instance.
+            // Stores OAuth credentials, sync preferences, and last pull timestamp.
+            //
+            // This table is NOT auto-generated as a controller — management is handled
+            // by the SalesforceSyncController in the Scheduler.Salesforce shared library.
+            //
+            Database.Table salesforceTenantLinkTable = database.AddTable("SalesforceTenantLink");
+            salesforceTenantLinkTable.comment = @"Per-tenant Salesforce integration configuration.
+Each tenant can connect their own Salesforce organization.
+Stores OAuth credentials (should be encrypted at rest), sync direction preferences,
+and the last pull timestamp for incremental data sync.";
+            salesforceTenantLinkTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            salesforceTenantLinkTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            salesforceTenantLinkTable.AddIdField();
+            salesforceTenantLinkTable.AddMultiTenantSupport();
+
+            salesforceTenantLinkTable.AddBoolField("syncEnabled", false, false).AddScriptComments("Master toggle for this tenant's Salesforce integration");
+            salesforceTenantLinkTable.AddString100Field("syncDirectionFlags", true).AddScriptComments("None, ImportOnly, PushOnly, or RealTime");
+            salesforceTenantLinkTable.AddIntField("pullIntervalMinutes", true, 5).AddScriptComments("How often the periodic pull service checks for new/updated SF records");
+            salesforceTenantLinkTable.AddDateTimeField("lastPullDate", true).AddScriptComments("UTC timestamp of the last successful periodic pull");
+
+            salesforceTenantLinkTable.AddString250Field("loginUrl", true).AddScriptComments("Salesforce login endpoint (e.g. https://login.salesforce.com)");
+            salesforceTenantLinkTable.AddString250Field("sfClientId", true).AddScriptComments("Connected App Client ID (Consumer Key)");
+            salesforceTenantLinkTable.AddString500Field("sfClientSecret", true).AddScriptComments("Connected App Client Secret (should be encrypted at rest)");
+            salesforceTenantLinkTable.AddString250Field("sfUsername", true).AddScriptComments("Salesforce API user username");
+            salesforceTenantLinkTable.AddString500Field("sfPassword", true).AddScriptComments("Salesforce API user password (should be encrypted at rest)");
+            salesforceTenantLinkTable.AddString250Field("sfSecurityToken", true).AddScriptComments("Salesforce security token appended to password for OAuth");
+            salesforceTenantLinkTable.AddString250Field("instanceUrl", true).AddScriptComments("Salesforce instance URL returned after successful OAuth (e.g. https://na1.salesforce.com)");
+            salesforceTenantLinkTable.AddString50Field("apiVersion", true).AddScriptComments("Salesforce REST API version (e.g. v56.0)");
+
+            salesforceTenantLinkTable.AddVersionControl();
+            salesforceTenantLinkTable.AddControlFields();
+
+            // Unique constraint: one link per tenant
+            salesforceTenantLinkTable.AddUniqueConstraint(new List<string>() { "tenantGuid" }, true);
+
+
+            //
+            // SalesforceSyncQueue
+            //
+            // Durable queue for outbound Salesforce sync operations.
+            // When a Client, Contact, or ScheduledEvent is created/updated/deleted in Scheduler,
+            // a queue item is enqueued here. The SalesforceSyncQueueProcessor background service
+            // polls this table and pushes changes to Salesforce with exponential backoff on failure.
+            //
+            Database.Table salesforceSyncQueueTable = database.AddTable("SalesforceSyncQueue");
+            salesforceSyncQueueTable.comment = @"Durable queue for outbound Salesforce sync operations.
+Each row represents a pending push operation (Create, Update, Delete) for an entity.
+The SalesforceSyncQueueProcessor background service processes items with exponential backoff.
+Items progress through statuses: Pending -> InProgress -> Completed/Failed/Abandoned.";
+            salesforceSyncQueueTable.SetMinimumPermissionLevels(SCHEDULER_READER_PERMISSION_LEVEL, SCHEDULER_SUPER_ADMIN_WRITER_PERMISSION_LEVEL);
+            salesforceSyncQueueTable.SetTableToBeReadonlyForControllerCreationPurposes();
+            salesforceSyncQueueTable.AddIdField();
+            salesforceSyncQueueTable.AddMultiTenantSupport();
+
+            salesforceSyncQueueTable.AddString100Field("entityType", false).AddScriptComments("The Scheduler entity type: Client, Contact, or ScheduledEvent");
+            salesforceSyncQueueTable.AddString50Field("operationType", false).AddScriptComments("Create, Update, or Delete");
+            salesforceSyncQueueTable.AddIntField("entityId", false).AddScriptComments("Primary key of the Scheduler entity being synced");
+            salesforceSyncQueueTable.AddTextField("payload", true).AddScriptComments("Optional JSON payload (e.g. salesforceId for delete operations)");
+
+            salesforceSyncQueueTable.AddString50Field("status", false).AddScriptComments("Pending, InProgress, Completed, Failed, or Abandoned");
+            salesforceSyncQueueTable.AddIntField("attemptCount", false, 0).AddScriptComments("Number of processing attempts made so far");
+            salesforceSyncQueueTable.AddIntField("maxAttempts", false, 5).AddScriptComments("Maximum attempts before marking as Abandoned");
+
+            salesforceSyncQueueTable.AddDateTimeField("lastAttemptDate", true).AddScriptComments("UTC timestamp of the last processing attempt");
+            salesforceSyncQueueTable.AddDateTimeField("completedDate", true).AddScriptComments("UTC timestamp when the item was successfully processed");
+            salesforceSyncQueueTable.AddDateTimeField("createdDate", true).AddScriptComments("UTC timestamp when the item was enqueued");
+
+            salesforceSyncQueueTable.AddTextField("errorMessage", true).AddScriptComments("Error message from the last failed attempt");
+            salesforceSyncQueueTable.AddTextField("responseBody", true).AddScriptComments("Response body from the Salesforce API (for debugging)");
+
+            salesforceSyncQueueTable.AddControlFields();
+
+            // Performance indexes for the queue processor
+            salesforceSyncQueueTable.CreateIndexForFields(new List<string> { "tenantGuid", "status", "createdDate" });
+
+            #endregion
+
         }
     }
 }

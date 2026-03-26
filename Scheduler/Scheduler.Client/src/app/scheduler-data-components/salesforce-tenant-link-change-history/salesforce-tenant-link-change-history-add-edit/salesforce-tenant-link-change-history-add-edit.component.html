@@ -1,0 +1,73 @@
+<div class="add-salesforce-tenant-link-change-history" *ngIf="showAddButton == true">
+    <button type="button"
+        class="btn btn-sm btn-add-salesforce-tenant-link-change-history me-2"
+        (click)="openModal()"
+        ngbTooltip="Add Salesforce Tenant Link Change History" 
+        *ngIf="userIsSchedulerSalesforceTenantLinkChangeHistoryWriter() == true"
+        placement="top"
+        style="min-width: 75px;">Add</button>
+</div>
+
+<!-- ng-bootstrap modal -->
+<ng-template #salesforceTenantLinkChangeHistoryModal let-modal>
+   <div class="modal-header salesforce-tenant-link-change-history-modal-header">
+      <h5 class="modal-title mb-0" id="salesforceTenantLinkChangeHistoryModalLabel" ngbTooltip="{{objectGuid}}">
+      {{ isEditMode ? 'Edit Salesforce Tenant Link Change History' : 'Add Salesforce Tenant Link Change History' }}
+      </h5>
+      <button type="button" class="modal-close-btn" (click)="closeModal()" aria-label="Close">
+        <i class="fa fa-xmark"></i>
+      </button>
+   </div>
+   <div class="modal-body salesforce-tenant-link-change-history-modal-body">
+      <form [formGroup]="salesforceTenantLinkChangeHistoryForm" (ngSubmit)="submitForm()">
+            <div class="form-group" *ngIf="!isFieldHidden('salesforceTenantLinkId')">
+                <label for="SalesforceTenantLinkChangeHistory-salesforceTenantLinkId" id="label-SalesforceTenantLinkChangeHistory-salesforceTenantLinkId"><span class="text-danger">*</span>Salesforce Tenant Link</label>
+                <select id="SalesforceTenantLinkChangeHistory-salesforceTenantLinkId" formControlName="salesforceTenantLinkId" class="form-select salesforce-tenant-link-change-history-select" [disabled]="!userIsSchedulerSalesforceTenantLinkChangeHistoryWriter()">
+                    <option [ngValue]="null">Select Salesforce Tenant Link</option>
+                    <option *ngFor="let salesforceTenantLink of salesforceTenantLinks$ | async" [ngValue]="salesforceTenantLink.id">{{salesforceTenantLink.syncDirectionFlags}}</option>
+                </select>
+                <div *ngIf="salesforceTenantLinkChangeHistoryForm.get('salesforceTenantLinkId')?.invalid && salesforceTenantLinkChangeHistoryForm.get('salesforceTenantLinkId')?.touched" class="text-danger">
+                    Salesforce Tenant Link is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="isEditMode && !isFieldHidden('{fc.camelCaseName}')" )>
+                <label for="SalesforceTenantLinkChangeHistory-versionNumber" id="label-SalesforceTenantLinkChangeHistory-versionNumber"><span class="text-danger">*</span>Version Number</label>
+                <input type="number" id="SalesforceTenantLinkChangeHistory-versionNumber" formControlName="versionNumber" [disabled]="true" placeholder="Enter Version Number" class="form-control salesforce-tenant-link-change-history-input" />
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('timeStamp')">
+                <label for="SalesforceTenantLinkChangeHistory-timeStamp" id="label-SalesforceTenantLinkChangeHistory-timeStamp"><span class="text-danger">*</span>Time Stamp</label>
+                <input type="datetime-local" id="SalesforceTenantLinkChangeHistory-timeStamp" formControlName="timeStamp" placeholder="Enter Time Stamp" class="form-control salesforce-tenant-link-change-history-input" [disabled]="!userIsSchedulerSalesforceTenantLinkChangeHistoryWriter()" aria-labelledby="label-timeStamp" />
+                <div *ngIf="salesforceTenantLinkChangeHistoryForm.get('timeStamp')?.invalid && salesforceTenantLinkChangeHistoryForm.get('timeStamp')?.touched" class="text-danger">
+                    Time Stamp is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('userId')">
+                <label for="SalesforceTenantLinkChangeHistory-userId" id="label-SalesforceTenantLinkChangeHistory-userId"><span class="text-danger">*</span>User Id</label>
+                <input type="number" id="SalesforceTenantLinkChangeHistory-userId" formControlName="userId" placeholder="Enter User Id" class="form-control salesforce-tenant-link-change-history-input" [disabled]="!userIsSchedulerSalesforceTenantLinkChangeHistoryWriter()" aria-labelledby="label-userId" />
+                <div *ngIf="salesforceTenantLinkChangeHistoryForm.get('userId')?.invalid && salesforceTenantLinkChangeHistoryForm.get('userId')?.touched" class="text-danger">
+                    User Id is required
+                </div>
+            </div>
+            <div class="form-group" *ngIf="!isFieldHidden('data')">
+                <label for="SalesforceTenantLinkChangeHistory-data" id="label-SalesforceTenantLinkChangeHistory-data"><span class="text-danger">*</span>Data</label>
+                <textarea id="SalesforceTenantLinkChangeHistory-data" formControlName="data" placeholder="Enter Data" class="form-control salesforce-tenant-link-change-history-input" [disabled]="!userIsSchedulerSalesforceTenantLinkChangeHistoryWriter()"></textarea>
+                <div *ngIf="salesforceTenantLinkChangeHistoryForm.get('data')?.invalid && salesforceTenantLinkChangeHistoryForm.get('data')?.touched" class="text-danger">
+                    Data is required
+                </div>
+            </div>
+         <div class="modal-footer salesforce-tenant-link-change-history-modal-footer">
+            <button type="button" class="btn btn-sm btn-secondary" (click)="closeModal()" ngbTooltip="Cancel the Salesforce Tenant Link Change History changes and Close">Cancel</button>
+            <button type="submit" class="btn btn-sm btn-primary" [disabled]="isSaving || !salesforceTenantLinkChangeHistoryForm.valid || salesforceTenantLinkChangeHistoryForm.pristine  || userIsSchedulerSalesforceTenantLinkChangeHistoryWriter() == false " ngbTooltip="Save the Salesforce Tenant Link Change History changes and Close">
+                <span *ngIf="isSaving">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Saving...
+                </span>
+                <span *ngIf="!isSaving">
+                    <i class="fa-solid fa-check me-1"></i>
+                    {{ isEditMode ? 'Save Changes' : 'Add Salesforce Tenant Link Change History' }}
+                </span>
+            </button>
+         </div>
+      </form>
+   </div>
+</ng-template>

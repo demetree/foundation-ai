@@ -26,6 +26,7 @@ using static Foundation.Configuration;
 using static Foundation.StartupBasics;
 using Foundation.Web.Services;
 using Foundation.HubConfig;
+using Foundation.Scheduler.Services.Salesforce;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -204,6 +205,9 @@ namespace Foundation.Scheduler
                 builder.Services.AddScoped<Foundation.Scheduler.Services.VolunteerHubService>();
                 builder.Services.AddHostedService<Foundation.Scheduler.Services.VolunteerReminderWorker>();
 
+                // Salesforce Integration Services (periodic pull, queue processor, sync service)
+                builder.Services.AddSalesforceIntegration();
+
                 //
                 // ─── Foundation Messaging services ─────────────────────────────────
                 // AI-Developed — This block was added with AI assistance.
@@ -244,11 +248,13 @@ namespace Foundation.Scheduler
                 //
                 // Add the Scheduler Database context
                 //
-                builder.Services.AddDbContext<SchedulerContext>(options =>
+                builder.Services.AddDbContext<SchedulerContext>((serviceProvider, options) =>
                 {
                     options.UseSqlServer(builder.Configuration.GetConnectionString("Scheduler"))
                            .UseLazyLoadingProxies(false)
-                           .AddInterceptors(UtcDateTimeInterceptor.Instance);
+                           .AddInterceptors(
+                               UtcDateTimeInterceptor.Instance,
+                               serviceProvider.GetRequiredService<SalesforceSyncInterceptor>());
 
                 });
 
@@ -316,6 +322,7 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(FeatureConfigController));           // AI-Developed — Unified feature toggle endpoint
                 controllers.Add(typeof(FileManagerController));             // For Document Manager / File Manager feature
                 controllers.Add(typeof(MessagingController));               // AI-Developed — Foundation Messaging endpoints
+                controllers.Add(typeof(SalesforceSyncController));          // AI-Developed — Salesforce sync trigger endpoints
 
 
                 //
@@ -492,6 +499,9 @@ namespace Foundation.Scheduler
                 controllers.Add(typeof(ResourceShiftsController));
                 controllers.Add(typeof(ResourceShiftChangeHistoriesController));
                 controllers.Add(typeof(ResourceTypesController));
+                controllers.Add(typeof(SalesforceSyncQueuesController));
+                controllers.Add(typeof(SalesforceTenantLinksController));
+                controllers.Add(typeof(SalesforceTenantLinkChangeHistoriesController));
                 controllers.Add(typeof(SalutationsController));
                 controllers.Add(typeof(ScheduledEventsController));
                 controllers.Add(typeof(ScheduledEventChangeHistoriesController));

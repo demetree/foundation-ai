@@ -10,6 +10,9 @@ CREATE DATABASE `Scheduler`;
 USE `Scheduler`;
 
 /* These drop table commands are here in a commented state as a convenience for situations where you may want to modify the tables in a schema.  They are ordered correctly to be able to delete all tables if executed as a batch, or at least in this order.  Be very careful with these. */
+-- DROP TABLE `SalesforceSyncQueue`
+-- DROP TABLE `SalesforceTenantLinkChangeHistory`
+-- DROP TABLE `SalesforceTenantLink`
 -- DROP TABLE `EventResourceAssignmentChangeHistory`
 -- DROP TABLE `EventResourceAssignment`
 -- DROP TABLE `DocumentShareLinkChangeHistory`
@@ -224,6 +227,9 @@ USE `Scheduler`;
 -- DROP TABLE `NotificationType`
 
 /* These disable table index commands are here in a commented state as a convenience for situations where you want to remove the indexes on a table for things like mass data loads, where indexes just slow things down.  The corresponding rebuild index commands are listed after the disable commands */
+-- ALTER INDEX ALL ON `SalesforceSyncQueue` DISABLE
+-- ALTER INDEX ALL ON `SalesforceTenantLinkChangeHistory` DISABLE
+-- ALTER INDEX ALL ON `SalesforceTenantLink` DISABLE
 -- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` DISABLE
 -- ALTER INDEX ALL ON `EventResourceAssignment` DISABLE
 -- ALTER INDEX ALL ON `DocumentShareLinkChangeHistory` DISABLE
@@ -438,6 +444,9 @@ USE `Scheduler`;
 -- ALTER INDEX ALL ON `NotificationType` DISABLE
 
 /* These rebuild table index commands are here in a commented state as a convenience for situations where you want to rebuild the indexes on a table after having removed them, or if you want to refresh them. */
+-- ALTER INDEX ALL ON `SalesforceSyncQueue` REBUILD
+-- ALTER INDEX ALL ON `SalesforceTenantLinkChangeHistory` REBUILD
+-- ALTER INDEX ALL ON `SalesforceTenantLink` REBUILD
 -- ALTER INDEX ALL ON `EventResourceAssignmentChangeHistory` REBUILD
 -- ALTER INDEX ALL ON `EventResourceAssignment` REBUILD
 -- ALTER INDEX ALL ON `DocumentShareLinkChangeHistory` REBUILD
@@ -8948,5 +8957,108 @@ CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_userId` ON `Even
 
 -- Index on the EventResourceAssignmentChangeHistory table's tenantGuid,eventResourceAssignmentId fields.
 CREATE INDEX `I_EventResourceAssignmentChangeHistory_tenantGuid_eventResourceA` ON `EventResourceAssignmentChangeHistory` (`tenantGuid`, `eventResourceAssignmentId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+Per-tenant Salesforce integration configuration.
+Each tenant can connect their own Salesforce organization.
+Stores OAuth credentials (should be encrypted at rest), sync direction preferences,
+and the last pull timestamp for incremental data sync.
+*/
+CREATE TABLE `SalesforceTenantLink`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`syncEnabled` BIT NOT NULL DEFAULT 0,		-- Master toggle for this tenant's Salesforce integration
+	`syncDirectionFlags` VARCHAR(100) NULL,		-- None, ImportOnly, PushOnly, or RealTime
+	`pullIntervalMinutes` INT NULL DEFAULT 5,		-- How often the periodic pull service checks for new/updated SF records
+	`lastPullDate` DATETIME NULL,		-- UTC timestamp of the last successful periodic pull
+	`loginUrl` VARCHAR(250) NULL,		-- Salesforce login endpoint (e.g. https://login.salesforce.com)
+	`sfClientId` VARCHAR(250) NULL,		-- Connected App Client ID (Consumer Key)
+	`sfClientSecret` VARCHAR(500) NULL,		-- Connected App Client Secret (should be encrypted at rest)
+	`sfUsername` VARCHAR(250) NULL,		-- Salesforce API user username
+	`sfPassword` VARCHAR(500) NULL,		-- Salesforce API user password (should be encrypted at rest)
+	`sfSecurityToken` VARCHAR(250) NULL,		-- Salesforce security token appended to password for OAuth
+	`instanceUrl` VARCHAR(250) NULL,		-- Salesforce instance URL returned after successful OAuth (e.g. https://na1.salesforce.com)
+	`apiVersion` VARCHAR(50) NULL,		-- Salesforce REST API version (e.g. v56.0)
+	`versionNumber` INT NOT NULL DEFAULT 1,		-- The version number of this record.  Increased by one each time the record changes, and the change history is tracked in the table's change history table.
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0,		-- Soft deletion flag.
+	UNIQUE `UC_SalesforceTenantLink_tenantGuid_Unique`( `tenantGuid` ) 		-- Uniqueness enforced on the SalesforceTenantLink table's tenantGuid field.
+);
+-- Index on the SalesforceTenantLink table's tenantGuid field.
+CREATE INDEX `I_SalesforceTenantLink_tenantGuid` ON `SalesforceTenantLink` (`tenantGuid`);
+
+-- Index on the SalesforceTenantLink table's tenantGuid,active fields.
+CREATE INDEX `I_SalesforceTenantLink_tenantGuid_active` ON `SalesforceTenantLink` (`tenantGuid`, `active`);
+
+-- Index on the SalesforceTenantLink table's tenantGuid,deleted fields.
+CREATE INDEX `I_SalesforceTenantLink_tenantGuid_deleted` ON `SalesforceTenantLink` (`tenantGuid`, `deleted`);
+
+
+-- The change history for records from the SalesforceTenantLink table.
+CREATE TABLE `SalesforceTenantLinkChangeHistory`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`salesforceTenantLinkId` INT NOT NULL,		-- Link to the SalesforceTenantLink table.
+	`versionNumber` INT NOT NULL,		-- This is the version number that is being historized.
+	`timeStamp` DATETIME NOT NULL,		-- The time that the record version was created.
+	`userId` INT NOT NULL,
+	`data` TEXT NOT NULL,		-- This stores the JSON representing the object's historical state.
+	FOREIGN KEY (`salesforceTenantLinkId`) REFERENCES `SalesforceTenantLink`(`id`)		-- Foreign key to the SalesforceTenantLink table.
+);
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid field.
+CREATE INDEX `I_SalesforceTenantLinkChangeHistory_tenantGuid` ON `SalesforceTenantLinkChangeHistory` (`tenantGuid`);
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,versionNumber fields.
+CREATE INDEX `I_SalesforceTenantLinkChangeHistory_tenantGuid_versionNumber` ON `SalesforceTenantLinkChangeHistory` (`tenantGuid`, `versionNumber`);
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,timeStamp fields.
+CREATE INDEX `I_SalesforceTenantLinkChangeHistory_tenantGuid_timeStamp` ON `SalesforceTenantLinkChangeHistory` (`tenantGuid`, `timeStamp`);
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,userId fields.
+CREATE INDEX `I_SalesforceTenantLinkChangeHistory_tenantGuid_userId` ON `SalesforceTenantLinkChangeHistory` (`tenantGuid`, `userId`);
+
+-- Index on the SalesforceTenantLinkChangeHistory table's tenantGuid,salesforceTenantLinkId fields.
+CREATE INDEX `I_SalesforceTenantLinkChangeHistory_tenantGuid_salesforceTenantL` ON `SalesforceTenantLinkChangeHistory` (`tenantGuid`, `salesforceTenantLinkId`, `versionNumber`, `timeStamp`, `userId`);
+
+
+/*
+Durable queue for outbound Salesforce sync operations.
+Each row represents a pending push operation (Create, Update, Delete) for an entity.
+The SalesforceSyncQueueProcessor background service processes items with exponential backoff.
+Items progress through statuses: Pending -> InProgress -> Completed/Failed/Abandoned.
+*/
+CREATE TABLE `SalesforceSyncQueue`(
+	`id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+	`tenantGuid` CHAR(38) NOT NULL,		-- The guid for the Tenant to which this record belongs.
+	`entityType` VARCHAR(100) NOT NULL,		-- The Scheduler entity type: Client, Contact, or ScheduledEvent
+	`operationType` VARCHAR(50) NOT NULL,		-- Create, Update, or Delete
+	`entityId` INT NOT NULL,		-- Primary key of the Scheduler entity being synced
+	`payload` TEXT NULL,		-- Optional JSON payload (e.g. salesforceId for delete operations)
+	`status` VARCHAR(50) NOT NULL,		-- Pending, InProgress, Completed, Failed, or Abandoned
+	`attemptCount` INT NOT NULL DEFAULT 0,		-- Number of processing attempts made so far
+	`maxAttempts` INT NOT NULL DEFAULT 5,		-- Maximum attempts before marking as Abandoned
+	`lastAttemptDate` DATETIME NULL,		-- UTC timestamp of the last processing attempt
+	`completedDate` DATETIME NULL,		-- UTC timestamp when the item was successfully processed
+	`createdDate` DATETIME NULL,		-- UTC timestamp when the item was enqueued
+	`errorMessage` TEXT NULL,		-- Error message from the last failed attempt
+	`responseBody` TEXT NULL,		-- Response body from the Salesforce API (for debugging)
+	`objectGuid` CHAR(38) NOT NULL UNIQUE,		-- Unique identifier for this table.
+	`active` BIT NOT NULL DEFAULT 1,		-- Active from a business perspective flag.
+	`deleted` BIT NOT NULL DEFAULT 0		-- Soft deletion flag.
+
+);
+-- Index on the SalesforceSyncQueue table's tenantGuid field.
+CREATE INDEX `I_SalesforceSyncQueue_tenantGuid` ON `SalesforceSyncQueue` (`tenantGuid`);
+
+-- Index on the SalesforceSyncQueue table's tenantGuid,active fields.
+CREATE INDEX `I_SalesforceSyncQueue_tenantGuid_active` ON `SalesforceSyncQueue` (`tenantGuid`, `active`);
+
+-- Index on the SalesforceSyncQueue table's tenantGuid,deleted fields.
+CREATE INDEX `I_SalesforceSyncQueue_tenantGuid_deleted` ON `SalesforceSyncQueue` (`tenantGuid`, `deleted`);
+
+-- Index on the SalesforceSyncQueue table's tenantGuid,status,createdDate fields.
+CREATE INDEX `I_SalesforceSyncQueue_tenantGuid_status_createdDate` ON `SalesforceSyncQueue` (`tenantGuid`, `status`, `createdDate`);
 
 
