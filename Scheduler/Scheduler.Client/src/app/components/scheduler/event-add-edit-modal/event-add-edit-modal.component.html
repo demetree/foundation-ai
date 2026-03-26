@@ -823,7 +823,10 @@
                       <i class="bi bi-lock-fill me-1"></i>Deposit
                     </span>
                   </td>
-                  <td>{{ charge.description || charge.notes || '—' }}</td>
+                  <td>
+                    {{ charge.description || '—' }}
+                    <i class="bi bi-chat-text text-muted ms-1" *ngIf="charge.notes" [ngbTooltip]="charge.notes" style="cursor: help;"></i>
+                  </td>
                   <td class="text-center">
                     <!-- Deposit refunded -->
                     <span class="badge bg-success-subtle text-success" *ngIf="charge.isDeposit && charge.depositRefundedDate"

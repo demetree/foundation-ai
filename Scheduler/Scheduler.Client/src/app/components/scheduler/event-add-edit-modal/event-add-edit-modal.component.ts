@@ -478,16 +478,19 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       charges: this.eventChargeService.GetEventChargeList({
         scheduledEventId: this.event.id,
         active: true,
+        deleted: false,
         includeRelations: true
       }),
       transactions: this.financialTransactionService.GetFinancialTransactionList({
         scheduledEventId: this.event.id,
         active: true,
+        deleted: false,
         includeRelations: true
       }),
       invoices: this.invoiceService.GetInvoiceList({
         scheduledEventId: this.event.id,
         active: true,
+        deleted: false,
         includeRelations: true
       })
     };
@@ -691,6 +694,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
           this.invoiceService.GetInvoiceList({
             scheduledEventId: this.event.id,
             active: true,
+            deleted: false,
             includeRelations: true
           }).subscribe(invoices => this.eventInvoices = invoices);
         }
