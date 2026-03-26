@@ -1,3 +1,5 @@
+$glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
 .page-container {
   background-color: var(--sch-bg);
   min-height: 100%;
@@ -62,6 +64,7 @@ $gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 .badge-glass {
   background: rgba(255, 255, 255, 0.2) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: $glass-shadow;
   color: white;
   font-weight: 500;
   padding: 0.5em 1em;
@@ -73,6 +76,7 @@ $gradient-info: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   min-width: 0;
   flex: 1 1 250px;
   max-width: 400px;
+  box-shadow: $glass-shadow;
 
   .search-icon {
     position: absolute;

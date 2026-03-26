@@ -18,6 +18,7 @@ import { ConfirmationService } from '../../services/confirmation-service';
 import { FileManagerSignalrService } from '../../services/filemanager-signalr.service';
 import { UserSettingsService } from '../../services/user-settings.service';
 import { AuthService } from '../../services/auth.service';
+import { NavigationService } from '../../utility-services/navigation.service';
 
 // Auto-generated data services for entity link lookups
 import { ContactService } from '../../scheduler-data-services/contact.service';
@@ -264,6 +265,7 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         private userSettings: UserSettingsService,
         private authService: AuthService,
         private route: ActivatedRoute,
+        private navigationService: NavigationService,
         private router: Router,
         private ngZone: NgZone
     ) {}
@@ -323,6 +325,16 @@ export class FileManagerComponent implements OnInit, OnDestroy {
         this.fmSignalr.disconnect();
         this.entitySearchSub?.unsubscribe();
     }
+
+  public goBack(): void {
+    this.navigationService.goBack();
+  }
+
+
+  public canGoBack(): boolean {
+    return this.navigationService.canGoBack();
+  }
+
 
     private connectSignalR(): void {
         this.fmSignalr.connect();

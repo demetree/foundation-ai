@@ -1,6 +1,7 @@
 <div class="add-contact" *ngIf="showAddButton">
-  <button type="button" class="btn btn-sm btn-add-contact me-2" (click)="openModal()" ngbTooltip="Add Contact"
-    *ngIf="userIsSchedulerContactWriter()" placement="top">
+  <!--<button type="button" class="btn btn-sm btn-add-contact me-2" (click)="openModal()" ngbTooltip="Add Contact"-->
+  <button type="button" class="btn btn-sm btn-glass me-2" (click)="openModal()" ngbTooltip="Add Contact"
+          *ngIf="userIsSchedulerContactWriter()" placement="top">
     Add
   </button>
 </div>

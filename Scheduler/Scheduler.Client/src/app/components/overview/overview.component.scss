@@ -9,6 +9,21 @@
 //
 
 
+
+// ---------------------------------------------------------------------------
+// Design Tokens — accent/functional colors stay hardcoded
+// ---------------------------------------------------------------------------
+$gradient-scheduler: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+$glass-bg: rgba(255, 255, 255, 0.15);
+$glass-border: rgba(255, 255, 255, 0.2);
+$glass-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+$card-radius: 16px;
+$btn-radius: 8px;
+$transition-base: all 0.2s ease;
+$accent-primary: #667eea;
+$accent-secondary: #764ba2;
+
+
 //
 // Main Container
 //
@@ -72,6 +87,72 @@
     letter-spacing: 0.5px;
   }
 }
+
+
+
+// ---------------------------------------------------------------------------
+// Glassmorphic Buttons & Controls (scoped to header)
+// ---------------------------------------------------------------------------
+.btn-glass {
+  background: $glass-bg;
+  border: 1px solid $glass-border;
+  color: white;
+  border-radius: $btn-radius;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: $glass-shadow;
+  backdrop-filter: blur(10px);
+  transition: $transition-base;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    color: white;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.35);
+    border-color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  i {
+    font-size: 1rem;
+  }
+}
+
+.btn-group-glass {
+  display: flex;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: $btn-radius;
+  padding: 2px;
+
+  .btn-glass {
+    border-radius: 6px;
+    box-shadow: none;
+    border: none;
+
+    &:hover {
+      box-shadow: none;
+    }
+  }
+}
+
 
 
 //

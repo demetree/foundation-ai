@@ -30,7 +30,7 @@ import { AuthService } from '../../services/auth.service';
 import { CurrentUserService } from '../../services/current-user.service';
 import { UserSettingsService, FavouriteItem, MostRecentItem } from '../../services/user-settings.service';
 import { SchedulerModeService } from '../../services/scheduler-mode.service';
-
+import { NavigationService } from '../../utility-services/navigation.service';
 
 //
 // Interface definitions for dashboard data
@@ -123,6 +123,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
+    private navigationService: NavigationService,
     private currentUserService: CurrentUserService,
     private userSettingsService: UserSettingsService,
     private scheduledEventService: ScheduledEventService,
@@ -188,6 +189,16 @@ export class OverviewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+
+  public goBack(): void {
+    this.navigationService.goBack();
+  }
+
+
+  public canGoBack(): boolean {
+    return this.navigationService.canGoBack();
   }
 
 

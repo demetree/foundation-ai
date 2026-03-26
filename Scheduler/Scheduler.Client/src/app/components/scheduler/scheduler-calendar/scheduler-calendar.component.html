@@ -11,11 +11,16 @@
 
       <!-- Left: Back + Icon + Title -->
       <div class="header-left">
-        <button class="btn-glass me-2" (click)="goBack()" *ngIf="canGoBack()" title="Go Back">
-          <i class="bi bi-arrow-left"></i>
+
+        <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" *ngIf="canGoBack()" title="Go Back">
+          <i class="fa-solid fa-arrow-left"></i>
         </button>
-        <i class="bi bi-calendar3 page-icon text-white"></i>
-        <h2 class="page-title">Schedule</h2>
+
+        <!-- Title -->
+        <div class="text-white">
+          <h3 class="page-title mb-0 fw-bold text-shadow">Schedule</h3>
+          <small class="text-white-50">View and manage the schedule</small>
+        </div>
       </div>
 
       <!-- Center: Nav + Date Range -->
@@ -25,10 +30,10 @@
           Today
         </button>
         <button class="btn-glass" (click)="navigateCalendar('prev')" title="Previous">
-          <i class="bi bi-chevron-left"></i>
+          <i class="fa fa-chevron-left"></i>
         </button>
         <button class="btn-glass" (click)="navigateCalendar('next')" title="Next">
-          <i class="bi bi-chevron-right"></i>
+          <i class="fa fa-chevron-right"></i>
         </button>
 
         <!-- Current Date Range Title -->

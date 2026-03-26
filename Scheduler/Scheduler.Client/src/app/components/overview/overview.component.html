@@ -5,19 +5,28 @@
   <div class="header-card card mb-4 shadow-lg border-0">
     <div class="card-body d-flex align-items-center gap-4">
 
+
+      <!-- Back Button -->
+      <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back" *ngIf="canGoBack()">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+
+
       <!-- User Avatar -->
       <div class="avatar-wrapper" *ngIf="currentUserContact$ | async as contact">
         <div class="avatar rounded-circle overflow-hidden border-0 shadow" style="width: 80px; height: 80px;">
           <ng-container *ngIf="contact?.avatarData; else defaultAvatar">
             <img [src]="'data:' + (contact?.avatarMimeType || 'image/png') + ';base64,' + (contact?.avatarData || '')"
-              class="w-100 h-100 object-fit-cover" alt="User avatar">
+                 class="w-100 h-100 object-fit-cover" alt="User avatar">
           </ng-container>
           <ng-template #defaultAvatar>
-            <div
-              class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3 avatar-initials"
-              [style.background-color]="contact?.color || '#667eea'">
-              <span>{{ contact?.firstName | slice:0:1 | uppercase }}{{ contact?.lastName | slice:0:1 | uppercase
-                }}</span>
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-white fw-bold fs-3 avatar-initials"
+                 [style.background-color]="contact?.color || '#667eea'">
+              <span>
+                {{ contact?.firstName | slice:0:1 | uppercase }}{{
+ contact?.lastName | slice:0:1 | uppercase
+                }}
+              </span>
             </div>
           </ng-template>
         </div>
@@ -26,11 +35,13 @@
       <!-- Greeting & Stats -->
       <div class="flex-grow-1">
         <div class="d-flex align-items-center gap-3 mb-1">
-          <h2 class="mb-0 text-white fw-bold">{{ userGreeting }}<span *ngIf="currentUserContact$ | async as contact">,
-              {{ contact?.firstName }}</span>!</h2>
+          <h2 class="mb-0 text-white fw-bold">
+            {{ userGreeting }}<span *ngIf="currentUserContact$ | async as contact">, {{ contact?.firstName }}
+            </span>!
+          </h2>
         </div>
         <p class="text-white-50 mb-0">
-          <i class="fa-solid fa-calendar-day me-2"></i>
+          <!--<i class="fa-solid fa-calendar-day me-2"></i>-->
           {{ today | date:'EEEE, MMMM d, y' }}
         </p>
       </div>
@@ -57,7 +68,7 @@
 
       <!-- Quick Actions -->
       <div class="quick-actions-header">
-        <button class="btn btn-outline-light btn-lg shadow-sm" (click)="navigateToCalendar()" ngbTooltip="Open schedule to create a new event">
+        <button class="btn btn-sm btn-glass me-2" (click)="navigateToCalendar()" ngbTooltip="Open schedule to create a new event">
           <i class="fa-solid fa-plus me-2"></i>New Event
         </button>
       </div>

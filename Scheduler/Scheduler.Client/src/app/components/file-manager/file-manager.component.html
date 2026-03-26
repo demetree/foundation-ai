@@ -18,9 +18,13 @@
   <div class="card mb-0 header-card premium-header shadow-lg border-0">
     <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-3 border-0 bg-transparent">
       <div class="header-left">
+        <button class="btn btn-sm btn-glass back-button me-2" (click)="goBack()" ngbTooltip="Go Back"
+                *ngIf="canGoBack()">
+          <i class="fa-solid fa-arrow-left"></i>
+        </button>
         <div class="text-white">
           <h3 class="page-title mb-0 fw-bold text-shadow">
-            <i class="fa-solid fa-folder-tree me-2"></i>Documents
+            Documents
           </h3>
           <small class="text-white-50">Browse and manage your documents</small>
         </div>
