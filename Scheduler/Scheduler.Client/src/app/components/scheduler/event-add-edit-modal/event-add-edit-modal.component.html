@@ -756,7 +756,7 @@
           <div class="col-6 col-md-3">
             <div class="card border-0 bg-light text-center py-2 px-1">
               <small class="text-muted text-uppercase"
-                     style="font-size: 0.65rem; letter-spacing: 0.5px;">Charges</small>
+                     style="font-size: 0.65rem; letter-spacing: 0.5px;">Total Charges</small>
               <strong class="text-primary">{{ financialsTotal.charges | currency:'CAD':'symbol':'1.2-2' }}</strong>
             </div>
           </div>
@@ -823,7 +823,7 @@
                       <i class="bi bi-lock-fill me-1"></i>Deposit
                     </span>
                   </td>
-                  <td>{{ charge.notes || '—' }}</td>
+                  <td>{{ charge.description || charge.notes || '—' }}</td>
                   <td class="text-center">
                     <!-- Deposit refunded -->
                     <span class="badge bg-success-subtle text-success" *ngIf="charge.isDeposit && charge.depositRefundedDate"
@@ -855,11 +855,24 @@
                       <i class="bi bi-arrow-counterclockwise me-1"></i>Refund
                     </button>
                     <button class="btn btn-sm btn-outline-danger py-0 px-1 ms-1"
-                            *ngIf="!charge.isDeposit"
+                            *ngIf="!charge.isDeposit && !isChargeInvoicedOrPaid(charge)"
                             (click)="deleteCharge(charge)"
                             ngbTooltip="Remove this charge">
                       <i class="bi bi-trash"></i>
                     </button>
+                    <button class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" disabled
+                            *ngIf="!charge.isDeposit && isChargeInvoicedOrPaid(charge)"
+                            ngbTooltip="Cannot delete — this charge has been invoiced or paid">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                    <span class="text-muted small" *ngIf="charge.isDeposit && charge.depositRefundedDate"
+                          ngbTooltip="Refunded deposits cannot be deleted">
+                      <i class="bi bi-lock"></i>
+                    </span>
+                    <span class="text-muted small" *ngIf="charge.isDeposit && !charge.depositRefundedDate"
+                          ngbTooltip="Refund this deposit first — deposits cannot be directly deleted">
+                      <i class="bi bi-lock"></i>
+                    </span>
                   </td>
                 </tr>
               </tbody>

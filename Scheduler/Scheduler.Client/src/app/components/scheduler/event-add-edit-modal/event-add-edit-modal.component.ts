@@ -51,6 +51,7 @@ import { ChargeStatusService, ChargeStatusData } from '../../../scheduler-data-s
 import { CurrencyService, CurrencyData } from '../../../scheduler-data-services/currency.service';
 import { InvoiceHelperService } from '../../../services/invoice-helper.service';
 import { InvoiceService, InvoiceData } from '../../../scheduler-data-services/invoice.service';
+import { ConfirmationService } from '../../../services/confirmation-service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { SchedulerModeService } from '../../../services/scheduler-mode.service';
@@ -243,7 +244,8 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     private invoiceService: InvoiceService,
     private router: Router,
     private authService: AuthService,
-    private schedulerModeService: SchedulerModeService
+    private schedulerModeService: SchedulerModeService,
+    private confirmationService: ConfirmationService
   ) {
     this.buildForm();
 
@@ -524,7 +526,7 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
 
         // Calculate totals
         this.financialsTotal.charges = this.eventCharges.reduce(
-          (sum: number, c: any) => sum + (Number(c.extendedAmount) || 0), 0
+          (sum: number, c: any) => sum + (Number(c.totalAmount) || 0), 0
         );
         this.financialsTotal.income = this.eventTransactions
           .filter((t: any) => t.isRevenue === true)
@@ -738,6 +740,11 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
       next: () => {
         charge.chargeStatusId = newStatusId;
         this.alertService.showMessage('Charge status updated', '', MessageSeverity.success);
+        // Refresh financials — status change may trigger server-side side effects
+        this.eventChargeService.ClearAllCaches();
+        this.financialsLoaded = false;
+        this.loadEventFinancials();
+        this.loadEventTimeline();
       },
       error: (err: any) => {
         this.alertService.showMessage('Failed to update status', err?.error?.error || '', MessageSeverity.error);
@@ -745,22 +752,52 @@ export class EventAddEditModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Returns true if the charge has been invoiced or paid (and therefore should not be deleted).
+   */
+  isChargeInvoicedOrPaid(charge: any): boolean {
+    if (!charge?.chargeStatusId) return false;
+    const status = this.chargeStatuses.find(cs => Number(cs.id) === Number(charge.chargeStatusId));
+    if (!status) return false;
+    const name = (status.name || '').toLowerCase();
+    return name === 'invoiced' || name === 'paid';
+  }
+
   deleteCharge(charge: any): void {
     if (!charge) return;
 
-    this.http.delete(`/api/financial/charges/${charge.id}`, {
-      headers: this.getAuthHeaders()
-    }).subscribe({
-      next: () => {
-        this.alertService.showMessage('Charge removed', '', MessageSeverity.success);
-        this.eventChargeService.ClearAllCaches();
-        this.financialsLoaded = false;
-        this.loadEventFinancials();
-        this.loadEventTimeline();
-      },
-      error: (err: any) => {
-        this.alertService.showMessage('Failed to remove charge', err?.error?.error || '', MessageSeverity.error);
-      }
+    // Guard: prevent deleting charges that are already invoiced or paid
+    if (this.isChargeInvoicedOrPaid(charge)) {
+      const status = this.chargeStatuses.find(cs => Number(cs.id) === Number(charge.chargeStatusId));
+      this.alertService.showMessage(
+        'Cannot delete this charge',
+        `This charge has status "${status?.name}". Change its status to Pending first, or void the linked invoice.`,
+        MessageSeverity.warn
+      );
+      return;
+    }
+
+    // Confirmation dialog — charge deletion is irreversible
+    this.confirmationService.confirm(
+      'Delete Charge',
+      `Are you sure you want to remove charge "${charge.chargeType?.name || charge.description || 'this charge'}"?  This cannot be undone.`
+    ).then((confirmed: boolean) => {
+      if (!confirmed) return;
+
+      this.http.delete(`/api/financial/charges/${charge.id}`, {
+        headers: this.getAuthHeaders()
+      }).subscribe({
+        next: () => {
+          this.alertService.showMessage('Charge removed', '', MessageSeverity.success);
+          this.eventChargeService.ClearAllCaches();
+          this.financialsLoaded = false;
+          this.loadEventFinancials();
+          this.loadEventTimeline();
+        },
+        error: (err: any) => {
+          this.alertService.showMessage('Failed to remove charge', err?.error?.error || '', MessageSeverity.error);
+        }
+      });
     });
   }
 
