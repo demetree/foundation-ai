@@ -1,6 +1,7 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using ExcelDataReader;
 using Foundation.CodeGeneration;
+using Foundation.Scheduler.CodeGeneration.Profiles;
 using Foundation.Scheduler.Database;
 using Foundation.Security;
 using Foundation.Security.Database;
@@ -91,6 +92,16 @@ namespace Foundation.Scheduler.CodeGeneration
 
                         break;
 
+
+                    case ConsoleKey.D5:
+                    case ConsoleKey.NumPad5:
+
+                        //
+                        // Configure any tenant with a default profile (Small Town, Healthcare, Construction)
+                        //
+                        TenantConfigurationRunner.Run();
+
+                        break;
 
                     case ConsoleKey.X:
                         exit = true;
@@ -1476,9 +1487,10 @@ namespace Foundation.Scheduler.CodeGeneration
             Console.WriteLine("2. Option 2 - Generate Scheduler Application Entity Code");
             Console.WriteLine("3. Option 3 - Configure Petty Harbour Tenant");
             Console.WriteLine("4. Option 4 - Load Petty Harbour 2025 Data");
+            Console.WriteLine("5. Option 5 - Configure Tenant with Default Profile");
             Console.WriteLine("X. Option X - Exit");
             Console.WriteLine();
-            Console.Write("Please select an option (1-4, or X): ");
+            Console.Write("Please select an option (1-5, or X): ");
         }
 
 

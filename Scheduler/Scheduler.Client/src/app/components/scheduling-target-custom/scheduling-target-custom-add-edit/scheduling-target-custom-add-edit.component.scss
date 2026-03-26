@@ -1,0 +1,102 @@
+.add-scheduling-target {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.btn-glass {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(5px);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+    color: white;
+  }
+}
+
+
+
+.scheduling-target-modal-body {
+  padding: 15px;
+  font-size: 1rem;
+}
+
+.section-heading {
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  color: black;
+}
+
+.scheduling-target-input, .scheduling-target-select {
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.scheduling-target-input::placeholder, .scheduling-target-select::placeholder {
+  color: #6c757d;
+}
+
+.avatar-upload-container {
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+  .avatar-upload-container.drag-over {
+    background-color: rgba(1, 118, 211, 0.1);
+    border-color: #0176d3;
+    box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.2);
+  }
+
+.avatar-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-avatar {
+  background-color: #6c757d;
+}
+
+// Styles for the color picker
+.color-picker {
+  width: 60px;
+  height: 42px;
+  padding: 4px;
+  cursor: pointer;
+}
+
+// Style for the read-only hex display next to the picker
+.input-color-display {
+  margin-bottom: 0;
+}
+
+
+.scheduling-target-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 10px;
+  padding-bottom: 0px;
+  border: none;
+}
+
+.text-danger {
+  color: #dc3545 !important;
+}

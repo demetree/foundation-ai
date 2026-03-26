@@ -288,6 +288,7 @@ import { ClientTargetsTabComponent } from './components/client-custom/client-tar
 import { SchedulingTargetCustomListingComponent } from './components/scheduling-target-custom/scheduling-target-custom-listing/scheduling-target-custom-listing.component';
 import { SchedulingTargetCustomTableComponent } from './components/scheduling-target-custom/scheduling-target-custom-table/scheduling-target-custom-table.component';
 import { SchedulingTargetCustomDetailComponent } from './components/scheduling-target-custom/scheduling-target-custom-detail/scheduling-target-custom-detail.component';
+import { SchedulingTargetCustomAddEditComponent } from './components/scheduling-target-custom/scheduling-target-custom-add-edit/scheduling-target-custom-add-edit.component';
 
 //
 // Document custom optimizations
@@ -1692,6 +1693,7 @@ import { VolunteerStatusTableComponent } from './scheduler-data-components/volun
     SchedulingTargetCustomListingComponent,
     SchedulingTargetCustomTableComponent,
     SchedulingTargetCustomDetailComponent,
+    SchedulingTargetCustomAddEditComponent,
 
 
     //

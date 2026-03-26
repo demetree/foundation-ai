@@ -5,7 +5,7 @@ import { BreakpointObserver } from '@angular/cdk/layout';
 import { NavigationService } from '../../../utility-services/navigation.service';
 import { CanComponentDeactivate } from '../../../guards/unsaved-changes.guard';
 import { SchedulingTargetService, SchedulingTargetData } from '../../../scheduler-data-services/scheduling-target.service';
-import { SchedulingTargetAddEditComponent } from '../../../scheduler-data-components/scheduling-target/scheduling-target-add-edit/scheduling-target-add-edit.component';
+import { SchedulingTargetCustomAddEditComponent } from '../scheduling-target-custom-add-edit/scheduling-target-custom-add-edit.component';
 import { SchedulingTargetCustomTableComponent } from '../scheduling-target-custom-table/scheduling-target-custom-table.component';
 import { AlertService, MessageSeverity } from '../../../services/alert.service';
 
@@ -15,7 +15,7 @@ import { AlertService, MessageSeverity } from '../../../services/alert.service';
   styleUrls: ['./scheduling-target-custom-listing.component.scss']
 })
 export class SchedulingTargetCustomListingComponent implements OnInit, AfterViewInit, CanComponentDeactivate {
-  @ViewChild(SchedulingTargetAddEditComponent) addEditSchedulingTargetComponent!: SchedulingTargetAddEditComponent;
+  @ViewChild(SchedulingTargetCustomAddEditComponent) addEditSchedulingTargetComponent!: SchedulingTargetCustomAddEditComponent;
   @ViewChild(SchedulingTargetCustomTableComponent) schedulingTargetCustomTableComponent!: SchedulingTargetCustomTableComponent;
 
   public SchedulingTargets: SchedulingTargetData[] | null = null;
