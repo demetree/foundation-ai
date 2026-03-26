@@ -57,7 +57,7 @@
     </li>
     <li class="nav-item">
       <button class="nav-link" [class.active]="activeTab === 'assignments'" (click)="setActiveTab('assignments')"
-        *ngIf="!isSimpleMode">
+              *ngIf="!isSimpleMode">
         <i class="bi bi-people me-1"></i>Assignments
       </button>
     </li>
@@ -75,7 +75,7 @@
       <button class="nav-link" [class.active]="activeTab === 'dependencies'" (click)="setActiveTab('dependencies')">
         <i class="bi bi-diagram-3 me-1"></i>Dependencies
         <span class="badge bg-primary-subtle text-primary ms-1"
-          *ngIf="predecessors.length + successors.length + pendingNewDeps.length > 0">
+              *ngIf="predecessors.length + successors.length + pendingNewDeps.length > 0">
           {{ predecessors.length + successors.length + pendingNewDeps.length }}
         </span>
       </button>
@@ -84,7 +84,7 @@
       <button class="nav-link" [class.active]="activeTab === 'financials'" (click)="setActiveTab('financials')">
         <i class="bi bi-wallet2 me-1"></i>Financials
         <span class="badge bg-success-subtle text-success ms-1"
-          *ngIf="financialsLoaded && (eventCharges.length + eventTransactions.length) > 0">
+              *ngIf="financialsLoaded && (eventCharges.length + eventTransactions.length) > 0">
           {{ eventCharges.length + eventTransactions.length }}
         </span>
       </button>
@@ -93,11 +93,18 @@
       <button class="nav-link" [class.active]="activeTab === 'rental'" (click)="setActiveTab('rental')">
         <i class="bi bi-file-earmark-text me-1"></i>Rental Agreement
         <span class="badge ms-1" *ngIf="getRentalStatus() !== 'none'"
-          [ngClass]="{'bg-warning-subtle text-warning': getRentalStatus() === 'draft', 'bg-success-subtle text-success': getRentalStatus() === 'signed', 'bg-danger-subtle text-danger': getRentalStatus() === 'expired'}">
+              [ngClass]="{'bg-warning-subtle text-warning': getRentalStatus() === 'draft', 'bg-success-subtle text-success': getRentalStatus() === 'signed', 'bg-danger-subtle text-danger': getRentalStatus() === 'expired'}">
           {{ getRentalStatus() | titlecase }}
         </span>
       </button>
     </li>
+
+    <li class="nav-item" *ngIf="isEditMode">
+      <button class="nav-link" [class.active]="activeTab === 'messages'" (click)="setActiveTab('messages')">
+        <i class="bi bi-chat me-1"></i>Messages
+      </button>
+    </li>
+
     <li class="nav-item" *ngIf="isEditMode">
       <button class="nav-link" [class.active]="activeTab === 'documents'" (click)="setActiveTab('documents')">
         <i class="bi bi-folder2-open me-1"></i>Documents
@@ -142,8 +149,9 @@
           <!-- Quick Duration Pills -->
           <div class="d-flex gap-1 mt-1 flex-wrap" *ngIf="eventForm.get('startDateTime')?.value">
             <button type="button" class="btn btn-sm duration-pill" *ngFor="let dur of [30, 60, 120, 240, 480]"
-              [class.active]="getActiveDuration() === dur" (click)="setDuration(dur)">
-              {{ dur < 60 ? dur + 'm' : (dur / 60) + 'h' }} </button>
+                    [class.active]="getActiveDuration() === dur" (click)="setDuration(dur)">
+              {{ dur < 60 ? dur + 'm' : (dur / 60) + 'h' }}
+            </button>
           </div>
         </div>
         <div class="col-md-4 d-flex align-items-end">
@@ -195,7 +203,7 @@
           <div class="d-flex align-items-center gap-2">
             <input type="color" class="form-control form-control-color" formControlName="color" />
             <button class="btn btn-sm btn-outline-secondary" *ngIf="eventForm.get('color')?.value"
-              (click)="eventForm.patchValue({ color: null })">
+                    (click)="eventForm.patchValue({ color: null })">
               <i class="bi bi-x"></i>
             </button>
           </div>
@@ -247,20 +255,20 @@
           <div class="row g-2">
             <div class="col-md-4">
               <input type="text" class="form-control" formControlName="bookingContactName"
-                placeholder="Contact name" />
+                     placeholder="Contact name" />
             </div>
             <div class="col-md-4">
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                 <input type="email" class="form-control" formControlName="bookingContactEmail"
-                  placeholder="Email" />
+                       placeholder="Email" />
               </div>
             </div>
             <div class="col-md-4">
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-telephone"></i></span>
                 <input type="tel" class="form-control" formControlName="bookingContactPhone"
-                  placeholder="Phone" />
+                       placeholder="Phone" />
               </div>
             </div>
           </div>
@@ -270,7 +278,7 @@
         <div class="col-12">
           <label class="form-label fw-semibold">Description</label>
           <textarea class="form-control" rows="2" formControlName="description"
-            placeholder="Brief description of this event"></textarea>
+                    placeholder="Brief description of this event"></textarea>
         </div>
 
         <!-- Notes (Advanced only) -->
@@ -282,7 +290,7 @@
         <!-- Dynamic Attributes (Advanced only) -->
         <div class="col-12" *ngIf="!isSimpleMode">
           <app-dynamic-field-renderer [entityName]="'ScheduledEvent'" [data]="attributesParsed"
-            (dataChange)="onDynamicAttributeChange($event)">
+                                      (dataChange)="onDynamicAttributeChange($event)">
           </app-dynamic-field-renderer>
         </div>
 
@@ -293,7 +301,7 @@
           </label>
           <div class="calendar-chips">
             <label *ngFor="let cal of calendars" class="calendar-chip" [class.selected]="isCalendarAssigned(cal.id)"
-              (click)="toggleCalendarAssignment(cal.id); $event.preventDefault()">
+                   (click)="toggleCalendarAssignment(cal.id); $event.preventDefault()">
               <span class="chip-swatch" [style.background-color]="cal.color || '#4285f4'"></span>
               <span class="chip-label">{{ cal.name }}</span>
               <i class="bi bi-check-lg chip-check" *ngIf="isCalendarAssigned(cal.id)"></i>
@@ -337,12 +345,12 @@
           </thead>
           <tbody>
             <tr *ngFor="let assignment of assignments.controls; let i = index" class="assignment-row"
-              [formGroup]="$any(assignment)">
+                [formGroup]="$any(assignment)">
               <td>
                 <!-- Resource dropdown (for individual assignments) -->
                 <ng-container *ngIf="assignment.get('resourceId')?.validator">
                   <select class="form-select form-select-sm" formControlName="resourceId"
-                    (change)="onResourceChanged(i)">
+                          (change)="onResourceChanged(i)">
                     <option [ngValue]="null" disabled>Select resource...</option>
                     <option *ngFor="let r of resources" [ngValue]="r.id">{{ r.name }}</option>
                   </select>
@@ -395,7 +403,7 @@
         <div class="row g-2 align-items-end mb-3">
           <div class="col">
             <select class="form-select form-select-sm" [(ngModel)]="selectedNewQualId"
-              [ngModelOptions]="{standalone: true}">
+                    [ngModelOptions]="{standalone: true}">
               <option [ngValue]="null" disabled>Select a qualification...</option>
               <option *ngFor="let qual of allQualifications" [ngValue]="qual.id">{{ qual.name }}</option>
             </select>
@@ -411,19 +419,19 @@
         <div *ngIf="existingEventQualReqs.length > 0 || pendingNewQualReqs.length > 0">
           <!-- Existing requirements -->
           <div class="d-flex align-items-center justify-content-between py-1 px-2 mb-1 bg-light rounded"
-            *ngFor="let req of existingEventQualReqs">
+               *ngFor="let req of existingEventQualReqs">
             <span>
               <i class="bi bi-award-fill text-info me-1"></i>
               {{ getQualificationName($any(req.qualificationId)) }}
             </span>
             <button class="btn btn-sm btn-outline-danger btn-icon" (click)="removeExistingQualReq($any(req.id))"
-              title="Remove">
+                    title="Remove">
               <i class="bi bi-x-lg"></i>
             </button>
           </div>
           <!-- Pending new requirements -->
           <div class="d-flex align-items-center justify-content-between py-1 px-2 mb-1 rounded"
-            style="background-color: rgba(13,202,240,0.1);" *ngFor="let qualId of pendingNewQualReqs; let i = index">
+               style="background-color: rgba(13,202,240,0.1);" *ngFor="let qualId of pendingNewQualReqs; let i = index">
             <span>
               <i class="bi bi-award text-info me-1"></i>
               {{ getQualificationName(qualId) }}
@@ -462,7 +470,7 @@
     <div class="tab-pane-content" *ngIf="activeTab === 'recurrence'">
       <div class="form-check form-switch mb-3">
         <input class="form-check-input" type="checkbox" id="recurring" [(ngModel)]="isRecurring"
-          [ngModelOptions]="{standalone: true}" (change)="onRecurrenceToggle()">
+               [ngModelOptions]="{standalone: true}" (change)="onRecurrenceToggle()">
         <label class="form-check-label fw-semibold" for="recurring">
           <i class="bi bi-arrow-repeat me-1"></i>Recurring Event
         </label>
@@ -470,7 +478,7 @@
 
       <div class="recurrence-panel" *ngIf="isRecurring">
         <app-recurrence-builder [recurrenceRule]="recurrenceRule" [simpleMode]="isSimpleMode"
-          (recurrenceRuleChange)="recurrenceRule = $event"></app-recurrence-builder>
+                                (recurrenceRuleChange)="recurrenceRule = $event"></app-recurrence-builder>
       </div>
 
       <!-- Recurrence Exceptions (Edit Mode + Recurring + Advanced Only) -->
@@ -490,21 +498,21 @@
             <div class="col-md-4">
               <label class="form-label small">Skip Date <span class="text-danger">*</span></label>
               <input type="datetime-local" class="form-control form-control-sm"
-                [(ngModel)]="newException.exceptionDateTime" [ngModelOptions]="{standalone: true}">
+                     [(ngModel)]="newException.exceptionDateTime" [ngModelOptions]="{standalone: true}">
             </div>
             <div class="col-md-3">
               <label class="form-label small">Move To (optional)</label>
               <input type="datetime-local" class="form-control form-control-sm"
-                [(ngModel)]="newException.movedToDateTime" [ngModelOptions]="{standalone: true}">
+                     [(ngModel)]="newException.movedToDateTime" [ngModelOptions]="{standalone: true}">
             </div>
             <div class="col-md-3">
               <label class="form-label small">Reason</label>
               <input type="text" class="form-control form-control-sm" placeholder="e.g. Holiday"
-                [(ngModel)]="newException.reason" [ngModelOptions]="{standalone: true}">
+                     [(ngModel)]="newException.reason" [ngModelOptions]="{standalone: true}">
             </div>
             <div class="col-md-2 d-flex gap-1">
               <button class="btn btn-sm btn-primary flex-grow-1" (click)="confirmAddException()"
-                [disabled]="!newException.exceptionDateTime">
+                      [disabled]="!newException.exceptionDateTime">
                 <i class="bi bi-check-lg"></i>
               </button>
               <button class="btn btn-sm btn-outline-secondary" (click)="cancelAddException()">
@@ -549,7 +557,7 @@
 
         <!-- Empty State -->
         <div class="empty-state small py-3"
-          *ngIf="recurrenceExceptions.length === 0 && pendingNewExceptions.length === 0 && !addingException">
+             *ngIf="recurrenceExceptions.length === 0 && pendingNewExceptions.length === 0 && !addingException">
           <i class="bi bi-check-circle text-success me-1"></i>
           No exceptions — all occurrences are active
         </div>
@@ -571,7 +579,7 @@
         <div class="col-md-6">
           <label class="form-label fw-semibold">External ID</label>
           <input type="text" class="form-control" formControlName="externalId"
-            placeholder="External system reference" />
+                 placeholder="External system reference" />
         </div>
 
         <!-- Volunteer Hub Settings -->
@@ -584,7 +592,7 @@
         <div class="col-md-6">
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="isOpenForVolunteers"
-              formControlName="isOpenForVolunteers">
+                   formControlName="isOpenForVolunteers">
             <label class="form-check-label" for="isOpenForVolunteers">Open for Volunteer Sign-up</label>
           </div>
           <small class="text-muted">When enabled, this event will appear in the Volunteer Hub for self-sign-up.</small>
@@ -592,7 +600,7 @@
         <div class="col-md-6" *ngIf="eventForm.get('isOpenForVolunteers')?.value">
           <label class="form-label fw-semibold">Max Volunteer Slots</label>
           <input type="number" class="form-control" formControlName="maxVolunteerSlots" placeholder="Unlimited"
-            min="1" />
+                 min="1" />
           <small class="text-muted">Leave blank for unlimited slots.</small>
         </div>
       </div>
@@ -610,7 +618,7 @@
           <span class="fw-semibold">Predecessors</span>
           <span class="text-muted small">(must finish before this event)</span>
           <button class="btn btn-sm btn-outline-primary ms-auto" (click)="showAddDependency('predecessor')"
-            *ngIf="!addingDependency">
+                  *ngIf="!addingDependency">
             <i class="bi bi-plus-lg me-1"></i>Add
           </button>
         </div>
@@ -624,7 +632,7 @@
           </span>
           <span class="dep-lag" *ngIf="dep.lagMinutes">+{{ dep.lagMinutes }}m lag</span>
           <button class="btn btn-sm btn-outline-danger btn-icon ms-auto"
-            (click)="removeExistingDep(dep, 'predecessor')">
+                  (click)="removeExistingDep(dep, 'predecessor')">
             <i class="bi bi-trash3"></i>
           </button>
         </div>
@@ -641,7 +649,7 @@
           <span class="fw-semibold">Successors</span>
           <span class="text-muted small">(can start after this event)</span>
           <button class="btn btn-sm btn-outline-success ms-auto" (click)="showAddDependency('successor')"
-            *ngIf="!addingDependency">
+                  *ngIf="!addingDependency">
             <i class="bi bi-plus-lg me-1"></i>Add
           </button>
         </div>
@@ -673,8 +681,10 @@
         <div class="dep-row dep-row-new" *ngFor="let pd of pendingNewDeps; let i = index">
           <span class="dep-type-dot" [style.background]="getDependencyTypeColor(pd.dependencyTypeId)"></span>
           <span class="dep-event-name">
-            {{ getEventNameById(pd.predecessorEventId === (event?.id || 0) ? pd.successorEventId :
-            pd.predecessorEventId) }}
+            {{
+ getEventNameById(pd.predecessorEventId === (event?.id || 0) ? pd.successorEventId :
+            pd.predecessorEventId)
+            }}
           </span>
           <span class="dep-type-badge" [style.borderColor]="getDependencyTypeColor(pd.dependencyTypeId)">
             {{ getDependencyTypeName(pd.dependencyTypeId) }}
@@ -697,7 +707,7 @@
           <div class="col-md-5">
             <label class="form-label small fw-semibold">Event</label>
             <select class="form-select form-select-sm" [(ngModel)]="newDep.eventId"
-              [ngModelOptions]="{standalone: true}">
+                    [ngModelOptions]="{standalone: true}">
               <option [ngValue]="0" disabled>Select event...</option>
               <option *ngFor="let ev of allEventsList" [ngValue]="ev.id">{{ ev.name }}</option>
             </select>
@@ -705,14 +715,14 @@
           <div class="col-md-3">
             <label class="form-label small fw-semibold">Type</label>
             <select class="form-select form-select-sm" [(ngModel)]="newDep.dependencyTypeId"
-              [ngModelOptions]="{standalone: true}">
+                    [ngModelOptions]="{standalone: true}">
               <option *ngFor="let dt of dependencyTypes" [ngValue]="dt.id">{{ dt.name }}</option>
             </select>
           </div>
           <div class="col-md-2">
             <label class="form-label small fw-semibold">Lag (min)</label>
             <input type="number" class="form-control form-control-sm" [(ngModel)]="newDep.lagMinutes"
-              [ngModelOptions]="{standalone: true}" min="0" />
+                   [ngModelOptions]="{standalone: true}" min="0" />
           </div>
           <div class="col-md-2 d-flex align-items-end gap-1">
             <button class="btn btn-sm btn-primary" (click)="confirmAddDependency()">
@@ -746,7 +756,7 @@
           <div class="col-6 col-md-3">
             <div class="card border-0 bg-light text-center py-2 px-1">
               <small class="text-muted text-uppercase"
-                style="font-size: 0.65rem; letter-spacing: 0.5px;">Charges</small>
+                     style="font-size: 0.65rem; letter-spacing: 0.5px;">Charges</small>
               <strong class="text-primary">{{ financialsTotal.charges | currency:'CAD':'symbol':'1.2-2' }}</strong>
             </div>
           </div>
@@ -759,7 +769,7 @@
           <div class="col-6 col-md-3">
             <div class="card border-0 bg-light text-center py-2 px-1">
               <small class="text-muted text-uppercase"
-                style="font-size: 0.65rem; letter-spacing: 0.5px;">Expenses</small>
+                     style="font-size: 0.65rem; letter-spacing: 0.5px;">Expenses</small>
               <strong class="text-danger">{{ financialsTotal.expenses | currency:'CAD':'symbol':'1.2-2' }}</strong>
             </div>
           </div>
@@ -784,7 +794,7 @@
             <div class="d-flex align-items-center gap-2">
               <div class="form-check form-switch" *ngIf="hasDeposits()">
                 <input class="form-check-input" type="checkbox" id="depositFilter"
-                  [(ngModel)]="showDepositsOnly" [ngModelOptions]="{standalone: true}">
+                       [(ngModel)]="showDepositsOnly" [ngModelOptions]="{standalone: true}">
                 <label class="form-check-label small" for="depositFilter">Deposits only</label>
               </div>
               <button class="btn btn-sm btn-outline-primary" (click)="openAddCharge()" *ngIf="!showAddCharge">
@@ -809,7 +819,7 @@
                   <td>
                     {{ charge.chargeType?.name || '—' }}
                     <span class="badge bg-warning-subtle text-warning ms-1" *ngIf="charge.isDeposit"
-                      ngbTooltip="This charge is a security deposit">
+                          ngbTooltip="This charge is a security deposit">
                       <i class="bi bi-lock-fill me-1"></i>Deposit
                     </span>
                   </td>
@@ -817,7 +827,7 @@
                   <td class="text-center">
                     <!-- Deposit refunded -->
                     <span class="badge bg-success-subtle text-success" *ngIf="charge.isDeposit && charge.depositRefundedDate"
-                      [ngbTooltip]="'Refunded ' + (charge.depositRefundedDate | date:'mediumDate')">
+                          [ngbTooltip]="'Refunded ' + (charge.depositRefundedDate | date:'mediumDate')">
                       <i class="bi bi-check-circle me-1"></i>Refunded
                     </span>
                     <!-- Deposit awaiting refund -->
@@ -826,9 +836,9 @@
                     </span>
                     <!-- Non-deposit: clickable status dropdown (P2-9) -->
                     <select *ngIf="!charge.isDeposit" class="form-select form-select-sm py-0"
-                      style="width: auto; min-width: 100px; font-size: 0.8rem; display: inline-block;"
-                      [ngModel]="charge.chargeStatusId" [ngModelOptions]="{standalone: true}"
-                      (ngModelChange)="updateChargeStatus(charge, $event)">
+                            style="width: auto; min-width: 100px; font-size: 0.8rem; display: inline-block;"
+                            [ngModel]="charge.chargeStatusId" [ngModelOptions]="{standalone: true}"
+                            (ngModelChange)="updateChargeStatus(charge, $event)">
                       <option *ngFor="let cs of chargeStatuses" [ngValue]="cs.id">{{ cs.name }}</option>
                     </select>
                   </td>
@@ -839,15 +849,15 @@
                   </td>
                   <td class="text-end">
                     <button class="btn btn-sm btn-outline-success py-0 px-2"
-                      *ngIf="charge.isDeposit && !charge.depositRefundedDate"
-                      (click)="refundDeposit(charge)"
-                      ngbTooltip="Mark this deposit as refunded">
+                            *ngIf="charge.isDeposit && !charge.depositRefundedDate"
+                            (click)="refundDeposit(charge)"
+                            ngbTooltip="Mark this deposit as refunded">
                       <i class="bi bi-arrow-counterclockwise me-1"></i>Refund
                     </button>
                     <button class="btn btn-sm btn-outline-danger py-0 px-1 ms-1"
-                      *ngIf="!charge.isDeposit"
-                      (click)="deleteCharge(charge)"
-                      ngbTooltip="Remove this charge">
+                            *ngIf="!charge.isDeposit"
+                            (click)="deleteCharge(charge)"
+                            ngbTooltip="Remove this charge">
                       <i class="bi bi-trash"></i>
                     </button>
                   </td>
@@ -870,7 +880,7 @@
               <div class="col-md-4">
                 <label class="form-label small fw-semibold">Charge Type <span class="text-danger">*</span></label>
                 <select class="form-select form-select-sm" [(ngModel)]="newCharge.chargeTypeId"
-                  [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}">
                   <option [ngValue]="null" disabled>Select type...</option>
                   <option *ngFor="let ct of chargeTypes" [ngValue]="ct.id">{{ ct.name }}</option>
                 </select>
@@ -878,37 +888,37 @@
               <div class="col-md-4">
                 <label class="form-label small fw-semibold">Description</label>
                 <input type="text" class="form-control form-control-sm" [(ngModel)]="newCharge.description"
-                  [ngModelOptions]="{standalone: true}" placeholder="e.g. Hall rental fee">
+                       [ngModelOptions]="{standalone: true}" placeholder="e.g. Hall rental fee">
               </div>
               <div class="col-md-2">
                 <label class="form-label small fw-semibold">Qty</label>
                 <input type="number" class="form-control form-control-sm" [(ngModel)]="newCharge.quantity"
-                  [ngModelOptions]="{standalone: true}" min="1" step="1">
+                       [ngModelOptions]="{standalone: true}" min="1" step="1">
               </div>
               <div class="col-md-2">
                 <label class="form-label small fw-semibold">Unit Price</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text">$</span>
                   <input type="number" class="form-control" [(ngModel)]="newCharge.unitPrice"
-                    [ngModelOptions]="{standalone: true}" min="0" step="0.01">
+                         [ngModelOptions]="{standalone: true}" min="0" step="0.01">
                 </div>
               </div>
               <div class="col-md-4">
                 <label class="form-label small fw-semibold">Status <span class="text-danger">*</span></label>
                 <select class="form-select form-select-sm" [(ngModel)]="newCharge.chargeStatusId"
-                  [ngModelOptions]="{standalone: true}">
+                        [ngModelOptions]="{standalone: true}">
                   <option *ngFor="let cs of chargeStatuses" [ngValue]="cs.id">{{ cs.name }}</option>
                 </select>
               </div>
               <div class="col-md-4">
                 <label class="form-label small fw-semibold">Notes</label>
                 <input type="text" class="form-control form-control-sm" [(ngModel)]="newCharge.notes"
-                  [ngModelOptions]="{standalone: true}" placeholder="Optional notes...">
+                       [ngModelOptions]="{standalone: true}" placeholder="Optional notes...">
               </div>
               <div class="col-md-2 d-flex align-items-end">
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" id="newChargeDeposit"
-                    [(ngModel)]="newCharge.isDeposit" [ngModelOptions]="{standalone: true}">
+                         [(ngModel)]="newCharge.isDeposit" [ngModelOptions]="{standalone: true}">
                   <label class="form-check-label small" for="newChargeDeposit">Deposit</label>
                 </div>
               </div>
@@ -934,7 +944,7 @@
           <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top" *ngIf="eventCharges.length > 0">
             <div>
               <button class="btn btn-sm btn-success" (click)="generateInvoice()"
-                [disabled]="generatingInvoice || eventCharges.length === 0">
+                      [disabled]="generatingInvoice || eventCharges.length === 0">
                 <i class="fa-solid fa-spinner fa-spin me-1" *ngIf="generatingInvoice"></i>
                 <i class="bi bi-file-earmark-plus me-1" *ngIf="!generatingInvoice"></i>
                 Generate Invoice
@@ -956,8 +966,8 @@
           </h6>
           <div class="list-group list-group-flush">
             <a *ngFor="let inv of eventInvoices" href="javascript:void(0)"
-              class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
-              (click)="viewInvoice(inv.id)">
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2"
+               (click)="viewInvoice(inv.id)">
               <div>
                 <span class="fw-semibold text-primary">{{ inv.invoiceNumber }}</span>
                 <span class="text-muted small ms-2">{{ inv.invoiceDate | date:'mediumDate' }}</span>
@@ -996,13 +1006,14 @@
                   <td>{{ txn.description || '—' }}</td>
                   <td>
                     <span class="badge" [class.bg-success-subtle]="txn.isRevenue" [class.text-success]="txn.isRevenue"
-                      [class.bg-danger-subtle]="!txn.isRevenue" [class.text-danger]="!txn.isRevenue">
+                          [class.bg-danger-subtle]="!txn.isRevenue" [class.text-danger]="!txn.isRevenue">
                       {{ txn.isRevenue ? 'Income' : 'Expense' }}
                     </span>
                   </td>
                   <td class="text-end fw-semibold" [class.text-success]="txn.isRevenue"
-                    [class.text-danger]="!txn.isRevenue">
-                    {{ !txn.isRevenue ? '-' : '+' }}{{ txn.amount | currency:'CAD':'symbol':'1.2-2'
+                      [class.text-danger]="!txn.isRevenue">
+                    {{ !txn.isRevenue ? '-' : '+' }}{{
+ txn.amount | currency:'CAD':'symbol':'1.2-2'
                     }}
                   </td>
                 </tr>
@@ -1020,12 +1031,12 @@
           </h6>
           <div class="timeline-list">
             <div class="timeline-entry d-flex align-items-start gap-3 py-2"
-              *ngFor="let entry of financialTimeline; let last = last"
-              [class.border-bottom]="!last" style="border-color: #f3f4f6 !important; font-size: 0.85rem;">
+                 *ngFor="let entry of financialTimeline; let last = last"
+                 [class.border-bottom]="!last" style="border-color: #f3f4f6 !important; font-size: 0.85rem;">
 
               <!-- Icon -->
               <div class="timeline-icon flex-shrink-0 d-flex align-items-center justify-content-center rounded-circle"
-                [ngClass]="{
+                   [ngClass]="{
                   'bg-primary-subtle text-primary': entry.type === 'charge',
                   'bg-warning-subtle text-warning': entry.type === 'deposit',
                   'bg-success-subtle text-success': entry.type === 'refund' || entry.type === 'income',
@@ -1039,8 +1050,8 @@
                 <div class="d-flex justify-content-between">
                   <span class="text-truncate">{{ entry.description }}</span>
                   <span class="fw-semibold ms-2 flex-shrink-0"
-                    [class.text-success]="entry.isPositive"
-                    [class.text-danger]="!entry.isPositive">
+                        [class.text-success]="entry.isPositive"
+                        [class.text-danger]="!entry.isPositive">
                     {{ entry.isPositive ? '+' : '-' }}{{ entry.amount | currency:'CAD':'symbol':'1.2-2' }}
                   </span>
                 </div>
@@ -1079,7 +1090,7 @@
           <div class="col-md-4">
             <label class="form-label fw-semibold">Agreement Status</label>
             <select class="form-select" [ngModel]="getRentalStatus()" (ngModelChange)="setRentalField('status', $event)"
-              [ngModelOptions]="{standalone: true}">
+                    [ngModelOptions]="{standalone: true}">
               <option value="none">No Agreement</option>
               <option value="draft">Draft</option>
               <option value="signed">Signed</option>
@@ -1093,8 +1104,8 @@
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-person"></i></span>
               <input type="text" class="form-control" placeholder="Renter / Organization name"
-                [ngModel]="getRentalField('contactName')" (ngModelChange)="setRentalField('contactName', $event)"
-                [ngModelOptions]="{standalone: true}" />
+                     [ngModel]="getRentalField('contactName')" (ngModelChange)="setRentalField('contactName', $event)"
+                     [ngModelOptions]="{standalone: true}" />
             </div>
           </div>
 
@@ -1102,16 +1113,16 @@
           <div class="col-md-4">
             <label class="form-label fw-semibold">Signed Date</label>
             <input type="date" class="form-control"
-              [ngModel]="getRentalField('signedDate')" (ngModelChange)="setRentalField('signedDate', $event)"
-              [ngModelOptions]="{standalone: true}" />
+                   [ngModel]="getRentalField('signedDate')" (ngModelChange)="setRentalField('signedDate', $event)"
+                   [ngModelOptions]="{standalone: true}" />
           </div>
 
           <!-- Expiry Date -->
           <div class="col-md-4">
             <label class="form-label fw-semibold">Expiry Date</label>
             <input type="date" class="form-control"
-              [ngModel]="getRentalField('expiryDate')" (ngModelChange)="setRentalField('expiryDate', $event)"
-              [ngModelOptions]="{standalone: true}" />
+                   [ngModel]="getRentalField('expiryDate')" (ngModelChange)="setRentalField('expiryDate', $event)"
+                   [ngModelOptions]="{standalone: true}" />
           </div>
 
           <!-- Deposit Amount -->
@@ -1120,8 +1131,8 @@
             <div class="input-group">
               <span class="input-group-text">$</span>
               <input type="number" class="form-control" placeholder="0.00" min="0" step="0.01"
-                [ngModel]="getRentalField('depositAmount')" (ngModelChange)="setRentalField('depositAmount', $event)"
-                [ngModelOptions]="{standalone: true}" />
+                     [ngModel]="getRentalField('depositAmount')" (ngModelChange)="setRentalField('depositAmount', $event)"
+                     [ngModelOptions]="{standalone: true}" />
             </div>
           </div>
 
@@ -1129,15 +1140,15 @@
           <div class="col-12">
             <label class="form-label fw-semibold">Agreement Notes</label>
             <textarea class="form-control" rows="3" placeholder="Special terms, conditions, or arrangements..."
-              [ngModel]="getRentalField('notes')" (ngModelChange)="setRentalField('notes', $event)"
-              [ngModelOptions]="{standalone: true}"></textarea>
+                      [ngModel]="getRentalField('notes')" (ngModelChange)="setRentalField('notes', $event)"
+                      [ngModelOptions]="{standalone: true}"></textarea>
           </div>
         </div>
 
         <!-- Status visual indicator -->
         <div class="rental-status-bar mt-3" *ngIf="getRentalStatus() !== 'none'">
           <div class="d-flex align-items-center gap-2 p-2 rounded"
-            [ngClass]="{'bg-warning-subtle': getRentalStatus() === 'draft', 'bg-success-subtle': getRentalStatus() === 'signed', 'bg-danger-subtle': getRentalStatus() === 'expired'}">
+               [ngClass]="{'bg-warning-subtle': getRentalStatus() === 'draft', 'bg-success-subtle': getRentalStatus() === 'signed', 'bg-danger-subtle': getRentalStatus() === 'expired'}">
             <i class="bi" [ngClass]="{'bi-pencil text-warning': getRentalStatus() === 'draft', 'bi-check-circle-fill text-success': getRentalStatus() === 'signed', 'bi-exclamation-triangle-fill text-danger': getRentalStatus() === 'expired'}"></i>
             <span class="small fw-semibold">
               <ng-container *ngIf="getRentalStatus() === 'draft'">Agreement is in draft — awaiting signature.</ng-container>
@@ -1154,6 +1165,15 @@
     <!-- ============================================================== -->
     <div class="tab-pane-content" *ngIf="activeTab === 'documents'">
       <app-event-document-panel [ownerField]="'scheduledEventId'" [ownerId]="event!.id"></app-event-document-panel>
+    </div>
+
+
+
+    <!-- ============================================================== -->
+    <!-- MESSAGES TAB -->
+    <!-- ============================================================== -->
+    <div class="tab-pane-content" *ngIf="activeTab === 'messages'">
+      <app-entity-conversations [entityName]="'Event'" [entityId]="event!.id"></app-entity-conversations>
     </div>
 
     <!-- ============================================================== -->

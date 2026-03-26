@@ -64,8 +64,16 @@ namespace Scheduler.Tests
                 .UseSqlite(_connection)
                 .Options;
 
-            Context = new SchedulerContext(options);
+            Context = new TestSchedulerContext(options);
             Context.Database.EnsureCreated();
+
+            //
+            // Disable foreign key enforcement — the tests focus on business logic
+            // correctness, not referential integrity.  Without this, every test
+            // would need to seed the full entity graph (Client → ClientType →
+            // TimeZone → Country → StateProvince, etc.) just to create an Invoice.
+            //
+            Context.Database.ExecuteSqlRaw("PRAGMA foreign_keys = OFF;");
 
             SeedReferenceData();
 
@@ -139,6 +147,35 @@ namespace Scheduler.Tests
             Context.ChargeTypes.Add(chargeType);
             Context.SaveChanges();
             ChargeTypeId = chargeType.id;
+
+            // ── Financial Categories ── (pre-seed to avoid GetOrCreateFinancialCategoryAsync
+            // creating one with missing required fields under SQLite)
+            Context.FinancialCategories.Add(new FinancialCategory
+            {
+                tenantGuid = TenantGuid,
+                name = "Booking Revenue",
+                description = "Revenue from event bookings",
+                code = "REV-BOOKING",
+                accountTypeId = RevenueAccountTypeId,
+                active = true,
+                deleted = false,
+                objectGuid = Guid.NewGuid(),
+                versionNumber = 1
+            });
+            // Also seed a Cash account so GL posting works
+            Context.FinancialCategories.Add(new FinancialCategory
+            {
+                tenantGuid = TenantGuid,
+                name = "Cash",
+                description = "Cash/bank account for GL contra entries",
+                code = "CASH",
+                accountTypeId = RevenueAccountTypeId,
+                active = true,
+                deleted = false,
+                objectGuid = Guid.NewGuid(),
+                versionNumber = 1
+            });
+            Context.SaveChanges();
 
             // ── Period Statuses ──
             var openPeriodStatus = new PeriodStatus { name = "Open", description = "Open period", sequence = 1, active = true, deleted = false, objectGuid = Guid.NewGuid() };
