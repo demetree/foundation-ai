@@ -10,19 +10,21 @@ public class OnnxModelDownloadWorker : IHostedService
 {
     private readonly OnnxModelDownloader _downloader;
     private readonly string _targetPath;
+    private readonly OnnxModelConfig _modelConfig;
     private readonly IServiceProvider _serviceProvider;
 
-    public OnnxModelDownloadWorker(OnnxModelDownloader downloader, string targetPath, IServiceProvider serviceProvider)
+    public OnnxModelDownloadWorker(OnnxModelDownloader downloader, string targetPath, OnnxModelConfig modelConfig, IServiceProvider serviceProvider)
     {
         _downloader = downloader;
         _targetPath = targetPath;
+        _modelConfig = modelConfig;
         _serviceProvider = serviceProvider;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         // Execute download on startup
-        await _downloader.EnsureModelExistsAsync(_targetPath, cancellationToken);
+        await _downloader.EnsureModelExistsAsync(_targetPath, _modelConfig, cancellationToken);
 
         // Pre-load the ONNX Inference matrix into RAM immediately at startup.
         // Since it is registered as a Singleton, resolving it here will trigger its constructor.

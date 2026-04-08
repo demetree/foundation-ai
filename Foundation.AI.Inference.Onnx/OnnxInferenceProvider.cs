@@ -29,7 +29,8 @@ public class OnnxInferenceProvider : IInferenceProvider
         options ??= new InferenceOptions();
         
         string fullPrompt = prompt;
-        if (!string.IsNullOrWhiteSpace(options.SystemPrompt))
+        // Only prepend SystemPrompt if using raw GenerateAsync (ChatAsync does this natively)
+        if (!string.IsNullOrWhiteSpace(options.SystemPrompt) && !prompt.Contains("<|system|>") && !prompt.Contains("<|im_start|>system"))
         {
             fullPrompt = $"{options.SystemPrompt}\n{prompt}";
         }
@@ -44,16 +45,18 @@ public class OnnxInferenceProvider : IInferenceProvider
         using var sequences = _tokenizer.Encode(fullPrompt);
         generator.AppendTokenSequences(sequences);
 
+        var resultBuilder = new StringBuilder();
+
         while (!generator.IsDone())
         {
             ct.ThrowIfCancellationRequested();
             generator.GenerateNextToken();
+            var tokenIds = generator.GetSequence(0);
+            int lastTokenId = tokenIds[tokenIds.Length - 1];
+            resultBuilder.Append(_tokenizer.Decode(new[] { lastTokenId }));
         }
 
-        var outputSequences = generator.GetSequence(0);
-        var outputString = _tokenizer.Decode(outputSequences);
-        
-        return Task.FromResult(new InferenceResponse(outputString));
+        return Task.FromResult(new InferenceResponse(resultBuilder.ToString()));
     }
 
     public async IAsyncEnumerable<string> GenerateStreamAsync(string prompt, InferenceOptions? options = null, [EnumeratorCancellation] CancellationToken ct = default)
@@ -61,7 +64,7 @@ public class OnnxInferenceProvider : IInferenceProvider
         options ??= new InferenceOptions();
         
         string fullPrompt = prompt;
-        if (!string.IsNullOrWhiteSpace(options.SystemPrompt))
+        if (!string.IsNullOrWhiteSpace(options.SystemPrompt) && !prompt.Contains("<|system|>") && !prompt.Contains("<|im_start|>system"))
         {
             fullPrompt = $"{options.SystemPrompt}\n{prompt}";
         }
@@ -91,25 +94,40 @@ public class OnnxInferenceProvider : IInferenceProvider
 
     public Task<InferenceResponse> ChatAsync(IReadOnlyList<ChatMessage> messages, InferenceOptions? options = null, CancellationToken ct = default)
     {
-        string prompt = FormatChatPrompt(messages);
+        options ??= new InferenceOptions();
+        string prompt = FormatChatPrompt(messages, options.PromptTemplate);
         return GenerateAsync(prompt, options, ct);
     }
 
     public IAsyncEnumerable<string> ChatStreamAsync(IReadOnlyList<ChatMessage> messages, InferenceOptions? options = null, CancellationToken ct = default)
     {
-        string prompt = FormatChatPrompt(messages);
+        options ??= new InferenceOptions();
+        string prompt = FormatChatPrompt(messages, options.PromptTemplate);
         return GenerateStreamAsync(prompt, options, ct);
     }
 
-    private string FormatChatPrompt(IReadOnlyList<ChatMessage> messages)
+    private string FormatChatPrompt(IReadOnlyList<ChatMessage> messages, string template)
     {
-        // Simple ChatML formatter. A production system would use the model's exact template.
         var sb = new StringBuilder();
-        foreach (var msg in messages)
+        
+        if (string.Equals(template, "ChatML", StringComparison.OrdinalIgnoreCase))
         {
-            sb.AppendLine($"<|im_start|>{msg.Role}\n{msg.Content}<|im_end|>");
+            foreach (var msg in messages)
+            {
+                sb.AppendLine($"<|im_start|>{msg.Role}\n{msg.Content}<|im_end|>");
+            }
+            sb.AppendLine("<|im_start|>assistant");
         }
-        sb.AppendLine("<|im_start|>assistant");
+        else // Default to Phi-3 format
+        {
+            foreach (var msg in messages)
+            {
+                // Phi-3 format: <|system|>\n...<|end|>\n
+                sb.AppendLine($"<|{msg.Role}|>\n{msg.Content}<|end|>");
+            }
+            sb.AppendLine("<|assistant|>");
+        }
+        
         return sb.ToString();
     }
 

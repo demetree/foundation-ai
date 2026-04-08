@@ -17,11 +17,12 @@ public class OnnxModelDownloader
     }
 
     /// <summary>
-    /// Downloads the Microsoft Phi-3-mini-4k-instruct ONNX Int4 CPU variant
-    /// from HuggingFace if the local path is empty.
+    /// Downloads the requested ONNX model from HuggingFace if the local path is empty.
     /// </summary>
-    public async Task EnsureModelExistsAsync(string targetDirectory, CancellationToken ct = default)
+    public async Task EnsureModelExistsAsync(string targetDirectory, OnnxModelConfig config, CancellationToken ct = default)
     {
+        if (config == null) return;
+
         if (!Directory.Exists(targetDirectory))
         {
             Directory.CreateDirectory(targetDirectory);
@@ -36,24 +37,9 @@ public class OnnxModelDownloader
 
         Console.WriteLine($"[Foundation.AI] Downloading ONNX Model to {targetDirectory}...");
 
-        string repoId = "microsoft/Phi-3-mini-4k-instruct-onnx";
-        string branch = "main";
-        string subfolder = "cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4";
-
-        var filesToDownload = new[]
+        foreach (var file in config.FilesToDownload)
         {
-            "added_tokens.json",
-            "genai_config.json",
-            "phi3-mini-4k-instruct-cpu-int4-rtn-block-32-acc-level-4.onnx",
-            "phi3-mini-4k-instruct-cpu-int4-rtn-block-32-acc-level-4.onnx.data",
-            "special_tokens_map.json",
-            "tokenizer.json",
-            "tokenizer_config.json"
-        };
-
-        foreach (var file in filesToDownload)
-        {
-            string url = $"https://huggingface.co/{repoId}/resolve/{branch}/{subfolder}/{file}";
+            string url = $"https://huggingface.co/{config.RepoId}/resolve/{config.Branch}/{config.Subfolder}/{file}";
             string destination = Path.Combine(targetDirectory, file);
 
             Console.WriteLine($"Downloading: {file} ...");

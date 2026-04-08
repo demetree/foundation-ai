@@ -33,6 +33,12 @@ public class InferenceOptions
     /// Sequences that cause the model to stop generating.
     /// </summary>
     public IReadOnlyList<string>? StopSequences { get; set; }
+
+    /// <summary>
+    /// The template format to use for formatting chat messages.
+    /// Default: "Phi3". Supported: "Phi3", "ChatML"
+    /// </summary>
+    public string PromptTemplate { get; set; } = "Phi3";
 }
 
 /// <summary>
