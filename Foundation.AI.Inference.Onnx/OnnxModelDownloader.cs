@@ -39,19 +39,47 @@ public class OnnxModelDownloader
 
         foreach (var file in config.FilesToDownload)
         {
-            string url = $"https://huggingface.co/{config.RepoId}/resolve/{config.Branch}/{config.Subfolder}/{file}";
-            string destination = Path.Combine(targetDirectory, file);
+            string subPath = string.IsNullOrEmpty(config.Subfolder) ? "" : $"{config.Subfolder}/";
+            string url = $"https://huggingface.co/{config.RepoId}/resolve/{config.Branch}/{subPath}{file}";
+            string destination = Path.Combine(targetDirectory, Path.GetFileName(file));
 
-            Console.WriteLine($"Downloading: {file} ...");
             try
             {
                 using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
                 response.EnsureSuccessStatusCode();
 
+                long? totalBytes = response.Content.Headers.ContentLength;
+
                 using var contentStream = await response.Content.ReadAsStreamAsync(ct);
                 using var fileStream = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 8192, true);
                 
-                await contentStream.CopyToAsync(fileStream, ct);
+                if (totalBytes.HasValue && totalBytes.Value > 0)
+                {
+                    byte[] buffer = new byte[8192];
+                    long totalRead = 0;
+                    int bytesRead;
+                    int lastPercent = -1;
+
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, buffer.Length, ct)) > 0)
+                    {
+                        await fileStream.WriteAsync(buffer, 0, bytesRead, ct);
+                        totalRead += bytesRead;
+
+                        int currentPercent = (int)((totalRead * 100) / totalBytes.Value);
+                        if (currentPercent != lastPercent)
+                        {
+                            Console.Write($"\rDownloading {file}... {currentPercent}% ({(totalRead / 1048576)} MB / {(totalBytes.Value / 1048576)} MB)    ");
+                            lastPercent = currentPercent;
+                        }
+                    }
+                    Console.WriteLine(); // Finalize line after 100%
+                }
+                else
+                {
+                    Console.Write($"Downloading {file}... ");
+                    await contentStream.CopyToAsync(fileStream, ct);
+                    Console.WriteLine("Done.");
+                }
             }
             catch (Exception ex)
             {

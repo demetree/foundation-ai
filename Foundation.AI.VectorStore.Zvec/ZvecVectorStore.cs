@@ -52,9 +52,15 @@ public sealed class ZvecVectorStore : IVectorStore
     {
         options ??= new VectorStoreOptions();
         var path = GetCollectionPath(name);
+        var metaPath = Path.Combine(path, "collection_meta.json");
 
-        if (Directory.Exists(path))
+        if (File.Exists(metaPath))
             throw new InvalidOperationException($"Collection '{name}' already exists.");
+
+        if (Directory.Exists(path) && !File.Exists(metaPath))
+        {
+            Directory.Delete(path, true);
+        }
 
         var schema = new CollectionSchema(name)
             .AddVector(VectorFieldName, DataType.VectorFP32, (uint)dimension,
@@ -73,7 +79,8 @@ public sealed class ZvecVectorStore : IVectorStore
     public Task<bool> CollectionExistsAsync(string name, CancellationToken ct = default)
     {
         var path = GetCollectionPath(name);
-        return Task.FromResult(Directory.Exists(path));
+        var metaPath = Path.Combine(path, "collection_meta.json");
+        return Task.FromResult(File.Exists(metaPath));
     }
 
     public Task DeleteCollectionAsync(string name, CancellationToken ct = default)
@@ -193,8 +200,9 @@ public sealed class ZvecVectorStore : IVectorStore
         }
 
         var path = GetCollectionPath(name);
-        if (!Directory.Exists(path))
-            throw new InvalidOperationException($"Collection '{name}' does not exist.");
+        var metaPath = Path.Combine(path, "collection_meta.json");
+        if (!File.Exists(metaPath))
+            throw new InvalidOperationException($"Collection '{name}' does not exist or is missing metadata.");
 
         var collection = ZvecCollection.Open(path);
 
