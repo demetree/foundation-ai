@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Foundation.AI.MarkItDown</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.*" />
+    <PackageReference Include="ReverseMarkdown" Version="4.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Foundation.AI.Rag\Foundation.AI.Rag.csproj" />
+  </ItemGroup>
+</Project>

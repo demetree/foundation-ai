@@ -1,6 +1,7 @@
 using Foundation.AI.Embed;
 using Foundation.AI.Experiment;
 using Foundation.AI.Inference;
+using Foundation.AI.MarkItDown;
 using Foundation.AI.Rag;
 using Foundation.AI.VectorStore;
 using Foundation.AI.Vision;
@@ -41,6 +42,9 @@ namespace Foundation.AI;
 ///         chunker.ChunkSize = 1000;
 ///         chunker.ChunkOverlap = 200;
 ///     });
+///
+///     // Document-to-Markdown conversion (MarkItDown)
+///     ai.Services.AddMarkItDown();
 /// });
 /// </code></para>
 /// </summary>
@@ -77,6 +81,7 @@ public sealed class FoundationAIBuilder
     /// <item><c>AddOpenAiVision()</c> / <c>AddVisionProvider()</c> — from Foundation.AI.Vision</item>
     /// <item><c>AddExperiment()</c> — from Foundation.AI.Experiment (autonomous experimentation)</item>
     /// <item><c>AddRag()</c> — from Foundation.AI.Rag</item>
+    /// <item><c>AddMarkItDown()</c> — from Foundation.AI.MarkItDown (document-to-Markdown conversion)</item>
     /// </list>
     /// </summary>
     public IServiceCollection Services { get; }
