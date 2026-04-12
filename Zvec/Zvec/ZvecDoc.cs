@@ -52,6 +52,12 @@ public sealed class ZvecDoc : IDisposable
     public float Score => _score;
     public ulong DocId => _docId;
 
+    /// <summary>
+    /// Read-only view of all scalar fields stored in this document.
+    /// Enables metadata round-tripping without requiring callers to know field names in advance.
+    /// </summary>
+    public IReadOnlyDictionary<string, object?> ReadOnlyFields => Fields;
+
     // =========================================================================
     // Fluent field setters
     // =========================================================================

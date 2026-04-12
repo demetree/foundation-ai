@@ -249,10 +249,18 @@ public sealed class ZvecVectorStore : IVectorStore
 
     private static Dictionary<string, object>? ExtractMetadata(ZvecDoc doc)
     {
-        // The Zvec SDK doesn't expose a field enumeration API,
-        // so metadata round-tripping relies on the caller knowing their keys.
-        // This is a known limitation — future versions could store a field manifest.
-        return null;
+        var fields = doc.ReadOnlyFields;
+        if (fields.Count == 0)
+            return null;
+
+        var metadata = new Dictionary<string, object>(fields.Count);
+        foreach (var (key, value) in fields)
+        {
+            if (value != null)
+                metadata[key] = value;
+        }
+
+        return metadata.Count > 0 ? metadata : null;
     }
 
     private static IndexParams MapIndexParams(VectorStoreOptions options)
