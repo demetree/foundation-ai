@@ -13,14 +13,16 @@ namespace Foundation.AI.Inference;
 /// <list type="bullet">
 /// <item><b>OpenAI</b> — GPT-4o, GPT-4o-mini, etc.</item>
 /// <item><b>Azure OpenAI</b> — Same models via Azure deployment</item>
-/// <item><b>Ollama</b> — Llama 3, Mistral, Phi-3, etc. via OpenAI-compatible API</item>
+/// <item><b>Ollama</b> — Llama 3, Mistral, Phi-3, Qwen, etc. via OpenAI-compatible API</item>
 /// <item><b>Any OpenAI-compatible endpoint</b> — LM Studio, vLLM, etc.</item>
 /// </list></para>
 ///
-/// <para><b>Streaming:</b>
-/// Uses Server-Sent Events (SSE) for token-by-token streaming.
-/// Both <see cref="GenerateStreamAsync"/> and <see cref="ChatStreamAsync"/>
-/// yield tokens as they are generated for responsive UX.</para>
+/// <para><b>Features:</b>
+/// <list type="bullet">
+/// <item>Streaming via Server-Sent Events (SSE)</item>
+/// <item>Tool/function calling (send tool definitions, parse tool_calls from responses)</item>
+/// <item>Multi-turn chat with system, user, assistant, and tool messages</item>
+/// </list></para>
 /// </summary>
 public sealed class OpenAiInferenceProvider : IInferenceProvider
 {
@@ -73,10 +75,34 @@ public sealed class OpenAiInferenceProvider : IInferenceProvider
             JsonOptions, ct);
 
         var choice = result?.Choices?.FirstOrDefault();
+        var msg = choice?.Message;
+
+        // Parse tool calls from the response if present
+        IReadOnlyList<FunctionCall>? functionCalls = null;
+        if (msg?.ToolCalls is { Count: > 0 })
+        {
+            functionCalls = msg.ToolCalls
+                .Where(tc => tc.Type == "function" && tc.Function != null)
+                .Select(tc => new FunctionCall(
+                    Id: tc.Id ?? Guid.NewGuid().ToString(),
+                    Name: tc.Function!.Name ?? "",
+                    Arguments: tc.Function.Arguments ?? "{}"))
+                .ToList();
+
+            if (functionCalls.Count == 0)
+                functionCalls = null;
+        }
+
+        var finishReason = choice?.FinishReason;
+        // Normalize: OpenAI uses "tool_calls" as finish reason when tools are invoked
+        if (finishReason == "tool_calls" && functionCalls == null)
+            finishReason = "stop";
+
         return new InferenceResponse(
-            Content: choice?.Message?.Content ?? "",
+            Content: msg?.Content ?? "",
             TokensUsed: result?.Usage?.TotalTokens,
-            FinishReason: choice?.FinishReason);
+            FinishReason: finishReason,
+            FunctionCalls: functionCalls);
     }
 
     public async IAsyncEnumerable<string> ChatStreamAsync(IReadOnlyList<ChatMessage> messages,
@@ -159,7 +185,34 @@ public sealed class OpenAiInferenceProvider : IInferenceProvider
         }
 
         foreach (var msg in messages)
-            apiMessages.Add(new ApiMessage { Role = msg.Role, Content = msg.Content });
+        {
+            var apiMsg = new ApiMessage { Role = msg.Role, Content = msg.Content };
+
+            // Tool result messages need tool_call_id
+            if (msg.Role == "tool" && msg.ToolCallId != null)
+            {
+                apiMsg.ToolCallId = msg.ToolCallId;
+            }
+
+            // Assistant messages with function calls need tool_calls array
+            if (msg.Role == "assistant" && msg.FunctionCalls is { Count: > 0 })
+            {
+                apiMsg.ToolCalls = msg.FunctionCalls
+                    .Select(fc => new ApiToolCall
+                    {
+                        Id = fc.Id,
+                        Type = "function",
+                        Function = new ApiToolCallFunction
+                        {
+                            Name = fc.Name,
+                            Arguments = fc.Arguments
+                        }
+                    })
+                    .ToList();
+            }
+
+            apiMessages.Add(apiMsg);
+        }
 
         var request = new ChatCompletionRequest
         {
@@ -174,6 +227,23 @@ public sealed class OpenAiInferenceProvider : IInferenceProvider
         if (options.StopSequences is { Count: > 0 })
             request.Stop = options.StopSequences.ToList();
 
+        // Add tool definitions if provided
+        if (options.Tools is { Count: > 0 })
+        {
+            request.Tools = options.Tools
+                .Select(t => new ApiToolDefinition
+                {
+                    Type = "function",
+                    Function = new ApiToolFunction
+                    {
+                        Name = t.Name,
+                        Description = t.Description,
+                        Parameters = JsonSerializer.Deserialize<JsonElement>(t.ParametersSchema)
+                    }
+                })
+                .ToList();
+        }
+
         return request;
     }
 
@@ -185,7 +255,8 @@ public sealed class OpenAiInferenceProvider : IInferenceProvider
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    // Request
+    // ── Request types ──
+
     private sealed class ChatCompletionRequest
     {
         public string Model { get; set; } = "";
@@ -195,15 +266,45 @@ public sealed class OpenAiInferenceProvider : IInferenceProvider
         public float? TopP { get; set; }
         public bool? Stream { get; set; }
         public List<string>? Stop { get; set; }
+        public List<ApiToolDefinition>? Tools { get; set; }
     }
 
     private sealed class ApiMessage
     {
         public string Role { get; set; } = "";
-        public string Content { get; set; } = "";
+        public string? Content { get; set; }
+        public string? ToolCallId { get; set; }
+        public List<ApiToolCall>? ToolCalls { get; set; }
     }
 
-    // Response (non-streaming)
+    private sealed class ApiToolDefinition
+    {
+        public string Type { get; set; } = "function";
+        public ApiToolFunction? Function { get; set; }
+    }
+
+    private sealed class ApiToolFunction
+    {
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public JsonElement? Parameters { get; set; }
+    }
+
+    private sealed class ApiToolCall
+    {
+        public string? Id { get; set; }
+        public string Type { get; set; } = "function";
+        public ApiToolCallFunction? Function { get; set; }
+    }
+
+    private sealed class ApiToolCallFunction
+    {
+        public string? Name { get; set; }
+        public string? Arguments { get; set; }
+    }
+
+    // ── Response types (non-streaming) ──
+
     private sealed class ChatCompletionResponse
     {
         public List<ChatChoice>? Choices { get; set; }
@@ -212,8 +313,15 @@ public sealed class OpenAiInferenceProvider : IInferenceProvider
 
     private sealed class ChatChoice
     {
-        public ApiMessage? Message { get; set; }
+        public ResponseMessage? Message { get; set; }
         public string? FinishReason { get; set; }
+    }
+
+    private sealed class ResponseMessage
+    {
+        public string? Role { get; set; }
+        public string? Content { get; set; }
+        public List<ApiToolCall>? ToolCalls { get; set; }
     }
 
     private sealed class UsageInfo
@@ -221,7 +329,8 @@ public sealed class OpenAiInferenceProvider : IInferenceProvider
         public int? TotalTokens { get; set; }
     }
 
-    // Response (streaming)
+    // ─�� Response types (streaming) ──
+
     private sealed class ChatCompletionChunk
     {
         public List<StreamChoice>? Choices { get; set; }
