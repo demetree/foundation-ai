@@ -32,10 +32,18 @@ namespace Foundation.AI.Embed;
 public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
 {
     private readonly InferenceSession _session;
-    private readonly BpeTokenizer? _tokenizer;
+    private readonly Tokenizer? _tokenizer;
     private readonly OnnxEmbeddingConfig _config;
     private readonly int _dimension;
     private readonly string _modelName;
+
+    /// <summary>
+    /// When true, the tokenizer is for a BERT-family model that requires
+    /// [CLS] at the start and [SEP] at the end of input sequences.
+    /// </summary>
+    private readonly bool _addBertSpecialTokens;
+    private readonly long _clsTokenId;
+    private readonly long _sepTokenId;
 
     public int Dimension => _dimension;
     public string ModelName => _modelName;
@@ -72,19 +80,54 @@ public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
         // Shape is typically [batch_size, dimension] — dimension is the last axis
         _dimension = outputShape.Length > 1 ? outputShape[^1] : outputShape[0];
 
-        // Load BPE tokenizer (vocab.json + merges.txt from HuggingFace)
+        // ── Load tokenizer ───────────────────────────────────────────────────
+        // Try multiple strategies in priority order. The tokenizer must match
+        // the model architecture — BERT needs WordPiece, GPT-2 needs BPE, etc.
         var modelDir = Path.GetDirectoryName(config.ModelPath)!;
-        var vocabPath = config.TokenizerPath
-            ?? Path.Combine(modelDir, "vocab.json");
-        var mergesPath = Path.Combine(modelDir, "merges.txt");
 
-        if (File.Exists(vocabPath) && File.Exists(mergesPath))
+        // Strategy 1: vocab.txt (WordPiece — BERT family models like all-MiniLM-L6-v2)
         {
-            using var vocabStream = File.OpenRead(vocabPath);
-            using var mergesStream = File.OpenRead(mergesPath);
-            _tokenizer = BpeTokenizer.Create(vocabStream, mergesStream);
+            var vocabTxtPath = Path.Combine(modelDir, "vocab.txt");
+            if (File.Exists(vocabTxtPath))
+            {
+                try
+                {
+                    _tokenizer = WordPieceTokenizer.Create(vocabTxtPath);
+                    _addBertSpecialTokens = true;
+                    // Read [CLS] and [SEP] token IDs from vocab (line number = token ID)
+                    var vocabLines = File.ReadAllLines(vocabTxtPath);
+                    _clsTokenId = Array.IndexOf(vocabLines, "[CLS]");
+                    _sepTokenId = Array.IndexOf(vocabLines, "[SEP]");
+                    if (_clsTokenId < 0) _clsTokenId = 101; // BERT default
+                    if (_sepTokenId < 0) _sepTokenId = 102; // BERT default
+                    Console.WriteLine($"[Foundation.AI.Embed] Loaded WordPiece tokenizer from vocab.txt ([CLS]={_clsTokenId}, [SEP]={_sepTokenId})");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[Foundation.AI.Embed] Failed to load WordPiece tokenizer ({ex.Message}), trying BPE fallback...");
+                }
+            }
         }
-        // If tokenizer files are missing, we'll use a simple fallback
+
+        // Strategy 2: vocab.json + merges.txt (BPE — GPT-2 family models)
+        if (_tokenizer == null)
+        {
+            var vocabJsonPath = Path.Combine(modelDir, "vocab.json");
+            var mergesPath = Path.Combine(modelDir, "merges.txt");
+            if (File.Exists(vocabJsonPath) && File.Exists(mergesPath))
+            {
+                using var vocabStream = File.OpenRead(vocabJsonPath);
+                using var mergesStream = File.OpenRead(mergesPath);
+                _tokenizer = BpeTokenizer.Create(vocabStream, mergesStream);
+                Console.WriteLine($"[Foundation.AI.Embed] Loaded BPE tokenizer from vocab.json + merges.txt");
+            }
+        }
+
+        if (_tokenizer == null)
+        {
+            Console.WriteLine("[Foundation.AI.Embed] WARNING: No tokenizer files found — using whitespace fallback. " +
+                              "Embeddings will be LOW QUALITY. Provide tokenizer.json, vocab.txt, or vocab.json + merges.txt.");
+        }
 
         _modelName = config.ModelName
             ?? Path.GetFileNameWithoutExtension(config.ModelPath);
@@ -132,16 +175,34 @@ public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
 
             if (_tokenizer != null)
             {
-                var encoded = _tokenizer.EncodeToTokens(texts[i], out _);
-                int tokenCount = Math.Min(encoded.Count, maxLen);
-                tokenIds = new long[tokenCount];
-                for (int j = 0; j < tokenCount; j++)
-                    tokenIds[j] = encoded[j].Id;
+                // Uncased BERT models require lowercased input
+                string inputText = _addBertSpecialTokens ? texts[i].ToLowerInvariant() : texts[i];
+                var encoded = _tokenizer.EncodeToTokens(inputText, out _);
+
+                if (_addBertSpecialTokens)
+                {
+                    // BERT models: [CLS] + content tokens + [SEP]
+                    int maxContentTokens = maxLen - 2;
+                    int contentCount = Math.Min(encoded.Count, maxContentTokens);
+                    int tokenCount = contentCount + 2;
+                    tokenIds = new long[tokenCount];
+                    tokenIds[0] = _clsTokenId;
+                    for (int j = 0; j < contentCount; j++)
+                        tokenIds[j + 1] = encoded[j].Id;
+                    tokenIds[tokenCount - 1] = _sepTokenId;
+                }
+                else
+                {
+                    int tokenCount = Math.Min(encoded.Count, maxLen);
+                    tokenIds = new long[tokenCount];
+                    for (int j = 0; j < tokenCount; j++)
+                        tokenIds[j] = encoded[j].Id;
+                }
             }
             else
             {
-                // Simple fallback: split on whitespace, assign sequential IDs
-                // (not production quality, but allows testing without tokenizer files)
+                // Last-resort fallback: split on whitespace, assign sequential IDs.
+                // Produces meaningless embeddings — only useful for basic smoke testing.
                 var words = texts[i].Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 int tokenCount = Math.Min(words.Length, maxLen);
                 tokenIds = new long[tokenCount];
