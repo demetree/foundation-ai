@@ -97,7 +97,18 @@ public sealed class ZoneTreeStorageEngine : IStorageEngine
     public Document? Get(long docId)
     {
         if (_docTree.TryGet(docId, out var bytes))
-            return DeserializeDocument(bytes);
+        {
+            try
+            {
+                return DeserializeDocument(bytes);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.TraceWarning(
+                    $"Zvec: Failed to deserialize document {docId} ({bytes?.Length ?? 0} bytes), skipping. {ex.Message}");
+                return null;
+            }
+        }
         return null;
     }
 
@@ -164,8 +175,11 @@ public sealed class ZoneTreeStorageEngine : IStorageEngine
         return JsonSerializer.SerializeToUtf8Bytes(dto, DtoContext.Default.DocumentDto);
     }
 
-    private static Document DeserializeDocument(byte[] bytes)
+    private static Document? DeserializeDocument(byte[] bytes)
     {
+        if (bytes == null || bytes.Length == 0)
+            return null;
+
         var dto = JsonSerializer.Deserialize(bytes, DtoContext.Default.DocumentDto)!;
         var doc = new Document
         {
