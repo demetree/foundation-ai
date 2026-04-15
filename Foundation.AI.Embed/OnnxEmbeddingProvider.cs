@@ -139,14 +139,70 @@ public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
         return Task.FromResult(embedding);
     }
 
+    /// <summary>
+    /// Maximum number of texts processed in a single ONNX <c>session.Run()</c> call.
+    ///
+    /// <para><b>Why this matters:</b>
+    /// Transformer attention is O(batch × seq²) in memory — each layer allocates an
+    /// attention score tensor of shape [batch, heads, seq, seq]. At MaxTokenLength=512
+    /// with 12 heads and float32, that's ~12 MB of attention scores per item per layer,
+    /// plus K/Q/V projections and FFN activations. Passing thousands of chunks in a
+    /// single Run() (e.g. when indexing a multi-MB document) causes ONNX Runtime to
+    /// allocate all intermediate tensors up front and can blow process memory past
+    /// 80 GB before the forward pass even starts.</para>
+    ///
+    /// <para>Micro-batching bounds peak memory to roughly MicroBatchSize × maxLen²
+    /// regardless of how many texts the caller hands us, at the cost of a few extra
+    /// Run() calls. 32 is a sensible default for small embedding models on CPU —
+    /// big enough to keep the tokenizer/inference overhead amortised, small enough
+    /// that peak working set stays in the low hundreds of MB.</para>
+    /// </summary>
+    private const int MicroBatchSize = 32;
+
     public Task<float[][]> EmbedBatchAsync(IReadOnlyList<string> texts,
         CancellationToken ct = default)
     {
         if (texts.Count == 0)
             return Task.FromResult(Array.Empty<float[]>());
 
-        var embeddings = RunInference(texts);
-        return Task.FromResult(embeddings);
+        // Fast path: the caller's batch already fits in one Run(), skip the slicing.
+        if (texts.Count <= MicroBatchSize)
+            return Task.FromResult(RunInference(texts));
+
+        // Slice into micro-batches and accumulate. We never hand ONNX Runtime more
+        // than MicroBatchSize texts at a time — see the comment on MicroBatchSize
+        // above for why a single big Run() can blow process memory past 80 GB.
+        var result = new float[texts.Count][];
+        var slice = new string[MicroBatchSize];
+
+        for (int offset = 0; offset < texts.Count; offset += MicroBatchSize)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            int take = Math.Min(MicroBatchSize, texts.Count - offset);
+
+            // Reuse the scratch array when full, allocate a smaller one for the tail.
+            IReadOnlyList<string> sliceView;
+            if (take == MicroBatchSize)
+            {
+                for (int j = 0; j < take; j++)
+                    slice[j] = texts[offset + j];
+                sliceView = slice;
+            }
+            else
+            {
+                var tail = new string[take];
+                for (int j = 0; j < take; j++)
+                    tail[j] = texts[offset + j];
+                sliceView = tail;
+            }
+
+            var embeddings = RunInference(sliceView);
+            for (int j = 0; j < take; j++)
+                result[offset + j] = embeddings[j];
+        }
+
+        return Task.FromResult(result);
     }
 
     /// <summary>

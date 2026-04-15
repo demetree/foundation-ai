@@ -184,20 +184,36 @@ public sealed class RagService : IRagService
     public async Task RemoveDocumentAsync(string collection, string docId,
         CancellationToken ct = default)
     {
-        // Search for all chunks belonging to this document
-        // Convention: chunk IDs are "{docId}::chunk-{index}"
-        // We need to delete all chunks with this prefix
-        // Since IVectorStore doesn't have a prefix-delete, we search by metadata
-        var queryVector = await _embedder.EmbedAsync(docId, ct);
-        var results = await _vectorStore.SearchAsync(collection, queryVector, topK: 1000);
+        // Remove every chunk whose metadata doc_id matches, using Zvec's filter
+        // expression rather than a semantic vector search. The old implementation
+        // embedded the docId string and hoped the resulting vector was similar to
+        // the actual chunks — which it isn't, so most chunks were never deleted.
+        //
+        // With a filter we don't need the vector query to be meaningful: any
+        // vector will do because the filter is applied first. We pass a dummy
+        // zero vector at a safe-minimum dimension the embedder would produce.
+        //
+        // IMPORTANT: docId is assumed to be caller-controlled and safe. Callers
+        // currently pass well-formed identifiers like "document_{guid}" or
+        // "contact_{int}" where the components cannot contain quotes. If that
+        // assumption changes, escape the value before interpolating into the
+        // filter expression.
+
+        // Generate a lightweight query vector. We embed the docId itself so we
+        // always produce a vector at the correct collection dimensionality —
+        // the content doesn't matter because the filter selects the rows.
+        float[] queryVector = await _embedder.EmbedAsync(docId, ct);
+
+        string filter = $"doc_id == \"{docId}\"";
+
+        // topK set high so even multi-hundred-chunk documents are fully removed
+        // in one pass.
+        var results = await _vectorStore.SearchAsync(collection, queryVector,
+            topK: 10000, filter: filter, ct: ct);
 
         foreach (var result in results)
         {
-            if (result.Metadata?.TryGetValue("doc_id", out var metaDocId) == true &&
-                metaDocId?.ToString() == docId)
-            {
-                await _vectorStore.DeleteAsync(collection, result.Id);
-            }
+            await _vectorStore.DeleteAsync(collection, result.Id, ct);
         }
     }
 
