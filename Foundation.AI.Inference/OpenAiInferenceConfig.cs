@@ -32,7 +32,10 @@ public sealed class OpenAiInferenceConfig
     public bool UseAzureAuth { get; set; }
 
     /// <summary>
-    /// HTTP request timeout. Default: 120 seconds (LLM generation can be slow).
+    /// HTTP request timeout. Default: 300 seconds. Long-context cold prompts on a
+    /// large local model (e.g. qwen3:8b with a 40k context) can easily exceed two
+    /// minutes on first call, which is why the default is 5 minutes. Override via
+    /// the <c>AI:Inference:TimeoutSeconds</c> config key when binding.
     /// </summary>
-    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(120);
+    public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(300);
 }
