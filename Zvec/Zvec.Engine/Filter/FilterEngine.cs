@@ -51,8 +51,16 @@ public sealed class ComparisonNode : IFilterNode
 
     public bool Evaluate(Document doc)
     {
-        if (!doc.Fields.TryGetValue(FieldName, out var fieldVal) || fieldVal == null)
+        doc.Fields.TryGetValue(FieldName, out var fieldVal);
+
+        if (Value == null)
+        {
+            if (Op == ComparisonOp.Eq) return fieldVal == null;
+            if (Op == ComparisonOp.Neq) return fieldVal != null;
             return false;
+        }
+
+        if (fieldVal == null) return false;
 
         return Op switch
         {
@@ -283,6 +291,7 @@ public static class FilterParser
         TokenType.Number => double.TryParse(token.Value, out double d) ? d : token.Value,
         TokenType.Keyword when token.Value == "true" => true,
         TokenType.Keyword when token.Value == "false" => false,
+        TokenType.Keyword when token.Value == "null" => null,
         _ => throw new FormatException($"Expected value, got '{token.Value}'")
     };
 
@@ -351,7 +360,7 @@ public static class FilterParser
                 while (i < input.Length && (char.IsLetterOrDigit(input[i]) || input[i] == '_')) i++;
                 string word = input[start..i];
 
-                if (word is "AND" or "OR" or "NOT" or "true" or "false")
+                if (word is "AND" or "OR" or "NOT" or "true" or "false" or "null")
                     tokens.Add(new Token(TokenType.Keyword, word));
                 else
                     tokens.Add(new Token(TokenType.Identifier, word));
