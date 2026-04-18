@@ -24,6 +24,13 @@ public class InferenceOptions
     public float TopP { get; set; } = 0.9f;
 
     /// <summary>
+    /// Penalty applied to tokens that have already appeared, to discourage verbatim loops.
+    /// 1.0 = no penalty (default). Values in 1.05–1.3 curb small-model degeneracies
+    /// (e.g. "Super Mario Super Mario …"); too high clips fluency.
+    /// </summary>
+    public float RepetitionPenalty { get; set; } = 1.0f;
+
+    /// <summary>
     /// System prompt that defines the AI's role and behavior.
     /// Prepended to the conversation as a system message.
     /// </summary>

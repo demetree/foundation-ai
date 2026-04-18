@@ -119,6 +119,13 @@ public static class ChatTemplates
                 continue;
             }
 
+            if (string.Equals(msg.Role, "assistant", StringComparison.OrdinalIgnoreCase)
+                && msg.FunctionCalls is { Count: > 0 })
+            {
+                AppendAssistantToolCall(sb, msg);
+                continue;
+            }
+
             AppendPlainMessage(sb, msg);
         }
 
@@ -150,6 +157,33 @@ public static class ChatTemplates
           .Append(SerializeTools(tools))
           .Append("<|/tool|>")
           .Append("<|end|>");
+    }
+
+    /// <summary>
+    /// Render an assistant turn that produced tool calls. The call JSON must appear in the
+    /// rendered stream so that, when the subsequent <c>&lt;|tool|&gt;</c> result message is rendered,
+    /// the model can correlate result ↔ call. Without this the result appears orphaned and the
+    /// model slips into confused prose instead of emitting the next tool call.
+    /// Shape: <c>&lt;|assistant|&gt;{prose}[{"name":"...","arguments":{...}},...]&lt;|end|&gt;</c>.
+    /// </summary>
+    private static void AppendAssistantToolCall(StringBuilder sb, ChatMessage msg)
+    {
+        sb.Append("<|assistant|>");
+        if (!string.IsNullOrEmpty(msg.Content))
+            sb.Append(msg.Content);
+
+        sb.Append('[');
+        var calls = msg.FunctionCalls!;
+        for (int i = 0; i < calls.Count; i++)
+        {
+            if (i > 0) sb.Append(',');
+            var c = calls[i];
+            sb.Append("{\"name\":\"").Append(EscapeJsonString(c.Name ?? ""))
+              .Append("\",\"arguments\":")
+              .Append(string.IsNullOrWhiteSpace(c.Arguments) ? "{}" : c.Arguments)
+              .Append('}');
+        }
+        sb.Append(']').Append("<|end|>");
     }
 
     private static void AppendToolResponse(StringBuilder sb, ChatMessage msg)

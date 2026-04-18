@@ -27,7 +27,7 @@ public class OnnxInferenceProvider : IInferenceProvider
     public Task<InferenceResponse> GenerateAsync(string prompt, InferenceOptions? options = null, CancellationToken ct = default)
     {
         options ??= new InferenceOptions();
-        
+
         string fullPrompt = prompt;
         // Only prepend SystemPrompt if using raw GenerateAsync (ChatAsync does this natively)
         if (!string.IsNullOrWhiteSpace(options.SystemPrompt) && !prompt.Contains("<|system|>") && !prompt.Contains("<|im_start|>system"))
@@ -35,14 +35,19 @@ public class OnnxInferenceProvider : IInferenceProvider
             fullPrompt = $"{options.SystemPrompt}\n{prompt}";
         }
 
+        using var sequences = _tokenizer.Encode(fullPrompt);
+        int inputTokenCount = sequences[0].Length;
+
         using var generatorParams = new GeneratorParams(_model);
-        generatorParams.SetSearchOption("max_length", options.MaxTokens);
+        // ONNX GenAI's max_length is TOTAL length (input + output). InferenceOptions.MaxTokens is
+        // documented as "tokens to generate in the response" — honour that by adding input length.
+        generatorParams.SetSearchOption("max_length", inputTokenCount + options.MaxTokens);
         generatorParams.SetSearchOption("temperature", options.Temperature);
         generatorParams.SetSearchOption("top_p", options.TopP);
+        if (options.RepetitionPenalty > 1.0f)
+            generatorParams.SetSearchOption("repetition_penalty", options.RepetitionPenalty);
 
         using var generator = new Generator(_model, generatorParams);
-        
-        using var sequences = _tokenizer.Encode(fullPrompt);
         generator.AppendTokenSequences(sequences);
 
         var resultBuilder = new StringBuilder();
@@ -69,13 +74,17 @@ public class OnnxInferenceProvider : IInferenceProvider
             fullPrompt = $"{options.SystemPrompt}\n{prompt}";
         }
 
+        using var sequences = _tokenizer.Encode(fullPrompt);
+        int inputTokenCount = sequences[0].Length;
+
         using var generatorParams = new GeneratorParams(_model);
-        generatorParams.SetSearchOption("max_length", options.MaxTokens);
+        generatorParams.SetSearchOption("max_length", inputTokenCount + options.MaxTokens);
         generatorParams.SetSearchOption("temperature", options.Temperature);
         generatorParams.SetSearchOption("top_p", options.TopP);
+        if (options.RepetitionPenalty > 1.0f)
+            generatorParams.SetSearchOption("repetition_penalty", options.RepetitionPenalty);
 
         using var generator = new Generator(_model, generatorParams);
-        using var sequences = _tokenizer.Encode(fullPrompt);
         generator.AppendTokenSequences(sequences);
 
         while (!generator.IsDone())
