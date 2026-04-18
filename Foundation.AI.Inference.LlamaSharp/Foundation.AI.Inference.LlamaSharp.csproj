@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Foundation.AI.Inference.LlamaSharp</RootNamespace>
+    <Description>LLamaSharp local inference provider for Foundation.AI — GGUF inference on CPU/CUDA/Vulkan, no Ollama dependency.</Description>
+  </PropertyGroup>
+
+  <!--
+    LLamaSharp (managed wrapper) is referenced here. The NATIVE backend package
+    (LLamaSharp.Backend.Cpu / .Cuda12 / .Vulkan) is intentionally NOT a transitive
+    dependency — the consuming application picks which backend to ship. This lets
+    the same provider DLL serve both a CPU-only Steam build and a CUDA-enabled
+    developer machine with only a csproj swap at the consuming edge.
+  -->
+  <ItemGroup>
+    <PackageReference Include="LLamaSharp" Version="0.26.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Foundation.AI.Inference\Foundation.AI.Inference.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -11,15 +11,18 @@ namespace Foundation.AI.Inference;
 /// <c>OnnxInferenceProvider</c>, a future <c>BitNetInferenceProvider</c>, or anything
 /// else that speaks completion-at-a-prompt-boundary.</para>
 ///
-/// <para><b>Supported templates:</b> <c>Phi3</c> (default), <c>ChatML</c>, <c>Phi4Mini</c>.
-/// Phi-4-mini is the only template that understands tool schemas (injected into the
-/// system segment per Microsoft's published chat_template).</para>
+/// <para><b>Supported templates:</b> <c>Phi3</c> (default), <c>ChatML</c>, <c>Phi4Mini</c>, <c>Qwen3</c>.
+/// Phi-4-mini and Qwen3 are the templates that understand tool schemas (injected into the
+/// system segment per each model's published chat_template). Phi-4-mini uses
+/// <c>&lt;|tool|&gt;…&lt;|/tool|&gt;</c> framing; Qwen3 uses ChatML-based
+/// <c>&lt;tool_call&gt;…&lt;/tool_call&gt;</c> framing.</para>
 /// </summary>
 public static class ChatTemplates
 {
     public const string Phi3 = "Phi3";
     public const string ChatML = "ChatML";
     public const string Phi4Mini = "Phi4Mini";
+    public const string Qwen3 = "Qwen3";
 
     /// <summary>
     /// True when <paramref name="template"/> identifies the Phi-4-mini family (accepts the canonical
@@ -34,11 +37,23 @@ public static class ChatTemplates
     }
 
     /// <summary>
+    /// True when <paramref name="template"/> identifies the Qwen3 family (accepts the canonical
+    /// name plus common aliases <c>qwen-3</c>, <c>qwen3-instruct</c>). Used by providers that need
+    /// to apply Qwen3-specific post-processing, e.g. tool-call extraction.
+    /// </summary>
+    public static bool IsQwen3(string? template)
+    {
+        if (string.IsNullOrEmpty(template)) return false;
+        var normalized = template.ToLowerInvariant();
+        return normalized is "qwen3" or "qwen-3" or "qwen3-instruct";
+    }
+
+    /// <summary>
     /// Render a chat conversation into a raw prompt string for the specified template.
     /// </summary>
     /// <param name="messages">Conversation history in chronological order.</param>
-    /// <param name="template">Template identifier (<see cref="Phi3"/>, <see cref="ChatML"/>, <see cref="Phi4Mini"/>). Unknown values fall back to Phi-3.</param>
-    /// <param name="tools">Optional tool schemas. Only honored by templates that support tool injection (Phi-4-mini).</param>
+    /// <param name="template">Template identifier (<see cref="Phi3"/>, <see cref="ChatML"/>, <see cref="Phi4Mini"/>, <see cref="Qwen3"/>). Unknown values fall back to Phi-3.</param>
+    /// <param name="tools">Optional tool schemas. Only honored by templates that support tool injection (Phi-4-mini, Qwen3).</param>
     public static string Render(
         IReadOnlyList<ChatMessage> messages,
         string? template = null,
@@ -50,6 +65,7 @@ public static class ChatTemplates
         {
             "chatml" => RenderChatML(messages),
             "phi4mini" or "phi4" or "phi-4-mini" => RenderPhi4Mini(messages, tools),
+            "qwen3" or "qwen-3" or "qwen3-instruct" => RenderQwen3(messages, tools),
             _ => RenderPhi3(messages),
         };
     }
@@ -147,6 +163,135 @@ public static class ChatTemplates
         sb.Append('<').Append('|').Append(msg.Role).Append('|').Append('>')
           .Append(msg.Content)
           .Append("<|end|>");
+    }
+
+    /// <summary>
+    /// Render for Qwen3 per Qwen/Qwen3 published chat_template.
+    ///
+    /// <para>Base shape is ChatML (<c>&lt;|im_start|&gt;role\n…&lt;|im_end|&gt;</c>). When
+    /// <paramref name="tools"/> are provided, tool definitions are injected into the system
+    /// turn inside <c>&lt;tools&gt;…&lt;/tools&gt;</c> tags along with instructions to reply
+    /// inside <c>&lt;tool_call&gt;…&lt;/tool_call&gt;</c>. Tool results are returned in a
+    /// <c>user</c> turn wrapped in <c>&lt;tool_response&gt;…&lt;/tool_response&gt;</c> — this
+    /// is the notable divergence from Phi-4-mini's dedicated <c>&lt;|tool|&gt;</c> role.</para>
+    ///
+    /// <para><c>/no_think</c> is appended to the system content to suppress Qwen3's default
+    /// <c>&lt;think&gt;…&lt;/think&gt;</c> reasoning blocks. Those blocks inflate prefill on
+    /// every hop of an agentic loop and occasionally leak into the tool-call span; agentic
+    /// callers don't need them.</para>
+    /// </summary>
+    private static string RenderQwen3(
+        IReadOnlyList<ChatMessage> messages,
+        IReadOnlyList<ToolSchema>? tools)
+    {
+        var sb = new StringBuilder();
+        bool systemEmitted = false;
+
+        for (int i = 0; i < messages.Count; i++)
+        {
+            var msg = messages[i];
+
+            if (string.Equals(msg.Role, "system", StringComparison.OrdinalIgnoreCase))
+            {
+                AppendQwen3System(sb, msg.Content, tools);
+                systemEmitted = true;
+                continue;
+            }
+
+            if (!systemEmitted)
+            {
+                AppendQwen3System(sb, string.Empty, tools);
+                systemEmitted = true;
+            }
+
+            if (string.Equals(msg.Role, "tool", StringComparison.OrdinalIgnoreCase))
+            {
+                AppendQwen3ToolResponse(sb, msg);
+                continue;
+            }
+
+            if (string.Equals(msg.Role, "assistant", StringComparison.OrdinalIgnoreCase)
+                && msg.FunctionCalls is { Count: > 0 })
+            {
+                AppendQwen3AssistantToolCall(sb, msg);
+                continue;
+            }
+
+            sb.Append("<|im_start|>").Append(msg.Role.ToLowerInvariant()).Append('\n')
+              .Append(msg.Content)
+              .Append("<|im_end|>\n");
+        }
+
+        if (!systemEmitted)
+        {
+            var prefixed = new StringBuilder();
+            AppendQwen3System(prefixed, string.Empty, tools);
+            prefixed.Append(sb);
+            sb = prefixed;
+        }
+
+        sb.Append("<|im_start|>assistant\n");
+        return sb.ToString();
+    }
+
+    private static void AppendQwen3System(StringBuilder sb, string content, IReadOnlyList<ToolSchema>? tools)
+    {
+        sb.Append("<|im_start|>system\n");
+
+        var trimmed = (content ?? string.Empty).TrimEnd();
+        if (trimmed.Length > 0) sb.Append(trimmed).Append('\n');
+        sb.Append("/no_think\n");
+
+        if (tools is { Count: > 0 })
+        {
+            sb.Append('\n').Append("# Tools\n\n")
+              .Append("You may call one or more functions to assist with the user query.\n\n")
+              .Append("You are provided with function signatures within <tools></tools> XML tags:\n")
+              .Append("<tools>\n");
+
+            foreach (var t in tools)
+            {
+                sb.Append("{\"type\":\"function\",\"function\":")
+                  .Append("{\"name\":\"").Append(EscapeJsonString(t.Name))
+                  .Append("\",\"description\":\"").Append(EscapeJsonString(t.Description))
+                  .Append("\",\"parameters\":")
+                  .Append(string.IsNullOrWhiteSpace(t.ParametersSchema) ? "{}" : t.ParametersSchema)
+                  .Append("}}\n");
+            }
+
+            sb.Append("</tools>\n\n")
+              .Append("For each function call, return a json object with function name and ")
+              .Append("arguments within <tool_call></tool_call> XML tags:\n")
+              .Append("<tool_call>\n{\"name\": \"...\", \"arguments\": {...}}\n</tool_call>\n");
+        }
+
+        sb.Append("<|im_end|>\n");
+    }
+
+    private static void AppendQwen3AssistantToolCall(StringBuilder sb, ChatMessage msg)
+    {
+        sb.Append("<|im_start|>assistant\n");
+        if (!string.IsNullOrEmpty(msg.Content)) sb.Append(msg.Content).Append('\n');
+
+        foreach (var c in msg.FunctionCalls!)
+        {
+            sb.Append("<tool_call>\n")
+              .Append("{\"name\":\"").Append(EscapeJsonString(c.Name ?? ""))
+              .Append("\",\"arguments\":")
+              .Append(string.IsNullOrWhiteSpace(c.Arguments) ? "{}" : c.Arguments)
+              .Append("}\n")
+              .Append("</tool_call>\n");
+        }
+        sb.Append("<|im_end|>\n");
+    }
+
+    private static void AppendQwen3ToolResponse(StringBuilder sb, ChatMessage msg)
+    {
+        sb.Append("<|im_start|>user\n")
+          .Append("<tool_response>\n")
+          .Append(msg.Content)
+          .Append("\n</tool_response>")
+          .Append("<|im_end|>\n");
     }
 
     private static void AppendSystemWithTools(StringBuilder sb, string content, IReadOnlyList<ToolSchema> tools)
