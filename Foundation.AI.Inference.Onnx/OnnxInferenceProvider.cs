@@ -92,43 +92,41 @@ public class OnnxInferenceProvider : IInferenceProvider
         }
     }
 
-    public Task<InferenceResponse> ChatAsync(IReadOnlyList<ChatMessage> messages, InferenceOptions? options = null, CancellationToken ct = default)
+    public async Task<InferenceResponse> ChatAsync(IReadOnlyList<ChatMessage> messages, InferenceOptions? options = null, CancellationToken ct = default)
     {
         options ??= new InferenceOptions();
-        string prompt = FormatChatPrompt(messages, options.PromptTemplate);
-        return GenerateAsync(prompt, options, ct);
+        string prompt = ChatTemplates.Render(messages, options.PromptTemplate, options.Tools);
+        var response = await GenerateAsync(prompt, options, ct);
+        return PostProcessForToolCalls(response, options);
+    }
+
+    /// <summary>
+    /// When the Phi-4-mini template was used and tools were offered, scan the raw model output
+    /// for an embedded tool-call JSON blob and, if present, lift it into
+    /// <see cref="InferenceResponse.FunctionCalls"/> with <c>FinishReason = "tool_calls"</c>.
+    /// This matches the shape <see cref="OpenAiInferenceProvider"/> already returns, so agent
+    /// loops don't need a code path per provider.
+    /// </summary>
+    private static InferenceResponse PostProcessForToolCalls(InferenceResponse response, InferenceOptions options)
+    {
+        if (!ChatTemplates.IsPhi4Mini(options.PromptTemplate)) return response;
+        if (options.Tools is null || options.Tools.Count == 0) return response;
+
+        var extraction = Phi4MiniToolCallExtractor.Extract(response.Content);
+        if (extraction.Calls.Count == 0) return response;
+
+        return new InferenceResponse(
+            Content: extraction.Prose,
+            TokensUsed: response.TokensUsed,
+            FinishReason: "tool_calls",
+            FunctionCalls: extraction.Calls);
     }
 
     public IAsyncEnumerable<string> ChatStreamAsync(IReadOnlyList<ChatMessage> messages, InferenceOptions? options = null, CancellationToken ct = default)
     {
         options ??= new InferenceOptions();
-        string prompt = FormatChatPrompt(messages, options.PromptTemplate);
+        string prompt = ChatTemplates.Render(messages, options.PromptTemplate, options.Tools);
         return GenerateStreamAsync(prompt, options, ct);
-    }
-
-    private string FormatChatPrompt(IReadOnlyList<ChatMessage> messages, string template)
-    {
-        var sb = new StringBuilder();
-        
-        if (string.Equals(template, "ChatML", StringComparison.OrdinalIgnoreCase))
-        {
-            foreach (var msg in messages)
-            {
-                sb.AppendLine($"<|im_start|>{msg.Role}\n{msg.Content}<|im_end|>");
-            }
-            sb.AppendLine("<|im_start|>assistant");
-        }
-        else // Default to Phi-3 format
-        {
-            foreach (var msg in messages)
-            {
-                // Phi-3 format: <|system|>\n...<|end|>\n
-                sb.AppendLine($"<|{msg.Role}|>\n{msg.Content}<|end|>");
-            }
-            sb.AppendLine("<|assistant|>");
-        }
-        
-        return sb.ToString();
     }
 
     public ValueTask DisposeAsync()

@@ -36,7 +36,9 @@ public class InferenceOptions
 
     /// <summary>
     /// The template format to use for formatting chat messages.
-    /// Default: "Phi3". Supported: "Phi3", "ChatML"
+    /// Default: "Phi3". Supported: "Phi3", "ChatML", "Phi4Mini".
+    /// Only "Phi4Mini" honours <see cref="Tools"/> — the Phi-3 and ChatML templates ignore tool schemas
+    /// because those model families don't understand the injected format.
     /// </summary>
     public string PromptTemplate { get; set; } = "Phi3";
 
