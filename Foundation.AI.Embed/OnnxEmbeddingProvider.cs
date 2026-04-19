@@ -31,110 +31,126 @@ namespace Foundation.AI.Embed;
 /// </summary>
 public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
 {
-    private readonly InferenceSession _session;
-    private readonly Tokenizer? _tokenizer;
+    private InferenceSession? _session;
+    private Tokenizer? _tokenizer;
     private readonly OnnxEmbeddingConfig _config;
-    private readonly int _dimension;
-    private readonly string _modelName;
+    private int _dimension;
 
     /// <summary>
     /// When true, the tokenizer is for a BERT-family model that requires
     /// [CLS] at the start and [SEP] at the end of input sequences.
     /// </summary>
-    private readonly bool _addBertSpecialTokens;
-    private readonly long _clsTokenId;
-    private readonly long _sepTokenId;
+    private bool _addBertSpecialTokens;
+    private long _clsTokenId;
+    private long _sepTokenId;
+
+    private bool _initialized;
+    private readonly object _initLock = new();
 
     public int Dimension => _dimension;
-    public string ModelName => _modelName;
+    public string ModelName { get; }
 
     public OnnxEmbeddingProvider(OnnxEmbeddingConfig config)
     {
-        _config = config;
-
         if (string.IsNullOrWhiteSpace(config.ModelPath))
             throw new ArgumentException("ModelPath must be specified.", nameof(config));
 
-        if (!File.Exists(config.ModelPath))
-            throw new FileNotFoundException($"ONNX model not found: {config.ModelPath}");
+        _config = config;
+        ModelName = config.ModelName ?? Path.GetFileNameWithoutExtension(config.ModelPath);
+    }
 
-        // Create ONNX session with optional CUDA
-        var sessionOptions = new SessionOptions();
-        if (config.UseCuda)
+    // Defers all file I/O and model loading to the first embed call so that
+    // DI construction never throws even when the model hasn't been downloaded yet.
+    // The download worker calls EmbedAsync("warmup") after the download completes,
+    // which forces initialization before any real caller reaches this code.
+    private void EnsureInitialized()
+    {
+        if (_initialized) return;
+        lock (_initLock)
         {
-            try
-            {
-                sessionOptions.AppendExecutionProvider_CUDA(config.GpuDeviceId);
-            }
-            catch
-            {
-                // CUDA not available — fall back to CPU silently
-            }
-        }
+            if (_initialized) return;
 
-        _session = new InferenceSession(config.ModelPath, sessionOptions);
+            if (!File.Exists(_config.ModelPath))
+                throw new FileNotFoundException($"ONNX model not found: {_config.ModelPath}");
 
-        // Determine output dimension from model metadata
-        var outputMeta = _session.OutputMetadata.First();
-        var outputShape = outputMeta.Value.Dimensions;
-        // Shape is typically [batch_size, dimension] — dimension is the last axis
-        _dimension = outputShape.Length > 1 ? outputShape[^1] : outputShape[0];
-
-        // ── Load tokenizer ───────────────────────────────────────────────────
-        // Try multiple strategies in priority order. The tokenizer must match
-        // the model architecture — BERT needs WordPiece, GPT-2 needs BPE, etc.
-        var modelDir = Path.GetDirectoryName(config.ModelPath)!;
-
-        // Strategy 1: vocab.txt (WordPiece — BERT family models like all-MiniLM-L6-v2)
-        {
-            var vocabTxtPath = Path.Combine(modelDir, "vocab.txt");
-            if (File.Exists(vocabTxtPath))
+            // Create ONNX session with optional CUDA
+            var sessionOptions = new SessionOptions();
+            if (_config.UseCuda)
             {
                 try
                 {
-                    _tokenizer = WordPieceTokenizer.Create(vocabTxtPath);
-                    _addBertSpecialTokens = true;
-                    // Read [CLS] and [SEP] token IDs from vocab (line number = token ID)
-                    var vocabLines = File.ReadAllLines(vocabTxtPath);
-                    _clsTokenId = Array.IndexOf(vocabLines, "[CLS]");
-                    _sepTokenId = Array.IndexOf(vocabLines, "[SEP]");
-                    if (_clsTokenId < 0) _clsTokenId = 101; // BERT default
-                    if (_sepTokenId < 0) _sepTokenId = 102; // BERT default
-                    Console.WriteLine($"[Foundation.AI.Embed] Loaded WordPiece tokenizer from vocab.txt ([CLS]={_clsTokenId}, [SEP]={_sepTokenId})");
+                    sessionOptions.AppendExecutionProvider_CUDA(_config.GpuDeviceId);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Console.WriteLine($"[Foundation.AI.Embed] Failed to load WordPiece tokenizer ({ex.Message}), trying BPE fallback...");
+                    // CUDA not available — fall back to CPU silently
                 }
             }
-        }
 
-        // Strategy 2: vocab.json + merges.txt (BPE — GPT-2 family models)
-        if (_tokenizer == null)
-        {
-            var vocabJsonPath = Path.Combine(modelDir, "vocab.json");
-            var mergesPath = Path.Combine(modelDir, "merges.txt");
-            if (File.Exists(vocabJsonPath) && File.Exists(mergesPath))
+            _session = new InferenceSession(_config.ModelPath, sessionOptions);
+
+            // Determine output dimension from model metadata
+            var outputMeta = _session.OutputMetadata.First();
+            var outputShape = outputMeta.Value.Dimensions;
+            // Shape is typically [batch_size, dimension] — dimension is the last axis
+            _dimension = outputShape.Length > 1 ? outputShape[^1] : outputShape[0];
+
+            // ── Load tokenizer ───────────────────────────────────────────────────
+            // Try multiple strategies in priority order. The tokenizer must match
+            // the model architecture — BERT needs WordPiece, GPT-2 needs BPE, etc.
+            var modelDir = Path.GetDirectoryName(_config.ModelPath)!;
+
+            // Strategy 1: vocab.txt (WordPiece — BERT family models like all-MiniLM-L6-v2)
             {
-                using var vocabStream = File.OpenRead(vocabJsonPath);
-                using var mergesStream = File.OpenRead(mergesPath);
-                _tokenizer = BpeTokenizer.Create(vocabStream, mergesStream);
-                Console.WriteLine($"[Foundation.AI.Embed] Loaded BPE tokenizer from vocab.json + merges.txt");
+                var vocabTxtPath = Path.Combine(modelDir, "vocab.txt");
+                if (File.Exists(vocabTxtPath))
+                {
+                    try
+                    {
+                        _tokenizer = WordPieceTokenizer.Create(vocabTxtPath);
+                        _addBertSpecialTokens = true;
+                        // Read [CLS] and [SEP] token IDs from vocab (line number = token ID)
+                        var vocabLines = File.ReadAllLines(vocabTxtPath);
+                        _clsTokenId = Array.IndexOf(vocabLines, "[CLS]");
+                        _sepTokenId = Array.IndexOf(vocabLines, "[SEP]");
+                        if (_clsTokenId < 0) _clsTokenId = 101; // BERT default
+                        if (_sepTokenId < 0) _sepTokenId = 102; // BERT default
+                        Console.WriteLine($"[Foundation.AI.Embed] Loaded WordPiece tokenizer from vocab.txt ([CLS]={_clsTokenId}, [SEP]={_sepTokenId})");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[Foundation.AI.Embed] Failed to load WordPiece tokenizer ({ex.Message}), trying BPE fallback...");
+                    }
+                }
             }
-        }
 
-        if (_tokenizer == null)
-        {
-            Console.WriteLine("[Foundation.AI.Embed] WARNING: No tokenizer files found — using whitespace fallback. " +
-                              "Embeddings will be LOW QUALITY. Provide tokenizer.json, vocab.txt, or vocab.json + merges.txt.");
-        }
+            // Strategy 2: vocab.json + merges.txt (BPE — GPT-2 family models)
+            if (_tokenizer == null)
+            {
+                var vocabJsonPath = Path.Combine(modelDir, "vocab.json");
+                var mergesPath = Path.Combine(modelDir, "merges.txt");
+                if (File.Exists(vocabJsonPath) && File.Exists(mergesPath))
+                {
+                    using var vocabStream = File.OpenRead(vocabJsonPath);
+                    using var mergesStream = File.OpenRead(mergesPath);
+                    _tokenizer = BpeTokenizer.Create(vocabStream, mergesStream);
+                    Console.WriteLine($"[Foundation.AI.Embed] Loaded BPE tokenizer from vocab.json + merges.txt");
+                }
+            }
 
-        _modelName = config.ModelName
-            ?? Path.GetFileNameWithoutExtension(config.ModelPath);
+            if (_tokenizer == null)
+            {
+                Console.WriteLine("[Foundation.AI.Embed] WARNING: No tokenizer files found — using whitespace fallback. " +
+                                  "Embeddings will be LOW QUALITY. Provide tokenizer.json, vocab.txt, or vocab.json + merges.txt.");
+            }
+
+            _initialized = true;
+        }
     }
 
     public Task<float[]> EmbedAsync(string text, CancellationToken ct = default)
     {
+        EnsureInitialized();
         var embedding = RunInference([text])[0];
         return Task.FromResult(embedding);
     }
@@ -164,6 +180,8 @@ public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
     {
         if (texts.Count == 0)
             return Task.FromResult(Array.Empty<float[]>());
+
+        EnsureInitialized();
 
         // Fast path: the caller's batch already fits in one Run(), skip the slicing.
         if (texts.Count <= MicroBatchSize)
@@ -290,7 +308,7 @@ public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
 
         // Build ONNX inputs — model may use different input names
         var inputs = new List<NamedOnnxValue>();
-        var inputNames = _session.InputMetadata.Keys.ToList();
+        var inputNames = _session!.InputMetadata.Keys.ToList();
 
         foreach (var name in inputNames)
         {
@@ -303,7 +321,7 @@ public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
         }
 
         // Run model
-        using var results = _session.Run(inputs);
+        using var results = _session!.Run(inputs);
         var output = results.First();
         var outputTensor = output.AsTensor<float>();
 
@@ -366,7 +384,7 @@ public sealed class OnnxEmbeddingProvider : IEmbeddingProvider
 
     public ValueTask DisposeAsync()
     {
-        _session.Dispose();
+        _session?.Dispose();
         return ValueTask.CompletedTask;
     }
 }
