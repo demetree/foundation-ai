@@ -28,11 +28,20 @@ public class OnnxModelDownloader
             Directory.CreateDirectory(targetDirectory);
         }
 
-        // Check if the FINAL file exists to determine if download fully succeeded previously
-        var lastFilePath = Path.Combine(targetDirectory, "tokenizer_config.json");
-        if (File.Exists(lastFilePath))
+        // All expected files must be present — checking only the sentinel led to
+        // silent failures when a prior run completed tokenizer_config.json but not others.
+        bool allPresent = true;
+        foreach (var f in config.FilesToDownload)
         {
-            return; // Model already exists locally and downloaded completely.
+            if (!File.Exists(Path.Combine(targetDirectory, Path.GetFileName(f))))
+            {
+                allPresent = false;
+                break;
+            }
+        }
+        if (allPresent)
+        {
+            return; // Model already fully downloaded.
         }
 
         Console.WriteLine($"[Foundation.AI] Downloading ONNX Model to {targetDirectory}...");

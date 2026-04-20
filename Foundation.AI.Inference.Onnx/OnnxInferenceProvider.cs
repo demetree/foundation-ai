@@ -11,21 +11,41 @@ namespace Foundation.AI.Inference.Onnx;
 
 public class OnnxInferenceProvider : IInferenceProvider
 {
-    private readonly Model _model;
-    private readonly Tokenizer _tokenizer;
+    private readonly string _modelPath;
     private readonly string _modelName;
+    private Model _model;
+    private Tokenizer _tokenizer;
+    private readonly object _initLock = new();
+    private bool _initialized;
 
     public string ModelName => _modelName;
 
     public OnnxInferenceProvider(string modelPath, string modelName = "onnx-genai-local")
     {
+        _modelPath = modelPath;
         _modelName = modelName;
-        _model = new Model(modelPath);
-        _tokenizer = new Tokenizer(_model);
     }
+
+    // Deferred so DI construction succeeds even before model files are on disk.
+    // OnnxModelDownloadWorker downloads the files and then calls Preload() to
+    // load the ONNX session into RAM before the first user request arrives.
+    private void EnsureInitialized()
+    {
+        if (_initialized) return;
+        lock (_initLock)
+        {
+            if (_initialized) return;
+            _model = new Model(_modelPath);
+            _tokenizer = new Tokenizer(_model);
+            _initialized = true;
+        }
+    }
+
+    public void Preload() => EnsureInitialized();
 
     public Task<InferenceResponse> GenerateAsync(string prompt, InferenceOptions? options = null, CancellationToken ct = default)
     {
+        EnsureInitialized();
         options ??= new InferenceOptions();
 
         string fullPrompt = prompt;
@@ -66,8 +86,9 @@ public class OnnxInferenceProvider : IInferenceProvider
 
     public async IAsyncEnumerable<string> GenerateStreamAsync(string prompt, InferenceOptions? options = null, [EnumeratorCancellation] CancellationToken ct = default)
     {
+        EnsureInitialized();
         options ??= new InferenceOptions();
-        
+
         string fullPrompt = prompt;
         if (!string.IsNullOrWhiteSpace(options.SystemPrompt) && !prompt.Contains("<|system|>") && !prompt.Contains("<|im_start|>system"))
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Foundation.AI.Inference;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -23,14 +24,19 @@ public class OnnxModelDownloadWorker : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        // Execute download on startup
-        await _downloader.EnsureModelExistsAsync(_targetPath, _modelConfig, cancellationToken);
+        try
+        {
+            await _downloader.EnsureModelExistsAsync(_targetPath, _modelConfig, cancellationToken);
 
-        // Pre-load the ONNX Inference matrix into RAM immediately at startup.
-        // Since it is registered as a Singleton, resolving it here will trigger its constructor.
-        Console.WriteLine("[Foundation.AI] Pre-loading inference model into RAM...");
-        var _ = _serviceProvider.GetRequiredService<IInferenceProvider>();
-        Console.WriteLine("[Foundation.AI] Inference model successfully loaded.");
+            Console.WriteLine("[Foundation.AI] Pre-loading inference model into RAM...");
+            var provider = _serviceProvider.GetRequiredService<IInferenceProvider>();
+            (provider as OnnxInferenceProvider)?.Preload();
+            Console.WriteLine("[Foundation.AI] Inference model successfully loaded.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[Foundation.AI] CRITICAL: Failed to download or load inference model. AI chat features will be unavailable until the model is present at '{_targetPath}'. Error: {ex.Message}");
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
