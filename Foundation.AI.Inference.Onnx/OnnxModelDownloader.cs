@@ -30,10 +30,13 @@ public class OnnxModelDownloader
 
         // All expected files must be present — checking only the sentinel led to
         // silent failures when a prior run completed tokenizer_config.json but not others.
+        // A file under the weight-file threshold is treated as a truncated remnant of an
+        // interrupted prior run and re-downloaded.
         bool allPresent = true;
         foreach (var f in config.FilesToDownload)
         {
-            if (!File.Exists(Path.Combine(targetDirectory, Path.GetFileName(f))))
+            var path = Path.Combine(targetDirectory, Path.GetFileName(f));
+            if (!File.Exists(path) || IsImplausiblySmall(path, f))
             {
                 allPresent = false;
                 break;
@@ -89,6 +92,20 @@ public class OnnxModelDownloader
                     await contentStream.CopyToAsync(fileStream, ct);
                     Console.WriteLine("Done.");
                 }
+
+                // Flush before size check so the FileStream's buffer is on disk.
+                await fileStream.FlushAsync(ct);
+                fileStream.Close();
+
+                if (totalBytes.HasValue && totalBytes.Value > 0)
+                {
+                    long actualBytes = new FileInfo(destination).Length;
+                    if (actualBytes != totalBytes.Value)
+                    {
+                        try { File.Delete(destination); } catch { /* best-effort cleanup */ }
+                        throw new IOException($"Size mismatch for {file}: expected {totalBytes.Value} bytes, got {actualBytes}. Partial file deleted.");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -97,5 +114,22 @@ public class OnnxModelDownloader
         }
 
         Console.WriteLine("[Foundation.AI] ONNX Model download complete.");
+    }
+
+    // Weight files (.onnx / .onnx.data / .bin / .safetensors) under 1 KB are truncation
+    // artefacts from an interrupted download. JSON configs can legitimately be tiny, so
+    // for those we only reject zero-byte files.
+    private static bool IsImplausiblySmall(string path, string originalName)
+    {
+        long size = new FileInfo(path).Length;
+        if (size == 0) return true;
+
+        string lower = originalName.ToLowerInvariant();
+        bool isWeightFile = lower.EndsWith(".onnx")
+            || lower.EndsWith(".onnx.data")
+            || lower.EndsWith(".bin")
+            || lower.EndsWith(".safetensors");
+
+        return isWeightFile && size < 1024;
     }
 }
