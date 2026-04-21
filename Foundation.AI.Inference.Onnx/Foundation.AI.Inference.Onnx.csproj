@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.6" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.13.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)' != 'Windows_NT'">
-    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.13.1" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntimeGenAI" />
   </ItemGroup>
 
   <ItemGroup>
