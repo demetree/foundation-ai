@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,51 +27,111 @@ public class OnnxModelDownloader
     }
 
     /// <summary>
-    /// Downloads the requested ONNX model from HuggingFace if the local path is empty.
-    /// Skips files that are already on disk at the expected size, so a partially
-    /// completed prior run resumes instead of re-downloading from scratch. Each
-    /// individual file is retried up to 3 times with backoff on transient failures.
+    /// Ensures the requested ONNX model is present at <paramref name="targetDirectory"/>.
+    ///
+    /// The file list is discovered at runtime by hitting HuggingFace's public tree API
+    /// for the configured repo/branch/subfolder, so the config only needs repo coordinates
+    /// — never a hand-curated file list. Already-downloaded files are skipped via a
+    /// HEAD-check against the remote Content-Length. Each file gets retry-with-backoff
+    /// on transient failures.
     /// </summary>
     public async Task EnsureModelExistsAsync(string targetDirectory, OnnxModelConfig config, CancellationToken ct = default)
     {
         if (config == null) return;
+        if (string.IsNullOrWhiteSpace(config.RepoId))
+        {
+            throw new InvalidOperationException("OnnxModelConfig.RepoId must be set to a HuggingFace repo ID.");
+        }
 
         if (!Directory.Exists(targetDirectory))
         {
             Directory.CreateDirectory(targetDirectory);
         }
 
-        // All expected files must be present — checking only the sentinel led to
-        // silent failures when a prior run completed tokenizer_config.json but not others.
-        // A file under the weight-file threshold is treated as a truncated remnant of an
-        // interrupted prior run and re-downloaded.
-        bool allPresent = true;
-        foreach (var f in config.FilesToDownload)
+        //
+        // Discover the file list from HuggingFace. No local cache, no fallback —
+        // the call is cheap (one JSON response, ~KB) and we need it to know
+        // what "complete" even means.
+        //
+        string[] files = await ListRemoteFilesAsync(config.RepoId, config.Branch, config.Subfolder, ct);
+        if (files.Length == 0)
         {
-            var path = Path.Combine(targetDirectory, Path.GetFileName(f));
-            if (!File.Exists(path) || IsImplausiblySmall(path, f))
-            {
-                allPresent = false;
-                break;
-            }
-        }
-        if (allPresent)
-        {
-            return; // Model already fully downloaded.
+            Console.WriteLine($"[Foundation.AI] HuggingFace tree listing returned no files for {config.RepoId}/{config.Subfolder}. Nothing to download.");
+            return;
         }
 
-        Console.WriteLine($"[Foundation.AI] Downloading ONNX Model to {targetDirectory}...");
+        //
+        // Per-file: HEAD to get expected size, skip if local already matches,
+        // else download with retry. The download loop is order-independent
+        // so there's no partial-state concern.
+        //
+        Console.WriteLine($"[Foundation.AI] Ensuring {files.Length} model file(s) at {targetDirectory} (repo {config.RepoId}, subfolder '{config.Subfolder}')...");
 
-        foreach (var file in config.FilesToDownload)
+        foreach (var file in files)
         {
             string subPath = string.IsNullOrEmpty(config.Subfolder) ? "" : $"{config.Subfolder}/";
-            string url = $"https://huggingface.co/{config.RepoId}/resolve/{config.Branch}/{subPath}{file}";
+            string url = $"https://huggingface.co/{config.RepoId}/resolve/{config.Branch ?? "main"}/{subPath}{file}";
             string destination = Path.Combine(targetDirectory, Path.GetFileName(file));
 
             await DownloadFileWithRetryAsync(url, destination, file, ct);
         }
 
-        Console.WriteLine("[Foundation.AI] ONNX Model download complete.");
+        Console.WriteLine("[Foundation.AI] ONNX model ready.");
+    }
+
+
+    /// <summary>
+    /// Calls HuggingFace's public tree API and returns the filenames (subfolder-
+    /// relative, not full repo paths) that live in the requested subfolder.
+    /// Throws on failure — callers rely on the list to know what to download.
+    /// </summary>
+    private async Task<string[]> ListRemoteFilesAsync(string repoId, string branch, string subfolder, CancellationToken ct)
+    {
+        string apiSubPath = string.IsNullOrEmpty(subfolder) ? "" : $"/{subfolder}";
+        string url = $"https://huggingface.co/api/models/{repoId}/tree/{branch ?? "main"}{apiSubPath}?recursive=true";
+
+        using var resp = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
+        if (!resp.IsSuccessStatusCode)
+        {
+            throw new Exception($"HuggingFace tree API returned {(int)resp.StatusCode} for {url}. Check RepoId / Branch / Subfolder.");
+        }
+
+        string json = await resp.Content.ReadAsStringAsync(ct);
+        using var doc = JsonDocument.Parse(json);
+        if (doc.RootElement.ValueKind != JsonValueKind.Array)
+        {
+            throw new Exception($"HuggingFace tree API returned an unexpected JSON shape for {url}.");
+        }
+
+        var files = new List<string>();
+        foreach (var entry in doc.RootElement.EnumerateArray())
+        {
+            if (!entry.TryGetProperty("type", out var typeProp)) continue;
+            if (typeProp.GetString() != "file") continue;
+
+            if (!entry.TryGetProperty("path", out var pathProp)) continue;
+            string fullPath = pathProp.GetString();
+            if (string.IsNullOrWhiteSpace(fullPath)) continue;
+
+            //
+            // API paths are repo-root relative. Strip the subfolder prefix so
+            // names are relative to Subfolder — the download loop joins them
+            // back onto {Subfolder}/{file} when building the resolve URL.
+            //
+            string relativePath = fullPath;
+            if (!string.IsNullOrEmpty(subfolder))
+            {
+                string prefix = subfolder.TrimEnd('/') + "/";
+                if (relativePath.StartsWith(prefix, StringComparison.Ordinal))
+                {
+                    relativePath = relativePath.Substring(prefix.Length);
+                }
+            }
+
+            files.Add(relativePath);
+        }
+
+        return files.ToArray();
     }
 
 
@@ -82,7 +144,7 @@ public class OnnxModelDownloader
         //
         // Per-file skip: HEAD the remote to learn the expected size. If the
         // local file matches byte-for-byte, we're done. Saves re-downloading
-        // tokenizer JSONs on every boot when only the big weight file failed.
+        // big weight files on every boot when a prior run completed partially.
         //
         long? remoteSize = await TryGetRemoteContentLengthAsync(url, ct);
         if (File.Exists(destination) && remoteSize.HasValue)
@@ -113,8 +175,8 @@ public class OnnxModelDownloader
             {
                 //
                 // 4xx is a permanent error — the file genuinely isn't at that
-                // URL (repo renamed it, branch wrong, auth required, etc.).
-                // Retrying burns attempts for no gain and delays boot.
+                // URL (auth required, repo moved since tree listing, rate-limited).
+                // No point retrying. Surface a clean diagnostic.
                 //
                 throw new Exception(
                     $"Failed to download {file} from {url}: {httpEx.Message} (permanent error, not retrying).",
@@ -230,22 +292,5 @@ public class OnnxModelDownloader
         {
             return null;
         }
-    }
-
-    // Weight files (.onnx / .onnx.data / .bin / .safetensors) under 1 KB are truncation
-    // artefacts from an interrupted download. JSON configs can legitimately be tiny, so
-    // for those we only reject zero-byte files.
-    private static bool IsImplausiblySmall(string path, string originalName)
-    {
-        long size = new FileInfo(path).Length;
-        if (size == 0) return true;
-
-        string lower = originalName.ToLowerInvariant();
-        bool isWeightFile = lower.EndsWith(".onnx")
-            || lower.EndsWith(".onnx.data")
-            || lower.EndsWith(".bin")
-            || lower.EndsWith(".safetensors");
-
-        return isWeightFile && size < 1024;
     }
 }

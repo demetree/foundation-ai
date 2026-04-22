@@ -1,14 +1,14 @@
-using System;
-
 namespace Foundation.AI.Inference.Onnx;
 
 /// <summary>
-/// Defines the required HuggingFace properties and file lists to download and instantiate an ONNX model.
+/// Identifies a HuggingFace-hosted ONNX model variant. The downloader discovers
+/// the file list at runtime via the HF tree API, so nothing here names individual
+/// files — just the repo coordinates.
 /// </summary>
 public class OnnxModelConfig
 {
     /// <summary>
-    /// The HuggingFace repository ID (e.g., "microsoft/Phi-3-mini-4k-instruct-onnx")
+    /// The HuggingFace repository ID (e.g., "microsoft/Phi-4-mini-instruct-onnx").
     /// </summary>
     public string RepoId { get; set; } = string.Empty;
 
@@ -18,7 +18,10 @@ public class OnnxModelConfig
     public string Branch { get; set; } = "main";
 
     /// <summary>
-    /// The subdirectory containing the ONNX model files.
+    /// The subdirectory containing the ONNX model files. Selects the execution
+    /// provider variant for multi-variant repos (e.g.
+    /// "directml/directml-int4-awq-block-128" vs
+    /// "cpu_and_mobile/cpu-int4-rtn-block-32-acc-level-4").
     /// </summary>
     public string Subfolder { get; set; } = string.Empty;
 
@@ -26,9 +29,4 @@ public class OnnxModelConfig
     /// The prompt formatting template that the model was instructed with (e.g. "Phi3" or "ChatML").
     /// </summary>
     public string PromptTemplate { get; set; } = "Phi3";
-
-    /// <summary>
-    /// An exhaustive list of files inside the repository's subfolder that must be downloaded for the local model to boot.
-    /// </summary>
-    public string[] FilesToDownload { get; set; } = Array.Empty<string>();
 }
