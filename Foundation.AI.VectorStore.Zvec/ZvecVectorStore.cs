@@ -91,7 +91,7 @@ public sealed class ZvecVectorStore : IVectorStore
         // threads both try to open the WAL files.
         //
         var lazy = new Lazy<ZvecCollection>(
-            () => ZvecCollection.CreateAndOpen(path, schema),
+            () => ZvecCollection.CreateAndOpen(path, schema, OpenOptions()),
             LazyThreadSafetyMode.ExecutionAndPublication);
 
         if (!_collections.TryAdd(name, lazy))
@@ -237,6 +237,22 @@ public sealed class ZvecVectorStore : IVectorStore
     private string GetCollectionPath(string name) =>
         Path.Combine(_config.BasePath, name);
 
+    //
+    // Vector-store contents are always derivative — embeddings are rebuilt
+    // from an upstream source (documents, notes, etc.) by the ingestion
+    // pipeline that owns this store. So when we open a collection and its
+    // on-disk ZoneTree state is corrupted (typically from a crash or
+    // debugger-stop mid-compaction that left the manifest pointing at
+    // segment files that were never fully persisted), quarantining the
+    // bad directory and starting fresh is strictly safer than crashing
+    // the host process. The quarantined copy is preserved as
+    // "{name}.corrupt-{utcTimestamp}" for post-mortem.
+    //
+    private static CollectionOptions OpenOptions() => new()
+    {
+        AllowDestructiveRecovery = true
+    };
+
     private ZvecCollection GetOrOpenCollection(string name)
     {
         //
@@ -255,7 +271,7 @@ public sealed class ZvecVectorStore : IVectorStore
                 if (!File.Exists(metaPath))
                     throw new InvalidOperationException(
                         $"Collection '{n}' does not exist or is missing metadata.");
-                return ZvecCollection.Open(path);
+                return ZvecCollection.Open(path, OpenOptions());
             },
             LazyThreadSafetyMode.ExecutionAndPublication));
 

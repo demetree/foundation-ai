@@ -12,11 +12,20 @@ public sealed class CollectionOptions
     public bool EnableMmap { get; set; }
     public uint MaxBufferSize { get; set; }
 
+    /// <summary>
+    /// When true, a collection whose on-disk store is corrupted will be
+    /// quarantined (renamed to <c>{name}.corrupt-{utcTimestamp}</c>) and
+    /// re-created empty rather than throwing. Enable only for derivative
+    /// collections that can be rebuilt from an upstream source.
+    /// </summary>
+    public bool AllowDestructiveRecovery { get; set; }
+
     internal EngineCollectionOptions ToEngineOptions() => new()
     {
         ReadOnly = ReadOnly,
         EnableMmap = EnableMmap,
-        MaxBufferSize = MaxBufferSize
+        MaxBufferSize = MaxBufferSize,
+        AllowDestructiveRecovery = AllowDestructiveRecovery
     };
 }
 

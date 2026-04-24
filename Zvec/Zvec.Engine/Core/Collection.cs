@@ -16,6 +16,19 @@ public sealed class EngineCollectionOptions
     public bool ReadOnly { get; init; }
     public bool EnableMmap { get; init; } = true;
     public uint MaxBufferSize { get; init; }
+
+    /// <summary>
+    /// When true, and the underlying ZoneTree store cannot be opened because
+    /// its on-disk state is inconsistent (missing segment files, truncated
+    /// WAL, etc.), the storage engine renames the corrupted sub-directory to
+    /// <c>{name}.corrupt-{utcTimestamp}</c> and re-creates an empty store.
+    /// The quarantined copy is preserved for post-mortem rather than deleted.
+    /// <para>Enable only when the collection's contents are rebuildable from
+    /// an authoritative upstream source (e.g. an embedding index derived from
+    /// source documents). For authoritative stores, leave this false and
+    /// handle <see cref="CorruptedStoreException"/> explicitly.</para>
+    /// </summary>
+    public bool AllowDestructiveRecovery { get; init; }
 }
 
 /// <summary>
@@ -116,7 +129,7 @@ public sealed class Collection : IDisposable
             Directory.CreateDirectory(path);
 
         // Use ZoneTree for persistent storage
-        var storage = new ZoneTreeStorageEngine(path);
+        var storage = new ZoneTreeStorageEngine(path, opts.AllowDestructiveRecovery);
 
         var collection = new Collection(path, schema, opts, storage);
 
@@ -143,7 +156,7 @@ public sealed class Collection : IDisposable
                 $"No collection metadata found at: {path}");
 
         var schema = MetadataPersistence.ToSchema(metadata);
-        var storage = new ZoneTreeStorageEngine(path);
+        var storage = new ZoneTreeStorageEngine(path, opts.AllowDestructiveRecovery);
 
         var collection = new Collection(path, schema, opts, storage);
         collection._nextDocId = metadata.NextDocId;
