@@ -44,6 +44,23 @@ Original MIT License:
     SOFTWARE.
 
 ================================================================================
+Zvec  (Foundation.AI.VectorStore.Zvec, Zvec, Zvec.Engine, Zvec.Bench, Zvec.Test)
+--------------------------------------------------------------------------------
+
+The Zvec family of projects is a .NET port of "zvec" by Alibaba Group:
+
+    https://github.com/alibaba/zvec
+
+The original C++ implementation is licensed under the Apache License 2.0
+(included as LICENSE in this distribution and applicable to the upstream work).
+The .NET port preserves the in-process embedded-vector-database architecture
+(dense + sparse vectors, hybrid search with structured filters, concurrent
+reads with exclusive writes, write-ahead logging) and reimplements the core
+similarity-search routines in C# with platform-specific SIMD where available.
+
+Copyright (c) Alibaba Group Holding Limited and contributors.
+
+================================================================================
 Foundation.AI.MarkItDown
 --------------------------------------------------------------------------------
 
@@ -54,5 +71,29 @@ Python "markitdown" library:
 
 It is an independent .NET implementation, not a direct port of the Python code.
 No Microsoft source code is included or redistributed.
+
+================================================================================
+Foundation.AI.Inference.BitNet  (BitNet.Interop, BitNet.Sample)
+--------------------------------------------------------------------------------
+
+The BitNet inference module wraps Microsoft Research's BitNet llama.cpp fork:
+
+    https://github.com/microsoft/BitNet
+
+via P/Invoke. The native binaries are not redistributed in this source tree;
+consumers must build or obtain them separately. The upstream project is
+licensed under the MIT License.
+
+bitnet.cpp itself is built on two upstream projects, which are acknowledged
+here for chain-of-attribution completeness:
+
+  - llama.cpp by Georgi Gerganov and contributors
+        https://github.com/ggerganov/llama.cpp
+        bitnet.cpp is a fork of the llama.cpp inference framework. MIT License.
+
+  - T-MAC by Microsoft Research
+        https://github.com/microsoft/T-MAC/
+        bitnet.cpp's optimized kernels are built on top of the Lookup Table
+        methodologies pioneered in T-MAC. MIT License.
 
 ================================================================================

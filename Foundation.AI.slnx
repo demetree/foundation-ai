@@ -1,0 +1,27 @@
+<Solution>
+  <Folder Name="/BitNet/">
+    <Project Path="BitNet/BitNet.Interop/BitNet.Interop.csproj" />
+    <Project Path="BitNet/BitNet.Sample/BitNet.Sample.csproj" />
+  </Folder>
+  <Folder Name="/Zvec/">
+    <Project Path="Zvec/Zvec.Bench/Zvec.Bench.csproj" />
+    <Project Path="Zvec/Zvec.Engine/Zvec.Engine.csproj" />
+    <Project Path="Zvec/Zvec.Test/Zvec.Test.csproj" />
+    <Project Path="Zvec/Zvec/Zvec.csproj" />
+  </Folder>
+  <Project Path="Foundation.AI.Embed/Foundation.AI.Embed.csproj" />
+  <Project Path="Foundation.AI.Experiment/Foundation.AI.Experiment.csproj" />
+  <Project Path="Foundation.AI.Inference.BitNet/Foundation.AI.Inference.BitNet.csproj" />
+  <Project Path="Foundation.AI.Inference.LlamaSharp/Foundation.AI.Inference.LlamaSharp.csproj" />
+  <Project Path="Foundation.AI.Inference.Onnx/Foundation.AI.Inference.Onnx.csproj" />
+  <Project Path="Foundation.AI.Inference/Foundation.AI.Inference.csproj" />
+  <Project Path="Foundation.AI.MarkItDown.Media/Foundation.AI.MarkItDown.Media.csproj" />
+  <Project Path="Foundation.AI.MarkItDown.Office/Foundation.AI.MarkItDown.Office.csproj" />
+  <Project Path="Foundation.AI.MarkItDown.Pdf/Foundation.AI.MarkItDown.Pdf.csproj" />
+  <Project Path="Foundation.AI.MarkItDown/Foundation.AI.MarkItDown.csproj" />
+  <Project Path="Foundation.AI.Rag/Foundation.AI.Rag.csproj" />
+  <Project Path="Foundation.AI.VectorStore.Zvec/Foundation.AI.VectorStore.Zvec.csproj" />
+  <Project Path="Foundation.AI.VectorStore/Foundation.AI.VectorStore.csproj" />
+  <Project Path="Foundation.AI.Vision/Foundation.AI.Vision.csproj" />
+  <Project Path="Foundation.AI/Foundation.AI.csproj" />
+</Solution>

@@ -1,0 +1,72 @@
+# CI: build the solution and run managed-only tests on Windows + Linux.
+#
+# This workflow intentionally does NOT:
+#   - download model files (Phi-4-mini, embeddings, etc.) — too large, too slow,
+#     and tests that need them are guarded behind a Trait that we exclude here
+#   - install LLamaSharp native backends (CPU/CUDA/Vulkan) — pick one per app
+#   - build BitNet native binaries — see CONTRIBUTING.md
+#
+# Tests filtered out:
+#   - Trait "RequiresNative" — needs llama.cpp / bitnet.cpp / ONNX runtime native libs
+#   - Trait "RequiresNetwork" — needs a live model API (OpenAI, Ollama, etc.)
+#   - Trait "RequiresModel"   — needs a downloaded model file on disk
+
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Print SDK info
+        run: dotnet --info
+
+      - name: Restore
+        run: dotnet restore Foundation.AI.slnx
+
+      - name: Build
+        run: dotnet build Foundation.AI.slnx --configuration Release --no-restore
+
+      - name: Test (managed-only)
+        run: >
+          dotnet test Foundation.AI.slnx
+          --configuration Release
+          --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --filter "Category!=RequiresNative&Category!=RequiresNetwork&Category!=RequiresModel"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: '**/test-results.trx'
+          if-no-files-found: ignore
+          retention-days: 7
