@@ -14,6 +14,8 @@
 
     <!-- Inference runtimes (Foundation.AI.Inference.Onnx, Foundation.AI.Inference.LlamaSharp) -->
     <PackageVersion Include="LLamaSharp" Version="0.26.0" />
+    <!-- Native backends are picked at the consuming-app level; sample apps reference Cpu for max compatibility. -->
+    <PackageVersion Include="LLamaSharp.Backend.Cpu" Version="0.26.0" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.24.4" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI" Version="0.13.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntimeGenAI.DirectML" Version="0.13.1" />

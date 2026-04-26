@@ -11,6 +11,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <!-- Native llama.cpp backend for the LLamaSharp inference path. CPU-only so it
+         works on every machine. Swap for LLamaSharp.Backend.Cuda12 or .Vulkan if
+         you have a GPU and want substantially faster generation. -->
+    <PackageReference Include="LLamaSharp.Backend.Cpu" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +22,7 @@
     <ProjectReference Include="..\..\Foundation.AI.Embed\Foundation.AI.Embed.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.Inference\Foundation.AI.Inference.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.Inference.Onnx\Foundation.AI.Inference.Onnx.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI.Inference.LlamaSharp\Foundation.AI.Inference.LlamaSharp.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.MarkItDown\Foundation.AI.MarkItDown.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Office\Foundation.AI.MarkItDown.Office.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Pdf\Foundation.AI.MarkItDown.Pdf.csproj" />
