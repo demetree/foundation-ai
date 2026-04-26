@@ -1,0 +1,9 @@
+# Auto-downloaded models -- ~80 MB embedder + ~2-3 GB Phi-4-mini
+ai-models/
+
+# Zvec collection data -- regenerated every run
+vectors/
+
+# Standard build output
+bin/
+obj/

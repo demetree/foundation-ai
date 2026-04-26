@@ -4,6 +4,7 @@
     <Project Path="BitNet/BitNet.Sample/BitNet.Sample.csproj" />
   </Folder>
   <Folder Name="/examples/">
+    <Project Path="examples/DocsQ/DocsQ.csproj" />
     <Project Path="examples/SemanticFinder/SemanticFinder.csproj" />
   </Folder>
   <Folder Name="/Zvec/">
