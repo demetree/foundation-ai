@@ -161,7 +161,12 @@ while (true)
         Collection = Collection,
         TopK = 4,
         MaxTokens = 512,
-        Temperature = 0.3f
+        Temperature = 0.3f,
+        // Phi-4-mini cpu-int4 occasionally enters a repetition loop on simple
+        // lookup questions (e.g. "what is X?"). A small penalty (1.0 = none,
+        // 1.1 = mild) breaks those loops without measurably hurting answer
+        // fluency. Larger / higher-precision models can drop this back to 1.0.
+        RepetitionPenalty = 1.1f
     };
 
     Console.WriteLine();

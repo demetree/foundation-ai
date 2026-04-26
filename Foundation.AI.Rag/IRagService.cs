@@ -97,6 +97,15 @@ public class RagOptions
 
     /// <summary>Max tokens for the generated answer. Default: 1024.</summary>
     public int MaxTokens { get; set; } = 1024;
+
+    /// <summary>
+    /// Penalty applied to tokens that have already appeared in the generated
+    /// output, discouraging repetition loops. 1.0 = no penalty (default,
+    /// preserves prior behaviour); typical useful range is 1.05 to 1.2.
+    /// Small quantised models on CPU (e.g. Phi-4-mini cpu-int4) benefit
+    /// noticeably from a value around 1.1 on simple lookup questions.
+    /// </summary>
+    public float RepetitionPenalty { get; set; } = 1.0f;
 }
 
 /// <summary>A document to index for RAG retrieval.</summary>

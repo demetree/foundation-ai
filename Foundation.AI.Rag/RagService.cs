@@ -83,7 +83,8 @@ public sealed class RagService : IRagService
         {
             SystemPrompt = systemPrompt,
             Temperature = options.Temperature,
-            MaxTokens = options.MaxTokens
+            MaxTokens = options.MaxTokens,
+            RepetitionPenalty = options.RepetitionPenalty
         }, ct);
 
         return new RagResponse(response.Content, sources);
@@ -123,7 +124,8 @@ public sealed class RagService : IRagService
         {
             SystemPrompt = systemPrompt,
             Temperature = options.Temperature,
-            MaxTokens = options.MaxTokens
+            MaxTokens = options.MaxTokens,
+            RepetitionPenalty = options.RepetitionPenalty
         }, ct))
         {
             yield return token;
