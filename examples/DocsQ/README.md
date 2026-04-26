@@ -26,9 +26,21 @@ dotnet run
 This sample needs **two** ONNX models:
 
 - `Xenova/all-MiniLM-L6-v2` -- the embedder, ~80 MB.
-- `microsoft/Phi-4-mini-instruct-onnx` (cpu-int4 variant) -- the LLM, **~2-3 GB**.
+- `microsoft/Phi-4-mini-instruct-onnx` (cpu-int4 variant) -- the LLM, **~4.7 GB**.
 
-Both auto-download on first run via `OnnxModelDownloader.EnsureModelExistsAsync`, which hits the HuggingFace tree API to discover the file list and skips already-present files on subsequent runs. Allow 5-15 minutes for the initial download on a typical home connection. Files land in `./ai-models/` (gitignored).
+Both auto-download on first run via `OnnxModelDownloader.EnsureModelExistsAsync`, which hits the HuggingFace tree API to discover the file list and skips already-present files on subsequent runs. Allow 10-20 minutes for the initial download on a typical home connection. Files land in `./ai-models/` (gitignored).
+
+### Putting models on a different drive
+
+If your project drive is short on space, override the model directories with environment variables:
+
+```powershell
+$env:DOCSQ_EMBED_DIR = "D:\AI-Models\all-MiniLM-L6-v2"
+$env:DOCSQ_INFER_DIR = "D:\AI-Models\Phi-4-mini-instruct-onnx"
+dotnet run
+```
+
+The downloader creates the directories if they don't exist. You only need write access to the chosen path.
 
 ## Try these questions
 
@@ -51,6 +63,27 @@ dotnet run -- C:\path\to\your\documents
 ```
 
 Any folder with `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.md`, `.txt`, `.csv`, `.json`, or `.xml` files works. MarkItDown handles the format conversion in every case.
+
+## A note on answer quality
+
+The default model variant -- Phi-4-mini cpu-int4 -- is the *smallest viable* choice, not the *best quality* choice. It is a 3.8-billion-parameter model quantised to 4 bits per weight running on CPU. That gets you running on any machine with ~5 GB free, but it has real limits:
+
+- **Occasional repetition loops** on simple lookup questions, especially when the retrieved context closely paraphrases the question. The `MaxTokens` ceiling cuts these off; you will see the loop in the output but the program does not hang.
+- **Slow on CPU** -- expect 5-10 tokens per second on a typical laptop. A complete answer to one question takes 15-45 seconds.
+- **Limited multi-step reasoning** -- this is a small model. Single-shot Q&A over retrieved chunks works well; chained reasoning across multiple sources is hit-or-miss.
+
+For better quality without changing application code, swap to a larger model behind an OpenAI-compatible endpoint (Ollama is the easiest path):
+
+```csharp
+services.AddOpenAiInference(c =>
+{
+    c.Endpoint = "http://localhost:11434/v1/chat/completions";
+    c.Model = "qwen3:8b";   // or llama3:8b, mistral, etc.
+    c.ApiKey = "ollama";
+});
+```
+
+Then `ollama pull qwen3:8b` and you have a much more capable model with the same Foundation.AI surface. The trade-off is that Ollama is a separate process the user has to install and run.
 
 ## Run it faster on a GPU
 

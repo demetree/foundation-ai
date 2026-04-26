@@ -24,9 +24,16 @@ using Microsoft.Extensions.DependencyInjection;
 //   - Foundation.AI.Rag     : ties chunking + retrieval + synthesis together
 
 const string Collection      = "docsq";
-const string EmbedDir        = "./ai-models/all-MiniLM-L6-v2";
-const string InferDir        = "./ai-models/Phi-4-mini-instruct-onnx";
 const string VectorDir       = "./vectors";
+
+// Model directories. Default to ./ai-models/ alongside the sample, but allow
+// override via env var so users with a small system drive can park the
+// 4.7 GB Phi-4-mini somewhere else (e.g. an external SSD) without editing code:
+//   set DOCSQ_INFER_DIR=D:\AI-Models\Phi-4-mini-instruct-onnx
+string EmbedDir = Environment.GetEnvironmentVariable("DOCSQ_EMBED_DIR")
+                  ?? "./ai-models/all-MiniLM-L6-v2";
+string InferDir = Environment.GetEnvironmentVariable("DOCSQ_INFER_DIR")
+                  ?? "./ai-models/Phi-4-mini-instruct-onnx";
 
 string docsDir = args.Length > 0 ? args[0] : "./sample-docs";
 if (!Directory.Exists(docsDir))
@@ -40,8 +47,9 @@ if (!Directory.Exists(docsDir))
 // HuggingFace tree API to discover the file list, downloads anything missing,
 // and skips files whose local size already matches.
 //
-// First run will download ~80 MB (embedder) plus ~2-3 GB (Phi-4-mini int4) --
-// allow ~5-15 minutes on a typical home connection. Subsequent runs are instant.
+// First run will download ~80 MB (embedder) plus ~4.7 GB (Phi-4-mini int4) --
+// allow ~10-20 minutes on a typical home connection, and have ~5 GB free
+// on the drive where this sample is checked out. Subsequent runs are instant.
 Directory.CreateDirectory(EmbedDir);
 Directory.CreateDirectory(InferDir);
 
