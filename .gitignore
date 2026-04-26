@@ -1,0 +1,35 @@
+# --- .NET build output ----------------------------------------------------
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+publish/
+
+# --- IDE & editor caches --------------------------------------------------
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userprefs
+*.swp
+
+# --- Test output ----------------------------------------------------------
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+
+# --- Logs & misc runtime artifacts ----------------------------------------
+*.log
+*.pdb.bak
+
+# --- OS noise -------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+.DS_Store
+
+# --- Sample-specific runtime data -----------------------------------------
+# These are files samples download or generate on the fly. The corresponding
+# /examples/*/.gitignore files cover sample-local cases too.
+ai-models/
+vectors/
