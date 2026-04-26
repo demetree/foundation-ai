@@ -1,0 +1,10 @@
+# Auto-downloaded models -- shared with DocsQ if you point env vars at the
+# same paths. Default location is alongside this sample.
+ai-models/
+
+# Zvec collection data -- regenerated every run.
+vectors/
+
+# Standard build output.
+bin/
+obj/
