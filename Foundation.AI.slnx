@@ -3,6 +3,9 @@
     <Project Path="BitNet/BitNet.Interop/BitNet.Interop.csproj" />
     <Project Path="BitNet/BitNet.Sample/BitNet.Sample.csproj" />
   </Folder>
+  <Folder Name="/examples/">
+    <Project Path="examples/SemanticFinder/SemanticFinder.csproj" />
+  </Folder>
   <Folder Name="/Zvec/">
     <Project Path="Zvec/Zvec.Bench/Zvec.Bench.csproj" />
     <Project Path="Zvec/Zvec.Engine/Zvec.Engine.csproj" />

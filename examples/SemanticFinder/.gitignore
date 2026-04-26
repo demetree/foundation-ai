@@ -1,0 +1,9 @@
+# Auto-downloaded embedding model (~80 MB) -- fetched on first run, never committed.
+ai-models/
+
+# Zvec collection data -- regenerated every run.
+vectors/
+
+# Standard .NET build output (in case the parent .gitignore isn't comprehensive).
+bin/
+obj/
