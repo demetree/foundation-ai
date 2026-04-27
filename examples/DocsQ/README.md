@@ -75,11 +75,16 @@ The model will stream the answer token by token, then print citations showing wh
 
 ## Use it on your own documents
 
-```bash
+This is the headline reason DocsQ exists. Drop a folder with **any mix of supported formats** on the command line and DocsQ will index everything via MarkItDown, then let you ask questions about it:
+
+```powershell
 dotnet run -- C:\path\to\your\documents
+
+# Or with a different backend:
+$env:DOCSQ_BACKEND = "ollama"; dotnet run -- C:\path\to\your\documents
 ```
 
-Any folder with `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.md`, `.txt`, `.csv`, `.json`, or `.xml` files works. MarkItDown handles the format conversion in every case.
+Supported formats: `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html` / `.htm`, `.md`, `.txt`, `.csv`, `.json`, `.xml`. MarkItDown handles the format conversion transparently — your application code is exactly the same whether the folder contains 100 PDFs, a mix of Word and HTML, or just plain markdown.
 
 ## A note on answer quality (with real numbers)
 

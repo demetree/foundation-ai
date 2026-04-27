@@ -1,15 +1,16 @@
 # SemanticFinder
 
-> A 100-line console app that demonstrates **semantic search over a folder of text files** using Foundation.AI's embedding + vector-store stack. No LLM required, no cloud calls, no Postgres or Pinecone — runs entirely in-process from a single executable.
+> A small console app that demonstrates **semantic search over a folder of documents** using Foundation.AI's embedding + vector-store stack. **No LLM required**, no cloud calls, no Postgres or Pinecone — runs entirely in-process from a single executable.
 
 ## What this shows
 
 - `IEmbeddingProvider` (ONNX, all-MiniLM-L6-v2, ~80 MB on CPU)
 - `IVectorStore` (Zvec, embedded, file-based, no external service)
+- `IMarkItDown` for converting any input format (PDF, Office, HTML, etc.) to clean text before embedding
 - Batch ingestion (`EmbedBatchAsync` + `UpsertBatchAsync`)
 - The "auto-download model on first run" pattern via `OnnxModelDownloader.EnsureModelExistsAsync`
 
-The whole thing is one [`Program.cs`](Program.cs) file, ~100 lines including comments and prompts.
+The whole thing is one [`Program.cs`](Program.cs) file, ~150 lines including comments and prompts.
 
 ## Run it
 
@@ -39,11 +40,13 @@ Type `quit` or `exit` to stop, or just close the window.
 
 ## Use it on your own files
 
-```bash
-dotnet run -- C:\path\to\your\notes
+```powershell
+dotnet run -- C:\path\to\your\documents
 ```
 
-Any folder containing `.txt` or `.md` files works. The whole corpus is re-indexed on every run — fine for hundreds of files; for thousands you'd want incremental ingestion (see `BMC.RagIngestionJob` in the parent project for that pattern).
+The folder can contain **any mix of supported formats** — `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.md`, `.txt`, `.csv`, `.json`, or `.xml`. MarkItDown handles the format conversion transparently before each file is embedded; your application code is exactly the same whether the folder is plain markdown or 200 mixed PDFs and Word docs.
+
+The whole corpus is re-indexed on every run — fine for hundreds of files; for thousands you'd want incremental ingestion (see `BMC.RagIngestionJob` in the parent project for that pattern). Files that fail conversion are skipped with a one-line warning and the rest still index.
 
 ## What this demo does *not* show
 
@@ -60,6 +63,9 @@ If you copy this `Program.cs` into your own project, the only thing that changes
 <PackageReference Include="Foundation.AI.VectorStore" Version="..." />
 <PackageReference Include="Foundation.AI.VectorStore.Zvec" Version="..." />
 <PackageReference Include="Foundation.AI.Inference.Onnx" Version="..." />
+<PackageReference Include="Foundation.AI.MarkItDown" Version="..." />
+<PackageReference Include="Foundation.AI.MarkItDown.Pdf" Version="..." />
+<PackageReference Include="Foundation.AI.MarkItDown.Office" Version="..." />
 ```
 
 Everything else — the API calls, the configuration, the patterns — works identically.

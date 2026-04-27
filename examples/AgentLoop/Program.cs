@@ -4,6 +4,7 @@ using Foundation.AI.Examples.AgentLoop;
 using Foundation.AI.Inference;
 using Foundation.AI.Inference.LlamaSharp;
 using Foundation.AI.Inference.Onnx;
+using Foundation.AI.MarkItDown;
 using Foundation.AI.VectorStore;
 using Foundation.AI.VectorStore.Zvec;
 using Microsoft.Extensions.DependencyInjection;
@@ -129,11 +130,16 @@ switch (backend)
         break;
 }
 
+// MarkItDown for the corpus indexer -- lets KbTools accept PDF / Office / HTML
+// / etc., not just markdown.
+services.AddMarkItDown();
+
 await using var sp = services.BuildServiceProvider();
 
-var embedder  = sp.GetRequiredService<IEmbeddingProvider>();
-var store     = sp.GetRequiredService<IVectorStore>();
-var inference = sp.GetRequiredService<IInferenceProvider>();
+var embedder   = sp.GetRequiredService<IEmbeddingProvider>();
+var store      = sp.GetRequiredService<IVectorStore>();
+var inference  = sp.GetRequiredService<IInferenceProvider>();
+var markItDown = sp.GetRequiredService<IMarkItDown>();
 
 // ─── Step 3: warm both models ─────────────────────────────────────────────
 Console.WriteLine($"Warming up embedder + LLM ({inference.ModelName})...");
@@ -144,7 +150,7 @@ warmup.Stop();
 Console.WriteLine($"Warm in {warmup.ElapsedMilliseconds} ms.");
 
 // ─── Step 4: index the KB (chunk + embed + store) ─────────────────────────
-var tools = new KbTools(embedder, store, inference);
+var tools = new KbTools(embedder, store, inference, markItDown);
 Console.WriteLine($"\nIndexing corpus from {Path.GetFullPath(corpusDir)}...");
 var indexSw = Stopwatch.StartNew();
 await tools.IndexCorpusAsync(corpusDir);

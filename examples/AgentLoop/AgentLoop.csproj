@@ -24,6 +24,13 @@
     <ProjectReference Include="..\..\Foundation.AI.Inference.LlamaSharp\Foundation.AI.Inference.LlamaSharp.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.VectorStore\Foundation.AI.VectorStore.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.VectorStore.Zvec\Foundation.AI.VectorStore.Zvec.csproj" />
+    <!-- MarkItDown family: lets the agent read PDFs / Office / HTML / etc.
+         from the corpus folder, not just markdown. The conversion to clean
+         markdown happens transparently inside KbTools.IndexCorpusAsync. -->
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown\Foundation.AI.MarkItDown.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Pdf\Foundation.AI.MarkItDown.Pdf.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Office\Foundation.AI.MarkItDown.Office.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Media\Foundation.AI.MarkItDown.Media.csproj" />
   </ItemGroup>
 
   <ItemGroup>

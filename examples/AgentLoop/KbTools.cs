@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Foundation.AI.Embed;
 using Foundation.AI.Inference;
+using Foundation.AI.MarkItDown;
 using Foundation.AI.VectorStore;
 
 namespace Foundation.AI.Examples.AgentLoop;
@@ -34,18 +35,20 @@ public sealed class KbTools
     private readonly IEmbeddingProvider _embedder;
     private readonly IVectorStore _store;
     private readonly IInferenceProvider _inference;
+    private readonly IMarkItDown _markItDown;
 
-    // name (lowercased, with or without .md) -> doc record. Lookups in
+    // name (lowercased, with or without extension) -> doc record. Lookups in
     // read_doc / compare go through this map so the agent can name a doc
     // either way.
     private readonly Dictionary<string, KbDoc> _docs =
         new(StringComparer.OrdinalIgnoreCase);
 
-    public KbTools(IEmbeddingProvider embedder, IVectorStore store, IInferenceProvider inference)
+    public KbTools(IEmbeddingProvider embedder, IVectorStore store, IInferenceProvider inference, IMarkItDown markItDown)
     {
         _embedder = embedder;
         _store = store;
         _inference = inference;
+        _markItDown = markItDown;
     }
 
     // ─── Indexing (called once at startup from Program.cs) ─────────────────
@@ -58,17 +61,39 @@ public sealed class KbTools
         if (!Directory.Exists(corpusDir))
             throw new DirectoryNotFoundException($"Corpus not found: {corpusDir}");
 
-        string[] files = Directory.GetFiles(corpusDir, "*.md", SearchOption.TopDirectoryOnly);
+        string[] files = Directory.GetFiles(corpusDir, "*", SearchOption.TopDirectoryOnly)
+            .Where(IsSupported)
+            .OrderBy(f => f)
+            .ToArray();
         if (files.Length == 0)
-            throw new InvalidOperationException($"No .md files in corpus dir: {corpusDir}");
+            throw new InvalidOperationException(
+                $"No supported files in corpus dir: {corpusDir}. " +
+                "Drop .pdf, .docx, .pptx, .xlsx, .html, .md, .txt, .csv, .json, or .xml files in there and re-run.");
 
         // Build the in-memory doc index first -- list_topics and read_doc
         // serve straight from this without touching Zvec at all.
+        //
+        // Every file routes through MarkItDown so the corpus can mix formats
+        // -- PDF / Office / HTML / etc. -- not just markdown. For .md / .txt
+        // this is effectively a pass-through; for the heavier formats it's
+        // where the conversion happens.
         var allChunks = new List<(string DocName, int ChunkIdx, string Text)>();
         foreach (string file in files)
         {
             string name = Path.GetFileName(file);
-            string text = await File.ReadAllTextAsync(file, ct);
+            string text;
+            try
+            {
+                var converted = await _markItDown.ConvertFileAsync(file, ct);
+                text = converted.Markdown;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  ! KbTools: skipping {name}: {ex.Message}");
+                continue;
+            }
+
+            if (string.IsNullOrWhiteSpace(text)) continue;
 
             string title = ExtractTitle(text);
             string summary = ExtractSummary(text);
@@ -239,8 +264,10 @@ public sealed class KbTools
         sb.AppendLine("Documents in the knowledge base:");
         int n = 1;
         // Iterate the canonical (with-extension) entries only, in alphabetical order.
+        // Path.HasExtension is the cheap way to filter the with-extension keys we
+        // intentionally added in IndexCorpusAsync from their without-extension aliases.
         foreach (var doc in _docs.Values
-            .Where(d => d.Name.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            .Where(d => Path.HasExtension(d.Name))
             .DistinctBy(d => d.Name)
             .OrderBy(d => d.Name))
         {
@@ -259,7 +286,7 @@ public sealed class KbTools
         if (!_docs.TryGetValue(name, out KbDoc? doc))
         {
             string available = string.Join(", ", _docs.Values
-                .Where(d => d.Name.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                .Where(d => Path.HasExtension(d.Name))
                 .Select(d => d.Name)
                 .Distinct());
             return $"Document '{name}' not found. Available: {available}";
@@ -402,6 +429,14 @@ public sealed class KbTools
     {
         if (string.IsNullOrEmpty(s)) return s;
         return s.Length <= max ? s : s.Substring(0, max) + "…";
+    }
+
+    private static bool IsSupported(string path)
+    {
+        string ext = Path.GetExtension(path).ToLowerInvariant();
+        return ext is ".pdf" or ".docx" or ".pptx" or ".xlsx"
+            or ".html" or ".htm" or ".md" or ".txt"
+            or ".csv" or ".json" or ".xml";
     }
 }
 

@@ -85,6 +85,14 @@ FINAL (answered in 47823 ms)
 The relevant sentence is: 'Composers like Mozart, Beethoven, and Brahms studied these exercises'
 ```
 
+## Use it on your own documents
+
+```powershell
+dotnet run -- C:\path\to\your\documents
+```
+
+The corpus folder can contain **any mix of supported formats** — `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.html`, `.md`, `.txt`, `.csv`, `.json`, or `.xml`. MarkItDown converts every file to markdown inside `KbTools.IndexCorpusAsync` before chunking and embedding; from the agent's perspective everything looks like markdown regardless of source format. The agent's `list_topics` and `read_doc` tools surface the original filename (with `.pdf`, `.docx`, etc. extensions intact) so you can see what's in the corpus.
+
 ## Adapting to your project
 
 The pattern is straightforward to lift:

@@ -10,10 +10,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Foundation.AI.Embed\Foundation.AI.Embed.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.VectorStore\Foundation.AI.VectorStore.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.VectorStore.Zvec\Foundation.AI.VectorStore.Zvec.csproj" />
     <ProjectReference Include="..\..\Foundation.AI.Inference.Onnx\Foundation.AI.Inference.Onnx.csproj" />
+    <!-- MarkItDown family: lets the sample accept any folder of mixed-format
+         documents (PDF, Office, HTML, etc.) without code changes. The
+         conversion to clean text happens transparently before embedding. -->
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown\Foundation.AI.MarkItDown.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Pdf\Foundation.AI.MarkItDown.Pdf.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Office\Foundation.AI.MarkItDown.Office.csproj" />
+    <ProjectReference Include="..\..\Foundation.AI.MarkItDown.Media\Foundation.AI.MarkItDown.Media.csproj" />
   </ItemGroup>
 
   <ItemGroup>
